@@ -9,12 +9,9 @@ extends PanelContainer
 signal confirm_pressed(customer: Customer)
 signal expired(customer: Customer)
 
-const PATIENCE_ORDER := 45.0  # 주문 대기 (초) — 나중에 config.gd로
-const LOW_FRAC := 0.3
-
 var recipe_id: String
 
-var _time_left := PATIENCE_ORDER
+var _time_left := Config.PATIENCE_ORDER
 var _done := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
@@ -54,8 +51,8 @@ func _ready() -> void:
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
-	_gauge.max_value = PATIENCE_ORDER
-	_gauge.value = PATIENCE_ORDER
+	_gauge.max_value = Config.PATIENCE_ORDER
+	_gauge.value = Config.PATIENCE_ORDER
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
 	_gauge.add_theme_stylebox_override("background", _pill(Palette.GRAY100, Palette.GRAY300))
@@ -78,7 +75,7 @@ func _process(delta: float) -> void:
 		return
 	_time_left -= delta
 	_gauge.value = _time_left
-	var col := Palette.DANGER if _time_left <= PATIENCE_ORDER * LOW_FRAC else Palette.SUCCESS
+	var col := Palette.DANGER if _time_left <= Config.PATIENCE_ORDER * Config.PATIENCE_LOW_FRAC else Palette.SUCCESS
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", _pill(col))

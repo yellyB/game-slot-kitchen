@@ -5,12 +5,6 @@ extends Control
 ##     모든 이동은 Move 컨트롤러로 클릭·드래그 공용 처리.
 ## 비주얼-A: StyleBoxFlat 테마(둥근·팔레트색·그림자)를 코드로.
 
-const GRID_COLS := 3
-const GRID_SLOTS := 9
-const TOOL_SLOTS := [2, 8]  # 도구석(🔥) 위치 (우상·우하) — 재료 못 들어옴
-const MAX_QUEUE := 4         # 손님 큐 최대
-const SPAWN_INTERVAL := 4.0  # 손님 등장 간격(초) — 나중에 config.gd/웨이브(D6)로
-
 var _slots: Array[Slot] = []
 
 var _warehouse_btn: Button
@@ -62,7 +56,7 @@ func _ready() -> void:
 
 	# 손님 스포너
 	_spawn_timer = Timer.new()
-	_spawn_timer.wait_time = SPAWN_INTERVAL
+	_spawn_timer.wait_time = Config.SPAWN_INTERVAL
 	_spawn_timer.timeout.connect(_spawn_customer)
 	add_child(_spawn_timer)
 	_spawn_timer.start()
@@ -143,14 +137,14 @@ func _build_slot_grid() -> Control:
 
 	var grid := GridContainer.new()
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	grid.columns = GRID_COLS
+	grid.columns = Config.BOARD_COLS
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	center.add_child(grid)
 
-	for i in range(GRID_SLOTS):
+	for i in range(Config.BOARD_SLOTS):
 		var slot := Slot.new()
-		slot.setup(i in TOOL_SLOTS)
+		slot.setup(i in Config.TOOL_SLOTS)
 		_slots.append(slot)
 		grid.add_child(slot)
 
@@ -254,7 +248,7 @@ func _on_background_input(event: InputEvent) -> void:
 
 # ── 손님 / 주문 ───────────────────────────────────────────
 func _spawn_customer() -> void:
-	if _queue_row.get_child_count() >= MAX_QUEUE:
+	if _queue_row.get_child_count() >= Config.MAX_QUEUE:
 		return
 	var c := Customer.new()
 	c.setup(Recipes.random_id())
