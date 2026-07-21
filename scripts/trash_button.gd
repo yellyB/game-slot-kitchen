@@ -6,7 +6,10 @@ func _ready() -> void:
 
 
 func can_accept(payload: Dictionary) -> bool:
-	return payload.get("kind") == "move"
+	if payload.get("kind") != "move":
+		return false
+	var card = payload.get("card")
+	return card is Card and card.is_trashable()
 
 
 func accept(payload: Dictionary) -> void:
