@@ -4,29 +4,30 @@ const GRID_COLS := 3
 const GRID_SLOTS := 9
 const TOOL_SLOTS := [2, 8]
 
-var _slot_holders: Array[MarginContainer] = []
-var _slot_is_tool: Array[bool] = []
+var _slots: Array[Slot] = []
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
 var _warehouse_sheet: Panel
-var _tiles: Array[Button] = []
+var _tiles: Array[IngredientTile] = []
 
 
 func _ready() -> void:
 	var bg := ColorRect.new()
 	bg.color = Palette.BG_CREAM
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.gui_input.connect(_on_background_input)
 	add_child(bg)
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 12)
 	add_child(margin)
 
 	var col := VBoxContainer.new()
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_theme_constant_override("separation", 10)
 	margin.add_child(col)
 
@@ -35,6 +36,7 @@ func _ready() -> void:
 	col.add_child(_build_slot_grid())
 
 	var spacer := Control.new()
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(spacer)
 
@@ -42,6 +44,8 @@ func _ready() -> void:
 
 	_warehouse_sheet = _build_warehouse_sheet()
 	add_child(_warehouse_sheet)
+
+	Move.performed.connect(_refresh_tiles)
 
 
 func _build_top_bar() -> Control:
@@ -139,45 +143,27 @@ func _customer_placeholder() -> Control:
 
 func _build_slot_grid() -> Control:
 	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var grid := GridContainer.new()
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	grid.columns = GRID_COLS
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	center.add_child(grid)
 
 	for i in range(GRID_SLOTS):
-		grid.add_child(_slot(i in TOOL_SLOTS))
+		var slot := Slot.new()
+		slot.setup(i in TOOL_SLOTS)
+		_slots.append(slot)
+		grid.add_child(slot)
 
 	return center
 
 
-func _slot(is_tool: bool) -> Control:
-	var slot := PanelContainer.new()
-	slot.custom_minimum_size = Vector2(104, 104)
-	if is_tool:
-		slot.add_theme_stylebox_override("panel", _card_box(Color("FBE9DA"), Palette.SUB, 2))
-	else:
-		slot.add_theme_stylebox_override("panel", _card_box(Palette.WHITE, Palette.GRAY300))
-
-	var holder := MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
-		holder.add_theme_constant_override("margin_" + side, 6)
-	slot.add_child(holder)
-
-	if is_tool:
-		var lbl := _label("🔥", 28, false, Palette.SUB)
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		holder.add_child(lbl)
-
-	_slot_holders.append(holder)
-	_slot_is_tool.append(is_tool)
-	return slot
-
-
 func _build_bottom_buttons() -> Control:
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 10)
 
 	_warehouse_btn = _make_bottom_button(Palette.MAIN)
@@ -188,7 +174,6 @@ func _build_bottom_buttons() -> Control:
 	_trash_btn = TrashButton.new()
 	_trash_btn.text = "🗑️ 휴지통"
 	_style_bottom_button(_trash_btn, Palette.SUB)
-	_trash_btn.ingredient_dropped.connect(_on_trash_drop)
 	row.add_child(_trash_btn)
 
 	return row
@@ -249,41 +234,12 @@ func _build_warehouse_sheet() -> Panel:
 	v.add_child(grid)
 
 	for id in Ingredients.unlocked_ids():
-		var tile := _ingredient_tile(id)
+		var tile := IngredientTile.new()
+		tile.setup(id)
 		_tiles.append(tile)
 		grid.add_child(tile)
 
 	return sheet
-
-
-func _ingredient_tile(id: String) -> Button:
-	var def := Ingredients.get_def(id)
-	var tile := Button.new()
-	tile.custom_minimum_size = Vector2(72, 72)
-	tile.add_theme_stylebox_override("normal", _card_box(Palette.GRAY100, Palette.GRAY300))
-	tile.add_theme_stylebox_override("hover", _card_box(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
-	tile.add_theme_stylebox_override("pressed", _card_box(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
-	tile.add_theme_stylebox_override("disabled", _card_box(Palette.GRAY100, Palette.GRAY300))
-
-	var v := VBoxContainer.new()
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_theme_constant_override("separation", 2)
-	tile.add_child(v)
-
-	var icon := _label(str(def.get("icon", "?")), 26, false)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(icon)
-
-	var name_lbl := _label(str(def.get("name", id)), 12, false, Palette.GRAY700)
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(name_lbl)
-
-	tile.pressed.connect(func(): _place_ingredient(id))
-	return tile
 
 
 func _toggle_warehouse() -> void:
@@ -292,37 +248,20 @@ func _toggle_warehouse() -> void:
 		_refresh_tiles()
 
 
-func _place_ingredient(id: String) -> void:
-	var idx := _first_empty_slot()
-	if idx == -1:
-		return
-	var card := IngredientCard.new()
-	card.setup(id)
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_slot_holders[idx].add_child(card)
-	_refresh_tiles()
+func _on_background_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		Move.background_click()
 
 
-func _on_trash_drop(card: IngredientCard) -> void:
-	if card == null or not is_instance_valid(card):
-		return
-	var holder := card.get_parent()
-	if holder:
-		holder.remove_child(card)
-	card.queue_free()
-	_refresh_tiles()
-
-
-func _first_empty_slot() -> int:
-	for i in _slot_holders.size():
-		if not _slot_is_tool[i] and _slot_holders[i].get_child_count() == 0:
-			return i
-	return -1
+func _board_full() -> bool:
+	for s in _slots:
+		if s.is_empty():
+			return false
+	return true
 
 
 func _refresh_tiles() -> void:
-	var full := _first_empty_slot() == -1
+	var full := _board_full()
 	for tile in _tiles:
 		tile.disabled = full
 		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
@@ -331,6 +270,7 @@ func _refresh_tiles() -> void:
 func _label(text: String, size: int, bold: bool, color: Color = Palette.TEXT) -> Label:
 	var l := Label.new()
 	l.text = text
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
 	if bold:
