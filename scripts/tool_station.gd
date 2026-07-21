@@ -34,6 +34,18 @@ func is_idle() -> bool:
 	return state == State.IDLE
 
 
+func get_dish() -> DishCard:
+	for ch in _holder.get_children():
+		if ch is DishCard:
+			return ch
+	return null
+
+
+func reset() -> void:
+	_stop_glow()
+	_show_idle()
+
+
 func _show_idle() -> void:
 	state = State.IDLE
 	recipe_id = ""

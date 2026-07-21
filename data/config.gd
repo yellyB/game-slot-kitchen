@@ -11,3 +11,5 @@ const SPAWN_INTERVAL := 4.0
 const PATIENCE_ORDER := 45.0
 const PATIENCE_DISH := 60.0
 const PATIENCE_LOW_FRAC := 0.3
+
+const START_MONEY := 0
