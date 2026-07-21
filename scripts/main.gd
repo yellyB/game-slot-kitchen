@@ -15,6 +15,9 @@ var _active_tool: ToolStation
 var _queue_row: HBoxContainer
 var _spawn_timer: Timer
 
+var _cash := Config.START_MONEY
+var _money_label: Label
+
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -84,7 +87,18 @@ func _build_top_bar() -> Control:
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(gap)
 
-	row.add_child(_money(Palette.ACCENT, "1,200"))
+	var coin := HBoxContainer.new()
+	coin.add_theme_constant_override("separation", 4)
+	var dot := ColorRect.new()
+	dot.color = Palette.ACCENT
+	dot.custom_minimum_size = Vector2(14, 14)
+	var dot_wrap := CenterContainer.new()
+	dot_wrap.add_child(dot)
+	coin.add_child(dot_wrap)
+	_money_label = _label(_fmt(_cash), 18, true)
+	coin.add_child(_money_label)
+	row.add_child(coin)
+
 	row.add_child(_money(Palette.DANGER, "300"))
 
 	var hours := HBoxContainer.new()
@@ -262,6 +276,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	var order := OrderCard.new()
 	order.setup(customer.recipe_id)
 	order.expired.connect(_on_order_expired)
+	order.served.connect(_on_served)
 	slot.place_card(order)
 	customer.queue_free()
 	_refresh_tiles()
@@ -277,6 +292,57 @@ func _on_order_expired(order: OrderCard) -> void:
 		holder.remove_child(order)
 	order.queue_free()
 	_refresh_tiles()
+
+
+func _on_served(order: OrderCard, dish: DishCard) -> void:
+	var price := int(Recipes.get_def(order.recipe_id).get("price", 0))
+	_cash += price
+	_money_label.text = _fmt(_cash)
+	_spawn_floating("+%d" % price, order.global_position + order.size * 0.5, Palette.ACCENT)
+
+	var holder := order.get_parent()
+	if holder:
+		holder.remove_child(order)
+	order.queue_free()
+
+	if dish != null and is_instance_valid(dish):
+		for t in _tools:
+			if t.get_dish() == dish:
+				t.reset()
+				break
+
+	_refresh_tiles()
+
+
+func _spawn_floating(text: String, at_pos: Vector2, color: Color) -> void:
+	var l := Label.new()
+	l.text = text
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.z_index = 100
+	l.add_theme_font_size_override("font_size", 20)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_constant_override("outline_size", 3)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	add_child(l)
+	l.position = at_pos
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "position:y", at_pos.y - 44, 0.8)
+	tw.tween_property(l, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
+	tw.set_parallel(false)
+	tw.tween_callback(l.queue_free)
+
+
+func _fmt(n: int) -> String:
+	var s := str(n)
+	var out := ""
+	var c := 0
+	for i in range(s.length() - 1, -1, -1):
+		out = s[i] + out
+		c += 1
+		if c % 3 == 0 and i > 0:
+			out = "," + out
+	return out
 
 
 func _first_empty_slot() -> Slot:
