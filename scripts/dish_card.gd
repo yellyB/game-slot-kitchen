@@ -1,24 +1,31 @@
 class_name DishCard
-extends PanelContainer
-## 완성품 카드 — 도구석 위에 올라감. 단계 4에선 표시 전용.
-## (서빙은 단계 5 — 그때 이동 소스로 확장)
+extends Card
+## 완성품 카드 — 도구석 위에 올라감. 이동 소스(payload kind "dish").
+## 매칭되는 주문 카드에 올리면 서빙. 슬롯/휴지통엔 못 감(주문 카드만 받음).
 
 var recipe_id: String
 
 func setup(id: String) -> void:
 	recipe_id = id
 
-func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var s := StyleBoxFlat.new()
-	s.bg_color = Palette.WHITE
-	s.set_corner_radius_all(12)
-	s.set_border_width_all(2)
-	s.border_color = Palette.SUCCESS
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 3
-	s.shadow_offset = Vector2(0, 1)
-	add_theme_stylebox_override("panel", s)
+func is_trashable() -> bool:
+	return false
+
+func _preview_text() -> String:
+	return str(Recipes.get_def(recipe_id).get("icon", "?"))
+
+## 서빙용 payload — OrderCard가 recipe_id로 매칭.
+func get_move_payload() -> Dictionary:
+	return {"kind": "dish", "recipe_id": recipe_id, "card": self}
+
+func set_selected(sel: bool) -> void:
+	_style.border_color = Palette.MAIN if sel else Palette.SUCCESS
+	_style.set_border_width_all(2)
+
+func _build_content() -> void:
+	_style.bg_color = Palette.WHITE
+	_style.border_color = Palette.SUCCESS
+	_style.set_border_width_all(2)
 
 	var icon := Label.new()
 	icon.text = str(Recipes.get_def(recipe_id).get("icon", "?"))

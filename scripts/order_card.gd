@@ -6,6 +6,7 @@ extends Card
 ## 이동은 가능(Card 상속)하나 휴지통엔 못 버림.
 
 signal expired(card: OrderCard)
+signal served(card: OrderCard, dish: DishCard)
 
 var recipe_id: String
 
@@ -76,6 +77,20 @@ func _build_content() -> void:
 	_gauge.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
 	v.add_child(_gauge)
+
+
+# ── 서빙 타깃 (완성품 받기, 클릭·드래그 공용) ─────────────
+func can_accept(payload: Dictionary) -> bool:
+	return payload.get("kind") == "dish" and str(payload.get("recipe_id")) == recipe_id
+
+func accept(payload: Dictionary) -> void:
+	served.emit(self, payload.get("card"))
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	return typeof(data) == TYPE_DICTIONARY and can_accept(data)
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	Move.on_drop(self, data)
 
 
 func _process(delta: float) -> void:

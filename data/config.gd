@@ -17,3 +17,6 @@ const SPAWN_INTERVAL := 4.0   # 손님 등장 간격(초)
 const PATIENCE_ORDER := 45.0  # 주문 대기(큐)
 const PATIENCE_DISH := 60.0   # 음식 대기(슬롯 주문 카드)
 const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨강
+
+# ── 경제 ──────────────────────────────────────────────────
+const START_MONEY := 0  # 시작 소지금 (가게세·경제는 단계 6)

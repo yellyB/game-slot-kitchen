@@ -38,6 +38,20 @@ func is_idle() -> bool:
 	return state == State.IDLE
 
 
+## 완성(DONE) 상태의 완성품 카드(없으면 null).
+func get_dish() -> DishCard:
+	for ch in _holder.get_children():
+		if ch is DishCard:
+			return ch
+	return null
+
+
+## 서빙 후 도구석을 idle로 되돌림(완성품 제거).
+func reset() -> void:
+	_stop_glow()
+	_show_idle()
+
+
 # ── 상태 전환 ─────────────────────────────────────────────
 func _show_idle() -> void:
 	state = State.IDLE
