@@ -8,7 +8,7 @@ const ALL := {
 	"egg":       {"name": "계란",   "icon": "🥚", "unlocked": true},
 	"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
 	"chocolate": {"name": "초콜릿", "icon": "🍫", "unlocked": true},
-	"bean":      {"name": "원두",   "icon": "🫘", "unlocked": true},
+	"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
 	"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
 	"water":     {"name": "물",     "icon": "💧", "unlocked": true},
 }
