@@ -4,7 +4,7 @@ extends PanelContainer
 signal confirm_pressed(customer: Customer)
 signal expired(customer: Customer)
 
-const PATIENCE_ORDER := 15.0
+const PATIENCE_ORDER := 45.0
 const LOW_FRAC := 0.3
 
 var recipe_id: String

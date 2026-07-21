@@ -3,7 +3,7 @@ extends Card
 
 signal expired(card: OrderCard)
 
-const PATIENCE_DISH := 20.0
+const PATIENCE_DISH := 60.0
 const LOW_FRAC := 0.3
 
 var recipe_id: String
