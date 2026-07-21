@@ -1,17 +1,30 @@
 class_name Customer
 extends PanelContainer
-## 손님 큐 카드 — 얼굴 + 인내심 게이지(줄어듦) + 쪽지(주문받기).
-## 쪽지 탭 → note_tapped, 인내심 0 → expired.
+## 손님 큐 카드 — 얼굴 + 인내심 게이지 + 쪽지.
+##
+## 인내심은 2단계 별도 타이머 (항상 닳음, 정지 없음):
+##   1) 주문 대기(WAITING_ORDER): 쪽지 탭 전까지. 0이면 퇴장(주문 못 받음).
+##   2) 음식 대기(WAITING_DISH): 주문받는 순간 새로 가득 시작 → 서빙까지. 0이면 퇴장.
+## → 1단계를 최대한 버틴 뒤 주문받는 게 총 체류시간 이득(리셋 때문).
 
 signal note_tapped(customer: Customer)
 signal expired(customer: Customer)
 
-const PATIENCE := 20.0  # 초 (나중에 config.gd로)
+enum Phase { WAITING_ORDER, WAITING_DISH }
+
+const PATIENCE_ORDER := 15.0  # 주문 대기 (초) — 나중에 config.gd로
+const PATIENCE_DISH := 20.0   # 음식 대기 (초)
+const LOW_FRAC := 0.3         # 이 이하로 남으면 게이지 빨강
 
 var recipe_id: String
 var order_taken := false
-var _patience_left := PATIENCE
+
+var _phase := Phase.WAITING_ORDER
+var _time_left := PATIENCE_ORDER
+var _max := PATIENCE_ORDER
 var _done := false
+var _fill_color := Palette.SUCCESS
+
 var _gauge: ProgressBar
 var _note: Button
 
@@ -49,12 +62,12 @@ func _ready() -> void:
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
-	_gauge.max_value = PATIENCE
-	_gauge.value = PATIENCE
+	_gauge.max_value = _max
+	_gauge.value = _time_left
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
 	_gauge.add_theme_stylebox_override("background", _pill(Palette.GRAY100, Palette.GRAY300))
-	_gauge.add_theme_stylebox_override("fill", _pill(Palette.SUCCESS))
+	_gauge.add_theme_stylebox_override("fill", _pill(_fill_color))
 	v.add_child(_gauge)
 
 	_note = Button.new()
@@ -70,23 +83,37 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# 주문받으면 인내심 정지 (서빙은 D5). 그 전까지는 계속 줄어듦.
-	if order_taken or _done:
+	if _done:
 		return
-	_patience_left -= delta
-	_gauge.value = _patience_left
-	if _patience_left <= PATIENCE * 0.3:
-		_gauge.add_theme_stylebox_override("fill", _pill(Palette.DANGER))
-	if _patience_left <= 0.0:
+	_time_left -= delta
+	_gauge.value = _time_left
+	_refresh_fill()
+	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
 		expired.emit(self)
 
 
+## 주문받음 → 음식 대기 단계로 전환, 인내심 새로 가득.
 func mark_order_taken() -> void:
 	order_taken = true
 	_note.disabled = true
 	_note.text = "✅"
+
+	_phase = Phase.WAITING_DISH
+	_max = PATIENCE_DISH
+	_time_left = PATIENCE_DISH
+	_gauge.max_value = _max
+	_gauge.value = _time_left
+	_refresh_fill()
+
+
+func _refresh_fill() -> void:
+	var base := Palette.SUCCESS if _phase == Phase.WAITING_ORDER else Palette.SUB
+	var col := Palette.DANGER if _time_left <= _max * LOW_FRAC else base
+	if col != _fill_color:
+		_fill_color = col
+		_gauge.add_theme_stylebox_override("fill", _pill(col))
 
 
 func _pill(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
