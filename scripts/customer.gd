@@ -9,7 +9,7 @@ extends PanelContainer
 signal confirm_pressed(customer: Customer)
 signal expired(customer: Customer)
 
-const PATIENCE_ORDER := 15.0  # 주문 대기 (초) — 나중에 config.gd로
+const PATIENCE_ORDER := 45.0  # 주문 대기 (초) — 나중에 config.gd로
 const LOW_FRAC := 0.3
 
 var recipe_id: String
