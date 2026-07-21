@@ -327,12 +327,15 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 		holder.remove_child(order)
 	order.queue_free()
 
-	# 완성품을 들고 있던 도구석 회복
+	# 완성품 제거: 도구석 위면 도구 회복(제거 포함), 슬롯에 있으면 슬롯에서 제거
 	if dish != null and is_instance_valid(dish):
-		for t in _tools:
-			if t.get_dish() == dish:
-				t.reset()
-				break
+		if dish.tool != null:
+			dish.tool.reset()
+		else:
+			var dp := dish.get_parent()
+			if dp:
+				dp.remove_child(dish)
+			dish.queue_free()
 
 	_refresh_tiles()
 

@@ -4,6 +4,7 @@ extends Card
 ## 매칭되는 주문 카드에 올리면 서빙. 슬롯/휴지통엔 못 감(주문 카드만 받음).
 
 var recipe_id: String
+var tool: ToolStation  # 이 완성품을 만든 도구석 (슬롯으로 옮기면 그 도구 회복)
 
 func setup(id: String) -> void:
 	recipe_id = id

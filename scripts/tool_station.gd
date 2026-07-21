@@ -116,6 +116,7 @@ func _finish_cooking() -> void:
 	_clear_holder()
 	var dish := DishCard.new()
 	dish.setup(recipe_id)
+	dish.tool = self
 	dish.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(dish)

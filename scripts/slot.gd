@@ -72,7 +72,7 @@ func place_card(card: Card) -> void:
 	_holder.add_child(card)
 
 
-## 다른 슬롯에서 카드를 옮겨오기.
+## 다른 슬롯/도구석에서 카드를 옮겨오기.
 func take_card(card: Card) -> void:
 	if not is_empty() or card == null or not is_instance_valid(card):
 		return
@@ -80,20 +80,27 @@ func take_card(card: Card) -> void:
 	if prev:
 		prev.remove_child(card)
 	_holder.add_child(card)
+	# 완성품을 도구석에서 가져온 경우 → 그 도구석 회복
+	var dc := card as DishCard
+	if dc != null and dc.tool != null:
+		var t := dc.tool
+		dc.tool = null
+		t.reset()
 
 
 # ── 공용 타깃 인터페이스 (클릭·드래그 공용) ────────────────
 func can_accept(payload: Dictionary) -> bool:
 	if is_tool or not is_empty():
 		return false
-	return payload.get("kind") == "new" or payload.get("kind") == "move"
+	var k = payload.get("kind")
+	return k == "new" or k == "move" or k == "dish"
 
 
 func accept(payload: Dictionary) -> void:
 	match payload.get("kind"):
 		"new":
 			place_new(str(payload.get("id")))
-		"move":
+		"move", "dish":
 			take_card(payload.get("card"))
 
 
