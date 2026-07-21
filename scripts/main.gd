@@ -13,7 +13,7 @@ var _spawn_timer: Timer
 
 func _ready() -> void:
 	var bg := ColorRect.new()
-	bg.color = Palette.BG_CREAM
+	bg.color = Palette.COCOA_50
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.gui_input.connect(_on_background_input)
 	add_child(bg)
@@ -84,7 +84,7 @@ func _build_top_bar() -> Control:
 	hours.add_theme_constant_override("separation", 8)
 	box.add_child(hours)
 
-	hours.add_child(_label("☀️", 14, false, Palette.GRAY500))
+	hours.add_child(_label("☀️", 14, false, Palette.COCOA_400))
 
 	var bar := ProgressBar.new()
 	bar.min_value = 0
@@ -93,18 +93,18 @@ func _build_top_bar() -> Control:
 	bar.show_percentage = false
 	bar.custom_minimum_size = Vector2(0, 14)
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.add_theme_stylebox_override("background", _pill_box(Palette.GRAY100, Palette.GRAY300))
+	bar.add_theme_stylebox_override("background", _pill_box(Palette.COCOA_100, Palette.COCOA_200))
 	bar.add_theme_stylebox_override("fill", _pill_box(Palette.ACCENT))
 	hours.add_child(bar)
 
-	hours.add_child(_label("🌙", 14, false, Palette.GRAY500))
+	hours.add_child(_label("🌙", 14, false, Palette.COCOA_400))
 
 	return panel
 
 
 func _build_customer_queue() -> Control:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _card_box(Palette.GRAY100, Palette.GRAY300))
+	panel.add_theme_stylebox_override("panel", _card_box(Palette.COCOA_100, Palette.COCOA_200))
 	panel.custom_minimum_size = Vector2(0, 96)
 
 	var pad := MarginContainer.new()
@@ -173,7 +173,7 @@ func _build_warehouse_sheet() -> Panel:
 	box.bg_color = Palette.WHITE
 	box.set_corner_radius_all(18)
 	box.set_border_width_all(1)
-	box.border_color = Palette.GRAY300
+	box.border_color = Palette.COCOA_200
 	box.shadow_color = Color(0.164, 0.129, 0.106, 0.18)
 	box.shadow_size = 8
 	box.shadow_offset = Vector2(0, -2)
@@ -198,10 +198,10 @@ func _build_warehouse_sheet() -> Panel:
 	var close := Button.new()
 	close.text = "✕"
 	close.add_theme_font_size_override("font_size", 16)
-	close.add_theme_color_override("font_color", Palette.GRAY700)
-	close.add_theme_stylebox_override("normal", _pill_box(Palette.GRAY100, Palette.GRAY300))
-	close.add_theme_stylebox_override("hover", _pill_box(Palette.GRAY300))
-	close.add_theme_stylebox_override("pressed", _pill_box(Palette.GRAY300))
+	close.add_theme_color_override("font_color", Palette.COCOA_600)
+	close.add_theme_stylebox_override("normal", _pill_box(Palette.COCOA_100, Palette.COCOA_200))
+	close.add_theme_stylebox_override("hover", _pill_box(Palette.COCOA_200))
+	close.add_theme_stylebox_override("pressed", _pill_box(Palette.COCOA_200))
 	close.pressed.connect(_toggle_warehouse)
 	header.add_child(close)
 
@@ -286,7 +286,7 @@ func _refresh_tiles() -> void:
 		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
 
 
-func _label(text: String, size: int, bold: bool, color: Color = Palette.TEXT) -> Label:
+func _label(text: String, size: int, bold: bool, color: Color = Palette.COCOA_800) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
