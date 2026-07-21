@@ -1,7 +1,17 @@
 class_name OrderCard
 extends Card
 
+signal expired(card: OrderCard)
+
+const PATIENCE_DISH := 20.0
+const LOW_FRAC := 0.3
+
 var recipe_id: String
+
+var _time_left := PATIENCE_DISH
+var _done := false
+var _fill := Palette.SUB
+var _gauge: ProgressBar
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -24,20 +34,19 @@ func _build_content() -> void:
 	v.add_theme_constant_override("separation", 1)
 	add_child(v)
 
-	var icon := Label.new()
-	icon.text = str(def.get("icon", "?"))
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.add_theme_font_size_override("font_size", 24)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(icon)
+	var face := Label.new()
+	face.text = "🙋"
+	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	face.add_theme_font_size_override("font_size", 16)
+	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(face)
 
-	var name_lbl := Label.new()
-	name_lbl.text = str(def.get("name", recipe_id))
-	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_lbl.add_theme_font_size_override("font_size", 11)
-	name_lbl.add_theme_color_override("font_color", Palette.TEXT)
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(name_lbl)
+	var dish := Label.new()
+	dish.text = str(def.get("icon", "?"))
+	dish.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dish.add_theme_font_size_override("font_size", 22)
+	dish.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(dish)
 
 	var reqs := HBoxContainer.new()
 	reqs.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -48,5 +57,41 @@ func _build_content() -> void:
 		var mi := Label.new()
 		mi.text = str(Ingredients.get_def(iid).get("icon", "?"))
 		mi.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		mi.add_theme_font_size_override("font_size", 14)
+		mi.add_theme_font_size_override("font_size", 13)
 		reqs.add_child(mi)
+
+	_gauge = ProgressBar.new()
+	_gauge.min_value = 0
+	_gauge.max_value = PATIENCE_DISH
+	_gauge.value = PATIENCE_DISH
+	_gauge.show_percentage = false
+	_gauge.custom_minimum_size = Vector2(0, 6)
+	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gauge.add_theme_stylebox_override("background", _pill(Palette.GRAY100, Palette.GRAY300))
+	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
+	v.add_child(_gauge)
+
+
+func _process(delta: float) -> void:
+	if _done:
+		return
+	_time_left -= delta
+	_gauge.value = _time_left
+	var col := Palette.DANGER if _time_left <= PATIENCE_DISH * LOW_FRAC else Palette.SUB
+	if col != _fill:
+		_fill = col
+		_gauge.add_theme_stylebox_override("fill", _pill(col))
+	if _time_left <= 0.0:
+		_done = true
+		set_process(false)
+		expired.emit(self)
+
+
+func _pill(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = bg
+	s.set_corner_radius_all(999)
+	if border.a > 0.0:
+		s.set_border_width_all(1)
+		s.border_color = border
+	return s
