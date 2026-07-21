@@ -4,6 +4,15 @@ const GRID_COLS := 3
 const GRID_SLOTS := 9
 const TOOL_SLOTS := [2, 8]
 
+var _slot_holders: Array[MarginContainer] = []
+var _slot_is_tool: Array[bool] = []
+
+var _warehouse_btn: Button
+var _trash_btn: TrashButton
+var _warehouse_sheet: Panel
+var _tiles: Array[Button] = []
+
+
 func _ready() -> void:
 	var bg := ColorRect.new()
 	bg.color = Palette.BG_CREAM
@@ -31,6 +40,9 @@ func _ready() -> void:
 
 	col.add_child(_build_bottom_buttons())
 
+	_warehouse_sheet = _build_warehouse_sheet()
+	add_child(_warehouse_sheet)
+
 
 func _build_top_bar() -> Control:
 	var panel := PanelContainer.new()
@@ -49,8 +61,7 @@ func _build_top_bar() -> Control:
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
 
-	var day := _label("1일차", 20, true)
-	row.add_child(day)
+	row.add_child(_label("1일차", 20, true))
 
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -149,11 +160,19 @@ func _slot(is_tool: bool) -> Control:
 	else:
 		slot.add_theme_stylebox_override("panel", _card_box(Palette.WHITE, Palette.GRAY300))
 
+	var holder := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		holder.add_theme_constant_override("margin_" + side, 6)
+	slot.add_child(holder)
+
 	if is_tool:
 		var lbl := _label("🔥", 28, false, Palette.SUB)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		slot.add_child(lbl)
+		holder.add_child(lbl)
+
+	_slot_holders.append(holder)
+	_slot_is_tool.append(is_tool)
 	return slot
 
 
@@ -161,24 +180,152 @@ func _build_bottom_buttons() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 
-	row.add_child(_bottom_button("🏬 창고", Palette.MAIN))
-	row.add_child(_bottom_button("🗑️ 휴지통", Palette.SUB))
+	_warehouse_btn = _make_bottom_button(Palette.MAIN)
+	_warehouse_btn.text = "🏬 창고"
+	_warehouse_btn.pressed.connect(_toggle_warehouse)
+	row.add_child(_warehouse_btn)
+
+	_trash_btn = TrashButton.new()
+	_trash_btn.text = "🗑️ 휴지통"
+	_style_bottom_button(_trash_btn, Palette.SUB)
+	_trash_btn.ingredient_dropped.connect(_on_trash_drop)
+	row.add_child(_trash_btn)
+
 	return row
 
 
-func _bottom_button(text: String, color: Color) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(0, 56)
-	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 18)
-	b.add_theme_color_override("font_color", Palette.WHITE)
-	b.add_theme_color_override("font_hover_color", Palette.WHITE)
-	b.add_theme_color_override("font_pressed_color", Palette.WHITE)
-	b.add_theme_stylebox_override("normal", _pill_box(color))
-	b.add_theme_stylebox_override("hover", _pill_box(color.lightened(0.08)))
-	b.add_theme_stylebox_override("pressed", _pill_box(color.darkened(0.1)))
-	return b
+func _build_warehouse_sheet() -> Panel:
+	var sheet := Panel.new()
+	sheet.visible = false
+	sheet.anchor_left = 0.0
+	sheet.anchor_right = 1.0
+	sheet.anchor_top = 1.0
+	sheet.anchor_bottom = 1.0
+	sheet.offset_left = 8
+	sheet.offset_right = -8
+	sheet.offset_top = -240
+	sheet.offset_bottom = -8
+
+	var box := StyleBoxFlat.new()
+	box.bg_color = Palette.WHITE
+	box.set_corner_radius_all(18)
+	box.set_border_width_all(1)
+	box.border_color = Palette.GRAY300
+	box.shadow_color = Color(0.164, 0.129, 0.106, 0.18)
+	box.shadow_size = 8
+	box.shadow_offset = Vector2(0, -2)
+	sheet.add_theme_stylebox_override("panel", box)
+
+	var pad := MarginContainer.new()
+	pad.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, 14)
+	sheet.add_child(pad)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 12)
+	pad.add_child(v)
+
+	var header := HBoxContainer.new()
+	v.add_child(header)
+	header.add_child(_label("🏬 창고", 18, true))
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(gap)
+	var close := Button.new()
+	close.text = "닫기"
+	close.add_theme_font_size_override("font_size", 14)
+	close.add_theme_color_override("font_color", Palette.GRAY700)
+	close.add_theme_stylebox_override("normal", _pill_box(Palette.GRAY100, Palette.GRAY300))
+	close.add_theme_stylebox_override("hover", _pill_box(Palette.GRAY300))
+	close.add_theme_stylebox_override("pressed", _pill_box(Palette.GRAY300))
+	close.pressed.connect(_toggle_warehouse)
+	header.add_child(close)
+
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	v.add_child(grid)
+
+	for id in Ingredients.unlocked_ids():
+		var tile := _ingredient_tile(id)
+		_tiles.append(tile)
+		grid.add_child(tile)
+
+	return sheet
+
+
+func _ingredient_tile(id: String) -> Button:
+	var def := Ingredients.get_def(id)
+	var tile := Button.new()
+	tile.custom_minimum_size = Vector2(72, 72)
+	tile.add_theme_stylebox_override("normal", _card_box(Palette.GRAY100, Palette.GRAY300))
+	tile.add_theme_stylebox_override("hover", _card_box(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
+	tile.add_theme_stylebox_override("pressed", _card_box(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
+	tile.add_theme_stylebox_override("disabled", _card_box(Palette.GRAY100, Palette.GRAY300))
+
+	var v := VBoxContainer.new()
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_theme_constant_override("separation", 2)
+	tile.add_child(v)
+
+	var icon := _label(str(def.get("icon", "?")), 26, false)
+	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(icon)
+
+	var name_lbl := _label(str(def.get("name", id)), 12, false, Palette.GRAY700)
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(name_lbl)
+
+	tile.pressed.connect(func(): _place_ingredient(id))
+	return tile
+
+
+func _toggle_warehouse() -> void:
+	_warehouse_sheet.visible = not _warehouse_sheet.visible
+	if _warehouse_sheet.visible:
+		_refresh_tiles()
+
+
+func _place_ingredient(id: String) -> void:
+	var idx := _first_empty_slot()
+	if idx == -1:
+		return
+	var card := IngredientCard.new()
+	card.setup(id)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_slot_holders[idx].add_child(card)
+	_refresh_tiles()
+
+
+func _on_trash_drop(card: IngredientCard) -> void:
+	if card == null or not is_instance_valid(card):
+		return
+	var holder := card.get_parent()
+	if holder:
+		holder.remove_child(card)
+	card.queue_free()
+	_refresh_tiles()
+
+
+func _first_empty_slot() -> int:
+	for i in _slot_holders.size():
+		if not _slot_is_tool[i] and _slot_holders[i].get_child_count() == 0:
+			return i
+	return -1
+
+
+func _refresh_tiles() -> void:
+	var full := _first_empty_slot() == -1
+	for tile in _tiles:
+		tile.disabled = full
+		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
 
 
 func _label(text: String, size: int, bold: bool, color: Color = Palette.TEXT) -> Label:
@@ -204,6 +351,24 @@ func _money(dot_color: Color, amount: String) -> Control:
 
 	h.add_child(_label(amount, 18, true))
 	return h
+
+
+func _make_bottom_button(color: Color) -> Button:
+	var b := Button.new()
+	_style_bottom_button(b, color)
+	return b
+
+
+func _style_bottom_button(b: Button, color: Color) -> void:
+	b.custom_minimum_size = Vector2(0, 56)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.add_theme_font_size_override("font_size", 18)
+	b.add_theme_color_override("font_color", Palette.WHITE)
+	b.add_theme_color_override("font_hover_color", Palette.WHITE)
+	b.add_theme_color_override("font_pressed_color", Palette.WHITE)
+	b.add_theme_stylebox_override("normal", _pill_box(color))
+	b.add_theme_stylebox_override("hover", _pill_box(color.lightened(0.08)))
+	b.add_theme_stylebox_override("pressed", _pill_box(color.darkened(0.1)))
 
 
 func _card_box(bg: Color, border: Color = Color.TRANSPARENT, border_w: int = 1) -> StyleBoxFlat:
