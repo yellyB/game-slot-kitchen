@@ -16,6 +16,10 @@ run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Move="*res://scripts/move_controller.gd"
+
 [display]
 
 window/size/viewport_width=390
