@@ -100,7 +100,7 @@ func _build_top_bar() -> Control:
 	hours.add_theme_constant_override("separation", 8)
 	box.add_child(hours)
 
-	hours.add_child(_label("낮", 14, false, Palette.GRAY500))
+	hours.add_child(_label("☀️", 14, false, Palette.GRAY500))
 
 	var bar := ProgressBar.new()
 	bar.min_value = 0
@@ -113,7 +113,7 @@ func _build_top_bar() -> Control:
 	bar.add_theme_stylebox_override("fill", _pill_box(Palette.ACCENT))
 	hours.add_child(bar)
 
-	hours.add_child(_label("밤", 14, false, Palette.GRAY500))
+	hours.add_child(_label("🌙", 14, false, Palette.GRAY500))
 
 	return panel
 
@@ -164,12 +164,12 @@ func _build_bottom_buttons() -> Control:
 	row.add_theme_constant_override("separation", 10)
 
 	_warehouse_btn = _make_bottom_button(Palette.MAIN)
-	_warehouse_btn.text = "🏬 창고"
+	_warehouse_btn.text = "🏬"
 	_warehouse_btn.pressed.connect(_toggle_warehouse)
 	row.add_child(_warehouse_btn)
 
 	_trash_btn = TrashButton.new()
-	_trash_btn.text = "🗑️ 휴지통"
+	_trash_btn.text = "🗑️"
 	_style_bottom_button(_trash_btn, Palette.SUB)
 	row.add_child(_trash_btn)
 
@@ -211,13 +211,13 @@ func _build_warehouse_sheet() -> Panel:
 
 	var header := HBoxContainer.new()
 	v.add_child(header)
-	header.add_child(_label("🏬 창고", 18, true))
+	header.add_child(_label("🏬", 20, true))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
 	var close := Button.new()
-	close.text = "닫기"
-	close.add_theme_font_size_override("font_size", 14)
+	close.text = "✕"
+	close.add_theme_font_size_override("font_size", 16)
 	close.add_theme_color_override("font_color", Palette.GRAY700)
 	close.add_theme_stylebox_override("normal", _pill_box(Palette.GRAY100, Palette.GRAY300))
 	close.add_theme_stylebox_override("hover", _pill_box(Palette.GRAY300))
@@ -258,28 +258,36 @@ func _spawn_customer() -> void:
 		return
 	var c := Customer.new()
 	c.setup(Recipes.random_id())
-	c.note_tapped.connect(_on_note_tapped)
+	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
 	_queue_row.add_child(c)
 
 
-## 쪽지 탭 → 주문서 티켓을 다음 빈 슬롯에. 손님은 큐에 그대로.
-func _on_note_tapped(customer: Customer) -> void:
-	if customer.order_taken:
-		return
+## 주문 확인 → 손님이 큐에서 사라지고 다음 빈 슬롯의 주문 카드로 "이동".
+func _on_confirm_order(customer: Customer) -> void:
 	var slot := _first_empty_slot()
 	if slot == null:
 		return  # 빈 슬롯 없음 (나중에 Toast)
-	var ticket := OrderCard.new()
-	ticket.setup(customer.recipe_id)
-	slot.place_card(ticket)
-	customer.mark_order_taken()
+	var order := OrderCard.new()
+	order.setup(customer.recipe_id)
+	order.expired.connect(_on_order_expired)
+	slot.place_card(order)
+	customer.queue_free()
 	_refresh_tiles()
 
 
-## 인내심 0 → 손님 퇴장 (손실 처리는 D5/D6에서).
+## 주문 대기 인내심 0 → 손님 퇴장 (아직 주문 안 받음).
 func _on_customer_expired(customer: Customer) -> void:
 	customer.queue_free()
+
+
+## 음식 대기 인내심 0 → 주문 카드(=손님) 통째로 사라짐, 슬롯 회복.
+func _on_order_expired(order: OrderCard) -> void:
+	var holder := order.get_parent()
+	if holder:
+		holder.remove_child(order)
+	order.queue_free()
+	_refresh_tiles()
 
 
 func _first_empty_slot() -> Slot:
@@ -341,7 +349,7 @@ func _make_bottom_button(color: Color) -> Button:
 func _style_bottom_button(b: Button, color: Color) -> void:
 	b.custom_minimum_size = Vector2(0, 56)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 18)
+	b.add_theme_font_size_override("font_size", 24)
 	b.add_theme_color_override("font_color", Palette.WHITE)
 	b.add_theme_color_override("font_hover_color", Palette.WHITE)
 	b.add_theme_color_override("font_pressed_color", Palette.WHITE)
