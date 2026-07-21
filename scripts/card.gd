@@ -12,7 +12,7 @@ func _ready() -> void:
 	_style.bg_color = Palette.WHITE
 	_style.set_corner_radius_all(12)
 	_style.set_border_width_all(1)
-	_style.border_color = Palette.GRAY300
+	_style.border_color = Palette.COCOA_200
 	_style.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
 	_style.shadow_size = 3
 	_style.shadow_offset = Vector2(0, 1)
@@ -39,7 +39,7 @@ func get_move_payload() -> Dictionary:
 
 
 func set_selected(sel: bool) -> void:
-	_style.border_color = Palette.MAIN if sel else Palette.GRAY300
+	_style.border_color = Palette.MAIN if sel else Palette.COCOA_200
 	_style.set_border_width_all(2 if sel else 1)
 
 

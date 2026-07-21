@@ -73,7 +73,7 @@ func _build_content() -> void:
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 6)
 	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_gauge.add_theme_stylebox_override("background", _pill(Palette.GRAY100, Palette.GRAY300))
+	_gauge.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
 	v.add_child(_gauge)
 

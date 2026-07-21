@@ -57,12 +57,12 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 
 
 func _apply_style() -> void:
-	var border := Palette.MAIN if _selected else Palette.GRAY300
+	var border := Palette.MAIN if _selected else Palette.COCOA_200
 	var border_w := 2 if _selected else 1
-	add_theme_stylebox_override("normal", _tile_box(Palette.GRAY100, border, border_w))
+	add_theme_stylebox_override("normal", _tile_box(Palette.COCOA_100, border, border_w))
 	add_theme_stylebox_override("hover", _tile_box(Palette.ACCENT.lightened(0.35), border, border_w))
 	add_theme_stylebox_override("pressed", _tile_box(Palette.ACCENT.lightened(0.2), Palette.ACCENT, 2))
-	add_theme_stylebox_override("disabled", _tile_box(Palette.GRAY100, Palette.GRAY300, 1))
+	add_theme_stylebox_override("disabled", _tile_box(Palette.COCOA_100, Palette.COCOA_200, 1))
 
 
 func _tile_box(bg: Color, border: Color, border_w: int) -> StyleBoxFlat:

@@ -113,5 +113,5 @@ func _box() -> StyleBoxFlat:
 	else:
 		s.bg_color = Palette.WHITE
 		s.set_border_width_all(1)
-		s.border_color = Palette.GRAY300
+		s.border_color = Palette.COCOA_200
 	return s

@@ -25,7 +25,7 @@ func _ready() -> void:
 	s.bg_color = Palette.WHITE
 	s.set_corner_radius_all(12)
 	s.set_border_width_all(1)
-	s.border_color = Palette.GRAY300
+	s.border_color = Palette.COCOA_200
 	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
 	s.shadow_size = 3
 	s.shadow_offset = Vector2(0, 1)
@@ -55,7 +55,7 @@ func _ready() -> void:
 	_gauge.value = Config.PATIENCE_ORDER
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
-	_gauge.add_theme_stylebox_override("background", _pill(Palette.GRAY100, Palette.GRAY300))
+	_gauge.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
 	v.add_child(_gauge)
 
