@@ -6,11 +6,16 @@ extends Control
 ## 비주얼-A: StyleBoxFlat 테마(둥근·팔레트색·그림자)를 코드로.
 
 var _slots: Array[Slot] = []
+var _tools: Array[ToolStation] = []
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
 var _warehouse_sheet: Panel
 var _tiles: Array[IngredientTile] = []
+
+var _recipe_sheet: Panel
+var _recipe_entries: Array[Button] = []
+var _active_tool: ToolStation
 
 var _queue_row: HBoxContainer
 var _spawn_timer: Timer
@@ -48,9 +53,11 @@ func _ready() -> void:
 
 	col.add_child(_build_bottom_buttons())
 
-	# 창고 시트는 다른 UI 위에 뜨도록 마지막에 추가
+	# 시트는 다른 UI 위에 뜨도록 마지막에 추가
 	_warehouse_sheet = _build_warehouse_sheet()
 	add_child(_warehouse_sheet)
+	_recipe_sheet = _build_recipe_sheet()
+	add_child(_recipe_sheet)
 
 	Move.performed.connect(_refresh_tiles)
 
@@ -143,10 +150,15 @@ func _build_slot_grid() -> Control:
 	center.add_child(grid)
 
 	for i in range(Config.BOARD_SLOTS):
-		var slot := Slot.new()
-		slot.setup(i in Config.TOOL_SLOTS)
-		_slots.append(slot)
-		grid.add_child(slot)
+		if i in Config.TOOL_SLOTS:
+			var tool := ToolStation.new()
+			tool.tapped.connect(_open_recipe_popup)
+			_tools.append(tool)
+			grid.add_child(tool)
+		else:
+			var slot := Slot.new()
+			_slots.append(slot)
+			grid.add_child(slot)
 
 	return center
 
@@ -236,8 +248,10 @@ func _build_warehouse_sheet() -> Panel:
 
 # ── 상호작용 ──────────────────────────────────────────────
 func _toggle_warehouse() -> void:
-	_warehouse_sheet.visible = not _warehouse_sheet.visible
-	if _warehouse_sheet.visible:
+	var show := not _warehouse_sheet.visible
+	_recipe_sheet.visible = false
+	_warehouse_sheet.visible = show
+	if show:
 		_refresh_tiles()
 
 
@@ -289,6 +303,168 @@ func _first_empty_slot() -> Slot:
 		if s.is_empty():
 			return s
 	return null
+
+
+# ── 조리 (레시피 팝업 + B안: 재료 다 모여야) ──────────────
+func _build_recipe_sheet() -> Panel:
+	var sheet := Panel.new()
+	sheet.visible = false
+	sheet.anchor_left = 0.0
+	sheet.anchor_right = 1.0
+	sheet.anchor_top = 1.0
+	sheet.anchor_bottom = 1.0
+	sheet.offset_left = 8
+	sheet.offset_right = -8
+	sheet.offset_top = -260
+	sheet.offset_bottom = -8
+
+	var box := StyleBoxFlat.new()
+	box.bg_color = Palette.WHITE
+	box.set_corner_radius_all(18)
+	box.set_border_width_all(1)
+	box.border_color = Palette.COCOA_200
+	box.shadow_color = Color(0.164, 0.129, 0.106, 0.18)
+	box.shadow_size = 8
+	box.shadow_offset = Vector2(0, -2)
+	sheet.add_theme_stylebox_override("panel", box)
+
+	var pad := MarginContainer.new()
+	pad.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, 14)
+	sheet.add_child(pad)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	pad.add_child(v)
+
+	var header := HBoxContainer.new()
+	v.add_child(header)
+	header.add_child(_label("🔥", 20, true))
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(gap)
+	var close := Button.new()
+	close.text = "✕"
+	close.add_theme_font_size_override("font_size", 16)
+	close.add_theme_color_override("font_color", Palette.COCOA_600)
+	close.add_theme_stylebox_override("normal", _pill_box(Palette.COCOA_100, Palette.COCOA_200))
+	close.add_theme_stylebox_override("hover", _pill_box(Palette.COCOA_200))
+	close.add_theme_stylebox_override("pressed", _pill_box(Palette.COCOA_200))
+	close.pressed.connect(func(): _recipe_sheet.visible = false)
+	header.add_child(close)
+
+	for id in Recipes.all_ids():
+		var entry := _recipe_entry(id)
+		_recipe_entries.append(entry)
+		v.add_child(entry)
+
+	return sheet
+
+
+## 레시피 항목: [요리아이콘] [필요재료 아이콘] … [⏱️ n]. 탭 → 조리 시작.
+func _recipe_entry(id: String) -> Button:
+	var def := Recipes.get_def(id)
+	var entry := Button.new()
+	entry.custom_minimum_size = Vector2(0, 52)
+	entry.add_theme_stylebox_override("normal", _card_box(Palette.COCOA_100, Palette.COCOA_200))
+	entry.add_theme_stylebox_override("hover", _card_box(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
+	entry.add_theme_stylebox_override("pressed", _card_box(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
+	entry.add_theme_stylebox_override("disabled", _card_box(Palette.COCOA_100, Palette.COCOA_200))
+	entry.set_meta("recipe_id", id)
+
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	row.add_theme_constant_override("separation", 8)
+	# 좌우 안쪽 여백
+	row.offset_left = 12
+	row.offset_right = -12
+	entry.add_child(row)
+
+	var dish := Label.new()
+	dish.text = str(def.get("icon", "?"))
+	dish.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dish.add_theme_font_size_override("font_size", 24)
+	row.add_child(dish)
+
+	for iid in def.get("ingredients", []):
+		var mi := Label.new()
+		mi.text = str(Ingredients.get_def(iid).get("icon", "?"))
+		mi.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		mi.add_theme_font_size_override("font_size", 18)
+		row.add_child(mi)
+
+	var gap := Control.new()
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(gap)
+
+	var timer := _label("⏱️%d" % int(def.get("cook_time", 0)), 16, false, Palette.COCOA_600)
+	row.add_child(timer)
+
+	entry.pressed.connect(func(): _select_recipe(id))
+	return entry
+
+
+func _open_recipe_popup(tool: ToolStation) -> void:
+	_active_tool = tool
+	_warehouse_sheet.visible = false
+	_refresh_recipes()
+	_recipe_sheet.visible = true
+
+
+## 재료 충족 여부에 따라 레시피 항목 활성/비활성.
+func _refresh_recipes() -> void:
+	var have := _ingredient_counts()
+	for entry in _recipe_entries:
+		var id: String = entry.get_meta("recipe_id")
+		var ok := _has_ingredients(id, have)
+		entry.disabled = not ok
+		entry.modulate = Color.WHITE if ok else Color(1, 1, 1, 0.45)
+
+
+func _select_recipe(id: String) -> void:
+	if _active_tool == null or not _active_tool.is_idle():
+		return
+	if not _has_ingredients(id, _ingredient_counts()):
+		return
+	_consume_ingredients(id)
+	_active_tool.start_cooking(id)
+	_recipe_sheet.visible = false
+	_active_tool = null
+	_refresh_tiles()
+
+
+## 보드에 놓인 재료 개수 (ing_id → 개수).
+func _ingredient_counts() -> Dictionary:
+	var have := {}
+	for s in _slots:
+		var c := s.get_card()
+		if c is IngredientCard:
+			have[c.ing_id] = have.get(c.ing_id, 0) + 1
+	return have
+
+
+## B안: 필요재료가 보드에 전부 있어야 true.
+func _has_ingredients(recipe_id: String, have: Dictionary) -> bool:
+	var need := {}
+	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+		need[iid] = need.get(iid, 0) + 1
+	for iid in need:
+		if have.get(iid, 0) < need[iid]:
+			return false
+	return true
+
+
+## 필요재료를 보드에서 소비(제거).
+func _consume_ingredients(recipe_id: String) -> void:
+	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+		for s in _slots:
+			var c := s.get_card()
+			if c is IngredientCard and c.ing_id == iid:
+				s.clear()
+				break
 
 
 func _board_full() -> bool:
