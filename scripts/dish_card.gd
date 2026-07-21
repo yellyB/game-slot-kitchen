@@ -2,6 +2,7 @@ class_name DishCard
 extends Card
 
 var recipe_id: String
+var tool: ToolStation
 
 func setup(id: String) -> void:
 	recipe_id = id

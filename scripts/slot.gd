@@ -71,19 +71,25 @@ func take_card(card: Card) -> void:
 	if prev:
 		prev.remove_child(card)
 	_holder.add_child(card)
+	var dc := card as DishCard
+	if dc != null and dc.tool != null:
+		var t := dc.tool
+		dc.tool = null
+		t.reset()
 
 
 func can_accept(payload: Dictionary) -> bool:
 	if is_tool or not is_empty():
 		return false
-	return payload.get("kind") == "new" or payload.get("kind") == "move"
+	var k = payload.get("kind")
+	return k == "new" or k == "move" or k == "dish"
 
 
 func accept(payload: Dictionary) -> void:
 	match payload.get("kind"):
 		"new":
 			place_new(str(payload.get("id")))
-		"move":
+		"move", "dish":
 			take_card(payload.get("card"))
 
 
