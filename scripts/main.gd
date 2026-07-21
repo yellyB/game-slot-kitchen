@@ -3,6 +3,8 @@ extends Control
 const GRID_COLS := 3
 const GRID_SLOTS := 9
 const TOOL_SLOTS := [2, 8]
+const MAX_QUEUE := 4
+const SPAWN_INTERVAL := 4.0
 
 var _slots: Array[Slot] = []
 
@@ -10,6 +12,9 @@ var _warehouse_btn: Button
 var _trash_btn: TrashButton
 var _warehouse_sheet: Panel
 var _tiles: Array[IngredientTile] = []
+
+var _queue_row: HBoxContainer
+var _spawn_timer: Timer
 
 
 func _ready() -> void:
@@ -46,6 +51,13 @@ func _ready() -> void:
 	add_child(_warehouse_sheet)
 
 	Move.performed.connect(_refresh_tiles)
+
+	_spawn_timer = Timer.new()
+	_spawn_timer.wait_time = SPAWN_INTERVAL
+	_spawn_timer.timeout.connect(_spawn_customer)
+	add_child(_spawn_timer)
+	_spawn_timer.start()
+	_spawn_customer()
 
 
 func _build_top_bar() -> Control:
@@ -106,39 +118,11 @@ func _build_customer_queue() -> Control:
 		pad.add_theme_constant_override("margin_" + side, 10)
 	panel.add_child(pad)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	pad.add_child(row)
-
-	for i in range(3):
-		row.add_child(_customer_placeholder())
-
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(gap)
+	_queue_row = HBoxContainer.new()
+	_queue_row.add_theme_constant_override("separation", 8)
+	pad.add_child(_queue_row)
 
 	return panel
-
-
-func _customer_placeholder() -> Control:
-	var c := PanelContainer.new()
-	c.add_theme_stylebox_override("panel", _card_box(Palette.WHITE, Palette.GRAY300))
-	c.custom_minimum_size = Vector2(60, 76)
-
-	var v := VBoxContainer.new()
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_theme_constant_override("separation", 4)
-	c.add_child(v)
-
-	var face := _label("🙋", 22, false)
-	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(face)
-
-	var note := _label("📝", 16, false, Palette.GRAY500)
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(note)
-
-	return c
 
 
 func _build_slot_grid() -> Control:
@@ -251,6 +235,40 @@ func _toggle_warehouse() -> void:
 func _on_background_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		Move.background_click()
+
+
+func _spawn_customer() -> void:
+	if _queue_row.get_child_count() >= MAX_QUEUE:
+		return
+	var c := Customer.new()
+	c.setup(Recipes.random_id())
+	c.note_tapped.connect(_on_note_tapped)
+	c.expired.connect(_on_customer_expired)
+	_queue_row.add_child(c)
+
+
+func _on_note_tapped(customer: Customer) -> void:
+	if customer.order_taken:
+		return
+	var slot := _first_empty_slot()
+	if slot == null:
+		return
+	var ticket := OrderCard.new()
+	ticket.setup(customer.recipe_id)
+	slot.place_card(ticket)
+	customer.mark_order_taken()
+	_refresh_tiles()
+
+
+func _on_customer_expired(customer: Customer) -> void:
+	customer.queue_free()
+
+
+func _first_empty_slot() -> Slot:
+	for s in _slots:
+		if s.is_empty():
+			return s
+	return null
 
 
 func _board_full() -> bool:
