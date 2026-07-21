@@ -3,12 +3,9 @@ extends Card
 
 signal expired(card: OrderCard)
 
-const PATIENCE_DISH := 60.0
-const LOW_FRAC := 0.3
-
 var recipe_id: String
 
-var _time_left := PATIENCE_DISH
+var _time_left := Config.PATIENCE_DISH
 var _done := false
 var _fill := Palette.SUB
 var _gauge: ProgressBar
@@ -62,8 +59,8 @@ func _build_content() -> void:
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
-	_gauge.max_value = PATIENCE_DISH
-	_gauge.value = PATIENCE_DISH
+	_gauge.max_value = Config.PATIENCE_DISH
+	_gauge.value = Config.PATIENCE_DISH
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 6)
 	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -77,7 +74,7 @@ func _process(delta: float) -> void:
 		return
 	_time_left -= delta
 	_gauge.value = _time_left
-	var col := Palette.DANGER if _time_left <= PATIENCE_DISH * LOW_FRAC else Palette.SUB
+	var col := Palette.DANGER if _time_left <= Config.PATIENCE_DISH * Config.PATIENCE_LOW_FRAC else Palette.SUB
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", _pill(col))

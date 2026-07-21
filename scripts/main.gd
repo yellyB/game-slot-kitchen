@@ -1,11 +1,5 @@
 extends Control
 
-const GRID_COLS := 3
-const GRID_SLOTS := 9
-const TOOL_SLOTS := [2, 8]
-const MAX_QUEUE := 4
-const SPAWN_INTERVAL := 4.0
-
 var _slots: Array[Slot] = []
 
 var _warehouse_btn: Button
@@ -53,7 +47,7 @@ func _ready() -> void:
 	Move.performed.connect(_refresh_tiles)
 
 	_spawn_timer = Timer.new()
-	_spawn_timer.wait_time = SPAWN_INTERVAL
+	_spawn_timer.wait_time = Config.SPAWN_INTERVAL
 	_spawn_timer.timeout.connect(_spawn_customer)
 	add_child(_spawn_timer)
 	_spawn_timer.start()
@@ -131,14 +125,14 @@ func _build_slot_grid() -> Control:
 
 	var grid := GridContainer.new()
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	grid.columns = GRID_COLS
+	grid.columns = Config.BOARD_COLS
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	center.add_child(grid)
 
-	for i in range(GRID_SLOTS):
+	for i in range(Config.BOARD_SLOTS):
 		var slot := Slot.new()
-		slot.setup(i in TOOL_SLOTS)
+		slot.setup(i in Config.TOOL_SLOTS)
 		_slots.append(slot)
 		grid.add_child(slot)
 
@@ -238,7 +232,7 @@ func _on_background_input(event: InputEvent) -> void:
 
 
 func _spawn_customer() -> void:
-	if _queue_row.get_child_count() >= MAX_QUEUE:
+	if _queue_row.get_child_count() >= Config.MAX_QUEUE:
 		return
 	var c := Customer.new()
 	c.setup(Recipes.random_id())
