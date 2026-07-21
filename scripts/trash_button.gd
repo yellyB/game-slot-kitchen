@@ -9,7 +9,10 @@ func _ready() -> void:
 
 # ── 공용 타깃 인터페이스 ──────────────────────────────────
 func can_accept(payload: Dictionary) -> bool:
-	return payload.get("kind") == "move"
+	if payload.get("kind") != "move":
+		return false
+	var card = payload.get("card")
+	return card is Card and card.is_trashable()
 
 
 func accept(payload: Dictionary) -> void:

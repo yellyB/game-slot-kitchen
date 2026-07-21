@@ -36,26 +36,31 @@ func is_empty() -> bool:
 	return not is_tool and _get_card() == null
 
 
-func _get_card() -> IngredientCard:
+func _get_card() -> Card:
 	for ch in _holder.get_children():
-		if ch is IngredientCard:
+		if ch is Card:
 			return ch
 	return null
 
 
 ## 창고에서 꺼낸 재료를 신규 배치.
 func place_new(id: String) -> void:
-	if not is_empty():
-		return
 	var card := IngredientCard.new()
 	card.setup(id)
+	place_card(card)
+
+
+## 이미 만들어진 카드(재료·주문서 등)를 배치.
+func place_card(card: Card) -> void:
+	if not is_empty() or card == null:
+		return
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
 
 
 ## 다른 슬롯에서 카드를 옮겨오기.
-func take_card(card: IngredientCard) -> void:
+func take_card(card: Card) -> void:
 	if not is_empty() or card == null or not is_instance_valid(card):
 		return
 	var prev := card.get_parent()
