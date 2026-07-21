@@ -39,6 +39,17 @@ func _get_card() -> Card:
 	return null
 
 
+func get_card() -> Card:
+	return _get_card()
+
+
+func clear() -> void:
+	var c := _get_card()
+	if c:
+		_holder.remove_child(c)
+		c.queue_free()
+
+
 func place_new(id: String) -> void:
 	var card := IngredientCard.new()
 	card.setup(id)
