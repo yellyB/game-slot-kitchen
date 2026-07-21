@@ -43,6 +43,19 @@ func _get_card() -> Card:
 	return null
 
 
+## 현재 놓인 카드(없으면 null).
+func get_card() -> Card:
+	return _get_card()
+
+
+## 카드 제거 + 슬롯 비우기 (조리 재료 소비 등).
+func clear() -> void:
+	var c := _get_card()
+	if c:
+		_holder.remove_child(c)
+		c.queue_free()
+
+
 ## 창고에서 꺼낸 재료를 신규 배치.
 func place_new(id: String) -> void:
 	var card := IngredientCard.new()
