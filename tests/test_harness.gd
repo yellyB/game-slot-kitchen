@@ -30,6 +30,7 @@ func _cases() -> Array:
 		_t_session_cleanup,
 		_t_trash_rules,
 		_t_board_full_quick,
+		_t_buff_cap,
 	]
 
 
@@ -60,7 +61,8 @@ func _t_buffs_over_slots() -> void:
 	var placed := 0
 	for sl in _m._board.slots:
 		if sl.get_card() is BuffCard: placed += 1
-	_check("버프>슬롯: 슬롯 수만큼만 배치(크래시X)", placed == _m._board.slots.size())
+	_check("버프 배치 = 보유 캡(%d)" % Config.MAX_BUFFS, placed == Config.MAX_BUFFS)
+	_check("버프 캡으로 여유 슬롯 남음(softlock 방지)", _m._board.first_empty_slot() != null)
 	_reset()
 
 
@@ -109,6 +111,13 @@ func _t_board_full_quick() -> void:
 		sl.place_new("flour")
 	var ok := Move.quick({"kind": "new", "id": "egg"})
 	_check("판꽉참: quick 배치 거부(크래시X)", ok == false)
+	_reset()
+
+
+func _t_buff_cap() -> void:
+	Buffs.clear()
+	for i in 5: Buffs.add("cook")
+	_check("버프 보유 상한 %d장" % Config.MAX_BUFFS, Buffs.owned().size() == Config.MAX_BUFFS)
 	_reset()
 
 
