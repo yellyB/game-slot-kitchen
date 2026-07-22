@@ -19,4 +19,13 @@ const PATIENCE_DISH := 60.0   # 음식 대기(슬롯 주문 카드)
 const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨강
 
 # ── 경제 ──────────────────────────────────────────────────
-const START_MONEY := 0  # 시작 소지금 (가게세·경제는 단계 6)
+const START_MONEY := 0     # 시작 소지금
+const RENT_START := 60      # 1일차 가게세
+const RENT_GROWTH := 1.5    # 매일 가게세 배율(올림)
+
+# ── 세션 / 하루 ───────────────────────────────────────────
+const DAY_LENGTH := 45.0        # 영업시간(초)
+const WAVES := 3                # 웨이브 수
+const CUSTOMERS_PER_WAVE := 3   # 웨이브당 손님
+const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)
+const DAYS_TO_WIN := 5          # 이 일차 통과하면 승리
