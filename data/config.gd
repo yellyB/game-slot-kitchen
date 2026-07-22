@@ -17,6 +17,7 @@ const START_MONEY := 0
 const RENT_START := 60
 const RENT_GROWTH := 1.5
 const SLOT_PRICE := 50
+const BUFF_PACK_PRICE := 40
 
 const DAY_LENGTH := 45.0
 const WAVES := 3

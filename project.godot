@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Move="*res://scripts/move_controller.gd"
+Buffs="*res://scripts/buffs.gd"
 
 [display]
 
