@@ -294,7 +294,10 @@ func _on_day_started(day: int, rent: int) -> void:
 	_hours_bar.value = 0
 	_warehouse.visible = false
 	_cooking.visible = false
-	_reset_board()
+	Move.clear()
+	_board.rebuild(_session.slots)
+	for c in _queue_row.get_children():
+		c.queue_free()
 	_refresh_warehouse()
 
 
@@ -312,7 +315,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.sep() \
 			.row("남음  %d" % summary["cash_after"], Palette.COCOA_800) \
 			.row("통과! ✅", Palette.SUCCESS) \
-			.button("다음날", _session.advance_day)
+			.button("상점으로", _open_shop)
 	else:
 		Modal.open(self) \
 			.title("폐업 😢") \
@@ -321,14 +324,11 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.button("다시 시작", _session.start_run)
 
 
-func _reset_board() -> void:
-	Move.clear()
-	for s in _board.slots:
-		s.clear()
-	for t in _board.tools:
-		t.reset()
-	for c in _queue_row.get_children():
-		c.queue_free()
+func _open_shop() -> void:
+	var shop := Shop.new()
+	shop.session = _session
+	shop.start_business.connect(_session.advance_day)
+	add_child(shop)
 
 
 func _make_bottom_button(color: Color) -> Button:
