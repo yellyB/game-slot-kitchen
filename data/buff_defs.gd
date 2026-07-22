@@ -2,6 +2,11 @@ class_name BuffDefs
 extends RefCounted
 ## 버프 정의 — 단순 패시브(자동 적용). 곱연산 스택.
 ## stat: cook_mult(조리시간) · price_mult(판매가) · patience_mult(인내심) · warehouse_mult(창고비용)
+##
+## [버프 추가 규칙] 효과는 Stats(수치 단일 관리소)로 표현 가능해야 한다.
+##  - 기존 stat 재사용: 여기 항목 한 줄만 추가(코드 변경 0).
+##  - 새 대상 값: 여기 + Stats에 getter 하나 추가, 소비처는 그 getter만 조회.
+##  - Stats 배율로 표현 불가한 특수 효과(분기·이벤트성): 추가 재고(무분별한 분기 금지).
 
 const ALL := {
 	"cook":      {"name": "조리 속도", "icon": "⚡", "stat": "cook_mult", "value": 0.85, "label": "-15%"},
