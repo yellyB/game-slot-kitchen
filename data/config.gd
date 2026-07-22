@@ -23,6 +23,7 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 const START_MONEY := 0     # 시작 소지금
 const SLOT_PRICE := 6       # 슬롯 +1 확장 가격(상점)
 const BUFF_PACK_PRICE := 4  # 버프 팩(카드깡) 가격
+const MAX_BUFFS := 3        # 버프 보유 상한 (슬롯 점유 → 소프트락 방지)
 # (가게세는 하루별 → data/levels.gd)
 
 # ── 세션 / 하루 ───────────────────────────────────────────

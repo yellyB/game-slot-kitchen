@@ -200,7 +200,7 @@ func _refresh() -> void:
 	var can_slot := session.cash >= Config.SLOT_PRICE and session.slots < Config.MAX_SLOTS
 	_buy_slot_btn.disabled = not can_slot
 	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-	var can_draw := session.cash >= Config.BUFF_PACK_PRICE
+	var can_draw := session.cash >= Config.BUFF_PACK_PRICE and not Buffs.is_full()
 	_draw_btn.disabled = not can_draw
 	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 

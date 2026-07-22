@@ -8,7 +8,12 @@ func clear() -> void:
 	_owned.clear()
 
 func add(id: String) -> void:
+	if _owned.size() >= Config.MAX_BUFFS:
+		return
 	_owned.append(id)
+
+func is_full() -> bool:
+	return _owned.size() >= Config.MAX_BUFFS
 
 func owned() -> Array[String]:
 	return _owned
