@@ -41,7 +41,8 @@ func _ready() -> void:
 	margin.add_child(col)
 
 	col.add_child(_build_top_bar())
-	col.add_child(_build_debug())
+	if OS.is_debug_build():   # 운영(릴리스) 빌드에선 디버그 바 숨김
+		col.add_child(_build_debug())
 	col.add_child(_build_customer_queue())
 
 	_board = Board.new()
