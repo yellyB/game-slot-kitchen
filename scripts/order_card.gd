@@ -10,6 +10,7 @@ signal served(card: OrderCard, dish: DishCard)
 
 var recipe_id: String
 
+var _max := Config.PATIENCE_DISH
 var _time_left := Config.PATIENCE_DISH
 var _done := false
 var _fill := Palette.SUB
@@ -69,8 +70,10 @@ func _build_content() -> void:
 	# 음식 대기 인내심 게이지
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
-	_gauge.max_value = Config.PATIENCE_DISH
-	_gauge.value = Config.PATIENCE_DISH
+	_max = Stats.dish_patience()
+	_time_left = _max
+	_gauge.max_value = _max
+	_gauge.value = _max
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 6)
 	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -98,7 +101,7 @@ func _process(delta: float) -> void:
 		return
 	_time_left -= delta
 	_gauge.value = _time_left
-	var col := Palette.DANGER if _time_left <= Config.PATIENCE_DISH * Config.PATIENCE_LOW_FRAC else Palette.SUB
+	var col := Palette.DANGER if _time_left <= _max * Config.PATIENCE_LOW_FRAC else Palette.SUB
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", UI.chip(col))

@@ -73,7 +73,7 @@ func start_cooking(id: String) -> void:
 	if state != State.IDLE:
 		return
 	recipe_id = id
-	_cook_total = float(Recipes.get_def(id).get("cook_time", 5.0))
+	_cook_total = Stats.cook_time(id)
 	_cook_left = _cook_total
 	state = State.COOKING
 	_clear_holder()

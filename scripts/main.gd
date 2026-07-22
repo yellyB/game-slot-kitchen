@@ -235,7 +235,7 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 func _close_sheets() -> void:
 	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
 	if _warehouse.visible:
-		_session.spend_time(Config.WAREHOUSE_EXIT_COST)
+		_session.spend_time(Stats.warehouse_cost())
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
@@ -301,7 +301,7 @@ func _on_order_expired(order: OrderCard) -> void:
 
 ## 완성품이 매칭 주문 카드에 서빙됨 → 돈 + 손님 퇴장 + 슬롯/도구 회복.
 func _on_served(order: OrderCard, dish: DishCard) -> void:
-	var price := int(Recipes.get_def(order.recipe_id).get("price", 0))
+	var price := Stats.sell_price(order.recipe_id)
 	_session.earn(price)
 	_spawn_floating("+%d" % price, order.global_position + order.size * 0.5, Palette.ACCENT)
 
@@ -381,6 +381,13 @@ func _on_day_started(day: int, rent: int) -> void:
 	# 슬롯 수만큼 보드 재구성(상점 확장 반영), 큐 비움
 	Move.clear()
 	_board.rebuild(_session.slots)
+	# 보유 버프는 슬롯을 점유(배치형) — 작업공간과 트레이드오프
+	for id in Buffs.owned():
+		var slot := _board.first_empty_slot()
+		if slot:
+			var bc := BuffCard.new()
+			bc.setup(id)
+			slot.place_card(bc)
 	for c in _queue_row.get_children():
 		c.queue_free()
 	_refresh_warehouse()
