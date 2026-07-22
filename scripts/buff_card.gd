@@ -1,7 +1,8 @@
 class_name BuffCard
 extends Card
 ## 슬롯에 놓이는 버프 카드(배치형). 슬롯 한 칸을 점유 → 작업공간과 트레이드오프.
-## 넣고빼기(이동)는 나중 구현 — 지금은 뽑으면 세션 시작 시 슬롯 자동 점유.
+## 이동(클릭/드래그, 슬롯↔슬롯)은 Card 베이스에서 제공. 휴지통엔 못 버림.
+## (효과는 현재 '보유' 기준 — 슬롯에서 빼도 비활성화되진 않음. 빼기=비활성은 나중.)
 
 var buff_id: String
 
@@ -11,15 +12,9 @@ func setup(id: String) -> void:
 func is_trashable() -> bool:
 	return false
 
-# 이동은 나중 — 지금은 선택/드래그 비활성(슬롯 점유만)
-func get_move_payload() -> Dictionary:
-	return {}
-
-func _get_drag_data(_at_position: Vector2) -> Variant:
-	return null
-
-func _gui_input(_event: InputEvent) -> void:
-	pass
+# 선택 하이라이트: 버프 정체성(MAIN 테두리) 유지하며 두께만
+func set_selected(sel: bool) -> void:
+	_style.set_border_width_all(3 if sel else 2)
 
 func _build_content() -> void:
 	var def := BuffDefs.get_def(buff_id)
