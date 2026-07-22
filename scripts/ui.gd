@@ -29,6 +29,17 @@ static func chip(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
 		s.border_color = border
 	return s
 
+static func sheet() -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = Palette.WHITE
+	s.set_corner_radius_all(18)
+	s.set_border_width_all(1)
+	s.border_color = Palette.COCOA_200
+	s.shadow_color = Color(0.164, 0.129, 0.106, 0.18)
+	s.shadow_size = 8
+	s.shadow_offset = Vector2(0, -2)
+	return s
+
 static func card(bg: Color, border: Color = Color.TRANSPARENT, w := 1, radius := 14) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = bg
