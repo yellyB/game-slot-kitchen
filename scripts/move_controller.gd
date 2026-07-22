@@ -11,6 +11,10 @@ func has_selection() -> bool:
 
 
 func on_click(node: Object) -> void:
+	if _source != null and not is_instance_valid(_source):
+		_payload = {}
+		_source = null
+
 	if node == _source:
 		clear()
 		return
