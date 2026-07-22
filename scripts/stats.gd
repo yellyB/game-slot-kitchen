@@ -11,7 +11,27 @@ static func cook_time(recipe_id: String) -> float:
 	return Buffs.mod("cook_mult", float(Recipes.get_def(recipe_id).get("cook_time", 5.0)))
 
 static func sell_price(recipe_id: String) -> int:
-	return int(round(Buffs.mod("price_mult", Recipes.get_def(recipe_id).get("price", 0))))
+	var def := Recipes.get_def(recipe_id)
+	var p := Buffs.mod("price_mult", float(def.get("price", 0)))
+	p = Buffs.mod("price_mult_" + str(def.get("tag", "")), p)
+	return int(round(p))
 
 static func warehouse_cost() -> float:
 	return Buffs.mod("warehouse_mult", Config.WAREHOUSE_EXIT_COST)
+
+static func random_recipe() -> String:
+	var ids := Recipes.all_ids()
+	var weights := []
+	var total := 0.0
+	for id in ids:
+		var tag := str(Recipes.get_def(id).get("tag", ""))
+		var w := Buffs.mod("demand_" + tag, 1.0)
+		weights.append(w)
+		total += w
+	var r := randf() * total
+	var acc := 0.0
+	for i in ids.size():
+		acc += weights[i]
+		if r <= acc:
+			return ids[i]
+	return ids[ids.size() - 1]

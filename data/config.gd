@@ -2,7 +2,7 @@ class_name Config
 extends RefCounted
 
 const BOARD_COLS := 3
-const START_SLOTS := 7
+const START_SLOTS := 9
 const TOOL_COUNT := 2
 const MAX_SLOTS := 10
 
@@ -16,7 +16,7 @@ const PATIENCE_LOW_FRAC := 0.3
 const START_MONEY := 0
 const SLOT_PRICE := 5
 const BUFF_PACK_PRICE := 2
-const MAX_BUFFS := 3
+const MAX_BUFFS := 5
 
 const DAY_LENGTH := 45.0
 const WAVES := 3

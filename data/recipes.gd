@@ -2,9 +2,9 @@ class_name Recipes
 extends RefCounted
 
 const ALL := {
-	"glazed": {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 2},
-	"choco":  {"name": "초코도넛",   "icon": "🍩", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 3},
-	"coffee": {"name": "커피",       "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1},
+	"glazed": {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 2, "tag": "donut"},
+	"choco":  {"name": "초코도넛",   "icon": "🍩", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 3, "tag": "donut"},
+	"coffee": {"name": "커피",       "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1, "tag": "drink"},
 }
 
 static func all_ids() -> Array:
