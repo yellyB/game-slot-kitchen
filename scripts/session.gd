@@ -13,6 +13,7 @@ var cash := 0
 var day := 1
 var rent := 0
 var day_revenue := 0
+var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장으로 증가)
 
 var _elapsed := 0.0
 var _running := false
@@ -24,8 +25,19 @@ func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
 	rent = Config.RENT_START
+	slots = Config.START_SLOTS
 	cash_changed.emit(cash)
 	start_day()
+
+
+## 상점: 슬롯 +1 구매. 성공 시 true(다음 세션부터 반영).
+func buy_slot() -> bool:
+	if cash < Config.SLOT_PRICE or slots >= Config.MAX_SLOTS:
+		return false
+	cash -= Config.SLOT_PRICE
+	slots += 1
+	cash_changed.emit(cash)
+	return true
 
 
 func advance_day() -> void:

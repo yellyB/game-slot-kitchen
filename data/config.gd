@@ -6,8 +6,9 @@ extends RefCounted
 
 # ── 보드 (슬롯 그리드) ────────────────────────────────────
 const BOARD_COLS := 3
-const BOARD_SLOTS := 9
-const TOOL_SLOTS := [2, 8]   # 도구석(🔥) 위치 — 재료/카드 못 들어옴
+const START_SLOTS := 7   # 시작 슬롯 수(도구석 제외). 상점에서 확장.
+const TOOL_COUNT := 2    # 도구석(🔥) 개수 — 그리드 마지막 칸들에 배치
+const MAX_SLOTS := 10    # 슬롯 확장 상한
 
 # ── 손님 큐 / 스포너 ──────────────────────────────────────
 const MAX_QUEUE := 4          # 큐 최대 인원
@@ -22,6 +23,7 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 const START_MONEY := 0     # 시작 소지금
 const RENT_START := 60      # 1일차 가게세
 const RENT_GROWTH := 1.5    # 매일 가게세 배율(올림)
+const SLOT_PRICE := 50      # 슬롯 +1 확장 가격(상점)
 
 # ── 세션 / 하루 ───────────────────────────────────────────
 const DAY_LENGTH := 45.0        # 영업시간(초)
