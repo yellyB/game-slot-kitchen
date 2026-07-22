@@ -14,8 +14,8 @@ const PATIENCE_DISH := 60.0
 const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
-const SLOT_PRICE := 6
-const BUFF_PACK_PRICE := 4
+const SLOT_PRICE := 5
+const BUFF_PACK_PRICE := 2
 const MAX_BUFFS := 3
 
 const DAY_LENGTH := 45.0
