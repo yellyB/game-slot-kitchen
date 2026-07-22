@@ -8,6 +8,7 @@ var _warehouse: Warehouse
 var _cooking: Cooking
 var _backdrop: ColorRect
 var _session: Session
+var _title: TitleScreen
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
@@ -86,7 +87,20 @@ func _ready() -> void:
 	_session.day_started.connect(_on_day_started)
 	_session.day_ended.connect(_on_day_ended)
 	add_child(_session)
+
+	# 시작(타이틀) 화면 — 앱 실행 시 게임 위에 덮음. [시작] → 게임 시작.
+	_title = TitleScreen.new()
+	_title.start_pressed.connect(_start_game)
+	add_child(_title)
+
+
+func _start_game() -> void:
+	_title.hide()
 	_session.start_run()
+
+
+func _show_title() -> void:
+	_title.show()
 
 
 # ── 상단바: 일차·돈·가게세 + 영업시간 바 ──────────────────────
@@ -398,7 +412,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 		Modal.open(self) \
 			.title("승리! 🎉") \
 			.row("%d일 완주" % Config.DAYS_TO_WIN, Palette.SUCCESS) \
-			.button("다시 시작", _session.start_run)
+			.button("처음으로", _show_title)
 	elif summary["passed"]:
 		Modal.open(self) \
 			.title("%d일차 마감" % summary["day"]) \
@@ -413,7 +427,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.title("폐업 😢") \
 			.row("%d일차에서 끝" % summary["day"]) \
 			.row("매출 %d < 가게세 %d" % [summary["revenue"], summary["rent"]], Palette.DANGER) \
-			.button("다시 시작", _session.start_run)
+			.button("처음으로", _show_title)
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
