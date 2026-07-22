@@ -62,6 +62,8 @@ func _ready() -> void:
 	_cooking.cooked.connect(_refresh_warehouse)
 
 	Move.performed.connect(_refresh_warehouse)
+	# quick 동작(창고 클릭)의 기본 타깃 = 첫 빈 슬롯
+	Move.default_target = func(_payload): return _board.first_empty_slot()
 
 	# 세션(하루 루프)
 	_session = Session.new()

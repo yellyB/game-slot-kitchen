@@ -31,6 +31,10 @@ func _ready() -> void:
 func get_move_payload() -> Dictionary:
 	return {"kind": "new", "id": ing_id}
 
+## 클릭하면 (선택이 아니라) 첫 빈 슬롯에 즉시 배치.
+func is_quick() -> bool:
+	return true
+
 
 func set_selected(sel: bool) -> void:
 	_selected = sel
