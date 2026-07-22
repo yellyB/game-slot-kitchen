@@ -93,6 +93,10 @@ func _ready() -> void:
 	_title.start_pressed.connect(_start_game)
 	add_child(_title)
 
+	# 개발용 테스트 하니스 (릴리스엔 영향 없음): godot4 ... -- --test
+	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
+		await TestHarness.new().run(self)
+
 
 func _start_game() -> void:
 	_title.hide()
