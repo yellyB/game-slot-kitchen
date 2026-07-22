@@ -60,6 +60,19 @@ func is_running() -> bool:
 	return _running
 
 
+# ── 디버그 ────────────────────────────────────────────────
+func add_cash(amount: int) -> void:  # 매출 집계 없이 소지금만
+	cash += amount
+	cash_changed.emit(cash)
+
+
+func debug_end_soon(remaining := 1.0) -> void:  # 오늘 remaining초 남게
+	if not _running:
+		return
+	_elapsed = maxf(_elapsed, Config.DAY_LENGTH - remaining)
+	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+
+
 ## 영업시간 소모(창고 트립 비용 등). 시간 넘기면 마감.
 func spend_time(seconds: float) -> void:
 	if not _running:

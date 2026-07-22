@@ -41,6 +41,7 @@ func _ready() -> void:
 	margin.add_child(col)
 
 	col.add_child(_build_top_bar())
+	col.add_child(_build_debug())
 	col.add_child(_build_customer_queue())
 
 	_board = Board.new()
@@ -148,6 +149,28 @@ func _build_top_bar() -> Control:
 	hours.add_child(UI.label("🌙", 14, Palette.COCOA_400))
 
 	return panel
+
+
+# ── 디버그 바 (개발용) ────────────────────────────────────
+func _build_debug() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
+	row.add_child(_debug_btn("돈+10만", func(): _session.add_cash(100000)))
+	row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
+	return row
+
+
+func _debug_btn(text: String, cb: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.add_theme_font_size_override("font_size", 12)
+	b.add_theme_color_override("font_color", Palette.COCOA_800)
+	b.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	b.pressed.connect(cb)
+	return b
 
 
 # ── 손님 큐 ───────────────────────────────────────────────
