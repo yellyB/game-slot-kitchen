@@ -22,14 +22,16 @@ static func sell_price(recipe_id: String) -> int:
 static func warehouse_cost() -> float:
 	return Buffs.mod("warehouse_mult", Config.WAREHOUSE_EXIT_COST)
 
-## 손님이 주문할 레시피 뽑기 — 수요 버프(demand_<tag>)로 가중.
+## 손님이 주문할 레시피 뽑기 — 등급이 높을수록(비쌀수록) 기본 확률↓, 수요 버프(demand_<tag>)로 가중.
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()
 	var weights := []
 	var total := 0.0
 	for id in ids:
-		var tag := str(Recipes.get_def(id).get("tag", ""))
-		var w := Buffs.mod("demand_" + tag, 1.0)  # 기본 1 × 수요 버프
+		var def := Recipes.get_def(id)
+		var tier := int(def.get("tier", 1))
+		var base := maxf(1.0, 7.0 - tier)          # tier1=6 … tier6=1 (비쌀수록 희귀)
+		var w := Buffs.mod("demand_" + str(def.get("tag", "")), base)
 		weights.append(w)
 		total += w
 	var r := randf() * total

@@ -3,10 +3,15 @@ extends RefCounted
 ## 레시피 정의 — 요리명 · 아이콘 · 필요재료[] · 조리시간(초).
 ## 재료 id는 Ingredients와 일치. 아이콘은 이모지 placeholder.
 
+## 메뉴 6개 — 등급 1~6, 가격 1~30원(비쌀수록 수요↓, Stats.random_recipe에서 등급 가중).
+## 종류/테마는 placeholder(미정) — 나중에 이름·아이콘·재료 교체. 경제·수요 곡선용.
 const ALL := {
-	"glazed": {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 2, "tag": "donut"},
-	"choco":  {"name": "초코도넛",   "icon": "🍩", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 3, "tag": "donut"},
-	"coffee": {"name": "커피",       "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1, "tag": "drink"},
+	"coffee":  {"name": "커피",     "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1,  "tag": "drink", "tier": 1},
+	"glazed":  {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 3,  "tag": "donut", "tier": 2},
+	"latte":   {"name": "라떼",     "icon": "🥛", "ingredients": ["bean", "milk", "water"], "cook_time": 4.0, "price": 6,  "tag": "drink", "tier": 3},
+	"choco":   {"name": "초코도넛",  "icon": "🍪", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 10, "tag": "donut", "tier": 4},
+	"cream":   {"name": "크림도넛",  "icon": "🧁", "ingredients": ["flour", "egg", "milk", "sugar"], "cook_time": 6.0, "price": 18, "tag": "donut", "tier": 5},
+	"special": {"name": "스페셜",    "icon": "🥯", "ingredients": ["flour", "egg", "chocolate", "milk"], "cook_time": 7.0, "price": 30, "tag": "donut", "tier": 6},
 }
 
 static func all_ids() -> Array:
