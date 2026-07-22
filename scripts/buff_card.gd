@@ -9,14 +9,8 @@ func setup(id: String) -> void:
 func is_trashable() -> bool:
 	return false
 
-func get_move_payload() -> Dictionary:
-	return {}
-
-func _get_drag_data(_at_position: Vector2) -> Variant:
-	return null
-
-func _gui_input(_event: InputEvent) -> void:
-	pass
+func set_selected(sel: bool) -> void:
+	_style.set_border_width_all(3 if sel else 2)
 
 func _build_content() -> void:
 	var def := BuffDefs.get_def(buff_id)
