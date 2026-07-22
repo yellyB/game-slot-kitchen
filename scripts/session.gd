@@ -26,6 +26,7 @@ func start_run() -> void:
 	day = 1
 	rent = Config.RENT_START
 	slots = Config.START_SLOTS
+	Buffs.clear()
 	cash_changed.emit(cash)
 	start_day()
 
@@ -38,6 +39,15 @@ func buy_slot() -> bool:
 	slots += 1
 	cash_changed.emit(cash)
 	return true
+
+
+## 상점: 버프 팩 구매 → 3개 랜덤 반환(택1은 호출 측). 못 사면 [].
+func buy_buff_pack() -> Array:
+	if cash < Config.BUFF_PACK_PRICE:
+		return []
+	cash -= Config.BUFF_PACK_PRICE
+	cash_changed.emit(cash)
+	return BuffDefs.random_pack(3)
 
 
 func advance_day() -> void:

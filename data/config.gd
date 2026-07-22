@@ -24,6 +24,7 @@ const START_MONEY := 0     # 시작 소지금
 const RENT_START := 60      # 1일차 가게세
 const RENT_GROWTH := 1.5    # 매일 가게세 배율(올림)
 const SLOT_PRICE := 50      # 슬롯 +1 확장 가격(상점)
+const BUFF_PACK_PRICE := 40 # 버프 팩(카드깡) 가격
 
 # ── 세션 / 하루 ───────────────────────────────────────────
 const DAY_LENGTH := 45.0        # 영업시간(초)
