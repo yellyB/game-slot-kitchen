@@ -84,6 +84,9 @@ func _ready() -> void:
 	_title.start_pressed.connect(_start_game)
 	add_child(_title)
 
+	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
+		await TestHarness.new().run(self)
+
 
 func _start_game() -> void:
 	_title.hide()
