@@ -3,6 +3,7 @@ extends Control
 var _board: Board
 var _warehouse: Warehouse
 var _cooking: Cooking
+var _backdrop: ColorRect
 var _session: Session
 
 var _warehouse_btn: Button
@@ -49,12 +50,21 @@ func _ready() -> void:
 
 	col.add_child(_build_bottom_buttons())
 
+	_backdrop = ColorRect.new()
+	_backdrop.color = Color(0.164, 0.129, 0.106, 0.28)
+	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_backdrop.visible = false
+	_backdrop.gui_input.connect(_on_backdrop_input)
+	add_child(_backdrop)
+
 	_warehouse = Warehouse.new()
+	_warehouse.close_requested.connect(_close_sheets)
 	add_child(_warehouse)
 	_cooking = Cooking.new()
-	add_child(_cooking)
 	_cooking.board = _board
-	_cooking.cooked.connect(_refresh_warehouse)
+	_cooking.close_requested.connect(_close_sheets)
+	_cooking.cooked.connect(_on_cooked)
+	add_child(_cooking)
 
 	Move.performed.connect(_refresh_warehouse)
 	Move.default_target = func(_payload): return _board.first_empty_slot()
@@ -165,16 +175,39 @@ func _build_bottom_buttons() -> Control:
 
 
 func _toggle_warehouse() -> void:
-	var show := not _warehouse.visible
+	if _warehouse.visible:
+		_close_sheets()
+	else:
+		_open_warehouse()
+
+
+func _open_warehouse() -> void:
 	_cooking.visible = false
-	_warehouse.visible = show
-	if show:
-		_refresh_warehouse()
+	_warehouse.visible = true
+	_backdrop.visible = true
+	_refresh_warehouse()
 
 
 func _on_tool_tapped(tool: ToolStation) -> void:
 	_warehouse.visible = false
+	_backdrop.visible = true
 	_cooking.open_for(tool)
+
+
+func _close_sheets() -> void:
+	_warehouse.visible = false
+	_cooking.visible = false
+	_backdrop.visible = false
+
+
+func _on_cooked() -> void:
+	_close_sheets()
+	_refresh_warehouse()
+
+
+func _on_backdrop_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_close_sheets()
 
 
 func _refresh_warehouse() -> void:
@@ -292,8 +325,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = "%d일차" % day
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
-	_warehouse.visible = false
-	_cooking.visible = false
+	_close_sheets()
 	Move.clear()
 	_board.rebuild(_session.slots)
 	for c in _queue_row.get_children():

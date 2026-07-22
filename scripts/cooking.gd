@@ -2,6 +2,7 @@ class_name Cooking
 extends Panel
 
 signal cooked
+signal close_requested
 
 var board: Board
 var _entries: Array[Button] = []
@@ -42,7 +43,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	close.pressed.connect(func(): visible = false)
+	close.pressed.connect(func(): close_requested.emit())
 	header.add_child(close)
 
 	for id in Recipes.all_ids():
@@ -105,6 +106,5 @@ func _select(id: String) -> void:
 		return
 	board.consume_ingredients(id)
 	_active_tool.start_cooking(id)
-	visible = false
 	_active_tool = null
 	cooked.emit()

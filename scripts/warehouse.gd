@@ -1,6 +1,8 @@
 class_name Warehouse
 extends Panel
 
+signal close_requested
+
 var _tiles: Array[IngredientTile] = []
 
 func _ready() -> void:
@@ -38,7 +40,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	close.pressed.connect(func(): visible = false)
+	close.pressed.connect(func(): close_requested.emit())
 	header.add_child(close)
 
 	var grid := GridContainer.new()
