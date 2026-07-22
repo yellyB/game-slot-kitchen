@@ -411,7 +411,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 	if summary["won"]:
 		Modal.open(self) \
 			.title("승리! 🎉") \
-			.row("%d일 완주" % Config.DAYS_TO_WIN, Palette.SUCCESS) \
+			.row("%d일 완주" % Levels.count(), Palette.SUCCESS) \
 			.button("처음으로", _show_title)
 	elif summary["passed"]:
 		Modal.open(self) \
