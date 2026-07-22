@@ -31,3 +31,4 @@ const WAVES := 3                # 웨이브 수
 const CUSTOMERS_PER_WAVE := 3   # 웨이브당 손님
 const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)
 const DAYS_TO_WIN := 5          # 이 일차 통과하면 승리
+const WAREHOUSE_EXIT_COST := 3.0  # 창고 닫을 때(퇴장) 소모 영업시간(초) — 트립 비용

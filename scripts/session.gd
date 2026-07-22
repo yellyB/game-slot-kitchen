@@ -56,6 +56,20 @@ func start_day() -> void:
 	progress.emit(0.0)
 
 
+func is_running() -> bool:
+	return _running
+
+
+## 영업시간 소모(창고 트립 비용 등). 시간 넘기면 마감.
+func spend_time(seconds: float) -> void:
+	if not _running:
+		return
+	_elapsed += seconds
+	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	if _elapsed >= Config.DAY_LENGTH:
+		_end_day()
+
+
 ## 서빙 매출.
 func earn(amount: int) -> void:
 	cash += amount

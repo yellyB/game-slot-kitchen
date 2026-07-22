@@ -209,6 +209,9 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 
 
 func _close_sheets() -> void:
+	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
+	if _warehouse.visible:
+		_session.spend_time(Config.WAREHOUSE_EXIT_COST)
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
@@ -347,8 +350,11 @@ func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = "%d일차" % day
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
-	_close_sheets()
-	# 새 세션: 슬롯 수만큼 보드 재구성(상점 확장 반영), 큐 비움
+	# 새 세션 시작 — 시트 강제 닫기(트립 비용 없음)
+	_warehouse.visible = false
+	_cooking.visible = false
+	_backdrop.visible = false
+	# 슬롯 수만큼 보드 재구성(상점 확장 반영), 큐 비움
 	Move.clear()
 	_board.rebuild(_session.slots)
 	for c in _queue_row.get_children():
