@@ -3,7 +3,8 @@ extends Panel
 ## 조리 레시피 팝업 + B안 오케스트레이션.
 ## 도구석 탭 → open_for(tool). 재료 다 있는 레시피만 활성. 선택 시 소비 + 조리 시작.
 
-signal cooked  ## 조리 시작(재료 소비)됨 → 보드 상태 갱신용
+signal cooked          ## 조리 시작(재료 소비)됨 → 보드 상태 갱신용
+signal close_requested ## ✕ 닫기
 
 var board: Board  # main이 주입
 var _entries: Array[Button] = []
@@ -44,7 +45,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	close.pressed.connect(func(): visible = false)
+	close.pressed.connect(func(): close_requested.emit())
 	header.add_child(close)
 
 	for id in Recipes.all_ids():
@@ -108,6 +109,5 @@ func _select(id: String) -> void:
 		return
 	board.consume_ingredients(id)
 	_active_tool.start_cooking(id)
-	visible = false
 	_active_tool = null
-	cooked.emit()
+	cooked.emit()  # main이 닫기 + 갱신

@@ -3,6 +3,8 @@ extends Panel
 ## 창고 하단 시트 — 해금된 재료 타일. 타일은 Move 소스(드래그/클릭으로 슬롯 배치).
 ## 보드가 꽉 차면 refresh(true)로 타일 비활성.
 
+signal close_requested
+
 var _tiles: Array[IngredientTile] = []
 
 func _ready() -> void:
@@ -40,7 +42,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	close.pressed.connect(func(): visible = false)
+	close.pressed.connect(func(): close_requested.emit())
 	header.add_child(close)
 
 	var grid := GridContainer.new()
