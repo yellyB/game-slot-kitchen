@@ -219,7 +219,7 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 
 func _close_sheets() -> void:
 	if _warehouse.visible:
-		_session.spend_time(Config.WAREHOUSE_EXIT_COST)
+		_session.spend_time(Stats.warehouse_cost())
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
@@ -281,7 +281,7 @@ func _on_order_expired(order: OrderCard) -> void:
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
-	var price := int(Recipes.get_def(order.recipe_id).get("price", 0))
+	var price := Stats.sell_price(order.recipe_id)
 	_session.earn(price)
 	_spawn_floating("+%d" % price, order.global_position + order.size * 0.5, Palette.ACCENT)
 
@@ -355,6 +355,12 @@ func _on_day_started(day: int, rent: int) -> void:
 	_backdrop.visible = false
 	Move.clear()
 	_board.rebuild(_session.slots)
+	for id in Buffs.owned():
+		var slot := _board.first_empty_slot()
+		if slot:
+			var bc := BuffCard.new()
+			bc.setup(id)
+			slot.place_card(bc)
 	for c in _queue_row.get_children():
 		c.queue_free()
 	_refresh_warehouse()

@@ -6,7 +6,8 @@ signal expired(customer: Customer)
 
 var recipe_id: String
 
-var _time_left := Config.PATIENCE_ORDER
+var _max := Config.PATIENCE_ORDER
+var _time_left := 0.0
 var _done := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
@@ -15,6 +16,8 @@ func setup(id: String) -> void:
 	recipe_id = id
 
 func _ready() -> void:
+	_max = Stats.order_patience()
+	_time_left = _max
 	custom_minimum_size = Vector2(66, 92)
 	add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12))
 
@@ -34,8 +37,8 @@ func _ready() -> void:
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
-	_gauge.max_value = Config.PATIENCE_ORDER
-	_gauge.value = Config.PATIENCE_ORDER
+	_gauge.max_value = _max
+	_gauge.value = _max
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
 	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
@@ -57,7 +60,7 @@ func _process(delta: float) -> void:
 		return
 	_time_left -= delta
 	_gauge.value = _time_left
-	var col := Palette.DANGER if _time_left <= Config.PATIENCE_ORDER * Config.PATIENCE_LOW_FRAC else Palette.SUCCESS
+	var col := Palette.DANGER if _time_left <= _max * Config.PATIENCE_LOW_FRAC else Palette.SUCCESS
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", UI.chip(col))
