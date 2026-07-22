@@ -195,6 +195,8 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 
 
 func _close_sheets() -> void:
+	if _warehouse.visible:
+		_session.spend_time(Config.WAREHOUSE_EXIT_COST)
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
@@ -325,7 +327,9 @@ func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = "%d일차" % day
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
-	_close_sheets()
+	_warehouse.visible = false
+	_cooking.visible = false
+	_backdrop.visible = false
 	Move.clear()
 	_board.rebuild(_session.slots)
 	for c in _queue_row.get_children():

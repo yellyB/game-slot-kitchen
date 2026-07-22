@@ -23,3 +23,4 @@ const WAVES := 3
 const CUSTOMERS_PER_WAVE := 3
 const WAVE_SPACING := 0.7
 const DAYS_TO_WIN := 5
+const WAREHOUSE_EXIT_COST := 3.0

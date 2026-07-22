@@ -53,6 +53,19 @@ func start_day() -> void:
 	progress.emit(0.0)
 
 
+func is_running() -> bool:
+	return _running
+
+
+func spend_time(seconds: float) -> void:
+	if not _running:
+		return
+	_elapsed += seconds
+	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	if _elapsed >= Config.DAY_LENGTH:
+		_end_day()
+
+
 func earn(amount: int) -> void:
 	cash += amount
 	day_revenue += amount
