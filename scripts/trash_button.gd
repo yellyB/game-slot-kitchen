@@ -12,6 +12,8 @@ func can_accept(payload: Dictionary) -> bool:
 	if payload.get("kind") != "move":
 		return false
 	var card = payload.get("card")
+	if card == null or not is_instance_valid(card):
+		return false
 	return card is Card and card.is_trashable()
 
 

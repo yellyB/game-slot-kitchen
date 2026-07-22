@@ -21,6 +21,11 @@ func has_selection() -> bool:
 
 ## 인터랙티브 요소를 클릭했을 때 호출.
 func on_click(node: Object) -> void:
+	# 선택된 소스가 그새 free됐으면(주문 만료·재료 소비 등) 선택 정리
+	if _source != null and not is_instance_valid(_source):
+		_payload = {}
+		_source = null
+
 	# 이미 선택된 소스를 다시 클릭 → 선택 해제 (토글)
 	if node == _source:
 		clear()
