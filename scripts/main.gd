@@ -315,7 +315,11 @@ func _on_day_started(day: int, rent: int) -> void:
 	_hours_bar.value = 0
 	_warehouse.visible = false
 	_cooking.visible = false
-	_reset_board()
+	# 새 세션: 슬롯 수만큼 보드 재구성(상점 확장 반영), 큐 비움
+	Move.clear()
+	_board.rebuild(_session.slots)
+	for c in _queue_row.get_children():
+		c.queue_free()
 	_refresh_warehouse()
 
 
@@ -333,7 +337,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.sep() \
 			.row("남음  %d" % summary["cash_after"], Palette.COCOA_800) \
 			.row("통과! ✅", Palette.SUCCESS) \
-			.button("다음날", _session.advance_day)
+			.button("상점으로", _open_shop)
 	else:
 		Modal.open(self) \
 			.title("폐업 😢") \
@@ -342,15 +346,12 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.button("다시 시작", _session.start_run)
 
 
-## 새 세션: 소모품(재료·주문·완성품) 정리 + 설비(도구석) idle 유지 + 큐 비움.
-func _reset_board() -> void:
-	Move.clear()
-	for s in _board.slots:
-		s.clear()
-	for t in _board.tools:
-		t.reset()
-	for c in _queue_row.get_children():
-		c.queue_free()
+## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
+func _open_shop() -> void:
+	var shop := Shop.new()
+	shop.session = _session
+	shop.start_business.connect(_session.advance_day)
+	add_child(shop)
 
 
 func _make_bottom_button(color: Color) -> Button:
