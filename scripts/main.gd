@@ -290,7 +290,8 @@ func _spawn_customer() -> void:
 func _on_confirm_order(customer: Customer) -> void:
 	var slot := _first_empty_slot()
 	if slot == null:
-		return  # 빈 슬롯 없음 (나중에 Toast)
+		Toast.show_msg(self, "빈 칸 없음")
+		return
 	var order := OrderCard.new()
 	order.setup(customer.recipe_id)
 	order.expired.connect(_on_order_expired)
@@ -558,14 +559,7 @@ func _refresh_tiles() -> void:
 
 # ── 공용 헬퍼 ─────────────────────────────────────────────
 func _label(text: String, size: int, bold: bool, color: Color = Palette.COCOA_800) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_size_override("font_size", size)
-	l.add_theme_color_override("font_color", color)
-	if bold:
-		l.add_theme_constant_override("outline_size", 0)
-	return l
+	return UI.label(text, size, color, bold)
 
 
 ## *Money* — [색점][숫자] 표시 전용 컴포넌트.
@@ -602,27 +596,10 @@ func _style_bottom_button(b: Button, color: Color) -> void:
 	b.add_theme_stylebox_override("pressed", _pill_box(color.darkened(0.1)))
 
 
-## 카드/패널 틀: 둥근 + 테두리 + 그림자.
+## 카드/패널·알약 틀 — 공용 UI 위임.
 func _card_box(bg: Color, border: Color = Color.TRANSPARENT, border_w: int = 1) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(14)
-	s.set_content_margin_all(0)
-	if border.a > 0.0:
-		s.set_border_width_all(border_w)
-		s.border_color = border
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 4
-	s.shadow_offset = Vector2(0, 2)
-	return s
+	return UI.card(bg, border, border_w)
 
 
-## 알약형(둥근) 틀 — 버튼·게이지.
 func _pill_box(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(999)
-	if border.a > 0.0:
-		s.set_border_width_all(1)
-		s.border_color = border
-	return s
+	return UI.chip(bg, border)
