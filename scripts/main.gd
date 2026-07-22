@@ -57,6 +57,7 @@ func _ready() -> void:
 	_cooking.cooked.connect(_refresh_warehouse)
 
 	Move.performed.connect(_refresh_warehouse)
+	Move.default_target = func(_payload): return _board.first_empty_slot()
 
 	_session = Session.new()
 	_session.cash_changed.connect(_on_cash_changed)
