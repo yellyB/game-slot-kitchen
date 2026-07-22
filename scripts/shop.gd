@@ -1,13 +1,15 @@
 class_name Shop
 extends Control
-## 인터세션 상점 — 보유 돈 + 슬롯 확장 상품 + [영업 시작].
+## 인터세션 상점 — 보유 돈 + 슬롯 확장 + 버프 팩(카드깡) + 보유 버프 + [영업 시작].
 ## 딤 배경 + 입력 차단. 대강 구현(디자인 후 정리).
 
 signal start_business
 
 var session: Session  # main이 add_child 전에 주입
 var _cash_label: Label
-var _buy_btn: Button
+var _buy_slot_btn: Button
+var _draw_btn: Button
+var _owned_row: HBoxContainer
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -24,7 +26,7 @@ func _ready() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(280, 0)
+	panel.custom_minimum_size = Vector2(300, 0)
 	panel.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200))
 	center.add_child(panel)
 
@@ -34,7 +36,7 @@ func _ready() -> void:
 	panel.add_child(pad)
 
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 14)
+	v.add_theme_constant_override("separation", 12)
 	pad.add_child(v)
 
 	# 헤더: 🏪 + 보유 돈
@@ -45,17 +47,20 @@ func _ready() -> void:
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
-	var dot := ColorRect.new()
-	dot.color = Palette.ACCENT
-	dot.custom_minimum_size = Vector2(14, 14)
-	var dw := CenterContainer.new()
-	dw.add_child(dot)
-	header.add_child(dw)
+	header.add_child(_dot(Palette.ACCENT))
 	_cash_label = UI.label("0", 18, Palette.COCOA_800, true)
 	header.add_child(_cash_label)
 
-	# 상품: 슬롯 확장
-	v.add_child(_slot_product())
+	# 상품: 슬롯 확장 / 버프 팩
+	_buy_slot_btn = _product(v, "슬롯 +1", "가격 %d" % Config.SLOT_PRICE, "구매", Palette.SUB, _on_buy_slot)
+	_draw_btn = _product(v, "버프 팩", "가격 %d" % Config.BUFF_PACK_PRICE, "뽑기", Palette.MAIN, _on_draw)
+
+	# 보유 버프
+	v.add_child(UI.label("보유 버프", 13, Palette.COCOA_600))
+	_owned_row = HBoxContainer.new()
+	_owned_row.add_theme_constant_override("separation", 6)
+	_owned_row.custom_minimum_size = Vector2(0, 30)
+	v.add_child(_owned_row)
 
 	# [영업 시작]
 	var start := Button.new()
@@ -65,7 +70,6 @@ func _ready() -> void:
 	start.add_theme_font_size_override("font_size", 18)
 	start.add_theme_color_override("font_color", Palette.WHITE)
 	start.add_theme_color_override("font_hover_color", Palette.WHITE)
-	start.add_theme_color_override("font_pressed_color", Palette.WHITE)
 	start.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	start.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	start.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
@@ -77,48 +81,153 @@ func _ready() -> void:
 	_refresh()
 
 
-func _slot_product() -> Control:
+## 상품 카드 (이름/가격/버튼). 버튼 반환.
+func _product(parent: Node, title: String, price: String, btn_text: String, btn_color: Color, cb: Callable) -> Button:
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	var pad := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
 		pad.add_theme_constant_override("margin_" + side, 12)
 	card.add_child(pad)
-
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	pad.add_child(row)
-
 	var info := VBoxContainer.new()
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.add_theme_constant_override("separation", 2)
 	row.add_child(info)
-	info.add_child(UI.label("슬롯 +1", 18, Palette.COCOA_800, true))
-	info.add_child(UI.label("가격 %d" % Config.SLOT_PRICE, 14, Palette.COCOA_600))
+	info.add_child(UI.label(title, 18, Palette.COCOA_800, true))
+	info.add_child(UI.label(price, 14, Palette.COCOA_600))
+	var btn := Button.new()
+	btn.text = btn_text
+	btn.custom_minimum_size = Vector2(72, 40)
+	btn.add_theme_font_size_override("font_size", 15)
+	btn.add_theme_color_override("font_color", Palette.WHITE)
+	btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+	btn.add_theme_stylebox_override("normal", UI.chip(btn_color))
+	btn.add_theme_stylebox_override("hover", UI.chip(btn_color.lightened(0.08)))
+	btn.add_theme_stylebox_override("pressed", UI.chip(btn_color.darkened(0.1)))
+	btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
+	btn.pressed.connect(cb)
+	row.add_child(btn)
+	parent.add_child(card)
+	return btn
 
-	_buy_btn = Button.new()
-	_buy_btn.text = "구매"
-	_buy_btn.custom_minimum_size = Vector2(72, 40)
-	_buy_btn.add_theme_font_size_override("font_size", 15)
-	_buy_btn.add_theme_color_override("font_color", Palette.WHITE)
-	_buy_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
-	_buy_btn.add_theme_stylebox_override("normal", UI.chip(Palette.SUB))
-	_buy_btn.add_theme_stylebox_override("hover", UI.chip(Palette.SUB.lightened(0.08)))
-	_buy_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.SUB.darkened(0.1)))
-	_buy_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
-	_buy_btn.pressed.connect(_on_buy)
-	row.add_child(_buy_btn)
 
-	return card
-
-
-func _on_buy() -> void:
+func _on_buy_slot() -> void:
 	if session.buy_slot():
 		_refresh()
 
 
+func _on_draw() -> void:
+	var pack := session.buy_buff_pack()
+	if pack.is_empty():
+		return
+	_refresh()
+	_show_pack(pack)
+
+
+## 버프 팩 개봉 — 3개 중 1개 택(드래프트), 나머지 버림.
+func _show_pack(pack: Array) -> void:
+	var overlay := Control.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.z_index = 10
+	add_child(overlay)
+
+	var od := ColorRect.new()
+	od.color = Palette.DIM
+	od.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(od)
+
+	var oc := CenterContainer.new()
+	oc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(oc)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	oc.add_child(box)
+	var t := UI.label("3개 중 1개 선택", 18, Palette.WHITE, true)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(t)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	box.add_child(row)
+	for id in pack:
+		row.add_child(_pack_choice(id, overlay))
+
+
+func _pack_choice(id: String, overlay: Control) -> Control:
+	var def := BuffDefs.get_def(id)
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(84, 0)
+	card.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2))
+	var pad := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, 10)
+	card.add_child(pad)
+	var v := VBoxContainer.new()
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_theme_constant_override("separation", 4)
+	pad.add_child(v)
+	var icon := UI.label(str(def.get("icon", "?")), 30)
+	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(icon)
+	var nm := UI.label(str(def.get("name", id)), 13, Palette.COCOA_800)
+	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(nm)
+	var lb := UI.label(str(def.get("label", "")), 12, Palette.MAIN)
+	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(lb)
+	var pick := Button.new()
+	pick.text = "선택"
+	pick.add_theme_font_size_override("font_size", 13)
+	pick.add_theme_color_override("font_color", Palette.WHITE)
+	pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+	pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+	pick.pressed.connect(func():
+		Buffs.add(id)
+		overlay.queue_free()
+		_refresh())
+	v.add_child(pick)
+	return card
+
+
 func _refresh() -> void:
 	_cash_label.text = str(session.cash)
-	var can_buy := session.cash >= Config.SLOT_PRICE and session.slots < Config.MAX_SLOTS
-	_buy_btn.disabled = not can_buy
-	_buy_btn.modulate = Color.WHITE if can_buy else Color(1, 1, 1, 0.5)
+	var can_slot := session.cash >= Config.SLOT_PRICE and session.slots < Config.MAX_SLOTS
+	_buy_slot_btn.disabled = not can_slot
+	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+	var can_draw := session.cash >= Config.BUFF_PACK_PRICE
+	_draw_btn.disabled = not can_draw
+	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+
+	for c in _owned_row.get_children():
+		c.queue_free()
+	for id in Buffs.owned():
+		_owned_row.add_child(_owned_chip(id))
+
+
+func _owned_chip(id: String) -> Control:
+	var def := BuffDefs.get_def(id)
+	var chip := PanelContainer.new()
+	chip.add_theme_stylebox_override("panel", UI.chip(Palette.MAIN.lightened(0.82), Palette.MAIN))
+	var pad := MarginContainer.new()
+	pad.add_theme_constant_override("margin_left", 8)
+	pad.add_theme_constant_override("margin_right", 8)
+	pad.add_theme_constant_override("margin_top", 3)
+	pad.add_theme_constant_override("margin_bottom", 3)
+	chip.add_child(pad)
+	pad.add_child(UI.label("%s %s" % [def.get("icon", "?"), def.get("label", "")], 13, Palette.COCOA_800))
+	return chip
+
+
+func _dot(color: Color) -> Control:
+	var dot := ColorRect.new()
+	dot.color = color
+	dot.custom_minimum_size = Vector2(14, 14)
+	var wrap := CenterContainer.new()
+	wrap.add_child(dot)
+	return wrap
