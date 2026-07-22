@@ -22,7 +22,6 @@ var _next_idx := 0
 func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
-	rent = Config.RENT_START
 	slots = Config.START_SLOTS
 	Buffs.clear()
 	cash_changed.emit(cash)
@@ -48,11 +47,11 @@ func buy_buff_pack() -> Array:
 
 func advance_day() -> void:
 	day += 1
-	rent = int(round(rent * Config.RENT_GROWTH))
 	start_day()
 
 
 func start_day() -> void:
+	rent = int(Levels.get_day(day).get("rent", 0))
 	day_revenue = 0
 	_elapsed = 0.0
 	_next_idx = 0
@@ -118,17 +117,18 @@ func _end_day() -> void:
 	if passed:
 		cash -= rent
 		cash_changed.emit(cash)
-		summary["won"] = day >= Config.DAYS_TO_WIN
+		summary["won"] = day >= Levels.count()
 	summary["cash_after"] = cash
 	day_ended.emit(summary)
 
 
 func _build_schedule() -> void:
 	_spawn_times.clear()
-	var half := (Config.CUSTOMERS_PER_WAVE - 1) * 0.5
+	var per_wave := int(Levels.get_day(day).get("per_wave", 3))
+	var half := (per_wave - 1) * 0.5
 	for w in Config.WAVES:
 		var center: float = Config.DAY_LENGTH * (w + 0.5) / Config.WAVES
-		for k in Config.CUSTOMERS_PER_WAVE:
+		for k in per_wave:
 			var t: float = center + (k - half) * Config.WAVE_SPACING
 			_spawn_times.append(clampf(t, 1.0, Config.DAY_LENGTH - 2.0))
 	_spawn_times.sort()
