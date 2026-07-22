@@ -6,9 +6,9 @@ extends RefCounted
 
 # ── 보드 (슬롯 그리드) ────────────────────────────────────
 const BOARD_COLS := 3
-const START_SLOTS := 7   # 시작 슬롯 수(도구석 제외). 상점에서 확장.
+const START_SLOTS := 9   # 시작 슬롯 수(도구석 제외). 버프도 슬롯 점유(온보드).
 const TOOL_COUNT := 2    # 도구석(🔥) 개수 — 그리드 마지막 칸들에 배치
-const MAX_SLOTS := 10    # 슬롯 확장 상한
+const MAX_SLOTS := 10    # 슬롯 확장 상한 (세로 화면상 4줄 = 실질 상한)
 
 # ── 손님 큐 / 스포너 ──────────────────────────────────────
 const MAX_QUEUE := 4          # 큐 최대 인원
@@ -23,7 +23,7 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 const START_MONEY := 0     # 시작 소지금
 const SLOT_PRICE := 5       # 슬롯 +1 확장 가격(상점)
 const BUFF_PACK_PRICE := 2  # 버프 팩(카드깡) 가격 — 첫날 순이익으로 살 수 있게
-const MAX_BUFFS := 3        # 버프 보유 상한 (슬롯 점유 → 소프트락 방지)
+const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 # (가게세는 하루별 → data/levels.gd)
 
 # ── 세션 / 하루 ───────────────────────────────────────────

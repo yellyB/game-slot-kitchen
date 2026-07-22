@@ -283,7 +283,7 @@ func _spawn_customer() -> void:
 	if _queue_row.get_child_count() >= Config.MAX_QUEUE:
 		return
 	var c := Customer.new()
-	c.setup(Recipes.random_id())
+	c.setup(Stats.random_recipe())
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
 	_queue_row.add_child(c)

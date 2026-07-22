@@ -34,6 +34,8 @@ func _cases() -> Array:
 		_t_trash_rules,
 		_t_board_full_quick,
 		_t_buff_cap,
+		_t_category_price,
+		_t_demand_weight,
 	]
 
 
@@ -123,6 +125,26 @@ func _t_buff_cap() -> void:
 	Buffs.clear()
 	for i in 5: Buffs.add("cook")   # 상한 초과 시도
 	_check("버프 보유 상한 %d장" % Config.MAX_BUFFS, Buffs.owned().size() == Config.MAX_BUFFS)
+	_reset()
+
+
+func _t_category_price() -> void:
+	Buffs.clear()
+	var base_glazed := Stats.sell_price("glazed")
+	Buffs.add("drink_price")   # 커피(drink)만 +
+	_check("카테고리 판매가: 커피 오름", Stats.sell_price("coffee") > 1)
+	_check("카테고리 판매가: 도넛 그대로", Stats.sell_price("glazed") == base_glazed)
+	_reset()
+
+
+func _t_demand_weight() -> void:
+	Buffs.clear()
+	Buffs.add("drink_demand")   # 커피 수요 ×3 (vs 도넛 각 1)
+	var coffee := 0
+	for i in 200:
+		if Stats.random_recipe() == "coffee":
+			coffee += 1
+	_check("수요 조작: 커피 손님 비중↑ (>45%)", coffee > 90)
 	_reset()
 
 
