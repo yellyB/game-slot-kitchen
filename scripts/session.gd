@@ -57,6 +57,18 @@ func is_running() -> bool:
 	return _running
 
 
+func add_cash(amount: int) -> void:
+	cash += amount
+	cash_changed.emit(cash)
+
+
+func debug_end_soon(remaining := 1.0) -> void:
+	if not _running:
+		return
+	_elapsed = maxf(_elapsed, Config.DAY_LENGTH - remaining)
+	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+
+
 func spend_time(seconds: float) -> void:
 	if not _running:
 		return
