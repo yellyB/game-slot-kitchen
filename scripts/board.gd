@@ -5,27 +5,36 @@ signal tool_tapped(tool: ToolStation)
 
 var slots: Array[Slot] = []
 var tools: Array[ToolStation] = []
+var _grid: GridContainer
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_grid = GridContainer.new()
+	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_grid.columns = Config.BOARD_COLS
+	_grid.add_theme_constant_override("h_separation", 8)
+	_grid.add_theme_constant_override("v_separation", 8)
+	add_child(_grid)
 
-	var grid := GridContainer.new()
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	grid.columns = Config.BOARD_COLS
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	add_child(grid)
 
-	for i in range(Config.BOARD_SLOTS):
-		if i in Config.TOOL_SLOTS:
+func rebuild(slot_count: int) -> void:
+	for ch in _grid.get_children():
+		_grid.remove_child(ch)
+		ch.queue_free()
+	slots.clear()
+	tools.clear()
+
+	var total := slot_count + Config.TOOL_COUNT
+	for i in total:
+		if i < slot_count:
+			var slot := Slot.new()
+			slots.append(slot)
+			_grid.add_child(slot)
+		else:
 			var tool := ToolStation.new()
 			tool.tapped.connect(tool_tapped.emit)
 			tools.append(tool)
-			grid.add_child(tool)
-		else:
-			var slot := Slot.new()
-			slots.append(slot)
-			grid.add_child(slot)
+			_grid.add_child(tool)
 
 
 func first_empty_slot() -> Slot:

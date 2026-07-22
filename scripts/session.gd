@@ -11,6 +11,7 @@ var cash := 0
 var day := 1
 var rent := 0
 var day_revenue := 0
+var slots := Config.START_SLOTS
 
 var _elapsed := 0.0
 var _running := false
@@ -22,8 +23,18 @@ func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
 	rent = Config.RENT_START
+	slots = Config.START_SLOTS
 	cash_changed.emit(cash)
 	start_day()
+
+
+func buy_slot() -> bool:
+	if cash < Config.SLOT_PRICE or slots >= Config.MAX_SLOTS:
+		return false
+	cash -= Config.SLOT_PRICE
+	slots += 1
+	cash_changed.emit(cash)
+	return true
 
 
 func advance_day() -> void:
