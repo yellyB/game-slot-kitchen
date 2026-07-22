@@ -24,8 +24,10 @@ static func random_recipe() -> String:
 	var weights := []
 	var total := 0.0
 	for id in ids:
-		var tag := str(Recipes.get_def(id).get("tag", ""))
-		var w := Buffs.mod("demand_" + tag, 1.0)
+		var def := Recipes.get_def(id)
+		var tier := int(def.get("tier", 1))
+		var base := maxf(1.0, 7.0 - tier)
+		var w := Buffs.mod("demand_" + str(def.get("tag", "")), base)
 		weights.append(w)
 		total += w
 	var r := randf() * total

@@ -33,6 +33,7 @@ func _cases() -> Array:
 		_t_buff_cap,
 		_t_category_price,
 		_t_demand_weight,
+		_t_price_rarity,
 	]
 
 
@@ -135,11 +136,23 @@ func _t_category_price() -> void:
 func _t_demand_weight() -> void:
 	Buffs.clear()
 	Buffs.add("drink_demand")
-	var coffee := 0
+	var drinks := 0
 	for i in 200:
-		if Stats.random_recipe() == "coffee":
-			coffee += 1
-	_check("수요 조작: 커피 손님 비중↑ (>45%)", coffee > 90)
+		if Recipes.get_def(Stats.random_recipe()).get("tag", "") == "drink":
+			drinks += 1
+	_check("수요 조작: 음료 손님 비중↑ (>55%)", drinks > 110)
+	_reset()
+
+
+func _t_price_rarity() -> void:
+	Buffs.clear()
+	var cheap := 0
+	var pricey := 0
+	for i in 400:
+		var r := Stats.random_recipe()
+		if r == "coffee": cheap += 1
+		elif r == "special": pricey += 1
+	_check("가격-희귀도: 비싼 메뉴가 싼 메뉴보다 드묾", cheap > pricey)
 	_reset()
 
 

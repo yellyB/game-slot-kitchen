@@ -16,7 +16,7 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	offset_top = -260
+	offset_top = -400
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -46,10 +46,19 @@ func _ready() -> void:
 	close.pressed.connect(func(): close_requested.emit())
 	header.add_child(close)
 
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 8)
+	scroll.add_child(list)
+
 	for id in Recipes.all_ids():
 		var entry := _entry(id)
 		_entries.append(entry)
-		v.add_child(entry)
+		list.add_child(entry)
 
 
 func open_for(tool: ToolStation) -> void:
