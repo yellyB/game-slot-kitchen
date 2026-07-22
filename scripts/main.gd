@@ -6,15 +6,17 @@ extends Control
 var _board: Board
 var _warehouse: Warehouse
 var _cooking: Cooking
+var _session: Session
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
 
 var _queue_row: HBoxContainer
-var _spawn_timer: Timer
 
-var _cash := Config.START_MONEY
+var _day_label: Label
 var _money_label: Label
+var _rent_label: Label
+var _hours_bar: ProgressBar
 
 
 func _ready() -> void:
@@ -61,13 +63,15 @@ func _ready() -> void:
 
 	Move.performed.connect(_refresh_warehouse)
 
-	# 손님 스포너
-	_spawn_timer = Timer.new()
-	_spawn_timer.wait_time = Config.SPAWN_INTERVAL
-	_spawn_timer.timeout.connect(_spawn_customer)
-	add_child(_spawn_timer)
-	_spawn_timer.start()
-	_spawn_customer()
+	# 세션(하루 루프)
+	_session = Session.new()
+	_session.cash_changed.connect(_on_cash_changed)
+	_session.progress.connect(_on_progress)
+	_session.spawn_requested.connect(_spawn_customer)
+	_session.day_started.connect(_on_day_started)
+	_session.day_ended.connect(_on_day_ended)
+	add_child(_session)
+	_session.start_run()
 
 
 # ── 상단바: 일차·돈·가게세 + 영업시간 바 ──────────────────────
@@ -88,21 +92,28 @@ func _build_top_bar() -> Control:
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
 
-	row.add_child(UI.label("1일차", 20, Palette.COCOA_800, true))
+	_day_label = UI.label("1일차", 20, Palette.COCOA_800, true)
+	row.add_child(_day_label)
 
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(gap)
 
-	# 돈 (실제 소지금 — 서빙으로 증가)
+	# 돈 (소지금)
 	var coin := HBoxContainer.new()
 	coin.add_theme_constant_override("separation", 4)
 	coin.add_child(_dot(Palette.ACCENT))
-	_money_label = UI.label(_fmt(_cash), 18, Palette.COCOA_800, true)
+	_money_label = UI.label("0", 18, Palette.COCOA_800, true)
 	coin.add_child(_money_label)
 	row.add_child(coin)
 
-	row.add_child(_money(Palette.DANGER, "300"))  # 가게세 placeholder (단계 6)
+	# 가게세
+	var rentbox := HBoxContainer.new()
+	rentbox.add_theme_constant_override("separation", 4)
+	rentbox.add_child(_dot(Palette.DANGER))
+	_rent_label = UI.label("0", 18, Palette.COCOA_800, true)
+	rentbox.add_child(_rent_label)
+	row.add_child(rentbox)
 
 	var hours := HBoxContainer.new()
 	hours.add_theme_constant_override("separation", 8)
@@ -110,16 +121,16 @@ func _build_top_bar() -> Control:
 
 	hours.add_child(UI.label("☀️", 14, Palette.COCOA_400))
 
-	var bar := ProgressBar.new()
-	bar.min_value = 0
-	bar.max_value = 100
-	bar.value = 40
-	bar.show_percentage = false
-	bar.custom_minimum_size = Vector2(0, 14)
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
-	hours.add_child(bar)
+	_hours_bar = ProgressBar.new()
+	_hours_bar.min_value = 0
+	_hours_bar.max_value = 100
+	_hours_bar.value = 0
+	_hours_bar.show_percentage = false
+	_hours_bar.custom_minimum_size = Vector2(0, 14)
+	_hours_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hours_bar.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	_hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
+	hours.add_child(_hours_bar)
 
 	hours.add_child(UI.label("🌙", 14, Palette.COCOA_400))
 
@@ -228,8 +239,7 @@ func _on_order_expired(order: OrderCard) -> void:
 ## 완성품이 매칭 주문 카드에 서빙됨 → 돈 + 손님 퇴장 + 슬롯/도구 회복.
 func _on_served(order: OrderCard, dish: DishCard) -> void:
 	var price := int(Recipes.get_def(order.recipe_id).get("price", 0))
-	_cash += price
-	_money_label.text = _fmt(_cash)
+	_session.earn(price)
 	_spawn_floating("+%d" % price, order.global_position + order.size * 0.5, Palette.ACCENT)
 
 	var holder := order.get_parent()
@@ -288,13 +298,57 @@ func _dot(color: Color) -> Control:
 	return wrap
 
 
-## *Money* — [색점][숫자] 표시 전용.
-func _money(dot_color: Color, amount: String) -> Control:
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 4)
-	h.add_child(_dot(dot_color))
-	h.add_child(UI.label(amount, 18, Palette.COCOA_800, true))
-	return h
+# ── 세션 반응 ─────────────────────────────────────────────
+func _on_cash_changed(cash: int) -> void:
+	_money_label.text = _fmt(cash)
+
+
+func _on_progress(t01: float) -> void:
+	_hours_bar.value = t01 * 100.0
+
+
+func _on_day_started(day: int, rent: int) -> void:
+	_day_label.text = "%d일차" % day
+	_rent_label.text = _fmt(rent)
+	_hours_bar.value = 0
+	_warehouse.visible = false
+	_cooking.visible = false
+	_reset_board()
+	_refresh_warehouse()
+
+
+func _on_day_ended(summary: Dictionary) -> void:
+	if summary["won"]:
+		Modal.open(self) \
+			.title("승리! 🎉") \
+			.row("%d일 완주" % Config.DAYS_TO_WIN, Palette.SUCCESS) \
+			.button("다시 시작", _session.start_run)
+	elif summary["passed"]:
+		Modal.open(self) \
+			.title("%d일차 마감" % summary["day"]) \
+			.row("매출  %d" % summary["revenue"]) \
+			.row("가게세  %d" % summary["rent"], Palette.DANGER) \
+			.sep() \
+			.row("남음  %d" % summary["cash_after"], Palette.COCOA_800) \
+			.row("통과! ✅", Palette.SUCCESS) \
+			.button("다음날", _session.advance_day)
+	else:
+		Modal.open(self) \
+			.title("폐업 😢") \
+			.row("%d일차에서 끝" % summary["day"]) \
+			.row("매출 %d < 가게세 %d" % [summary["revenue"], summary["rent"]], Palette.DANGER) \
+			.button("다시 시작", _session.start_run)
+
+
+## 새 세션: 소모품(재료·주문·완성품) 정리 + 설비(도구석) idle 유지 + 큐 비움.
+func _reset_board() -> void:
+	Move.clear()
+	for s in _board.slots:
+		s.clear()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
 
 
 func _make_bottom_button(color: Color) -> Button:
