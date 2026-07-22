@@ -26,7 +26,7 @@ func _preview_text() -> String:
 
 func _build_content() -> void:
 	# 주문 카드 느낌: 크림빛 배경 + 액센트 테두리
-	_style.bg_color = Color("FFF7E6")
+	_style.bg_color = Palette.TICKET
 	_style.border_color = Palette.ACCENT
 
 	var def := Recipes.get_def(recipe_id)
@@ -74,8 +74,8 @@ func _build_content() -> void:
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 6)
 	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_gauge.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
-	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
+	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
 	v.add_child(_gauge)
 
 
@@ -101,18 +101,8 @@ func _process(delta: float) -> void:
 	var col := Palette.DANGER if _time_left <= Config.PATIENCE_DISH * Config.PATIENCE_LOW_FRAC else Palette.SUB
 	if col != _fill:
 		_fill = col
-		_gauge.add_theme_stylebox_override("fill", _pill(col))
+		_gauge.add_theme_stylebox_override("fill", UI.chip(col))
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
 		expired.emit(self)
-
-
-func _pill(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(999)
-	if border.a > 0.0:
-		s.set_border_width_all(1)
-		s.border_color = border
-	return s

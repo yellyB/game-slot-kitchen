@@ -23,3 +23,7 @@ const COCOA_800 := Color("4A3B32")  # 본문 텍스트
 const COCOA_900 := Color("2A211B")  # 최다크
 
 const DIM := Color(0.164, 0.129, 0.106, 0.5)  # 모달 딤 (COCOA_900 @50%)
+
+# Surface (특수 배경 — 임시 톤, 디자인 확정 후 조정)
+const TICKET := Color("FFF7E6")   # 주문 카드(티켓) 배경
+const TOOL := Color("FBE9DA")     # 도구석 배경

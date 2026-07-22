@@ -21,7 +21,7 @@ var _glow: Tween
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(104, 104)
-	_style = _box()
+	_style = UI.card(Palette.TOOL, Palette.SUB, 2)
 	add_theme_stylebox_override("panel", _style)
 
 	_holder = MarginContainer.new()
@@ -100,8 +100,8 @@ func start_cooking(id: String) -> void:
 	_cook_bar.show_percentage = false
 	_cook_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cook_bar.custom_minimum_size = Vector2(0, 8)
-	_cook_bar.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
-	_cook_bar.add_theme_stylebox_override("fill", _pill(Palette.ACCENT))
+	_cook_bar.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	_cook_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
 	v.add_child(_cook_bar)
 
 	set_process(true)
@@ -156,23 +156,3 @@ func _stop_glow() -> void:
 func _clear_holder() -> void:
 	for ch in _holder.get_children():
 		ch.queue_free()
-
-func _box() -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = Color("FBE9DA")
-	s.set_corner_radius_all(14)
-	s.set_border_width_all(2)
-	s.border_color = Palette.SUB
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 4
-	s.shadow_offset = Vector2(0, 2)
-	return s
-
-func _pill(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(999)
-	if border.a > 0.0:
-		s.set_border_width_all(1)
-		s.border_color = border
-	return s

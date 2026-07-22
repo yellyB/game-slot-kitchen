@@ -59,19 +59,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 func _apply_style() -> void:
 	var border := Palette.MAIN if _selected else Palette.COCOA_200
 	var border_w := 2 if _selected else 1
-	add_theme_stylebox_override("normal", _tile_box(Palette.COCOA_100, border, border_w))
-	add_theme_stylebox_override("hover", _tile_box(Palette.ACCENT.lightened(0.35), border, border_w))
-	add_theme_stylebox_override("pressed", _tile_box(Palette.ACCENT.lightened(0.2), Palette.ACCENT, 2))
-	add_theme_stylebox_override("disabled", _tile_box(Palette.COCOA_100, Palette.COCOA_200, 1))
-
-
-func _tile_box(bg: Color, border: Color, border_w: int) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(14)
-	s.set_border_width_all(border_w)
-	s.border_color = border
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 4
-	s.shadow_offset = Vector2(0, 2)
-	return s
+	add_theme_stylebox_override("normal", UI.card(Palette.COCOA_100, border, border_w))
+	add_theme_stylebox_override("hover", UI.card(Palette.ACCENT.lightened(0.35), border, border_w))
+	add_theme_stylebox_override("pressed", UI.card(Palette.ACCENT.lightened(0.2), Palette.ACCENT, 2))
+	add_theme_stylebox_override("disabled", UI.card(Palette.COCOA_100, Palette.COCOA_200, 1))

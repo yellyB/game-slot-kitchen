@@ -1,18 +1,14 @@
 class_name Slot
 extends PanelContainer
-## 카드가 놓이는 칸. 도구석은 재료/카드를 받지 않는다.
-## 타깃 역할: 창고 신규 배치("new") / 다른 슬롯에서 이동("move").
-## 클릭·드래그 모두 can_accept/accept로 처리 (Move 컨트롤러 참고).
+## 카드가 놓이는 칸. 타깃 역할(클릭·드래그 공용):
+##   "new"(창고 신규) / "move"(슬롯↔슬롯) / "dish"(완성품).
+## (도구석은 Slot이 아니라 ToolStation)
 
-var is_tool := false
 var _holder: MarginContainer
-
-func setup(tool: bool) -> void:
-	is_tool = tool
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(104, 104)
-	add_theme_stylebox_override("panel", _box())
+	add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1))
 
 	_holder = MarginContainer.new()
 	# 빈 슬롯의 클릭/드롭이 Slot 자신에게 오도록 holder는 마우스 통과 무시
@@ -21,19 +17,9 @@ func _ready() -> void:
 		_holder.add_theme_constant_override("margin_" + side, 6)
 	add_child(_holder)
 
-	if is_tool:
-		var lbl := Label.new()
-		lbl.text = "🔥"
-		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		lbl.add_theme_font_size_override("font_size", 28)
-		lbl.add_theme_color_override("font_color", Palette.SUB)
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_holder.add_child(lbl)
-
 
 func is_empty() -> bool:
-	return not is_tool and _get_card() == null
+	return _get_card() == null
 
 
 func _get_card() -> Card:
@@ -90,7 +76,7 @@ func take_card(card: Card) -> void:
 
 # ── 공용 타깃 인터페이스 (클릭·드래그 공용) ────────────────
 func can_accept(payload: Dictionary) -> bool:
-	if is_tool or not is_empty():
+	if not is_empty():
 		return false
 	var k = payload.get("kind")
 	return k == "new" or k == "move" or k == "dish"
@@ -118,20 +104,3 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	Move.on_drop(self, data)
-
-
-func _box() -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.set_corner_radius_all(14)
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 4
-	s.shadow_offset = Vector2(0, 2)
-	if is_tool:
-		s.bg_color = Color("FBE9DA")
-		s.set_border_width_all(2)
-		s.border_color = Palette.SUB
-	else:
-		s.bg_color = Palette.WHITE
-		s.set_border_width_all(1)
-		s.border_color = Palette.COCOA_200
-	return s
