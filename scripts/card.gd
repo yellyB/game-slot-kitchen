@@ -5,14 +5,7 @@ var _style: StyleBoxFlat
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_style = StyleBoxFlat.new()
-	_style.bg_color = Palette.WHITE
-	_style.set_corner_radius_all(12)
-	_style.set_border_width_all(1)
-	_style.border_color = Palette.COCOA_200
-	_style.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	_style.shadow_size = 3
-	_style.shadow_offset = Vector2(0, 1)
+	_style = UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12)
 	add_theme_stylebox_override("panel", _style)
 	_build_content()
 
@@ -50,15 +43,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 
 func _make_preview() -> Control:
 	var preview := PanelContainer.new()
-	var ps := StyleBoxFlat.new()
-	ps.bg_color = Palette.WHITE
-	ps.set_corner_radius_all(12)
-	ps.set_border_width_all(2)
-	ps.border_color = Palette.MAIN
-	preview.add_theme_stylebox_override("panel", ps)
+	preview.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2, 12))
 	preview.modulate = Color(1, 1, 1, 0.9)
-	var lbl := Label.new()
-	lbl.text = _preview_text()
-	lbl.add_theme_font_size_override("font_size", 28)
-	preview.add_child(lbl)
+	preview.add_child(UI.label(_preview_text(), 28))
 	return preview

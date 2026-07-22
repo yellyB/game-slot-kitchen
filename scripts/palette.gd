@@ -18,3 +18,6 @@ const COCOA_800 := Color("4A3B32")
 const COCOA_900 := Color("2A211B")
 
 const DIM := Color(0.164, 0.129, 0.106, 0.5)
+
+const TICKET := Color("FFF7E6")
+const TOOL := Color("FBE9DA")

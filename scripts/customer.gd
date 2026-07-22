@@ -16,15 +16,7 @@ func setup(id: String) -> void:
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(66, 92)
-	var s := StyleBoxFlat.new()
-	s.bg_color = Palette.WHITE
-	s.set_corner_radius_all(12)
-	s.set_border_width_all(1)
-	s.border_color = Palette.COCOA_200
-	s.shadow_color = Color(0.164, 0.129, 0.106, 0.12)
-	s.shadow_size = 3
-	s.shadow_offset = Vector2(0, 1)
-	add_theme_stylebox_override("panel", s)
+	add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12))
 
 	var pad := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -36,10 +28,7 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 3)
 	pad.add_child(v)
 
-	var face := Label.new()
-	face.text = "🙋💭"
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.add_theme_font_size_override("font_size", 20)
+	var face := UI.label("🙋💭", 20)
 	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(face)
 
@@ -49,16 +38,16 @@ func _ready() -> void:
 	_gauge.value = Config.PATIENCE_ORDER
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
-	_gauge.add_theme_stylebox_override("background", _pill(Palette.COCOA_100, Palette.COCOA_200))
-	_gauge.add_theme_stylebox_override("fill", _pill(_fill))
+	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
 	v.add_child(_gauge)
 
 	var confirm := Button.new()
 	confirm.text = "📋"
-	confirm.add_theme_font_size_override("font_size", 16)
-	confirm.add_theme_stylebox_override("normal", _pill(Palette.ACCENT))
-	confirm.add_theme_stylebox_override("hover", _pill(Palette.ACCENT.lightened(0.12)))
-	confirm.add_theme_stylebox_override("pressed", _pill(Palette.ACCENT.darkened(0.1)))
+	confirm.add_theme_font_size_override("font_size", 15)
+	confirm.add_theme_stylebox_override("normal", UI.chip(Palette.ACCENT))
+	confirm.add_theme_stylebox_override("hover", UI.chip(Palette.ACCENT.lightened(0.12)))
+	confirm.add_theme_stylebox_override("pressed", UI.chip(Palette.ACCENT.darkened(0.1)))
 	confirm.pressed.connect(func(): confirm_pressed.emit(self))
 	v.add_child(confirm)
 
@@ -71,18 +60,8 @@ func _process(delta: float) -> void:
 	var col := Palette.DANGER if _time_left <= Config.PATIENCE_ORDER * Config.PATIENCE_LOW_FRAC else Palette.SUCCESS
 	if col != _fill:
 		_fill = col
-		_gauge.add_theme_stylebox_override("fill", _pill(col))
+		_gauge.add_theme_stylebox_override("fill", UI.chip(col))
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
 		expired.emit(self)
-
-
-func _pill(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.set_corner_radius_all(999)
-	if border.a > 0.0:
-		s.set_border_width_all(1)
-		s.border_color = border
-	return s
