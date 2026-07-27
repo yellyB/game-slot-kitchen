@@ -6,7 +6,7 @@ const ALL := {
 	"latte":   {"name": "라떼",     "icon": "🥛", "ingredients": ["bean", "milk", "water"], "cook_time": 4.0, "price": 3,  "tier": 2},
 	"glazed":  {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 6,  "tier": 3},
 	"choco":   {"name": "초코도넛",  "icon": "🍪", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 10, "tier": 4},
-	"cream":   {"name": "크림도넛",  "icon": "🧁", "ingredients": ["flour", "egg", "milk", "sugar"], "cook_time": 6.0, "price": 18, "tier": 5},
+	"cream":   {"name": "크림도넛",  "icon": "🧁", "ingredients": ["flour", "egg", "milk"], "cook_time": 6.0, "price": 18, "tier": 5},
 	"special": {"name": "스페셜",    "icon": "🥯", "ingredients": ["flour", "egg", "chocolate", "milk"], "cook_time": 7.0, "price": 30, "tier": 6},
 }
 
