@@ -11,6 +11,8 @@ const ALL := {
 	"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
 	"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
 	"water":     {"name": "물",     "icon": "💧", "unlocked": true},
+	"butter":    {"name": "버터",   "icon": "🧈", "unlocked": true},
+	"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
 }
 
 ## 해금된 재료 id 목록 (표시 순서 유지).
