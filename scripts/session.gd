@@ -29,18 +29,20 @@ func start_run() -> void:
 
 
 func buy_slot() -> bool:
-	if cash < Config.SLOT_PRICE or slots >= Config.MAX_SLOTS:
+	var price := Config.shop_price(Config.SLOT_PRICE, day)
+	if cash < price or slots >= Config.MAX_SLOTS:
 		return false
-	cash -= Config.SLOT_PRICE
+	cash -= price
 	slots += 1
 	cash_changed.emit(cash)
 	return true
 
 
 func buy_buff_pack() -> Array:
-	if cash < Config.BUFF_PACK_PRICE or Buffs.is_full():
+	var price := Config.shop_price(Config.BUFF_PACK_PRICE, day)
+	if cash < price or Buffs.is_full():
 		return []
-	cash -= Config.BUFF_PACK_PRICE
+	cash -= price
 	cash_changed.emit(cash)
 	return BuffDefs.random_pack(3)
 
@@ -93,6 +95,10 @@ func earn(amount: int) -> void:
 
 
 func _process(delta: float) -> void:
+	tick(delta)
+
+
+func tick(delta: float) -> void:
 	if not _running:
 		return
 	_elapsed += delta

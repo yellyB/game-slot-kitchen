@@ -2,9 +2,9 @@ class_name BuffDefs
 extends RefCounted
 
 const ALL := {
-	"cook":      {"name": "조리 속도", "icon": "⚡", "stat": "cook_mult", "value": 0.85, "label": "조리 -15%"},
+	"cook":      {"name": "조리 속도", "icon": "⚡", "stat": "cook_mult", "value": 0.75, "label": "조리 -25%"},
 	"price":     {"name": "판매가",   "icon": "💰", "stat": "price_mult", "value": 1.25, "label": "판매가 +25%"},
-	"patience":  {"name": "인내심",   "icon": "⏳", "stat": "patience_mult", "value": 1.25, "label": "인내심 +25%"},
+	"patience":  {"name": "인내심",   "icon": "⏳", "stat": "patience_mult", "value": 1.10, "label": "인내심 +10%"},
 	"warehouse": {"name": "창고 속도", "icon": "🏃", "stat": "warehouse_mult", "value": 0.7, "label": "창고 -30%"},
 }
 

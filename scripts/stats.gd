@@ -21,7 +21,8 @@ static func random_recipe() -> String:
 	var weights := []
 	var total := 0.0
 	for id in ids:
-		var w := maxf(1.0, 7.0 - int(Recipes.get_def(id).get("tier", 1)))
+		var tier := int(Recipes.get_def(id).get("tier", 1))
+		var w := float(Config.SPAWN_WEIGHTS[clampi(tier - 1, 0, Config.SPAWN_WEIGHTS.size() - 1)])
 		weights.append(w)
 		total += w
 	var r := randf() * total
