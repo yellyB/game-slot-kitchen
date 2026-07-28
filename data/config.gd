@@ -25,8 +25,8 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 
 # ── 경제 (금액 최소단위 1원, 가장 싼 메뉴 = 1) ────────────
 const START_MONEY := 0     # 시작 소지금
-const SLOT_PRICE := 5       # 슬롯 +1 확장 1일차 기본가(상점) — 일수 따라 SHOP_PRICE_GROWTH로 상승
-const BUFF_PACK_PRICE := 2  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
+const SLOT_PRICE := 500       # 슬롯 +1 확장 1일차 기본가(상점) — 일수 따라 SHOP_PRICE_GROWTH로 상승
+const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
 const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 # (가게세는 하루별 → data/levels.gd)
