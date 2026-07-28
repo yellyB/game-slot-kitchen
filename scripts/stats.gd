@@ -18,13 +18,15 @@ static func sell_price(recipe_id: String) -> int:
 static func warehouse_cost() -> float:
 	return Buffs.mod("warehouse_mult", Config.WAREHOUSE_EXIT_COST)
 
-## 손님이 주문할 레시피 뽑기 — 등급이 높을수록(비쌀수록) 등장 확률↓.
+## 손님이 주문할 레시피 뽑기 — 등급별 가중(Config.SPAWN_WEIGHTS)으로 등장 확률 결정.
+## 높은 등급(비싼 메뉴)일수록 가중이 낮아 드물게 등장.
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()
 	var weights := []
 	var total := 0.0
 	for id in ids:
-		var w := maxf(1.0, 7.0 - int(Recipes.get_def(id).get("tier", 1)))  # tier1=6 … tier6=1
+		var tier := int(Recipes.get_def(id).get("tier", 1))
+		var w := float(Config.SPAWN_WEIGHTS[clampi(tier - 1, 0, Config.SPAWN_WEIGHTS.size() - 1)])
 		weights.append(w)
 		total += w
 	var r := randf() * total

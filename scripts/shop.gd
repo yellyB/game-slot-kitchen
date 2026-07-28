@@ -52,8 +52,8 @@ func _ready() -> void:
 	header.add_child(_cash_label)
 
 	# 상품: 슬롯 확장 / 버프 팩
-	_buy_slot_btn = _product(v, "슬롯 +1", "가격 %d" % Config.SLOT_PRICE, "구매", Palette.SUB, _on_buy_slot)
-	_draw_btn = _product(v, "버프 팩", "가격 %d" % Config.BUFF_PACK_PRICE, "뽑기", Palette.MAIN, _on_draw)
+	_buy_slot_btn = _product(v, "슬롯 +1", "가격 %d" % Config.shop_price(Config.SLOT_PRICE, session.day), "구매", Palette.SUB, _on_buy_slot)
+	_draw_btn = _product(v, "버프 팩", "가격 %d" % Config.shop_price(Config.BUFF_PACK_PRICE, session.day), "뽑기", Palette.MAIN, _on_draw)
 
 	# 보유 버프
 	v.add_child(UI.label("보유 버프", 13, Palette.COCOA_600))
@@ -197,10 +197,10 @@ func _pack_choice(id: String, overlay: Control) -> Control:
 
 func _refresh() -> void:
 	_cash_label.text = str(session.cash)
-	var can_slot := session.cash >= Config.SLOT_PRICE and session.slots < Config.MAX_SLOTS
+	var can_slot := session.cash >= Config.shop_price(Config.SLOT_PRICE, session.day) and session.slots < Config.MAX_SLOTS
 	_buy_slot_btn.disabled = not can_slot
 	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-	var can_draw := session.cash >= Config.BUFF_PACK_PRICE and not Buffs.is_full()
+	var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day) and not Buffs.is_full()
 	_draw_btn.disabled = not can_draw
 	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 

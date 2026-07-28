@@ -32,9 +32,10 @@ func start_run() -> void:
 
 ## 상점: 슬롯 +1 구매. 성공 시 true(다음 세션부터 반영).
 func buy_slot() -> bool:
-	if cash < Config.SLOT_PRICE or slots >= Config.MAX_SLOTS:
+	var price := Config.shop_price(Config.SLOT_PRICE, day)
+	if cash < price or slots >= Config.MAX_SLOTS:
 		return false
-	cash -= Config.SLOT_PRICE
+	cash -= price
 	slots += 1
 	cash_changed.emit(cash)
 	return true
@@ -42,9 +43,10 @@ func buy_slot() -> bool:
 
 ## 상점: 버프 팩 구매 → 3개 랜덤 반환(택1은 호출 측). 못 사면 [].
 func buy_buff_pack() -> Array:
-	if cash < Config.BUFF_PACK_PRICE or Buffs.is_full():
+	var price := Config.shop_price(Config.BUFF_PACK_PRICE, day)
+	if cash < price or Buffs.is_full():
 		return []
-	cash -= Config.BUFF_PACK_PRICE
+	cash -= price
 	cash_changed.emit(cash)
 	return BuffDefs.random_pack(3)
 
@@ -100,6 +102,11 @@ func earn(amount: int) -> void:
 
 
 func _process(delta: float) -> void:
+	tick(delta)
+
+
+## 하루 진행 1스텝. 실게임은 _process(delta)로, 시뮬은 원하는 dt로 수동 호출.
+func tick(delta: float) -> void:
 	if not _running:
 		return
 	_elapsed += delta

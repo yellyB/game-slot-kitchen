@@ -5,11 +5,11 @@ extends RefCounted
 ## 금액 최소단위 1원 = 가장 싼 메뉴(커피 1). rent도 같은 스케일.
 
 const DAYS := [
-	{"rent": 1,  "per_wave": 2},   # 1일차 (손님 6) — 매출 ~3, 순이익으로 버프 1개
-	{"rent": 4,  "per_wave": 3},   # 2일차 (손님 9)
-	{"rent": 8,  "per_wave": 4},   # 3일차 (손님 12)
-	{"rent": 13, "per_wave": 5},   # 4일차 (손님 15)
-	{"rent": 20, "per_wave": 6},   # 5일차 (손님 18) — 클리어
+	{"rent": 5,  "per_wave": 2},   # 1일차 (손님 6, 최대매출 ~31) — 여유, 첫 버프
+	{"rent": 12, "per_wave": 3},   # 2일차 (손님 9, ~46)
+	{"rent": 22, "per_wave": 4},   # 3일차 (손님 12, ~62)
+	{"rent": 35, "per_wave": 5},   # 4일차 (손님 15, ~77)
+	{"rent": 50, "per_wave": 6},   # 5일차 (손님 18, ~93) — 클리어(절반 이상 서빙 필요)
 ]
 
 static func count() -> int:

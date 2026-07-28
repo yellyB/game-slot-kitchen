@@ -97,6 +97,22 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+	# 헤드리스 시뮬레이션: godot4 ... -- --sim
+	if "--sim" in OS.get_cmdline_user_args():
+		var batch := SimBatch.new()
+		var loadouts := [
+			{"name": "무버프", "buffs": []},
+			{"name": "조리-25%", "buffs": ["cook"]},
+			{"name": "판매가+25%", "buffs": ["price"]},
+			{"name": "조리+판매+인내+창고", "buffs": ["cook", "price", "patience", "warehouse"]},
+		]
+		print("\n[SIM] ===== 배치 시뮬 (판당 5일, 500회) =====")
+		for res in batch.compare(500, loadouts):
+			print("[SIM] %-22s 승률 %4.1f%%  평균현금 %6.1f  서빙 %4.1f  놓침 %4.1f  일수 %.1f" % [
+				res["name"], res["win_rate"] * 100.0, res["avg_cash"],
+				res["avg_served"], res["avg_lost"], res["avg_days"]])
+		get_tree().quit()
+
 
 func _start_game() -> void:
 	_title.hide()

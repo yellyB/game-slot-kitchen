@@ -14,21 +14,31 @@ const MAX_SLOTS := 10    # 슬롯 확장 상한 (세로 화면상 4줄 = 실질 
 const MAX_QUEUE := 4          # 큐 최대 인원
 const SPAWN_INTERVAL := 4.0   # 손님 등장 간격(초)
 
+# ── 손님 수요 (등급별 등장 가중 = 확률 %, 합 100) ──────────
+# 싼(낮은 등급) 메뉴 손님이 많이, 비싼(높은 등급) 손님은 드물게. 인덱스 = 등급-1.
+const SPAWN_WEIGHTS := [30, 22, 18, 15, 10, 5]  # 1등급 30% … 6등급 5%
+
 # ── 인내심 (2단계 별도 타이머) ────────────────────────────
-const PATIENCE_ORDER := 45.0  # 주문 대기(큐)
-const PATIENCE_DISH := 60.0   # 음식 대기(슬롯 주문 카드)
+const PATIENCE_ORDER := 25.0  # 주문 대기(큐)
+const PATIENCE_DISH := 35.0   # 음식 대기(슬롯 주문 카드)
 const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨강
 
 # ── 경제 (금액 최소단위 1원, 가장 싼 메뉴 = 1) ────────────
 const START_MONEY := 0     # 시작 소지금
-const SLOT_PRICE := 5       # 슬롯 +1 확장 가격(상점)
-const BUFF_PACK_PRICE := 2  # 버프 팩(카드깡) 가격 — 첫날 순이익으로 살 수 있게
+const SLOT_PRICE := 5       # 슬롯 +1 확장 1일차 기본가(상점) — 일수 따라 SHOP_PRICE_GROWTH로 상승
+const BUFF_PACK_PRICE := 2  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
+const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 # (가게세는 하루별 → data/levels.gd)
 
 # ── 세션 / 하루 ───────────────────────────────────────────
-const DAY_LENGTH := 45.0        # 영업시간(초)
+const DAY_LENGTH := 120.0       # 영업시간(초)
 const WAVES := 3                # 웨이브 수(고정). 웨이브당 손님 수는 data/levels.gd
 const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)
 const WAREHOUSE_EXIT_COST := 3.0  # 창고 닫을 때(퇴장) 소모 영업시간(초) — 트립 비용
 # (일차별 가게세·손님 수·승리 일차 = data/levels.gd)
+
+
+## 상점가 = 기본가 × 증가율^(day-1), 올림(비용). day는 1부터.
+static func shop_price(base: int, day: int) -> int:
+	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
