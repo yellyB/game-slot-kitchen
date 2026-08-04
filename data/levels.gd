@@ -16,4 +16,10 @@ static func count() -> int:
 	return DAYS.size()
 
 static func get_day(day: int) -> Dictionary:
-	return DAYS[clampi(day - 1, 0, DAYS.size() - 1)]
+	var d := (DAYS[clampi(day - 1, 0, DAYS.size() - 1)] as Dictionary).duplicate()
+	# 시뮬 압박 실험용 손잡이: SIM_LOAD 환경변수로 손님 수 배수(예: SIM_LOAD=3).
+	if OS.has_environment("SIM_LOAD"):
+		var mult := float(OS.get_environment("SIM_LOAD"))
+		if mult > 1.0:
+			d["per_wave"] = int(round(float(d.get("per_wave", 3)) * mult))
+	return d

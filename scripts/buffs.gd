@@ -208,7 +208,30 @@ func _ctx_count(per: String, ctx: Dictionary) -> int:
 		"empty": return int(ctx.get("empty", 0))
 		"orders": return int(ctx.get("orders", 0))
 		"dishes": return int(ctx.get("dishes", 0))
+		"ingr": return int(ctx.get("ingr", 0))
 	return 0
+
+
+# ── 재료 fetch(v2): 필요 재료 필터(13,14) / 트립 무료 확률(4) ──
+## 조리에 실제로 필요한 재료 — 계란/밀가루 생략 버프면 제외.
+func required_ingredients(recipe_id: String) -> Array:
+	var out: Array = []
+	var skip := {}
+	for id in _owned:
+		var ing: String = BuffDefs.get_def(id).get("opt_ingredient", "")
+		if ing != "":
+			skip[ing] = true
+	for ing in Recipes.get_def(recipe_id).get("ingredients", []):
+		if not skip.has(ing):
+			out.append(ing)
+	return out
+
+## 창고 트립이 공짜(시간 0)일 확률 — 카드4(30%). 여러 장이면 최대값.
+func trip_free_chance() -> float:
+	var c := 0.0
+	for id in _owned:
+		c = maxf(c, float(BuffDefs.get_def(id).get("trip_free", 0.0)))
+	return c
 
 
 # ── 서빙/조리 이벤트 훅 ───────────────────────────────────

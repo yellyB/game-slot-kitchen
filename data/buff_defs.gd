@@ -24,8 +24,8 @@ const ALL := {
 	"cook":       {"card": 1, "name": "조리 속도", "icon": "⚡", "label": "조리 -25%", "mult": {"stat": "cook_mult", "value": 0.75}},
 	"patience":   {"card": 2, "name": "인내심", "icon": "⏳", "label": "인내심 +10%", "mult": {"stat": "patience_mult", "value": 1.10}},
 	"day_len":    {"card": 3, "name": "영업시간", "icon": "🕒", "label": "영업시간 +7%", "mult": {"stat": "day_mult", "value": 1.07}},
-	"wh_chance":  {"card": 4, "name": "창고 무비용", "icon": "🍀", "label": "창고 30% 무시간", "blocked": true},
-	"wh_fast":    {"card": 5, "name": "창고 1초", "icon": "🏃", "label": "창고 1초", "blocked": true},
+	"wh_chance":  {"card": 4, "name": "창고 무비용", "icon": "🍀", "label": "창고 30% 무시간", "trip_free": 0.30},
+	"wh_fast":    {"card": 5, "name": "창고 1초", "icon": "🏃", "label": "창고 트립 1초", "mult": {"stat": "warehouse_mult", "value": 0.34}},
 	"rent_down":  {"card": 6, "name": "가게세", "icon": "🏠", "label": "가게세 -10%", "mult": {"stat": "rent_mult", "value": 0.90}},
 	"shop_disc":  {"card": 7, "name": "상점 할인", "icon": "🏷️", "label": "상점 -10%", "blocked": true},
 	"pack_more":  {"card": 8, "name": "카드깡+1", "icon": "🃏", "label": "후보 +1", "blocked": true},
@@ -37,8 +37,8 @@ const ALL := {
 	"tool_slot":  {"card": 12, "name": "도구+1", "icon": "🔥", "label": "도구석 +1(슬롯+1)", "structure": {"tool": 1, "slot": 1}},
 
 	# ── 재료(v1 미지원) ──
-	"opt_egg":    {"card": 13, "name": "계란 생략", "icon": "🥚", "label": "계란 없어도 조리", "blocked": true},
-	"opt_flour":  {"card": 14, "name": "밀가루 생략", "icon": "🌾", "label": "밀가루 없어도 조리", "blocked": true},
+	"opt_egg":    {"card": 13, "name": "계란 생략", "icon": "🥚", "label": "계란 없어도 조리", "opt_ingredient": "egg"},
+	"opt_flour":  {"card": 14, "name": "밀가루 생략", "icon": "🌾", "label": "밀가루 없어도 조리", "opt_ingredient": "flour"},
 
 	# ── 등급/수요 ──
 	"dmd_t12":    {"card": 15, "name": "1·2등급 수요", "icon": "📈", "label": "1·2등급 손님 +100%", "demand": {"tiers": [1, 2], "mult": 2.0}},
@@ -72,7 +72,7 @@ const ALL := {
 	"cook_empty": {"card": 37, "name": "빈슬롯 조리", "icon": "💨", "label": "빈슬롯당 조리 +8%", "cook_empty": {"step": 0.08}},
 	"sc_order":   {"card": 38, "name": "주문카드 판매", "icon": "📝", "label": "주문카드당 판매금 +10%", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.10}},
 	"sc_dish":    {"card": 39, "name": "완성품 판매", "icon": "🍽️", "label": "완성품당 판매금 +20%", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
-	"sc_ingr":    {"card": 40, "name": "재료카드 판매", "icon": "🧺", "label": "재료카드당 판매금 +4%", "blocked": true},
+	"sc_ingr":    {"card": 40, "name": "재료카드 판매", "icon": "🧺", "label": "재료카드당 판매금 +4%", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},
 
 	# ── 판매금: 콤보/연속/확률(41~51) ──
 	"prob_x2":    {"card": 41, "name": "대박", "icon": "🎲", "label": "8% 확률 판매금 2배", "sale": {"type": "prob_double", "chance": 0.08}},
