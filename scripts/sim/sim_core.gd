@@ -24,7 +24,7 @@ var _order_lost_today := 0
 var _served_by_menu := {}
 
 
-func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
+func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
@@ -35,9 +35,8 @@ func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
 	Buffs.clear()
 	for b in buff_loadout:
 		Buffs.add(b)
-	_rebuild_tools()
 
-	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0}
+	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0}
 	var safety := 0
 	while true:
 		_reset_day_consumables()
@@ -52,13 +51,75 @@ func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
 		if _last.get("won", false):
 			result["won"] = true
 			break
+		if shop_enabled:
+			_shop()
 		session.advance_day()
 
 	result["cash"] = session.cash
 	result["served"] = _served
 	result["lost"] = _lost
+	result["slots"] = session.slots
+	result["buffs"] = Buffs.owned().size()
 	session.free()
 	return result
+
+
+func _shop() -> void:
+	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day + 1).get("rent", 0)))))
+	while session.slots < Config.MAX_SLOTS:
+		if session.cash - Config.shop_price(Config.SLOT_PRICE, session.day) < next_rent:
+			break
+		if not session.buy_slot():
+			break
+	while Buffs.owned().size() < 3 and not Buffs.is_full():
+		if session.cash - Config.shop_price(Config.BUFF_PACK_PRICE, session.day) < next_rent:
+			break
+		var pack: Array = session.buy_buff_pack()
+		if pack.is_empty():
+			break
+		var pick := _pick_buff(pack)
+		if pick == "":
+			break
+		Buffs.add(pick)
+
+
+func _pick_buff(pack: Array) -> String:
+	var best := ""
+	var best_score := -999
+	for id in pack:
+		if Buffs.owned().has(id):
+			continue
+		var s := _buff_score(id)
+		if s > best_score:
+			best_score = s
+			best = id
+	return best
+
+func _buff_score(id: String) -> int:
+	var d := BuffDefs.get_def(id)
+	if d.get("blocked", false):
+		return -100
+	if d.has("structure"):
+		return 100
+	if d.has("trip_free") or d.get("mult", {}).get("stat", "") == "warehouse_mult":
+		return 90
+	if d.has("settle"):
+		return 80
+	if d.has("ramp") or d.has("trigger"):
+		return 70
+	if d.has("economy"):
+		return 60
+	if d.has("sale"):
+		return 50
+	if d.has("menu_price"):
+		return 45
+	if d.has("demand"):
+		return 40
+	if d.get("mult", {}).get("stat", "") == "cook_mult":
+		return 30
+	if d.get("mult", {}).get("stat", "") == "patience_mult":
+		return 10
+	return 20
 
 
 func _rebuild_tools() -> void:
@@ -72,9 +133,7 @@ func _reset_day_consumables() -> void:
 	orders.clear()
 	dishes.clear()
 	ingredients.clear()
-	for t in tools:
-		t["id"] = ""
-		t["t"] = 0.0
+	_rebuild_tools()
 	_busy = 0.0
 	_now = 0.0
 	_visited_today = 0
