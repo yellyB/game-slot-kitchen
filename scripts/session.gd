@@ -5,6 +5,7 @@ signal cash_changed(cash: int)
 signal progress(t01: float)
 signal spawn_requested
 signal day_started(day: int, rent: int)
+signal day_closing(s: Session)
 signal day_ended(summary: Dictionary)
 
 var cash := 0
@@ -15,6 +16,8 @@ var slots := Config.START_SLOTS
 
 var _elapsed := 0.0
 var _running := false
+var _day_length := Config.DAY_LENGTH
+var _rent_skip_used := false
 var _spawn_times: Array[float] = []
 var _next_idx := 0
 
@@ -23,6 +26,7 @@ func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
+	_rent_skip_used = false
 	Buffs.clear()
 	cash_changed.emit(cash)
 	start_day()
@@ -53,14 +57,23 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
-	rent = int(Levels.get_day(day).get("rent", 0))
+	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
 	day_revenue = 0
 	_elapsed = 0.0
 	_next_idx = 0
+	_day_length = Stats.day_length()
+	var itr := Buffs.day_start_bonus(cash)
+	if itr != 0:
+		cash += itr
+		cash_changed.emit(cash)
 	_build_schedule()
 	_running = true
 	day_started.emit(day, rent)
 	progress.emit(0.0)
+
+
+func effective_slots() -> int:
+	return slots + Buffs.slot_bonus()
 
 
 func is_running() -> bool:
@@ -75,16 +88,16 @@ func add_cash(amount: int) -> void:
 func debug_end_soon(remaining := 1.0) -> void:
 	if not _running:
 		return
-	_elapsed = maxf(_elapsed, Config.DAY_LENGTH - remaining)
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	_elapsed = maxf(_elapsed, _day_length - remaining)
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 
 
 func spend_time(seconds: float) -> void:
 	if not _running:
 		return
 	_elapsed += seconds
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
-	if _elapsed >= Config.DAY_LENGTH:
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
+	if _elapsed >= _day_length:
 		_end_day()
 
 
@@ -102,27 +115,34 @@ func tick(delta: float) -> void:
 	if not _running:
 		return
 	_elapsed += delta
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 	while _next_idx < _spawn_times.size() and _spawn_times[_next_idx] <= _elapsed:
 		spawn_requested.emit()
 		_next_idx += 1
-	if _elapsed >= Config.DAY_LENGTH:
+	if _elapsed >= _day_length:
 		_end_day()
 
 
 func _end_day() -> void:
 	_running = false
+	day_closing.emit(self)
 	var passed := cash >= rent
+	if not passed and Buffs.has_effect("rent_skip") and not _rent_skip_used:
+		passed = true
+		_rent_skip_used = true
+		Buffs.discard("rent_skip")
 	var summary := {
 		"day": day,
 		"revenue": day_revenue,
 		"rent": rent,
 		"passed": passed,
 		"won": false,
+		"skipped": _rent_skip_used and cash < rent,
 	}
-	if passed:
+	if passed and cash >= rent:
 		cash -= rent
 		cash_changed.emit(cash)
+	if passed:
 		summary["won"] = day >= Levels.count()
 	summary["cash_after"] = cash
 	day_ended.emit(summary)
@@ -133,8 +153,8 @@ func _build_schedule() -> void:
 	var per_wave := int(Levels.get_day(day).get("per_wave", 3))
 	var half := (per_wave - 1) * 0.5
 	for w in Config.WAVES:
-		var center: float = Config.DAY_LENGTH * (w + 0.5) / Config.WAVES
+		var center: float = _day_length * (w + 0.5) / Config.WAVES
 		for k in per_wave:
 			var t: float = center + (k - half) * Config.WAVE_SPACING
-			_spawn_times.append(clampf(t, 1.0, Config.DAY_LENGTH - 2.0))
+			_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
 	_spawn_times.sort()
