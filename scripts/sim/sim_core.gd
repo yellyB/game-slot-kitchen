@@ -2,13 +2,16 @@ class_name SimCore
 extends RefCounted
 
 const DT := 0.1
+const SLOT_RESERVE := 3
 
 var session: Session
 var queue: Array = []
 var orders: Array = []
 var tools: Array = []
 var dishes: Array = []
+var ingredients: Array = []
 
+var _busy := 0.0
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -68,9 +71,11 @@ func _reset_day_consumables() -> void:
 	queue.clear()
 	orders.clear()
 	dishes.clear()
+	ingredients.clear()
 	for t in tools:
 		t["id"] = ""
 		t["t"] = 0.0
+	_busy = 0.0
 	_now = 0.0
 	_visited_today = 0
 	_served_today = 0
@@ -84,9 +89,13 @@ func _step() -> void:
 	session.tick(DT)
 	_decay_patience()
 	_advance_cooking()
+	if _busy > 0.0:
+		_busy -= DT
+		return
 	_serve()
 	_start_cooking()
 	_accept_from_queue()
+	_maybe_fetch()
 
 
 func _on_spawn() -> void:
@@ -153,14 +162,15 @@ func _serve() -> void:
 
 
 func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
-	var filled := orders.size() + dishes.size()
 	var cap := _serve_cap()
+	var filled := orders.size() + dishes.size() + ingredients.size()
 	var mx := float(order.get("max", 1.0))
 	return {
 		"filled": filled,
 		"empty": maxi(0, cap - filled),
 		"orders": orders.size(),
 		"dishes": dishes.size(),
+		"ingr": ingredients.size(),
 		"buffs": Buffs.owned().size(),
 		"now": _now,
 		"dish_age": _now - float(dish.get("born", _now)),
@@ -172,13 +182,15 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 
 
 func _start_cooking() -> void:
-	var empty := maxi(0, _serve_cap() - (orders.size() + dishes.size()))
+	var empty := _empty_slots()
 	for t in tools:
 		if t["id"] != "":
 			continue
-		var rid := _pick_recipe_to_cook()
+		var rid := _pick_cookable()
 		if rid == "":
-			break
+			continue
+		for ing in Buffs.required_ingredients(rid):
+			ingredients.erase(ing)
 		if Buffs.on_cook_start():
 			dishes.append({"id": rid, "born": _now})
 		else:
@@ -186,21 +198,22 @@ func _start_cooking() -> void:
 			t["t"] = Stats.cook_time(rid, empty)
 
 
-func _pick_recipe_to_cook() -> String:
+func _pick_cookable() -> String:
+	var avail := _ingredient_counts()
 	var sorted_orders := orders.duplicate()
 	sorted_orders.sort_custom(func(a, b): return a["pat"] < b["pat"])
 	for o in sorted_orders:
 		var rid: String = o["id"]
-		var have := _count_dishes(rid) + _count_cooking(rid)
-		var need := _count_orders(rid)
-		if have < need:
+		if _count_dishes(rid) + _count_cooking(rid) >= _count_orders(rid):
+			continue
+		if _has_ingredients(rid, avail):
 			return rid
 	return ""
 
 
 func _accept_from_queue() -> void:
 	var cap := _serve_cap()
-	while not queue.is_empty() and orders.size() + dishes.size() < cap:
+	while not queue.is_empty() and _board_used() < cap - SLOT_RESERVE:
 		var best := 0
 		for i in queue.size():
 			if queue[i]["pat"] < queue[best]["pat"]:
@@ -213,9 +226,69 @@ func _accept_from_queue() -> void:
 			dishes.append({"id": rid, "born": _now})
 
 
+func _maybe_fetch() -> void:
+	if _empty_slots() <= 0:
+		return
+	var need := _needed_ingredients()
+	if need.is_empty():
+		return
+	var space := _empty_slots()
+	for ing in need:
+		var cnt: int = need[ing]
+		while cnt > 0 and space > 0:
+			ingredients.append(ing)
+			space -= 1
+			cnt -= 1
+	var cost := Stats.warehouse_cost()
+	if Buffs.trip_free_chance() > 0.0 and randf() < Buffs.trip_free_chance():
+		cost = 0.0
+	_busy = cost
+
+
+func _ingredient_counts() -> Dictionary:
+	var c := {}
+	for ing in ingredients:
+		c[ing] = int(c.get(ing, 0)) + 1
+	return c
+
+func _has_ingredients(rid: String, avail: Dictionary) -> bool:
+	var req := {}
+	for ing in Buffs.required_ingredients(rid):
+		req[ing] = int(req.get(ing, 0)) + 1
+	for ing in req:
+		if int(avail.get(ing, 0)) < req[ing]:
+			return false
+	for ing in req:
+		avail[ing] = int(avail[ing]) - req[ing]
+	return true
+
+func _needed_ingredients() -> Dictionary:
+	var need := {}
+	for rid in _distinct_order_ids():
+		var unc := _count_orders(rid) - _count_dishes(rid) - _count_cooking(rid)
+		if unc <= 0:
+			continue
+		for ing in Buffs.required_ingredients(rid):
+			need[ing] = int(need.get(ing, 0)) + unc
+	for ing in ingredients:
+		if need.has(ing):
+			need[ing] = int(need[ing]) - 1
+	var out := {}
+	for ing in need:
+		if int(need[ing]) > 0:
+			out[ing] = int(need[ing])
+	return out
+
+
 func _serve_cap() -> int:
 	var occupied := maxi(0, Buffs.owned().size() - Buffs.buff_slot_bonus())
 	return maxi(1, session.effective_slots() - occupied)
+
+func _board_used() -> int:
+	return orders.size() + dishes.size() + ingredients.size()
+
+func _empty_slots() -> int:
+	return maxi(0, _serve_cap() - _board_used())
 
 
 func _on_day_closing(s: Session) -> void:
@@ -236,6 +309,12 @@ func _on_day_closing(s: Session) -> void:
 	if bonus != 0:
 		s.earn(bonus)
 
+
+func _distinct_order_ids() -> Array:
+	var seen := {}
+	for o in orders:
+		seen[o["id"]] = true
+	return seen.keys()
 
 func _count_dishes(rid: String) -> int:
 	var n := 0

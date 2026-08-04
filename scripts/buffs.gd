@@ -194,7 +194,27 @@ func _ctx_count(per: String, ctx: Dictionary) -> int:
 		"empty": return int(ctx.get("empty", 0))
 		"orders": return int(ctx.get("orders", 0))
 		"dishes": return int(ctx.get("dishes", 0))
+		"ingr": return int(ctx.get("ingr", 0))
 	return 0
+
+
+func required_ingredients(recipe_id: String) -> Array:
+	var out: Array = []
+	var skip := {}
+	for id in _owned:
+		var ing: String = BuffDefs.get_def(id).get("opt_ingredient", "")
+		if ing != "":
+			skip[ing] = true
+	for ing in Recipes.get_def(recipe_id).get("ingredients", []):
+		if not skip.has(ing):
+			out.append(ing)
+	return out
+
+func trip_free_chance() -> float:
+	var c := 0.0
+	for id in _owned:
+		c = maxf(c, float(BuffDefs.get_def(id).get("trip_free", 0.0)))
+	return c
 
 
 func on_serve(recipe_id: String, ctx: Dictionary) -> void:

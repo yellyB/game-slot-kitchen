@@ -13,4 +13,9 @@ static func count() -> int:
 	return DAYS.size()
 
 static func get_day(day: int) -> Dictionary:
-	return DAYS[clampi(day - 1, 0, DAYS.size() - 1)]
+	var d := (DAYS[clampi(day - 1, 0, DAYS.size() - 1)] as Dictionary).duplicate()
+	if OS.has_environment("SIM_LOAD"):
+		var mult := float(OS.get_environment("SIM_LOAD"))
+		if mult > 1.0:
+			d["per_wave"] = int(round(float(d.get("per_wave", 3)) * mult))
+	return d
