@@ -100,19 +100,12 @@ func _ready() -> void:
 	# 헤드리스 시뮬레이션: godot4 ... -- --sim
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
-		var loadouts := [
-			{"name": "무버프", "buffs": []},
-			{"name": "도구+1(12,용량)", "buffs": ["tool_slot"]},
-			{"name": "커피램프(24,성장)", "buffs": ["ramp_t1"]},
-			{"name": "정산100(63,돈)", "buffs": ["settle_100"]},
-			{"name": "판매금+3%(46,돈)", "buffs": ["sale_flat3"]},
-			{"name": "1·2등급가격+15%(21,돈)", "buffs": ["mp_t12"]},
-		]
-		print("\n[SIM] ===== 배치 시뮬 (판당 5일, 200회) =====")
-		for res in batch.compare(200, loadouts):
-			print("[SIM] %-22s 승률 %4.1f%%  평균현금 %6.1f  서빙 %4.1f  놓침 %4.1f  일수 %.1f" % [
-				res["name"], res["win_rate"] * 100.0, res["avg_cash"],
-				res["avg_served"], res["avg_lost"], res["avg_days"]])
+		var n := 200
+		print("\n[SIM] ===== 생존 시뮬 (판당 5일, %d회, 상점 ON) =====" % n)
+		var s := batch.run(n, [], true)   # 빈 로드아웃 = 상점으로 스스로 성장
+		print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
+			s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
+			s["avg_slots"], s["avg_buffs"], s["avg_days"]])
 		get_tree().quit()
 
 

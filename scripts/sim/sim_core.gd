@@ -32,7 +32,8 @@ var _order_lost_today := 0
 var _served_by_menu := {}
 
 
-func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
+## shop_enabled: 하루 사이 상점(슬롯/버프 구매) 활성. 통제된 로드아웃 비교 땐 false로.
+func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
@@ -43,9 +44,8 @@ func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
 	Buffs.clear()
 	for b in buff_loadout:
 		Buffs.add(b)
-	_rebuild_tools()
 
-	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0}
+	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0}
 	var safety := 0
 	while true:
 		_reset_day_consumables()
@@ -60,13 +60,78 @@ func run(buff_loadout: Array = [], run_seed := 0) -> Dictionary:
 		if _last.get("won", false):
 			result["won"] = true
 			break
+		if shop_enabled:
+			_shop()                      # 벌어서 슬롯/버프 재투자
 		session.advance_day()
 
 	result["cash"] = session.cash
 	result["served"] = _served
 	result["lost"] = _lost
+	result["slots"] = session.slots
+	result["buffs"] = Buffs.owned().size()
 	session.free()
 	return result
+
+
+## 하루 사이 상점: 다음 가게세는 남기고, 남는 돈으로 슬롯 확장 → 버프팩 구매(유능 정책).
+func _shop() -> void:
+	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day + 1).get("rent", 0)))))
+	while session.slots < Config.MAX_SLOTS:
+		if session.cash - Config.shop_price(Config.SLOT_PRICE, session.day) < next_rent:
+			break
+		if not session.buy_slot():
+			break
+	# 버프는 소수만 — 각 버프가 슬롯 1칸을 잡아먹어 처리량을 깎으므로 무제한 구매는 자멸.
+	while Buffs.owned().size() < 3 and not Buffs.is_full():
+		if session.cash - Config.shop_price(Config.BUFF_PACK_PRICE, session.day) < next_rent:
+			break
+		var pack: Array = session.buy_buff_pack()
+		if pack.is_empty():
+			break
+		var pick := _pick_buff(pack)
+		if pick == "":
+			break
+		Buffs.add(pick)
+
+
+## 팩 3장 중 슬롯값을 가장 잘 하는 카드 선택(시뮬 발견 기반 우선순위 휴리스틱).
+func _pick_buff(pack: Array) -> String:
+	var best := ""
+	var best_score := -999
+	for id in pack:
+		if Buffs.owned().has(id):
+			continue
+		var s := _buff_score(id)
+		if s > best_score:
+			best_score = s
+			best = id
+	return best
+
+func _buff_score(id: String) -> int:
+	var d := BuffDefs.get_def(id)
+	if d.get("blocked", false):
+		return -100
+	if d.has("structure"):                       # 슬롯/도구/버프칸 = 용량(최우선)
+		return 100
+	if d.has("trip_free") or d.get("mult", {}).get("stat", "") == "warehouse_mult":
+		return 90                                # fetch 감소
+	if d.has("settle"):
+		return 80
+	if d.has("ramp") or d.has("trigger"):
+		return 70                                # 성장
+	if d.has("economy"):
+		return 60
+	if d.has("sale"):
+		return 50
+	if d.has("menu_price"):
+		return 45
+	if d.has("demand"):
+		return 40
+	if d.get("mult", {}).get("stat", "") == "cook_mult":
+		return 30
+	if d.get("mult", {}).get("stat", "") == "patience_mult":
+		return 10                                # 약함(이 모델)
+	return 20
 
 
 func _rebuild_tools() -> void:
@@ -80,9 +145,7 @@ func _reset_day_consumables() -> void:
 	orders.clear()
 	dishes.clear()
 	ingredients.clear()
-	for t in tools:
-		t["id"] = ""
-		t["t"] = 0.0
+	_rebuild_tools()   # 도구 수 = TOOL_COUNT + 도구버프(상점 구매 반영)
 	_busy = 0.0
 	_now = 0.0
 	_visited_today = 0

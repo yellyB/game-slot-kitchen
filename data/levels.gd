@@ -5,11 +5,11 @@ extends RefCounted
 ## 금액 단위: 가장 싼 메뉴(커피)=100. rent도 같은 스케일.
 
 const DAYS := [
-	{"rent": 500,  "per_wave": 3},   # 1일차 (손님 9)  — 여유, 돈/성장 버프 담기
-	{"rent": 1200, "per_wave": 5},   # 2일차 (손님 15)
-	{"rent": 2200, "per_wave": 8},   # 3일차 (손님 24) — 살짝 조여옴
-	{"rent": 3500, "per_wave": 11},  # 4일차 (손님 33) — 압박 시작
-	{"rent": 5000, "per_wave": 15},  # 5일차 (손님 45) — 처리량 압박(용량 버프가 값을 함)
+	{"rent": 500,   "per_wave": 3},   # 1일차 (손님 9)  — 여유, 돈/성장 버프 담기
+	{"rent": 2000,  "per_wave": 5},   # 2일차 (손님 15) — 여유
+	{"rent": 6000,  "per_wave": 8},   # 3일차 (손님 24) — 재투자 압박 시작
+	{"rent": 13000, "per_wave": 11},  # 4일차 (손님 33) — 빡빡
+	{"rent": 20000, "per_wave": 15},  # 5일차 (손님 45) — 생존+처리량 이중 압박(잘못하면 폐업)
 ]
 
 static func count() -> int:
@@ -22,4 +22,6 @@ static func get_day(day: int) -> Dictionary:
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
 			d["per_wave"] = int(round(float(d.get("per_wave", 3)) * mult))
+	if OS.has_environment("SIM_RENT"):   # 가게세 배수 실험 손잡이
+		d["rent"] = int(round(float(d.get("rent", 0)) * float(OS.get_environment("SIM_RENT"))))
 	return d
