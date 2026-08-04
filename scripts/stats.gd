@@ -19,7 +19,10 @@ static func sell_price(recipe_id: String) -> int:
 	return Buffs.menu_price(recipe_id)
 
 static func warehouse_cost() -> float:
-	return Buffs.mod("warehouse_mult", Config.WAREHOUSE_EXIT_COST)
+	var base := Config.WAREHOUSE_EXIT_COST
+	if OS.has_environment("SIM_TRIP"):
+		base = float(OS.get_environment("SIM_TRIP"))
+	return Buffs.mod("warehouse_mult", base)
 
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()

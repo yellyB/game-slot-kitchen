@@ -24,7 +24,7 @@ const MAX_BUFFS := 5
 const DAY_LENGTH := 120.0
 const WAVES := 3
 const WAVE_SPACING := 0.7
-const WAREHOUSE_EXIT_COST := 3.0
+const WAREHOUSE_EXIT_COST := 1.5
 
 
 static func shop_price(base: int, day: int) -> int:
