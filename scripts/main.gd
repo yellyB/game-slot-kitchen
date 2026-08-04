@@ -102,9 +102,12 @@ func _ready() -> void:
 		var batch := SimBatch.new()
 		var loadouts := [
 			{"name": "무버프", "buffs": []},
-			{"name": "조리-25%", "buffs": ["cook"]},
-			{"name": "판매가+25%", "buffs": ["price"]},
-			{"name": "조리+판매+인내+창고", "buffs": ["cook", "price", "patience", "warehouse"]},
+			{"name": "조리-25%(1)", "buffs": ["cook"]},
+			{"name": "커피램프(24)", "buffs": ["ramp_t1"]},
+			{"name": "커피램프+수요(24+15)", "buffs": ["ramp_t1", "dmd_t12"]},
+			{"name": "몰빵성장(42)", "buffs": ["rt_streak3"]},
+			{"name": "판매금3종(46+52+57)", "buffs": ["sale_flat3", "sale_t12", "sale_addon"]},
+			{"name": "정산(63)", "buffs": ["settle_100"]},
 		]
 		print("\n[SIM] ===== 배치 시뮬 (판당 5일, 500회) =====")
 		for res in batch.compare(500, loadouts):

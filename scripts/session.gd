@@ -7,16 +7,19 @@ signal cash_changed(cash: int)
 signal progress(t01: float)          # 영업시간 진행 0..1
 signal spawn_requested                # 손님 하나 등장
 signal day_started(day: int, rent: int)
+signal day_closing(s: Session)        # 마감 정산 훅(가게세 차감 전) — 리스너가 earn/차감
 signal day_ended(summary: Dictionary) # {day, revenue, rent, cash_after, passed, won}
 
 var cash := 0
 var day := 1
 var rent := 0
 var day_revenue := 0
-var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장으로 증가)
+var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장 + 구조 버프)
 
 var _elapsed := 0.0
 var _running := false
+var _day_length := Config.DAY_LENGTH
+var _rent_skip_used := false
 var _spawn_times: Array[float] = []
 var _next_idx := 0
 
@@ -25,6 +28,7 @@ func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
+	_rent_skip_used = false
 	Buffs.clear()
 	cash_changed.emit(cash)
 	start_day()
@@ -57,14 +61,25 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
-	rent = int(Levels.get_day(day).get("rent", 0))
+	# 슬롯 = 기본(상점확장 포함) + 구조 버프(12)
+	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
 	day_revenue = 0
 	_elapsed = 0.0
 	_next_idx = 0
+	_day_length = Stats.day_length()
+	# 개장 이자(62)
+	var itr := Buffs.day_start_bonus(cash)
+	if itr != 0:
+		cash += itr
+		cash_changed.emit(cash)
 	_build_schedule()
 	_running = true
 	day_started.emit(day, rent)
 	progress.emit(0.0)
+
+
+func effective_slots() -> int:
+	return slots + Buffs.slot_bonus()
 
 
 func is_running() -> bool:
@@ -80,8 +95,8 @@ func add_cash(amount: int) -> void:  # 매출 집계 없이 소지금만
 func debug_end_soon(remaining := 1.0) -> void:  # 오늘 remaining초 남게
 	if not _running:
 		return
-	_elapsed = maxf(_elapsed, Config.DAY_LENGTH - remaining)
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	_elapsed = maxf(_elapsed, _day_length - remaining)
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 
 
 ## 영업시간 소모(창고 트립 비용 등). 시간 넘기면 마감.
@@ -89,8 +104,8 @@ func spend_time(seconds: float) -> void:
 	if not _running:
 		return
 	_elapsed += seconds
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
-	if _elapsed >= Config.DAY_LENGTH:
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
+	if _elapsed >= _day_length:
 		_end_day()
 
 
@@ -110,27 +125,34 @@ func tick(delta: float) -> void:
 	if not _running:
 		return
 	_elapsed += delta
-	progress.emit(clampf(_elapsed / Config.DAY_LENGTH, 0.0, 1.0))
+	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 	while _next_idx < _spawn_times.size() and _spawn_times[_next_idx] <= _elapsed:
 		spawn_requested.emit()
 		_next_idx += 1
-	if _elapsed >= Config.DAY_LENGTH:
+	if _elapsed >= _day_length:
 		_end_day()
 
 
 func _end_day() -> void:
 	_running = false
+	day_closing.emit(self)   # 정산 훅(리스너가 earn/차감) — 가게세 차감 전
 	var passed := cash >= rent
+	if not passed and Buffs.has_effect("rent_skip") and not _rent_skip_used:
+		passed = true            # 가게세 통과(9) — 이번 하루는 미납 통과
+		_rent_skip_used = true
+		Buffs.discard("rent_skip")
 	var summary := {
 		"day": day,
 		"revenue": day_revenue,
 		"rent": rent,
 		"passed": passed,
 		"won": false,
+		"skipped": _rent_skip_used and cash < rent,
 	}
-	if passed:
+	if passed and cash >= rent:
 		cash -= rent
 		cash_changed.emit(cash)
+	if passed:
 		summary["won"] = day >= Levels.count()
 	summary["cash_after"] = cash
 	day_ended.emit(summary)
@@ -142,8 +164,8 @@ func _build_schedule() -> void:
 	var per_wave := int(Levels.get_day(day).get("per_wave", 3))
 	var half := (per_wave - 1) * 0.5
 	for w in Config.WAVES:
-		var center: float = Config.DAY_LENGTH * (w + 0.5) / Config.WAVES
+		var center: float = _day_length * (w + 0.5) / Config.WAVES
 		for k in per_wave:
 			var t: float = center + (k - half) * Config.WAVE_SPACING
-			_spawn_times.append(clampf(t, 1.0, Config.DAY_LENGTH - 2.0))
+			_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
 	_spawn_times.sort()
