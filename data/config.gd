@@ -35,7 +35,9 @@ const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절
 const DAY_LENGTH := 120.0       # 영업시간(초)
 const WAVES := 3                # 웨이브 수(고정). 웨이브당 손님 수는 data/levels.gd
 const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)
-const WAREHOUSE_EXIT_COST := 3.0  # 창고 닫을 때(퇴장) 소모 영업시간(초) — 트립 비용
+const WAREHOUSE_EXIT_COST := 1.5  # 창고 닫을 때(퇴장) 소모 영업시간(초) — 트립 비용
+# (fetch 독점 완화: 3.0→1.5. 시뮬상 창고=최대병목이라 조리/도구 카드가 죽던 문제 조정.
+#  트립이 게임의 전부가 안 되게 하되, 여전히 유의미한 시간비용으로 유지.)
 # (일차별 가게세·손님 수·승리 일차 = data/levels.gd)
 
 

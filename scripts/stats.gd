@@ -23,7 +23,10 @@ static func sell_price(recipe_id: String) -> int:
 	return Buffs.menu_price(recipe_id)
 
 static func warehouse_cost() -> float:
-	return Buffs.mod("warehouse_mult", Config.WAREHOUSE_EXIT_COST)
+	var base := Config.WAREHOUSE_EXIT_COST
+	if OS.has_environment("SIM_TRIP"):   # 실험용 손잡이: 트립 기본비용 오버라이드
+		base = float(OS.get_environment("SIM_TRIP"))
+	return Buffs.mod("warehouse_mult", base)
 
 ## 손님이 주문할 레시피 뽑기 — 등급 가중(Config.SPAWN_WEIGHTS) × 수요 버프(15~20).
 static func random_recipe() -> String:

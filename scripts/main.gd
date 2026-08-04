@@ -102,14 +102,14 @@ func _ready() -> void:
 		var batch := SimBatch.new()
 		var loadouts := [
 			{"name": "무버프", "buffs": []},
-			{"name": "조리-25%(1)", "buffs": ["cook"]},
-			{"name": "인내심+10%(2)", "buffs": ["patience"]},
-			{"name": "수요1·2등급(15)", "buffs": ["dmd_t12"]},
-			{"name": "창고1초(5)", "buffs": ["wh_fast"]},
-			{"name": "도구+1(12)", "buffs": ["tool_slot"]},
+			{"name": "도구+1(12,용량)", "buffs": ["tool_slot"]},
+			{"name": "커피램프(24,성장)", "buffs": ["ramp_t1"]},
+			{"name": "정산100(63,돈)", "buffs": ["settle_100"]},
+			{"name": "판매금+3%(46,돈)", "buffs": ["sale_flat3"]},
+			{"name": "1·2등급가격+15%(21,돈)", "buffs": ["mp_t12"]},
 		]
-		print("\n[SIM] ===== 배치 시뮬 (판당 5일, 500회) =====")
-		for res in batch.compare(500, loadouts):
+		print("\n[SIM] ===== 배치 시뮬 (판당 5일, 200회) =====")
+		for res in batch.compare(200, loadouts):
 			print("[SIM] %-22s 승률 %4.1f%%  평균현금 %6.1f  서빙 %4.1f  놓침 %4.1f  일수 %.1f" % [
 				res["name"], res["win_rate"] * 100.0, res["avg_cash"],
 				res["avg_served"], res["avg_lost"], res["avg_days"]])
