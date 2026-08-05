@@ -163,14 +163,18 @@ func _end_day() -> void:
 	day_ended.emit(summary)
 
 
-## 웨이브별로 손님 등장 시각을 미리 계산(몰림). 웨이브 3 고정, 웨이브당 손님은 레벨별.
+## 손님 등장 시각을 하루에 균등 분포(우르르 X). 첫 손님 일찍, 마감 전까지 골고루.
+## 총 손님 = per_wave × WAVES (난이도 수치는 그대로, 배치만 균등).
 func _build_schedule() -> void:
 	_spawn_times.clear()
-	var per_wave := int(Levels.get_day(day).get("per_wave", 3))
-	var half := (per_wave - 1) * 0.5
-	for w in Config.WAVES:
-		var center: float = _day_length * (w + 0.5) / Config.WAVES
-		for k in per_wave:
-			var t: float = center + (k - half) * Config.WAVE_SPACING
-			_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
+	var total := int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES
+	if total <= 0:
+		return
+	var first := Config.SPAWN_FIRST
+	var last := _day_length - Config.SPAWN_LAST_MARGIN
+	var span := maxf(1.0, last - first)
+	var denom := float(maxi(1, total - 1))   # 첫 손님=first, 마지막=last 포함 균등
+	for i in total:
+		var t := first + span * float(i) / denom
+		_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
 	_spawn_times.sort()
