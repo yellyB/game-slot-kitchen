@@ -15,6 +15,13 @@ var _trash_btn: TrashButton
 
 var _queue_row: HBoxContainer
 
+# 하루 정산(day_end_bonus) 집계 — day_started에서 리셋. sim_core의 하루 스코프 카운터와 동치.
+var _visited_today := 0     # 등장 손님 수
+var _accepted_today := 0    # 주문 접수 수(슬롯 주문 카드 생성)
+var _served_today := 0      # 서빙 완료 수
+var _order_lost_today := 0  # 주문 낸 손님이 못 받고 떠난 수(음식대기 만료)
+var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
+
 var _day_label: Label
 var _money_label: Label
 var _rent_label: Label
@@ -85,8 +92,12 @@ func _ready() -> void:
 	_session.progress.connect(_on_progress)
 	_session.spawn_requested.connect(_spawn_customer)
 	_session.day_started.connect(_on_day_started)
+	_session.day_closing.connect(_on_day_closing)   # 마감 정산(63~65,73,50)
 	_session.day_ended.connect(_on_day_ended)
 	add_child(_session)
+
+	# 완성품 나이(dish_age) 스탬프용 게임 클록을 세션 경과시간에 연결.
+	_board.now_provider = _session.now
 
 	# 시작(타이틀) 화면 — 앱 실행 시 게임 위에 덮음. [시작] → 게임 시작.
 	_title = TitleScreen.new()
@@ -298,6 +309,7 @@ func _spawn_customer() -> void:
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
 	_queue_row.add_child(c)
+	_visited_today += 1   # 정산(served_ratio)용 등장 손님 집계 — sim_core._on_spawn과 동치
 
 
 ## 주문 확인 → 손님이 큐에서 사라지고 다음 빈 슬롯의 주문 카드로 "이동".
@@ -306,13 +318,34 @@ func _on_confirm_order(customer: Customer) -> void:
 	if slot == null:
 		Toast.show_msg(self, "빈 칸 없음")
 		return
+	var rid := customer.recipe_id
 	var order := OrderCard.new()
-	order.setup(customer.recipe_id)
+	order.setup(rid)
+	order.born = _session.now()   # 주문 접수 시각 스탬프 — 판매 ctx의 order_age(빠른/느린 서빙 카드)
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
 	slot.place_card(order)
 	customer.queue_free()
+	_accepted_today += 1
+	# 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략).
+	if Buffs.consume_instant_order():
+		_produce_dish(rid)
 	_refresh_warehouse()
+
+
+## 완성품을 즉시 생성해 보드에 올림(카드60 즉시완료 등). 유휴 도구석 우선, 없으면 빈 슬롯.
+func _produce_dish(rid: String) -> void:
+	for t in _board.tools:
+		if t.is_idle():
+			t.produce_instant(rid)
+			return
+	var s := _board.first_empty_slot()
+	if s == null:
+		return
+	var dish := DishCard.new()
+	dish.setup(rid)
+	dish.born = _session.now()
+	s.place_card(dish)
 
 
 func _on_customer_expired(customer: Customer) -> void:
@@ -321,6 +354,12 @@ func _on_customer_expired(customer: Customer) -> void:
 
 ## 음식 대기 인내심 0 → 주문 카드(=손님) 통째로 사라짐, 슬롯 회복.
 func _on_order_expired(order: OrderCard) -> void:
+	# 카드71·72: 주문 낸 손님이 못 받고 떠나면 보상(72는 다음 획득 2배 예약).
+	var gain := Buffs.on_lost(order.recipe_id)
+	if gain != 0:
+		_session.earn(gain)
+		_spawn_floating("+%d" % gain, order.global_position + order.size * 0.5, Palette.SUB)
+	_order_lost_today += 1
 	var holder := order.get_parent()
 	if holder:
 		holder.remove_child(order)
@@ -330,9 +369,28 @@ func _on_order_expired(order: OrderCard) -> void:
 
 ## 완성품이 매칭 주문 카드에 서빙됨 → 돈 + 손님 퇴장 + 슬롯/도구 회복.
 func _on_served(order: OrderCard, dish: DishCard) -> void:
-	var price := Stats.sell_price(order.recipe_id)
-	_session.earn(price)
-	_spawn_floating("+%d" % price, order.global_position + order.size * 0.5, Palette.ACCENT)
+	var rid := order.recipe_id
+	# 판매금 계산(판매금/추가금/콤보/적립 전 카드) — sim_core._serve와 동일한 훅.
+	var ctx := _sale_ctx(order, dish)
+	var res := Buffs.sale_amount(rid, ctx)
+	var amount := int(res["amount"])
+	_session.earn(amount)
+	# 리스크(56 등) 패널티: 소지금 차감(매출 집계 X)
+	var penalty := int(res.get("penalty", 0))
+	if penalty != 0:
+		_session.add_cash(-penalty)
+	# 자기폐기(48 등): 발동한 버프를 보드/보유에서 제거
+	var discard_id := str(res.get("discard", ""))
+	if discard_id != "":
+		Buffs.discard(discard_id)
+		_remove_buff_card(discard_id)
+	# 판매 후 누적(램프24~29·트리거42~44·즉시주문60 카운터)
+	Buffs.on_serve(rid, ctx)
+	# 하루 정산 집계
+	_served_today += 1
+	_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+
+	_spawn_floating("+%d" % amount, order.global_position + order.size * 0.5, Palette.ACCENT)
 
 	var holder := order.get_parent()
 	if holder:
@@ -350,6 +408,60 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 			dish.queue_free()
 
 	_refresh_warehouse()
+
+
+## 판매 ctx — sim_core._sale_ctx와 같은 필드. 보드 실제 상태에서 구성.
+func _sale_ctx(order: OrderCard, dish: DishCard) -> Dictionary:
+	var counts := _board.slot_counts()
+	var orders: int = counts["orders"]
+	var dishes: int = counts["dishes"]
+	var ingr: int = counts["ingr"]
+	var empty: int = counts["empty"]
+	var now := _session.now()
+	var dish_born := dish.born if (dish != null and is_instance_valid(dish)) else now
+	return {
+		"filled": orders + dishes + ingr,
+		"empty": empty,
+		"orders": orders,
+		"dishes": dishes,
+		"ingr": ingr,
+		"buffs": Buffs.owned().size(),
+		"now": now,
+		"dish_age": now - dish_born,
+		"order_age": now - order.born,
+		"pat_frac": order.pat_frac(),
+		"cash": _session.cash,
+		"day_revenue": _session.day_revenue,
+	}
+
+
+## 자기폐기(48) 버프 카드를 보드에서 제거(보유 목록은 Buffs.discard가 처리).
+func _remove_buff_card(buff_id: String) -> void:
+	for s in _board.slots:
+		var c := s.get_card()
+		if c is BuffCard and c.buff_id == buff_id:
+			s.clear()
+			return
+
+
+## 마감 정산 훅(가게세 차감 전) — 정산 보너스/차감(63~65,73,50)을 세션에 반영.
+func _on_day_closing(s: Session) -> void:
+	var same_max := 0
+	for k in _served_by_menu:
+		same_max = maxi(same_max, int(_served_by_menu[k]))
+	var ctx := {
+		"served": _served_today,
+		"visited": _visited_today,
+		"accepted": _accepted_today,
+		"order_lost": _order_lost_today,
+		"same_max": same_max,
+		"day_revenue": s.day_revenue,
+		"cash": s.cash,
+		"rent": s.rent,
+	}
+	var bonus := Buffs.day_end_bonus(ctx)
+	if bonus != 0:
+		s.earn(bonus)
 
 
 ## 인플레이 피드백 — 위로 떠오르며 사라지는 텍스트.
@@ -407,9 +519,17 @@ func _on_day_started(day: int, rent: int) -> void:
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
-	# 슬롯 수만큼 보드 재구성(상점 확장 반영), 큐 비움
+	# 하루 정산 카운터 리셋(sim_core._reset_day_consumables와 동치)
+	_visited_today = 0
+	_accepted_today = 0
+	_served_today = 0
+	_order_lost_today = 0
+	_served_by_menu = {}
+	# 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
+	#   추가로 버프칸 보너스(11 buff_slot)만큼 슬롯을 더 둬서 그만큼 버프가 "공짜"로 얹히게 함
+	#   → 순 작업공간 = effective_slots - max(0, 보유버프수 - buff_slot_bonus) (sim_core._serve_cap과 동치).
 	Move.clear()
-	_board.rebuild(_session.slots)
+	_board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
 	# 보유 버프는 슬롯을 점유(배치형) — 작업공간과 트레이드오프
 	for id in Buffs.owned():
 		var slot := _board.first_empty_slot()

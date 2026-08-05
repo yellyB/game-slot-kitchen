@@ -5,6 +5,7 @@ extends Card
 
 var recipe_id: String
 var tool: ToolStation  # 이 완성품을 만든 도구석 (슬롯으로 옮기면 그 도구 회복)
+var born := 0.0        # 완성된 게임시각(초) — 판매 ctx의 dish_age(신선도 46 등)용
 
 func setup(id: String) -> void:
 	recipe_id = id

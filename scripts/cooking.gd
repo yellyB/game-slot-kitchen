@@ -118,6 +118,8 @@ func _select(id: String) -> void:
 	if not board.has_ingredients(id):
 		return
 	board.consume_ingredients(id)
-	_active_tool.start_cooking(id)
+	# 재료 소비 후의 빈 슬롯 수 = 카드37(빈 슬롯당 조리 가속) 입력.
+	var empty := board.empty_slot_count()
+	_active_tool.start_cooking(id, empty)
 	_active_tool = null
 	cooked.emit()  # main이 닫기 + 갱신

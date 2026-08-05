@@ -82,6 +82,11 @@ func effective_slots() -> int:
 	return slots + Buffs.slot_bonus()
 
 
+## 오늘 경과 시간(초) = 게임 클록. 주문/완성품 나이(order_age·dish_age) 스탬프용.
+func now() -> float:
+	return _elapsed
+
+
 func is_running() -> bool:
 	return _running
 

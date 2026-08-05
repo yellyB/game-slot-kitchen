@@ -11,6 +11,7 @@ enum State { IDLE, COOKING, DONE }
 
 var state := State.IDLE
 var recipe_id := ""
+var now_provider: Callable = func() -> float: return 0.0  ## 게임 클록(초) 공급 — 완성품 나이 스탬프용
 
 var _cook_left := 0.0
 var _cook_total := 0.0
@@ -68,12 +69,16 @@ func _show_idle() -> void:
 	_holder.add_child(lbl)
 
 
-## 조리 시작 (재료 소비는 호출 측에서 이미 처리).
-func start_cooking(id: String) -> void:
+## 조리 시작 (재료 소비는 호출 측에서 이미 처리). empty=현재 빈 슬롯 수(카드37 가속).
+func start_cooking(id: String, empty := 0) -> void:
 	if state != State.IDLE:
 		return
 	recipe_id = id
-	_cook_total = Stats.cook_time(id)
+	# 조리 시작 훅(카드61): 6번째마다 즉시완료. 카운터는 여기서 소비(sim_core._start_cooking과 동치).
+	if Buffs.on_cook_start():
+		_finish_cooking()
+		return
+	_cook_total = Stats.cook_time(id, empty)
 	_cook_left = _cook_total
 	state = State.COOKING
 	_clear_holder()
@@ -108,6 +113,14 @@ func start_cooking(id: String) -> void:
 	_start_glow()
 
 
+## 조리 과정 없이 즉시 완성품 생성(카드60 즉시완료 등). idle일 때만.
+func produce_instant(id: String) -> void:
+	if state != State.IDLE:
+		return
+	recipe_id = id
+	_finish_cooking()
+
+
 func _finish_cooking() -> void:
 	state = State.DONE
 	set_process(false)
@@ -117,6 +130,7 @@ func _finish_cooking() -> void:
 	var dish := DishCard.new()
 	dish.setup(recipe_id)
 	dish.tool = self
+	dish.born = now_provider.call()   # 완성 시각 스탬프 — 판매 ctx의 dish_age(신선도 46 등)
 	dish.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(dish)
