@@ -24,7 +24,7 @@ const BUFF_PACK_PRICE := 200
 const SHOP_PRICE_GROWTH := 1.65
 const MAX_BUFFS := 5
 
-const DAY_LENGTH := 120.0
+const DAY_LENGTH := 90.0
 const WAVES := 3
 const WAVE_SPACING := 0.7
 const WAREHOUSE_EXIT_COST := 1.5
