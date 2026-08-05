@@ -48,6 +48,7 @@ func place_card(card: Card) -> void:
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
+	card.pop_in()
 
 
 func take_card(card: Card) -> void:
@@ -57,6 +58,7 @@ func take_card(card: Card) -> void:
 	if prev:
 		prev.remove_child(card)
 	_holder.add_child(card)
+	card.pop_in()
 	var dc := card as DishCard
 	if dc != null and dc.tool != null:
 		var t := dc.tool
