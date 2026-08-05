@@ -563,7 +563,18 @@ func _on_day_started(day: int, rent: int) -> void:
 	_refresh_warehouse()
 
 
+## 하루 종료 시 필드 정리 — 슬롯 카드·도구·큐 제거로 타이머(_process) 즉시 정지.
+func _clear_play_field() -> void:
+	for s in _board.slots:
+		s.clear()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
+
+
 func _on_day_ended(summary: Dictionary) -> void:
+	_clear_play_field()   # 마감 즉시 필드 비움 — 남은 주문/조리 타이머 정지(모달/상점 구간)
 	if summary["won"]:
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
