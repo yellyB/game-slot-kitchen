@@ -32,6 +32,6 @@ func _build_content() -> void:
 	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(icon)
 
-	var lbl := UI.label(str(def.get("label", "")), 12, Palette.MAIN)
+	var lbl := UI.label(BuffDefs.display_label(buff_id), 12, Palette.MAIN)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(lbl)

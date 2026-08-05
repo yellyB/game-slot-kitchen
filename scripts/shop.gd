@@ -175,10 +175,10 @@ func _pack_choice(id: String, overlay: Control) -> Control:
 	var icon := UI.label(str(def.get("icon", "?")), 30)
 	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(icon)
-	var nm := UI.label(str(def.get("name", id)), 13, Palette.COCOA_800)
+	var nm := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)
 	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(nm)
-	var lb := UI.label(str(def.get("label", "")), 12, Palette.MAIN)
+	var lb := UI.label(BuffDefs.display_label(id), 12, Palette.MAIN)
 	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(lb)
 	var pick := Button.new()
@@ -220,7 +220,7 @@ func _owned_chip(id: String) -> Control:
 	pad.add_theme_constant_override("margin_top", 3)
 	pad.add_theme_constant_override("margin_bottom", 3)
 	chip.add_child(pad)
-	pad.add_child(UI.label("%s %s" % [def.get("icon", "?"), def.get("label", "")], 13, Palette.COCOA_800))
+	pad.add_child(UI.label("%s %s" % [def.get("icon", "?"), BuffDefs.display_label(id)], 13, Palette.COCOA_800))
 	return chip
 
 
