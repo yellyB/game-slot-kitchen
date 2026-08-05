@@ -3,6 +3,7 @@ extends Card
 
 signal expired(card: OrderCard)
 signal served(card: OrderCard, dish: DishCard)
+signal rejected(card: OrderCard)
 
 var recipe_id: String
 var born := 0.0
@@ -104,10 +105,22 @@ func accept(payload: Dictionary) -> void:
 	served.emit(self, payload.get("card"))
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	return typeof(data) == TYPE_DICTIONARY and can_accept(data)
+	return typeof(data) == TYPE_DICTIONARY and data.get("kind") == "dish"
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	Move.on_drop(self, data)
+	if can_accept(data):
+		Move.on_drop(self, data)
+	else:
+		_reject()
+
+func _reject() -> void:
+	var bx := position.x
+	var tw := create_tween()
+	tw.tween_property(self, "position:x", bx + 6.0, 0.05)
+	tw.tween_property(self, "position:x", bx - 6.0, 0.05)
+	tw.tween_property(self, "position:x", bx + 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx, 0.05)
+	rejected.emit(self)
 
 
 func _process(delta: float) -> void:

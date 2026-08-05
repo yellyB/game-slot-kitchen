@@ -318,6 +318,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.born = _session.now()
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
+	order.rejected.connect(_on_order_rejected)
 	slot.place_card(order)
 	customer.queue_free()
 	_accepted_today += 1
@@ -355,6 +356,10 @@ func _on_order_expired(order: OrderCard) -> void:
 		holder.remove_child(order)
 	order.queue_free()
 	_refresh_warehouse()
+
+
+func _on_order_rejected(order: OrderCard) -> void:
+	_spawn_pop("😠", order.global_position + order.size * 0.5)
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
