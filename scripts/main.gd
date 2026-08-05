@@ -410,7 +410,9 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 	_served_today += 1
 	_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
 
-	_spawn_floating("+%d" % amount, order.global_position + order.size * 0.5, Palette.ACCENT)
+	var serve_pos := order.global_position + order.size * 0.5
+	_spawn_floating("+%d" % amount, serve_pos, Palette.ACCENT)
+	_spawn_pop("😊", serve_pos + Vector2(0, -18))   # 만족한 손님 팝
 
 	var holder := order.get_parent()
 	if holder:
@@ -482,6 +484,22 @@ func _on_day_closing(s: Session) -> void:
 	var bonus := Buffs.day_end_bonus(ctx)
 	if bonus != 0:
 		s.earn(bonus)
+
+
+## 팝 버스트 — 작게 나타나 크게 튀며(스케일) 살짝 떠오르다 사라짐. 서빙 성공 😊 등.
+func _spawn_pop(text: String, at_pos: Vector2) -> void:
+	var l := UI.label(text, 30)
+	l.z_index = 101
+	l.pivot_offset = Vector2(15, 15)
+	add_child(l)
+	l.position = at_pos - Vector2(15, 15)
+	l.scale = Vector2(0.4, 0.4)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "scale", Vector2(1.3, 1.3), 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "position:y", l.position.y - 22, 0.5)
+	tw.tween_property(l, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(l.queue_free)
 
 
 ## 인플레이 피드백 — 위로 떠오르며 사라지는 텍스트.
