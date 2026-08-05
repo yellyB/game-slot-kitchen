@@ -28,15 +28,17 @@ func dispose() -> void:
 		holder.remove_child(self)
 	queue_free()
 
-## 배치 시 "팝인" — 작게 나타났다 통통 튀며(스프링) 제자리로. Slot.place_card/take_card가 호출.
+## 배치 시 "팝인" — 작게 나타나 슬롯보다 크게 불룩 튄 뒤 제자리로. Slot.place_card/take_card가 호출.
+## (흰 카드가 흰 슬롯 위라, 1.0 이상 오버슛해 슬롯 밖으로 불룩해야 눈에 확 띔.)
 func pop_in() -> void:
-	scale = Vector2(0.5, 0.5)
+	scale = Vector2(0.6, 0.6)
 	await get_tree().process_frame   # 레이아웃 후 크기 확정
 	if not is_instance_valid(self):
 		return
 	pivot_offset = size * 0.5        # 중앙 기준 스케일
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2.ONE, 0.38).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 ## 드래그 프리뷰 대표 아이콘.
 func _preview_text() -> String:
