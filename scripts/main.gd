@@ -525,6 +525,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_served_today = 0
 	_order_lost_today = 0
 	_served_by_menu = {}
+	Buffs.reset_day()   # #45 적립 하루 리셋
 	# 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
 	#   추가로 버프칸 보너스(11 buff_slot)만큼 슬롯을 더 둬서 그만큼 버프가 "공짜"로 얹히게 함
 	#   → 순 작업공간 = effective_slots - max(0, 보유버프수 - buff_slot_bonus) (sim_core._serve_cap과 동치).

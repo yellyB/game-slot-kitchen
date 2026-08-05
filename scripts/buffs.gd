@@ -30,6 +30,11 @@ func clear() -> void:
 	_instant_order = false
 
 
+## 하루 시작 시 호출 — 하루 스코프 리셋. #45 적립이 런 내내 누적돼 폭주하는 것 방지(매일 초기화).
+func reset_day() -> void:
+	_accum = 0
+
+
 func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return

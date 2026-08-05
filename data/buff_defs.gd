@@ -25,7 +25,7 @@ const ALL := {
 	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.75}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.10}},
 	"day_len":    {"card": 3, "icon": "🕒", "mult": {"stat": "day_mult", "value": 1.07}},
-	"wh_chance":  {"card": 4, "icon": "🍀", "trip_free": 0.30},
+	"wh_chance":  {"card": 4, "icon": "🍀", "trip_free": 0.50},
 	"wh_fast":    {"card": 5, "icon": "🏃", "mult": {"stat": "warehouse_mult", "value": 0.34}},
 	"rent_down":  {"card": 6, "icon": "🏠", "mult": {"stat": "rent_mult", "value": 0.90}},
 	"shop_disc":  {"card": 7, "icon": "🏷️", "blocked": true},
@@ -50,7 +50,7 @@ const ALL := {
 	"dmd_cream":  {"card": 20, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.7}},
 
 	# ── 메뉴가격 등급별 인상 ──
-	"mp_t12":     {"card": 21, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.15}},
+	"mp_t12":     {"card": 21, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.25}},
 	"mp_t34":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 0.15}},
 	"mp_t56":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.15}},
 
@@ -70,22 +70,22 @@ const ALL := {
 	"sc_empt_a":  {"card": 34, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.0, "step": 0.06}},
 	"sc_empt_b":  {"card": 35, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.10, "step": 0.02}},
 	"sale_full":  {"card": 36, "icon": "🈵", "sale": {"type": "full", "pct": 0.15}},
-	"cook_empty": {"card": 37, "icon": "💨", "cook_empty": {"step": 0.08}},
-	"sc_order":   {"card": 38, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.10}},
+	"cook_empty": {"card": 37, "icon": "💨", "cook_empty": {"step": 0.15}},
+	"sc_order":   {"card": 38, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.05}},
 	"sc_dish":    {"card": 39, "icon": "🍽️", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
 	"sc_ingr":    {"card": 40, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},
 
 	# ── 판매금: 콤보/연속/확률(41~51) ──
 	"prob_x2":    {"card": 41, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.08}},
 	"rt_streak3": {"card": 42, "icon": "📈", "trigger": {"kind": "streak3", "value": 0.20}},
-	"rt_every7":  {"card": 43, "icon": "📈", "trigger": {"kind": "every7", "value": 0.30}},
-	"rt_fast3":   {"card": 44, "icon": "📈", "trigger": {"kind": "fast3", "value": 0.18, "window": 5.0}},
-	"accum_sale": {"card": 45, "icon": "🪙", "sale": {"type": "accum", "pct": 0.05}},
-	"sale_flat3": {"card": 46, "icon": "💰", "sale": {"type": "flat", "pct": 0.03}},
-	"prob_bonus": {"card": 47, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.10, "pct": 0.30}},
+	"rt_every7":  {"card": 43, "icon": "📈", "trigger": {"kind": "every7", "value": 0.20}},
+	"rt_fast3":   {"card": 44, "icon": "📈", "trigger": {"kind": "fast3", "value": 0.12, "window": 3.0}},
+	"accum_sale": {"card": 45, "icon": "🪙", "sale": {"type": "accum", "pct": 0.03}},
+	"sale_flat3": {"card": 46, "icon": "💰", "sale": {"type": "flat", "pct": 0.09}},
+	"prob_bonus": {"card": 47, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 0.30}},
 	"sale_risk":  {"card": 48, "icon": "💥", "sale": {"type": "risk", "pct": 0.20, "chance": 0.10, "penalty_pct": 0.30}},
 	"no_buy":     {"card": 49, "icon": "🚫", "blocked": true},
-	"sale_cash":  {"card": 50, "icon": "🏦", "sale": {"type": "cash", "pct": 0.02}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
+	"sale_cash":  {"card": 50, "icon": "🏦", "sale": {"type": "cash", "pct": 0.006}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
 	"sale_pat":   {"card": 51, "icon": "⚖️", "sale": {"type": "flat", "pct": 0.25}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
 	# ── 판매금: 조건부/앰프(52~57) ──
@@ -100,7 +100,7 @@ const ALL := {
 	"auto_serve": {"card": 58, "icon": "🤖", "blocked": true},
 	"auto_cook":  {"card": 59, "icon": "🤖", "blocked": true},
 	"inst_order": {"card": 60, "icon": "⏭️", "instant": {"kind": "order", "n": 8}},
-	"inst_cook":  {"card": 61, "icon": "⏩", "instant": {"kind": "cook", "n": 6}},
+	"inst_cook":  {"card": 61, "icon": "⏩", "instant": {"kind": "cook", "n": 4}},
 
 	# ── 경제/정산(62~65) ──
 	"interest":   {"card": 62, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.04}},

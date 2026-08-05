@@ -145,6 +145,7 @@ func _reset_day_consumables() -> void:
 	orders.clear()
 	dishes.clear()
 	ingredients.clear()
+	Buffs.reset_day()   # #45 적립 하루 리셋
 	_rebuild_tools()   # 도구 수 = TOOL_COUNT + 도구버프(상점 구매 반영)
 	_busy = 0.0
 	_now = 0.0
