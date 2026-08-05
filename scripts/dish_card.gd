@@ -9,7 +9,13 @@ func setup(id: String) -> void:
 	recipe_id = id
 
 func is_trashable() -> bool:
-	return false
+	return true
+
+func dispose() -> void:
+	if tool != null and is_instance_valid(tool):
+		tool.reset()
+	else:
+		super()
 
 func _preview_text() -> String:
 	return str(Recipes.get_def(recipe_id).get("icon", "?"))

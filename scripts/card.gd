@@ -16,6 +16,12 @@ func _build_content() -> void:
 func is_trashable() -> bool:
 	return false
 
+func dispose() -> void:
+	var holder := get_parent()
+	if holder:
+		holder.remove_child(self)
+	queue_free()
+
 func _preview_text() -> String:
 	return "?"
 
