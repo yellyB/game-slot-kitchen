@@ -84,7 +84,7 @@ func set_servable(on: bool) -> void:
 		return
 	_servable = on
 	if on:
-		_style.bg_color = Palette.SUCCESS.lightened(0.72)
+		_style.bg_color = Palette.SUCCESS
 		pivot_offset = size * 0.5
 		_glow = create_tween().set_loops()
 		_glow.tween_property(self, "scale", Vector2(1.07, 1.07), 0.35).set_trans(Tween.TRANS_SINE)
