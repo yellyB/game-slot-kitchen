@@ -52,11 +52,11 @@ func _ready() -> void:
 	header.add_child(_cash_label)
 
 	# 상품: 슬롯 확장 / 버프 팩
-	_buy_slot_btn = _product(v, "슬롯 +1", "가격 %d" % Config.shop_price(Config.SLOT_PRICE, session.day), "구매", Palette.SUB, _on_buy_slot)
-	_draw_btn = _product(v, "버프 팩", "가격 %d" % Config.shop_price(Config.BUFF_PACK_PRICE, session.day), "뽑기", Palette.MAIN, _on_draw)
+	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % Config.shop_price(Config.SLOT_PRICE, session.day), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	# 보유 버프
-	v.add_child(UI.label("보유 버프", 13, Palette.COCOA_600))
+	v.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
 	_owned_row = HBoxContainer.new()
 	_owned_row.add_theme_constant_override("separation", 6)
 	_owned_row.custom_minimum_size = Vector2(0, 30)
@@ -64,7 +64,7 @@ func _ready() -> void:
 
 	# [영업 시작]
 	var start := Button.new()
-	start.text = "영업 시작"
+	start.text = Loc.t("shop_start")
 	start.custom_minimum_size = Vector2(0, 48)
 	start.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	start.add_theme_font_size_override("font_size", 18)
@@ -148,7 +148,7 @@ func _show_pack(pack: Array) -> void:
 	box.add_theme_constant_override("separation", 12)
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	oc.add_child(box)
-	var t := UI.label("3개 중 1개 선택", 18, Palette.WHITE, true)
+	var t := UI.label(Loc.t("shop_pick3"), 18, Palette.WHITE, true)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(t)
 
@@ -182,7 +182,7 @@ func _pack_choice(id: String, overlay: Control) -> Control:
 	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(lb)
 	var pick := Button.new()
-	pick.text = "선택"
+	pick.text = Loc.t("shop_pick")
 	pick.add_theme_font_size_override("font_size", 13)
 	pick.add_theme_color_override("font_color", Palette.WHITE)
 	pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))

@@ -147,7 +147,7 @@ func _build_top_bar() -> Control:
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
 
-	_day_label = UI.label("1일차", 20, Palette.COCOA_800, true)
+	_day_label = UI.label(Loc.t("day_n") % 1, 20, Palette.COCOA_800, true)
 	row.add_child(_day_label)
 
 	var gap := Control.new()
@@ -316,7 +316,7 @@ func _spawn_customer() -> void:
 func _on_confirm_order(customer: Customer) -> void:
 	var slot := _board.first_empty_slot()
 	if slot == null:
-		Toast.show_msg(self, "빈 칸 없음")
+		Toast.show_msg(self, Loc.t("no_empty_slot"))
 		return
 	var rid := customer.recipe_id
 	var order := OrderCard.new()
@@ -512,7 +512,7 @@ func _on_progress(t01: float) -> void:
 
 
 func _on_day_started(day: int, rent: int) -> void:
-	_day_label.text = "%d일차" % day
+	_day_label.text = Loc.t("day_n") % day
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
 	# 새 세션 시작 — 시트 강제 닫기(트립 비용 없음)
@@ -545,24 +545,24 @@ func _on_day_started(day: int, rent: int) -> void:
 func _on_day_ended(summary: Dictionary) -> void:
 	if summary["won"]:
 		Modal.open(self) \
-			.title("승리! 🎉") \
-			.row("%d일 완주" % Levels.count(), Palette.SUCCESS) \
-			.button("처음으로", _show_title)
+			.title(Loc.t("win_title")) \
+			.row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS) \
+			.button(Loc.t("to_title"), _show_title)
 	elif summary["passed"]:
 		Modal.open(self) \
-			.title("%d일차 마감" % summary["day"]) \
-			.row("매출  %d" % summary["revenue"]) \
-			.row("가게세  %d" % summary["rent"], Palette.DANGER) \
+			.title(Loc.t("day_closed") % summary["day"]) \
+			.row(Loc.t("revenue") % summary["revenue"]) \
+			.row(Loc.t("rent") % summary["rent"], Palette.DANGER) \
 			.sep() \
-			.row("남음  %d" % summary["cash_after"], Palette.COCOA_800) \
-			.row("통과! ✅", Palette.SUCCESS) \
-			.button("상점으로", _open_shop)
+			.row(Loc.t("remaining") % summary["cash_after"], Palette.COCOA_800) \
+			.row(Loc.t("passed"), Palette.SUCCESS) \
+			.button(Loc.t("to_shop"), _open_shop)
 	else:
 		Modal.open(self) \
-			.title("폐업 😢") \
-			.row("%d일차에서 끝" % summary["day"]) \
-			.row("매출 %d < 가게세 %d" % [summary["revenue"], summary["rent"]], Palette.DANGER) \
-			.button("처음으로", _show_title)
+			.title(Loc.t("gameover_title")) \
+			.row(Loc.t("gameover_day") % summary["day"]) \
+			.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
+			.button(Loc.t("to_title"), _show_title)
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
