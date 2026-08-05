@@ -514,7 +514,17 @@ func _on_day_started(day: int, rent: int) -> void:
 	_refresh_warehouse()
 
 
+func _clear_play_field() -> void:
+	for s in _board.slots:
+		s.clear()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
+
+
 func _on_day_ended(summary: Dictionary) -> void:
+	_clear_play_field()
 	if summary["won"]:
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
