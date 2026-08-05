@@ -19,6 +19,7 @@ func accept(payload: Dictionary) -> void:
 	var card = payload.get("card")
 	if card == null or not is_instance_valid(card):
 		return
+	Audio.play("trash")
 	card.dispose()
 
 
