@@ -7,6 +7,7 @@ enum State { IDLE, COOKING, DONE }
 
 var state := State.IDLE
 var recipe_id := ""
+var now_provider: Callable = func() -> float: return 0.0
 
 var _cook_left := 0.0
 var _cook_total := 0.0
@@ -61,11 +62,14 @@ func _show_idle() -> void:
 	_holder.add_child(lbl)
 
 
-func start_cooking(id: String) -> void:
+func start_cooking(id: String, empty := 0) -> void:
 	if state != State.IDLE:
 		return
 	recipe_id = id
-	_cook_total = Stats.cook_time(id)
+	if Buffs.on_cook_start():
+		_finish_cooking()
+		return
+	_cook_total = Stats.cook_time(id, empty)
 	_cook_left = _cook_total
 	state = State.COOKING
 	_clear_holder()
@@ -100,6 +104,13 @@ func start_cooking(id: String) -> void:
 	_start_glow()
 
 
+func produce_instant(id: String) -> void:
+	if state != State.IDLE:
+		return
+	recipe_id = id
+	_finish_cooking()
+
+
 func _finish_cooking() -> void:
 	state = State.DONE
 	set_process(false)
@@ -109,6 +120,7 @@ func _finish_cooking() -> void:
 	var dish := DishCard.new()
 	dish.setup(recipe_id)
 	dish.tool = self
+	dish.born = now_provider.call()
 	dish.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(dish)

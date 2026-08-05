@@ -114,6 +114,7 @@ func _select(id: String) -> void:
 	if not board.has_ingredients(id):
 		return
 	board.consume_ingredients(id)
-	_active_tool.start_cooking(id)
+	var empty := board.empty_slot_count()
+	_active_tool.start_cooking(id, empty)
 	_active_tool = null
 	cooked.emit()

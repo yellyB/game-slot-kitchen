@@ -3,6 +3,7 @@ extends Card
 
 var recipe_id: String
 var tool: ToolStation
+var born := 0.0
 
 func setup(id: String) -> void:
 	recipe_id = id

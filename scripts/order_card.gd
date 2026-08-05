@@ -5,6 +5,7 @@ signal expired(card: OrderCard)
 signal served(card: OrderCard, dish: DishCard)
 
 var recipe_id: String
+var born := 0.0
 
 var _max := Config.PATIENCE_DISH
 var _time_left := Config.PATIENCE_DISH
@@ -17,6 +18,9 @@ func setup(id: String) -> void:
 
 func is_trashable() -> bool:
 	return false
+
+func pat_frac() -> float:
+	return clampf(_time_left / maxf(0.001, _max), 0.0, 1.0)
 
 func _preview_text() -> String:
 	return str(Recipes.get_def(recipe_id).get("icon", "?"))

@@ -76,6 +76,10 @@ func effective_slots() -> int:
 	return slots + Buffs.slot_bonus()
 
 
+func now() -> float:
+	return _elapsed
+
+
 func is_running() -> bool:
 	return _running
 

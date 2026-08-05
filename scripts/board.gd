@@ -5,6 +5,7 @@ signal tool_tapped(tool: ToolStation)
 
 var slots: Array[Slot] = []
 var tools: Array[ToolStation] = []
+var now_provider: Callable = func() -> float: return 0.0
 var _grid: GridContainer
 
 func _ready() -> void:
@@ -24,7 +25,8 @@ func rebuild(slot_count: int) -> void:
 	slots.clear()
 	tools.clear()
 
-	var total := slot_count + Config.TOOL_COUNT
+	var tool_count := Config.TOOL_COUNT + Buffs.tool_bonus()
+	var total := slot_count + tool_count
 	for i in total:
 		if i < slot_count:
 			var slot := Slot.new()
@@ -32,6 +34,7 @@ func rebuild(slot_count: int) -> void:
 			_grid.add_child(slot)
 		else:
 			var tool := ToolStation.new()
+			tool.now_provider = now_provider
 			tool.tapped.connect(tool_tapped.emit)
 			tools.append(tool)
 			_grid.add_child(tool)
@@ -49,6 +52,35 @@ func is_full() -> bool:
 		if s.is_empty():
 			return false
 	return true
+
+
+func empty_slot_count() -> int:
+	var n := 0
+	for s in slots:
+		if s.is_empty():
+			n += 1
+	return n
+
+
+func slot_counts() -> Dictionary:
+	var orders := 0
+	var dishes := 0
+	var ingr := 0
+	var empty := 0
+	for s in slots:
+		var c := s.get_card()
+		if c == null:
+			empty += 1
+		elif c is OrderCard:
+			orders += 1
+		elif c is DishCard:
+			dishes += 1
+		elif c is IngredientCard:
+			ingr += 1
+	for t in tools:
+		if t.get_dish() != null:
+			dishes += 1
+	return {"orders": orders, "dishes": dishes, "ingr": ingr, "empty": empty}
 
 
 func ingredient_counts() -> Dictionary:
