@@ -95,16 +95,18 @@ func set_servable(on: bool) -> void:
 		return
 	_servable = on
 	if on:
+		# 조리 글로우(알파 fade)와 구분되게 "스케일 바운스(콩콩)" + 초록 테두리.
 		_style.border_color = Palette.SUCCESS
 		_style.set_border_width_all(2)
+		pivot_offset = size * 0.5   # 중앙 기준 스케일
 		_glow = create_tween().set_loops()
-		_glow.tween_property(self, "modulate:a", 0.78, 0.45)
-		_glow.tween_property(self, "modulate:a", 1.0, 0.45)
+		_glow.tween_property(self, "scale", Vector2(1.07, 1.07), 0.35).set_trans(Tween.TRANS_SINE)
+		_glow.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_SINE)
 	else:
 		if _glow != null:
 			_glow.kill()
 			_glow = null
-		modulate.a = 1.0
+		scale = Vector2.ONE
 		_style.border_color = Palette.ACCENT
 		_style.set_border_width_all(1)
 
