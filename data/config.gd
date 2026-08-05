@@ -12,6 +12,7 @@ const MAX_SLOTS := 10    # 슬롯 확장 상한 (세로 화면상 4줄 = 실질 
 
 # ── 손님 큐 / 스포너 ──────────────────────────────────────
 const MAX_QUEUE := 4          # 큐 최대 인원
+const MAX_ORDERS := 6         # 동시 접수 주문 상한 — 나머지 슬롯은 재료/완성품용(조리 공간 확보)
 const SPAWN_INTERVAL := 4.0   # 손님 등장 간격(초) — (미사용, 스케줄은 균등분포)
 const SPAWN_FIRST := 1.0      # 첫 손님 등장 시각(초) — 시작하자마자 한 명
 const SPAWN_LAST_MARGIN := 8.0  # 마지막 손님은 마감 이 시간(초) 전까지

@@ -314,6 +314,10 @@ func _spawn_customer() -> void:
 
 ## 주문 확인 → 손님이 큐에서 사라지고 다음 빈 슬롯의 주문 카드로 "이동".
 func _on_confirm_order(customer: Customer) -> void:
+	# 주문 상한 — 나머지 슬롯은 재료/완성품(조리 공간)용으로 남김.
+	if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
+		Toast.show_msg(self, Loc.t("orders_full"))
+		return
 	var slot := _board.first_empty_slot()
 	if slot == null:
 		Toast.show_msg(self, Loc.t("no_empty_slot"))

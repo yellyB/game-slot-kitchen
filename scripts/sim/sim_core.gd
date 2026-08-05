@@ -9,7 +9,6 @@ extends RefCounted
 ## 미지원(blocked): 상점(7,8,49)·대기열 공개(10)·자동서빙(58,59)·45 초기화 — 버프.md 표 참고.
 
 const DT := 0.1
-const SLOT_RESERVE := 2   # 재료 놓을 공간 확보용 — 주문 접수 시 남겨두는 슬롯
 
 var session: Session
 var queue: Array = []       # 큐 대기: [{id, pat}]
@@ -288,8 +287,8 @@ func _pick_cookable() -> String:
 
 func _accept_from_queue() -> void:
 	var cap := _serve_cap()
-	# 재료 놓을 공간(SLOT_RESERVE) 남기고 접수 — 데드락(주문으로 슬롯 꽉참) 방지.
-	while not queue.is_empty() and _board_used() < cap - SLOT_RESERVE:
+	# 주문 상한(MAX_ORDERS)까지 + 물리적 슬롯 여유 있을 때만 접수. 나머지 슬롯=재료/완성품용.
+	while not queue.is_empty() and orders.size() < Config.MAX_ORDERS and _board_used() < cap:
 		var best := 0
 		for i in queue.size():
 			if queue[i]["pat"] < queue[best]["pat"]:
