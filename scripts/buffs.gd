@@ -170,7 +170,6 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"addon":
 				addon_pct += float(s["pct"])
 			"accum":
-				flat += _accum
 				accum_pct += float(s["pct"])
 
 	var bonus := int(round(float(mp) * pct)) + flat
@@ -183,7 +182,9 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 		amount *= 2
 		_double_next = false
 	if accum_pct > 0.0:
+		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
+		amount += payout
 	return {"amount": amount, "penalty": penalty, "discard": discard}
 
 
