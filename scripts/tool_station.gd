@@ -124,6 +124,7 @@ func _finish_cooking() -> void:
 	dish.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(dish)
+	dish.pop_in()
 
 
 func _process(delta: float) -> void:
