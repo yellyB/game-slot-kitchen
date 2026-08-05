@@ -1,7 +1,7 @@
 class_name TrashButton
 extends Button
-## 휴지통. 타깃 역할 — "move" payload(슬롯의 재료 카드)를 받아 제거.
-## 클릭·드래그 공용 (can_accept/accept). 창고 신규("new")는 받지 않음.
+## 휴지통. 타깃 역할 — 재료(move)·완성품(dish) 카드를 받아 제거(is_trashable로 게이트).
+## 클릭·드래그 공용 (can_accept/accept). 주문서·창고 신규("new")는 안 받음.
 
 func _ready() -> void:
 	pressed.connect(func(): Move.on_click(self))
@@ -9,7 +9,8 @@ func _ready() -> void:
 
 # ── 공용 타깃 인터페이스 ──────────────────────────────────
 func can_accept(payload: Dictionary) -> bool:
-	if payload.get("kind") != "move":
+	var kind = payload.get("kind")
+	if kind != "move" and kind != "dish":   # 재료(move)·완성품(dish) 둘 다
 		return false
 	var card = payload.get("card")
 	if card == null or not is_instance_valid(card):
@@ -21,10 +22,7 @@ func accept(payload: Dictionary) -> void:
 	var card = payload.get("card")
 	if card == null or not is_instance_valid(card):
 		return
-	var holder := (card as Node).get_parent()
-	if holder:
-		holder.remove_child(card)
-	card.queue_free()
+	card.dispose()   # 카드별 정리(완성품이면 도구 리셋)
 
 
 # ── 드래그앤드롭 타깃 ─────────────────────────────────────

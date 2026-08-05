@@ -17,9 +17,16 @@ func _ready() -> void:
 func _build_content() -> void:
 	pass
 
-## 휴지통에 버릴 수 있는지 — 재료만 true.
+## 휴지통에 버릴 수 있는지 — 재료·완성품 true(주문서는 false).
 func is_trashable() -> bool:
 	return false
+
+## 제거(휴지통 등) — 기본: 부모에서 떼고 해제. 특수 정리(도구 등)는 서브클래스가 오버라이드.
+func dispose() -> void:
+	var holder := get_parent()
+	if holder:
+		holder.remove_child(self)
+	queue_free()
 
 ## 드래그 프리뷰 대표 아이콘.
 func _preview_text() -> String:
