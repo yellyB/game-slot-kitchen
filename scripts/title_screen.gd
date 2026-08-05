@@ -5,6 +5,8 @@ extends Control
 
 signal start_pressed
 
+var _start_btn: Button
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	z_index = 400
@@ -37,7 +39,8 @@ func _ready() -> void:
 	v.add_child(spacer)
 
 	var start := Button.new()
-	start.text = "시작"
+	start.text = Loc.t("start")
+	_start_btn = start
 	start.custom_minimum_size = Vector2(180, 56)
 	start.add_theme_font_size_override("font_size", 22)
 	start.add_theme_color_override("font_color", Palette.WHITE)
@@ -48,3 +51,30 @@ func _ready() -> void:
 	start.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
 	start.pressed.connect(func(): start_pressed.emit())
 	v.add_child(start)
+
+	# 우상단 설정 버튼(⚙️) → 설정 오버레이
+	var gear := Button.new()
+	gear.text = "⚙️"
+	gear.add_theme_font_size_override("font_size", 22)
+	gear.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
+	gear.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	gear.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	gear.anchor_left = 1.0
+	gear.anchor_right = 1.0
+	gear.offset_left = -60
+	gear.offset_right = -16
+	gear.offset_top = 16
+	gear.offset_bottom = 60
+	gear.pressed.connect(_open_settings)
+	add_child(gear)
+
+
+func _open_settings() -> void:
+	var panel := SettingsPanel.new()
+	panel.tree_exited.connect(_refresh_texts)   # 설정 닫히면 언어 반영
+	add_child(panel)
+
+
+func _refresh_texts() -> void:
+	if is_instance_valid(_start_btn):
+		_start_btn.text = Loc.t("start")
