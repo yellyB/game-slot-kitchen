@@ -32,6 +32,7 @@ func _cases() -> Array:
 		_t_board_full_quick,
 		_t_buff_cap,
 		_t_price_rarity,
+		_t_i18n_parity,
 	]
 
 
@@ -132,6 +133,21 @@ func _t_price_rarity() -> void:
 		elif r == "special": pricey += 1
 	_check("가격-희귀도: 비싼 메뉴가 싼 메뉴보다 드묾", cheap > pricey)
 	_reset()
+
+
+func _t_i18n_parity() -> void:
+	for pair in [["en", LocaleEn.S], ["ja", LocaleJa.S]]:
+		var other: Dictionary = pair[1]
+		var missing := []
+		for k in LocaleKo.S.keys():
+			if not other.has(k):
+				missing.append(k)
+		var extra := []
+		for k in other.keys():
+			if not LocaleKo.S.has(k):
+				extra.append(k)
+		_check("i18n[%s]: 누락 키 없음 %s" % [pair[0], str(missing)], missing.is_empty())
+		_check("i18n[%s]: 잉여 키 없음 %s" % [pair[0], str(extra)], extra.is_empty())
 
 
 func _reset() -> void:
