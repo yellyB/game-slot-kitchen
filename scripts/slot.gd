@@ -56,6 +56,7 @@ func place_card(card: Card) -> void:
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
+	card.pop_in()   # 배치 팝 애니
 
 
 ## 다른 슬롯/도구석에서 카드를 옮겨오기.
@@ -66,6 +67,7 @@ func take_card(card: Card) -> void:
 	if prev:
 		prev.remove_child(card)
 	_holder.add_child(card)
+	card.pop_in()   # 이동 팝 애니
 	# 완성품을 도구석에서 가져온 경우 → 그 도구석 회복
 	var dc := card as DishCard
 	if dc != null and dc.tool != null:

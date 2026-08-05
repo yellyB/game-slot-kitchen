@@ -28,6 +28,16 @@ func dispose() -> void:
 		holder.remove_child(self)
 	queue_free()
 
+## 배치 시 "팝인" — 작게 나타났다 통통 튀며 제자리로. Slot.place_card/take_card가 호출.
+func pop_in() -> void:
+	scale = Vector2(0.72, 0.72)
+	await get_tree().process_frame   # 레이아웃 후 크기 확정
+	if not is_instance_valid(self):
+		return
+	pivot_offset = size * 0.5        # 중앙 기준 스케일
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
 ## 드래그 프리뷰 대표 아이콘.
 func _preview_text() -> String:
 	return "?"
