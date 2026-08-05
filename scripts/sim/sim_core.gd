@@ -133,6 +133,7 @@ func _reset_day_consumables() -> void:
 	orders.clear()
 	dishes.clear()
 	ingredients.clear()
+	Buffs.reset_day()
 	_rebuild_tools()
 	_busy = 0.0
 	_now = 0.0

@@ -26,6 +26,10 @@ func clear() -> void:
 	_instant_order = false
 
 
+func reset_day() -> void:
+	_accum = 0
+
+
 func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return

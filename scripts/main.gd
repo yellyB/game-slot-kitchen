@@ -483,6 +483,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_served_today = 0
 	_order_lost_today = 0
 	_served_by_menu = {}
+	Buffs.reset_day()
 	Move.clear()
 	_board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
 	for id in Buffs.owned():
