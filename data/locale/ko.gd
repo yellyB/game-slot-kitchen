@@ -12,6 +12,7 @@ const S := {
 
 	"day_n": "%d일차",
 	"no_empty_slot": "빈 칸 없음",
+	"orders_full": "주문 꽉 참",
 
 	"win_title": "승리! 🎉",
 	"win_days": "%d일 완주",

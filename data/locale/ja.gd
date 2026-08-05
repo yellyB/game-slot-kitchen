@@ -12,6 +12,7 @@ const S := {
 
 	"day_n": "%d日目",
 	"no_empty_slot": "空きスロットなし",
+	"orders_full": "注文いっぱい",
 
 	"win_title": "勝利! 🎉",
 	"win_days": "%d日 完走",

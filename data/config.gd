@@ -7,6 +7,7 @@ const TOOL_COUNT := 2
 const MAX_SLOTS := 10
 
 const MAX_QUEUE := 4
+const MAX_ORDERS := 6
 const SPAWN_INTERVAL := 4.0
 const SPAWN_FIRST := 1.0
 const SPAWN_LAST_MARGIN := 8.0

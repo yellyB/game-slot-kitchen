@@ -291,6 +291,9 @@ func _spawn_customer() -> void:
 
 
 func _on_confirm_order(customer: Customer) -> void:
+	if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
+		Toast.show_msg(self, Loc.t("orders_full"))
+		return
 	var slot := _board.first_empty_slot()
 	if slot == null:
 		Toast.show_msg(self, Loc.t("no_empty_slot"))

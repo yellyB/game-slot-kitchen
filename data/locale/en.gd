@@ -12,6 +12,7 @@ const S := {
 
 	"day_n": "Day %d",
 	"no_empty_slot": "No empty slot",
+	"orders_full": "Orders full",
 
 	"win_title": "You Win! 🎉",
 	"win_days": "%d days cleared",

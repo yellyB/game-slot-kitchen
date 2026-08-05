@@ -2,7 +2,6 @@ class_name SimCore
 extends RefCounted
 
 const DT := 0.1
-const SLOT_RESERVE := 2
 
 var session: Session
 var queue: Array = []
@@ -273,7 +272,7 @@ func _pick_cookable() -> String:
 
 func _accept_from_queue() -> void:
 	var cap := _serve_cap()
-	while not queue.is_empty() and _board_used() < cap - SLOT_RESERVE:
+	while not queue.is_empty() and orders.size() < Config.MAX_ORDERS and _board_used() < cap:
 		var best := 0
 		for i in queue.size():
 			if queue[i]["pat"] < queue[best]["pat"]:
