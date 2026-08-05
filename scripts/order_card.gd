@@ -84,8 +84,7 @@ func set_servable(on: bool) -> void:
 		return
 	_servable = on
 	if on:
-		_style.border_color = Palette.SUCCESS
-		_style.set_border_width_all(2)
+		_style.bg_color = Palette.SUCCESS.lightened(0.72)
 		pivot_offset = size * 0.5
 		_glow = create_tween().set_loops()
 		_glow.tween_property(self, "scale", Vector2(1.07, 1.07), 0.35).set_trans(Tween.TRANS_SINE)
@@ -95,8 +94,7 @@ func set_servable(on: bool) -> void:
 			_glow.kill()
 			_glow = null
 		scale = Vector2.ONE
-		_style.border_color = Palette.ACCENT
-		_style.set_border_width_all(1)
+		_style.bg_color = Palette.TICKET
 
 
 func can_accept(payload: Dictionary) -> bool:
