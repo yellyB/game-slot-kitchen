@@ -344,6 +344,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.born = _session.now()   # 주문 접수 시각 스탬프 — 판매 ctx의 order_age(빠른/느린 서빙 카드)
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
+	order.rejected.connect(_on_order_rejected)
 	slot.place_card(order)
 	customer.queue_free()
 	_accepted_today += 1
@@ -388,6 +389,11 @@ func _on_order_expired(order: OrderCard) -> void:
 
 
 ## 완성품이 매칭 주문 카드에 서빙됨 → 돈 + 손님 퇴장 + 슬롯/도구 회복.
+## 안 맞는 완성품 서빙 시도 → 😠 팝(카드 흔들림은 OrderCard가 처리).
+func _on_order_rejected(order: OrderCard) -> void:
+	_spawn_pop("😠", order.global_position + order.size * 0.5)
+
+
 func _on_served(order: OrderCard, dish: DishCard) -> void:
 	var rid := order.recipe_id
 	# 판매금 계산(판매금/추가금/콤보/적립 전 카드) — sim_core._serve와 동일한 훅.

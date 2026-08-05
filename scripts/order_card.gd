@@ -7,6 +7,7 @@ extends Card
 
 signal expired(card: OrderCard)
 signal served(card: OrderCard, dish: DishCard)
+signal rejected(card: OrderCard)   # 안 맞는 완성품 서빙 시도 → 반려 연출용
 
 var recipe_id: String
 var born := 0.0   ## 슬롯에 놓인 게임시각(초). 판매 ctx의 order_age 계산용. main이 스탬프.
@@ -116,11 +117,25 @@ func can_accept(payload: Dictionary) -> bool:
 func accept(payload: Dictionary) -> void:
 	served.emit(self, payload.get("card"))
 
+## 어떤 완성품이든 드롭은 받음(맞으면 서빙, 틀리면 반려 연출). 재료·기타는 거부.
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	return typeof(data) == TYPE_DICTIONARY and can_accept(data)
+	return typeof(data) == TYPE_DICTIONARY and data.get("kind") == "dish"
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	Move.on_drop(self, data)
+	if can_accept(data):
+		Move.on_drop(self, data)
+	else:
+		_reject()   # 레시피 안 맞음 → 흔들림 + 😠
+
+## 반려 연출 — 좌우로 흔들림 + 😠(main이 신호 받아 팝).
+func _reject() -> void:
+	var bx := position.x
+	var tw := create_tween()
+	tw.tween_property(self, "position:x", bx + 6.0, 0.05)
+	tw.tween_property(self, "position:x", bx - 6.0, 0.05)
+	tw.tween_property(self, "position:x", bx + 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx, 0.05)
+	rejected.emit(self)
 
 
 func _process(delta: float) -> void:
