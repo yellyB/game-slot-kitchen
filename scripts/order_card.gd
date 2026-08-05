@@ -16,6 +16,8 @@ var _time_left := Config.PATIENCE_DISH
 var _done := false
 var _fill := Palette.SUB
 var _gauge: ProgressBar
+var _servable := false
+var _glow: Tween
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -85,6 +87,26 @@ func _build_content() -> void:
 	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
 	v.add_child(_gauge)
+
+
+## 매칭 완성품이 보드에 있으면 초록 테두리 + 은은한 펄스로 "지금 서빙 가능" 표시.
+func set_servable(on: bool) -> void:
+	if on == _servable:
+		return
+	_servable = on
+	if on:
+		_style.border_color = Palette.SUCCESS
+		_style.set_border_width_all(2)
+		_glow = create_tween().set_loops()
+		_glow.tween_property(self, "modulate:a", 0.78, 0.45)
+		_glow.tween_property(self, "modulate:a", 1.0, 0.45)
+	else:
+		if _glow != null:
+			_glow.kill()
+			_glow = null
+		modulate.a = 1.0
+		_style.border_color = Palette.ACCENT
+		_style.set_border_width_all(1)
 
 
 # ── 서빙 타깃 (완성품 받기, 클릭·드래그 공용) ─────────────

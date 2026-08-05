@@ -92,6 +92,20 @@ func slot_counts() -> Dictionary:
 	return {"orders": orders, "dishes": dishes, "ingr": ingr, "empty": empty}
 
 
+## 서빙 가능한 완성품의 레시피 id 집합(슬롯+도구석). 주문 카드 "서빙 가능" 표시용.
+func available_dish_ids() -> Dictionary:
+	var ids := {}
+	for s in slots:
+		var c := s.get_card()
+		if c is DishCard:
+			ids[c.recipe_id] = true
+	for t in tools:
+		var d := t.get_dish()
+		if d != null:
+			ids[d.recipe_id] = true
+	return ids
+
+
 ## 보드에 놓인 재료 개수 (ing_id → 개수).
 func ingredient_counts() -> Dictionary:
 	var have := {}
