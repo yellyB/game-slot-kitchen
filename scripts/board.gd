@@ -83,6 +83,19 @@ func slot_counts() -> Dictionary:
 	return {"orders": orders, "dishes": dishes, "ingr": ingr, "empty": empty}
 
 
+func available_dish_ids() -> Dictionary:
+	var ids := {}
+	for s in slots:
+		var c := s.get_card()
+		if c is DishCard:
+			ids[c.recipe_id] = true
+	for t in tools:
+		var d := t.get_dish()
+		if d != null:
+			ids[d.recipe_id] = true
+	return ids
+
+
 func ingredient_counts() -> Dictionary:
 	var have := {}
 	for s in slots:

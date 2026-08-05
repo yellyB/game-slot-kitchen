@@ -274,6 +274,20 @@ func _refresh_warehouse() -> void:
 	_warehouse.refresh(_board.is_full())
 
 
+func _process(_delta: float) -> void:
+	_refresh_servable()
+
+
+func _refresh_servable() -> void:
+	if _board == null:
+		return
+	var ready := _board.available_dish_ids()
+	for s in _board.slots:
+		var c := s.get_card()
+		if c is OrderCard:
+			c.set_servable(ready.has(c.recipe_id))
+
+
 func _on_background_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		Move.background_click()
