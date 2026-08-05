@@ -93,7 +93,7 @@ const ALL := {
 	"sale_t34":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 0.10}},
 	"sale_t56":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 0.10}},
 	"sale_fresh": {"card": 55, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 0.20}},
-	"sale_fast":  {"card": 56, "icon": "⚡", "sale": {"type": "fast_order", "within": 4.0, "pct": 0.20}},
+	"sale_fast":  {"card": 56, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 0.20}},
 	"sale_addon": {"card": 57, "icon": "🔊", "sale": {"type": "addon", "pct": 0.30}},
 
 	# ── 자동화(58~61) ──
@@ -105,7 +105,7 @@ const ALL := {
 	# ── 경제/정산(62~65) ──
 	"interest":   {"card": 62, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.04}},
 	"settle_100": {"card": 63, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.28}},
-	"settle_90":  {"card": 64, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.12}},
+	"settle_90":  {"card": 64, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.15}},
 	"settle_same":{"card": 65, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.17}},
 
 	# ── 벼랑끝(66~69) ──
