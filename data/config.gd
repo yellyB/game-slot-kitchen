@@ -35,7 +35,7 @@ const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절
 # (가게세는 하루별 → data/levels.gd)
 
 # ── 세션 / 하루 ───────────────────────────────────────────
-const DAY_LENGTH := 120.0       # 영업시간(초)
+const DAY_LENGTH := 90.0       # 영업시간(초)
 const WAVES := 3                # 웨이브 수(고정). 웨이브당 손님 수는 data/levels.gd
 const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)
 const WAREHOUSE_EXIT_COST := 1.5  # 창고 닫을 때(퇴장) 소모 영업시간(초) — 트립 비용
