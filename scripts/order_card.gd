@@ -95,9 +95,8 @@ func set_servable(on: bool) -> void:
 		return
 	_servable = on
 	if on:
-		# 조리 글로우(알파 fade)와 구분되게 "스케일 바운스(콩콩)" + 초록 테두리.
-		_style.border_color = Palette.SUCCESS
-		_style.set_border_width_all(2)
+		# 조리 글로우(알파 fade)·테두리 대신: 배경 연초록 틴트 + 스케일 바운스(콩콩).
+		_style.bg_color = Palette.SUCCESS.lightened(0.72)
 		pivot_offset = size * 0.5   # 중앙 기준 스케일
 		_glow = create_tween().set_loops()
 		_glow.tween_property(self, "scale", Vector2(1.07, 1.07), 0.35).set_trans(Tween.TRANS_SINE)
@@ -107,8 +106,7 @@ func set_servable(on: bool) -> void:
 			_glow.kill()
 			_glow = null
 		scale = Vector2.ONE
-		_style.border_color = Palette.ACCENT
-		_style.set_border_width_all(1)
+		_style.bg_color = Palette.TICKET
 
 
 # ── 서빙 타깃 (완성품 받기, 클릭·드래그 공용) ─────────────
