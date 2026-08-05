@@ -184,8 +184,7 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"addon":
 				addon_pct += float(s["pct"])
 			"accum":
-				flat += _accum                       # 적립분 먼저 획득
-				accum_pct += float(s["pct"])
+				accum_pct += float(s["pct"])         # 지급/누적은 말미에서(복리 차단)
 
 	var bonus := int(round(float(mp) * pct)) + flat
 	if addon_pct > 0.0:
@@ -196,8 +195,10 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	if _double_next:                                     # 72
 		amount *= 2
 		_double_next = false
-	if accum_pct > 0.0:                                  # 45: 획득 후 누적
+	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금(적립 제외)의 %만 누적 → 복리 차단
+		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
+		amount += payout
 	return {"amount": amount, "penalty": penalty, "discard": discard}
 
 
