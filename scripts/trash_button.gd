@@ -22,6 +22,7 @@ func accept(payload: Dictionary) -> void:
 	var card = payload.get("card")
 	if card == null or not is_instance_valid(card):
 		return
+	Audio.play("trash")   # 종이 구기기 효과음
 	card.dispose()   # 카드별 정리(완성품이면 도구 리셋)
 
 
