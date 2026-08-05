@@ -8,6 +8,8 @@ const MAX_SLOTS := 10
 
 const MAX_QUEUE := 4
 const SPAWN_INTERVAL := 4.0
+const SPAWN_FIRST := 5.0
+const SPAWN_LAST_MARGIN := 8.0
 
 const SPAWN_WEIGHTS := [30, 22, 18, 15, 10, 5]
 

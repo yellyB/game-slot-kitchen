@@ -154,11 +154,14 @@ func _end_day() -> void:
 
 func _build_schedule() -> void:
 	_spawn_times.clear()
-	var per_wave := int(Levels.get_day(day).get("per_wave", 3))
-	var half := (per_wave - 1) * 0.5
-	for w in Config.WAVES:
-		var center: float = _day_length * (w + 0.5) / Config.WAVES
-		for k in per_wave:
-			var t: float = center + (k - half) * Config.WAVE_SPACING
-			_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
+	var total := int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES
+	if total <= 0:
+		return
+	var first := Config.SPAWN_FIRST
+	var last := _day_length - Config.SPAWN_LAST_MARGIN
+	var span := maxf(1.0, last - first)
+	var denom := float(maxi(1, total - 1))
+	for i in total:
+		var t := first + span * float(i) / denom
+		_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
 	_spawn_times.sort()
