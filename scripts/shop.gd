@@ -155,8 +155,27 @@ func _show_pack(pack: Array) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
+	var i := 0
 	for id in pack:
-		row.add_child(_pack_choice(id, overlay))
+		var choice := _pack_choice(id, overlay)
+		row.add_child(choice)
+		_reveal_choice(choice, i)   # 하나씩 팝하며 개봉
+		i += 1
+
+
+## 개봉 연출 — 카드가 작게/투명하게 시작해 순서대로 튀며 나타남.
+func _reveal_choice(card: Control, idx: int) -> void:
+	card.scale = Vector2(0.2, 0.2)
+	card.modulate.a = 0.0
+	await get_tree().process_frame
+	if not is_instance_valid(card):
+		return
+	card.pivot_offset = card.size * 0.5
+	var delay := idx * 0.12
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "modulate:a", 1.0, 0.14).set_delay(delay)
+	tw.tween_property(card, "scale", Vector2.ONE, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(delay)
 
 
 func _pack_choice(id: String, overlay: Control) -> Control:
