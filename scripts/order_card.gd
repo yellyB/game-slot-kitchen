@@ -86,14 +86,15 @@ func set_servable(on: bool) -> void:
 	if on:
 		_style.border_color = Palette.SUCCESS
 		_style.set_border_width_all(2)
+		pivot_offset = size * 0.5
 		_glow = create_tween().set_loops()
-		_glow.tween_property(self, "modulate:a", 0.78, 0.45)
-		_glow.tween_property(self, "modulate:a", 1.0, 0.45)
+		_glow.tween_property(self, "scale", Vector2(1.07, 1.07), 0.35).set_trans(Tween.TRANS_SINE)
+		_glow.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_SINE)
 	else:
 		if _glow != null:
 			_glow.kill()
 			_glow = null
-		modulate.a = 1.0
+		scale = Vector2.ONE
 		_style.border_color = Palette.ACCENT
 		_style.set_border_width_all(1)
 
