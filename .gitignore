@@ -5,3 +5,4 @@
 # 검증용 임시 스크린샷 (개발 중 --shot 캡처)
 _*shot*.png
 _*shot*.png.import
+.claude/
