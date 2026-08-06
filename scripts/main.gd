@@ -343,7 +343,8 @@ func _produce_dish(rid: String) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
-	customer.queue_free()
+	_spawn_pop("😠", customer.global_position + customer.size * 0.5)
+	_detach_and_fade(customer)
 
 
 func _on_order_expired(order: OrderCard) -> void:
@@ -352,10 +353,8 @@ func _on_order_expired(order: OrderCard) -> void:
 		_session.earn(gain)
 		_spawn_floating("+%d" % gain, order.global_position + order.size * 0.5, Palette.SUB)
 	_order_lost_today += 1
-	var holder := order.get_parent()
-	if holder:
-		holder.remove_child(order)
-	order.queue_free()
+	_spawn_pop("😠", order.global_position + order.size * 0.5)
+	_detach_and_fade(order)
 	_refresh_warehouse()
 
 
@@ -450,6 +449,28 @@ func _on_day_closing(s: Session) -> void:
 	var bonus := Buffs.day_end_bonus(ctx)
 	if bonus != 0:
 		s.earn(bonus)
+
+
+func _detach_and_fade(card: Control) -> void:
+	if not is_instance_valid(card):
+		return
+	var gpos := card.global_position
+	var sz := card.size
+	var holder := card.get_parent()
+	if holder:
+		holder.remove_child(card)
+	add_child(card)
+	card.top_level = true
+	card.global_position = gpos
+	card.size = sz
+	card.z_index = 90
+	card.pivot_offset = sz * 0.5
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "scale", Vector2(0.6, 0.6), 0.3).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "modulate:a", 0.0, 0.3)
+	tw.chain().tween_callback(card.queue_free)
 
 
 func _spawn_pop(text: String, at_pos: Vector2) -> void:
