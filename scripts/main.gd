@@ -22,6 +22,7 @@ var _day_label: Label
 var _money_label: Label
 var _rent_label: Label
 var _last_cash := 0
+var _expect_fly := false
 var _hours_bar: ProgressBar
 
 
@@ -364,7 +365,9 @@ func _on_customer_expired(customer: Customer) -> void:
 func _on_order_expired(order: OrderCard) -> void:
 	var gain := Buffs.on_lost(order.recipe_id)
 	if gain != 0:
+		_expect_fly = true
 		_session.earn(gain)
+		_expect_fly = false
 		_fly_gain(gain, order.global_position + order.size * 0.5, Palette.SUB)
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
@@ -381,7 +384,9 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 	var ctx := _sale_ctx(order, dish)
 	var res := Buffs.sale_amount(rid, ctx)
 	var amount := int(res["amount"])
+	_expect_fly = true
 	_session.earn(amount)
+	_expect_fly = false
 	var penalty := int(res.get("penalty", 0))
 	if penalty != 0:
 		_session.add_cash(-penalty)
@@ -539,8 +544,11 @@ func _dot(color: Color) -> Control:
 
 
 func _on_cash_changed(cash: int) -> void:
+	var up := cash > _last_cash
 	_last_cash = cash
 	_money_label.text = _fmt(cash)
+	if up and not _expect_fly:
+		_pop_label(_money_label)
 
 
 func _pop_label(lbl: Control) -> void:
