@@ -25,6 +25,7 @@ var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·s
 var _day_label: Label
 var _money_label: Label
 var _rent_label: Label
+var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _hours_bar: ProgressBar
 
 
@@ -586,7 +587,20 @@ func _dot(color: Color) -> Control:
 
 # ── 세션 반응 ─────────────────────────────────────────────
 func _on_cash_changed(cash: int) -> void:
+	var up := cash > _last_cash
+	_last_cash = cash
 	_money_label.text = _fmt(cash)
+	if up:
+		_pop_label(_money_label)   # 돈 증가 시 통통 팝
+
+
+## 라벨 강조 팝 — 살짝 커졌다 원래대로(BACK). 돈 증가 등.
+func _pop_label(lbl: Control) -> void:
+	lbl.pivot_offset = lbl.size * 0.5   # 중앙 기준 스케일
+	lbl.scale = Vector2.ONE
+	var tw := create_tween()
+	tw.tween_property(lbl, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 
 
 func _on_progress(t01: float) -> void:
