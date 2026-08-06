@@ -371,7 +371,8 @@ func _produce_dish(rid: String) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
-	customer.queue_free()
+	_spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
+	_detach_and_fade(customer)
 
 
 ## 음식 대기 인내심 0 → 주문 카드(=손님) 통째로 사라짐, 슬롯 회복.
@@ -382,10 +383,8 @@ func _on_order_expired(order: OrderCard) -> void:
 		_session.earn(gain)
 		_spawn_floating("+%d" % gain, order.global_position + order.size * 0.5, Palette.SUB)
 	_order_lost_today += 1
-	var holder := order.get_parent()
-	if holder:
-		holder.remove_child(order)
-	order.queue_free()
+	_spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
+	_detach_and_fade(order)   # 슬롯에서 떼어내며 페이드아웃(슬롯 즉시 회복)
 	_refresh_warehouse()
 
 
@@ -491,6 +490,30 @@ func _on_day_closing(s: Session) -> void:
 	var bonus := Buffs.day_end_bonus(ctx)
 	if bonus != 0:
 		s.earn(bonus)
+
+
+## 이탈 연출 — 카드를 부모(슬롯/큐)에서 떼어내 제자리에서 쪼그라들며 페이드아웃 후 제거.
+## 슬롯은 즉시 회복(remove_child)되고, 카드는 최상위로 옮겨 잔상만 남긴다.
+func _detach_and_fade(card: Control) -> void:
+	if not is_instance_valid(card):
+		return
+	var gpos := card.global_position
+	var sz := card.size
+	var holder := card.get_parent()
+	if holder:
+		holder.remove_child(card)
+	add_child(card)
+	card.top_level = true          # 컨테이너 정렬 영향 배제 — 좌표 고정
+	card.global_position = gpos
+	card.size = sz
+	card.z_index = 90
+	card.pivot_offset = sz * 0.5
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "scale", Vector2(0.6, 0.6), 0.3).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "modulate:a", 0.0, 0.3)
+	tw.chain().tween_callback(card.queue_free)
 
 
 ## 팝 버스트 — 작게 나타나 크게 튀며(스케일) 살짝 떠오르다 사라짐. 서빙 성공 😊 등.
