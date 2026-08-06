@@ -55,6 +55,14 @@ func _ready() -> void:
 	v.add_child(confirm)
 
 
+func force_expire() -> void:
+	if _done:
+		return
+	_done = true
+	set_process(false)
+	expired.emit(self)
+
+
 func slide_in() -> void:
 	await get_tree().process_frame
 	if not is_inside_tree():

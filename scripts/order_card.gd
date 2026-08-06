@@ -123,6 +123,14 @@ func _reject() -> void:
 	rejected.emit(self)
 
 
+func force_expire() -> void:
+	if _done:
+		return
+	_done = true
+	set_process(false)
+	expired.emit(self)
+
+
 func _process(delta: float) -> void:
 	if _done:
 		return
