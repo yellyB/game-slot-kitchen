@@ -155,10 +155,12 @@ func _show_pack(pack: Array) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
+	var choices: Array = []
 	var i := 0
 	for id in pack:
-		var choice := _pack_choice(id, overlay)
+		var choice := _pack_choice(id, choices, overlay)
 		row.add_child(choice)
+		choices.append(choice)
 		_reveal_choice(choice, i)   # 하나씩 팝하며 개봉
 		i += 1
 
@@ -179,7 +181,7 @@ func _reveal_choice(card: Control, idx: int) -> void:
 	tw.tween_property(card, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
-func _pack_choice(id: String, overlay: Control) -> Control:
+func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
 	var def := BuffDefs.get_def(id)
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(84, 0)
@@ -207,12 +209,34 @@ func _pack_choice(id: String, overlay: Control) -> Control:
 	pick.add_theme_color_override("font_color", Palette.WHITE)
 	pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-	pick.pressed.connect(func():
-		Buffs.add(id)
-		overlay.queue_free()
-		_refresh())
+	pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
 	v.add_child(pick)
 	return card
+
+
+## 버프 선택 — 고른 카드 팡(크게) + 나머지 쪼그라들며 사라짐, 그 후 오버레이 닫기.
+func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control) -> void:
+	if overlay.get_meta("picked", false):
+		return   # 중복 선택 방지
+	overlay.set_meta("picked", true)
+	Buffs.add(id)
+	for c in choices:
+		if not is_instance_valid(c):
+			continue
+		c.pivot_offset = c.size * 0.5
+		if c == chosen:
+			var tw := create_tween()
+			tw.tween_property(c, "scale", Vector2(1.4, 1.4), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(c, "modulate:a", 0.0, 0.24).set_delay(0.12)
+		else:
+			var tw2 := create_tween()
+			tw2.set_parallel(true)
+			tw2.tween_property(c, "scale", Vector2(0.5, 0.5), 0.25).set_ease(Tween.EASE_IN)
+			tw2.tween_property(c, "modulate:a", 0.0, 0.25)
+	await get_tree().create_timer(0.42).timeout
+	if is_instance_valid(overlay):
+		overlay.queue_free()
+	_refresh()
 
 
 func _refresh() -> void:
