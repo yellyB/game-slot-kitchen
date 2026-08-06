@@ -365,7 +365,7 @@ func _on_order_expired(order: OrderCard) -> void:
 	var gain := Buffs.on_lost(order.recipe_id)
 	if gain != 0:
 		_session.earn(gain)
-		_spawn_floating("+%d" % gain, order.global_position + order.size * 0.5, Palette.SUB)
+		_fly_gain(gain, order.global_position + order.size * 0.5, Palette.SUB)
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
 	_detach_and_fade(order)
@@ -394,7 +394,7 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 	_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
 
 	var serve_pos := order.global_position + order.size * 0.5
-	_spawn_floating("+%d" % amount, serve_pos, Palette.ACCENT)
+	_fly_gain(amount, serve_pos)
 	_spawn_pop("😊", serve_pos + Vector2(0, -18))
 
 	var holder := order.get_parent()
@@ -539,19 +539,40 @@ func _dot(color: Color) -> Control:
 
 
 func _on_cash_changed(cash: int) -> void:
-	var up := cash > _last_cash
 	_last_cash = cash
 	_money_label.text = _fmt(cash)
-	if up:
-		_pop_label(_money_label)
 
 
 func _pop_label(lbl: Control) -> void:
 	lbl.pivot_offset = lbl.size * 0.5
 	lbl.scale = Vector2.ONE
 	var tw := create_tween()
-	tw.tween_property(lbl, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(lbl, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tw.tween_property(lbl, "scale", Vector2(1.2, 1.2), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+
+
+func _fly_gain(amount: int, from_pos: Vector2, color := Palette.ACCENT) -> void:
+	if amount == 0:
+		return
+	var l := UI.label("+%d" % amount, 20, color, true)
+	l.z_index = 100
+	l.add_theme_constant_override("outline_size", 3)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	add_child(l)
+	l.position = from_pos
+	await get_tree().process_frame
+	if not is_instance_valid(l):
+		return
+	l.pivot_offset = l.size * 0.5
+	var target := _money_label.global_position + _money_label.size * 0.5 - l.size * 0.5
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "position", target, 0.45).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(l, "scale", Vector2(0.55, 0.55), 0.45).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(func():
+		if is_instance_valid(l):
+			l.queue_free()
+		_pop_label(_money_label))
 
 
 func _on_progress(t01: float) -> void:
