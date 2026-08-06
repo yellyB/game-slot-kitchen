@@ -554,6 +554,29 @@ func _on_cash_changed(cash: int) -> void:
 		_spawn_loss(-delta)
 
 
+func _show_day_banner(day: int) -> void:
+	var l := UI.label(Loc.t("day_n") % day, 48, Palette.COCOA_800, true)
+	l.add_theme_constant_override("outline_size", 6)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	l.z_index = 200
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(l)
+	await get_tree().process_frame
+	if not is_instance_valid(l):
+		return
+	var vp := get_viewport_rect().size
+	l.pivot_offset = l.size * 0.5
+	l.position = (vp - l.size) * 0.5 - Vector2(0, vp.y * 0.12)
+	l.scale = Vector2(0.6, 0.6)
+	l.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(l, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(l, "modulate:a", 1.0, 0.2)
+	tw.tween_interval(0.7)
+	tw.tween_property(l, "modulate:a", 0.0, 0.4)
+	tw.tween_callback(l.queue_free)
+
+
 func _spawn_loss(amount: int) -> void:
 	if amount <= 0:
 		return
@@ -609,6 +632,7 @@ func _on_progress(t01: float) -> void:
 
 func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
+	_show_day_banner(day)
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
 	_warehouse.visible = false
