@@ -60,6 +60,20 @@ func _ready() -> void:
 	v.add_child(confirm)
 
 
+## 큐 등장 연출 — 오른쪽에서 스윽 슬라이드 인 + 페이드. 배치 확정 후 호출.
+func slide_in() -> void:
+	await get_tree().process_frame   # HBox 정렬 끝나 최종 위치 확보
+	if not is_inside_tree():
+		return
+	var target := position
+	position = target + Vector2(44, 0)   # 오른쪽 바깥에서 진입
+	modulate.a = 0.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+
+
 func _process(delta: float) -> void:
 	if _done:
 		return

@@ -325,6 +325,7 @@ func _spawn_customer() -> void:
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
 	_queue_row.add_child(c)
+	c.slide_in()   # 오른쪽에서 슬라이드 인 등장
 	_visited_today += 1   # 정산(served_ratio)용 등장 손님 집계 — sim_core._on_spawn과 동치
 
 
