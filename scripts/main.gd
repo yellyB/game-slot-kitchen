@@ -609,7 +609,7 @@ func _pop_label(lbl: Control) -> void:
 
 
 ## 획득 연출 — "+금액"이 획득 위치에서 상단 돈 라벨로 날아가 합쳐지고, 도착 시 라벨 팝.
-func _fly_gain(amount: int, from_pos: Vector2, color := Palette.ACCENT) -> void:
+func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void:
 	if amount == 0:
 		return
 	var l := UI.label("+%d" % amount, 20, color, true)
