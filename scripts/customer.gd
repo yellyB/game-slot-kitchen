@@ -60,6 +60,15 @@ func _ready() -> void:
 	v.add_child(confirm)
 
 
+## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
+func force_expire() -> void:
+	if _done:
+		return
+	_done = true
+	set_process(false)
+	expired.emit(self)
+
+
 ## 큐 등장 연출 — 오른쪽에서 스윽 슬라이드 인 + 페이드. 배치 확정 후 호출.
 func slide_in() -> void:
 	await get_tree().process_frame   # HBox 정렬 끝나 최종 위치 확보

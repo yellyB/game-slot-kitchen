@@ -138,6 +138,15 @@ func _reject() -> void:
 	rejected.emit(self)
 
 
+## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
+func force_expire() -> void:
+	if _done:
+		return
+	_done = true
+	set_process(false)
+	expired.emit(self)
+
+
 func _process(delta: float) -> void:
 	if _done:
 		return

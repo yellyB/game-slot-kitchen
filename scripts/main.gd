@@ -199,7 +199,21 @@ func _build_debug() -> Control:
 	row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
 	row.add_child(_debug_btn("돈+10만", func(): _session.add_cash(100000)))
 	row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
+	row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
 	return row
+
+
+## 디버그: 손님 하나 강제 이탈. 슬롯 주문서(순회 순서 첫 번째) 먼저, 없으면 대기열 첫 손님.
+func _debug_kick_customer() -> void:
+	for s in _board.slots:
+		var c := s.get_card()
+		if c is OrderCard:
+			(c as OrderCard).force_expire()
+			return
+	for ch in _queue_row.get_children():
+		if ch is Customer:
+			(ch as Customer).force_expire()
+			return
 
 
 func _debug_btn(text: String, cb: Callable) -> Button:
