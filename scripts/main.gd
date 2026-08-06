@@ -26,6 +26,7 @@ var _day_label: Label
 var _money_label: Label
 var _rent_label: Label
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
+var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
 
 
@@ -395,7 +396,9 @@ func _on_order_expired(order: OrderCard) -> void:
 	# 카드71·72: 주문 낸 손님이 못 받고 떠나면 보상(72는 다음 획득 2배 예약).
 	var gain := Buffs.on_lost(order.recipe_id)
 	if gain != 0:
+		_expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
 		_session.earn(gain)
+		_expect_fly = false
 		_fly_gain(gain, order.global_position + order.size * 0.5, Palette.SUB)
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
@@ -415,7 +418,9 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 	var ctx := _sale_ctx(order, dish)
 	var res := Buffs.sale_amount(rid, ctx)
 	var amount := int(res["amount"])
+	_expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
 	_session.earn(amount)
+	_expect_fly = false
 	# 리스크(56 등) 패널티: 소지금 차감(매출 집계 X)
 	var penalty := int(res.get("penalty", 0))
 	if penalty != 0:
@@ -587,8 +592,11 @@ func _dot(color: Color) -> Control:
 
 # ── 세션 반응 ─────────────────────────────────────────────
 func _on_cash_changed(cash: int) -> void:
+	var up := cash > _last_cash
 	_last_cash = cash
-	_money_label.text = _fmt(cash)   # 팝은 획득 연출(_fly_gain) 도착 시점에
+	_money_label.text = _fmt(cash)
+	if up and not _expect_fly:   # fly 없는 증가(디버그 등)는 즉시 팝
+		_pop_label(_money_label)
 
 
 ## 라벨 강조 팝 — 살짝 커졌다 원래대로(BACK). 돈 라벨 합류 시 등.
