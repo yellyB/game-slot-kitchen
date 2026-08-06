@@ -21,6 +21,7 @@ var _served_by_menu := {}
 var _day_label: Label
 var _money_label: Label
 var _rent_label: Label
+var _last_cash := 0
 var _hours_bar: ProgressBar
 
 
@@ -538,7 +539,19 @@ func _dot(color: Color) -> Control:
 
 
 func _on_cash_changed(cash: int) -> void:
+	var up := cash > _last_cash
+	_last_cash = cash
 	_money_label.text = _fmt(cash)
+	if up:
+		_pop_label(_money_label)
+
+
+func _pop_label(lbl: Control) -> void:
+	lbl.pivot_offset = lbl.size * 0.5
+	lbl.scale = Vector2.ONE
+	var tw := create_tween()
+	tw.tween_property(lbl, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 
 
 func _on_progress(t01: float) -> void:
