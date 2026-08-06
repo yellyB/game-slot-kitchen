@@ -55,6 +55,19 @@ func _ready() -> void:
 	v.add_child(confirm)
 
 
+func slide_in() -> void:
+	await get_tree().process_frame
+	if not is_inside_tree():
+		return
+	var target := position
+	position = target + Vector2(44, 0)
+	modulate.a = 0.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+
+
 func _process(delta: float) -> void:
 	if _done:
 		return

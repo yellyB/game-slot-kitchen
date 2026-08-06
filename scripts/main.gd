@@ -301,6 +301,7 @@ func _spawn_customer() -> void:
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
 	_queue_row.add_child(c)
+	c.slide_in()
 	_visited_today += 1
 
 
