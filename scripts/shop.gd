@@ -162,11 +162,11 @@ func _reveal_choice(card: Control, idx: int) -> void:
 	if not is_instance_valid(card):
 		return
 	card.pivot_offset = card.size * 0.5
-	var delay := idx * 0.12
 	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(card, "modulate:a", 1.0, 0.14).set_delay(delay)
-	tw.tween_property(card, "scale", Vector2.ONE, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(delay)
+	tw.tween_interval(idx * 0.12)
+	tw.tween_property(card, "scale", Vector2(1.3, 1.3), 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(card, "modulate:a", 1.0, 0.14)
+	tw.tween_property(card, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _pack_choice(id: String, overlay: Control) -> Control:
