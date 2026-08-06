@@ -183,6 +183,7 @@ func _build_debug() -> Control:
 	row.add_theme_constant_override("separation", 6)
 	row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
 	row.add_child(_debug_btn("돈+10만", func(): _session.add_cash(100000)))
+	row.add_child(_debug_btn("돈-5만", func(): _session.add_cash(-50000)))
 	row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
 	row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
 	return row
@@ -544,11 +545,30 @@ func _dot(color: Color) -> Control:
 
 
 func _on_cash_changed(cash: int) -> void:
-	var up := cash > _last_cash
+	var delta := cash - _last_cash
 	_last_cash = cash
 	_money_label.text = _fmt(cash)
-	if up and not _expect_fly:
+	if delta > 0 and not _expect_fly:
 		_pop_label(_money_label)
+	elif delta < 0:
+		_spawn_loss(-delta)
+
+
+func _spawn_loss(amount: int) -> void:
+	if amount <= 0:
+		return
+	var l := UI.label("-%d" % amount, 18, Palette.DANGER, true)
+	l.z_index = 100
+	l.add_theme_constant_override("outline_size", 3)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	add_child(l)
+	var start := _money_label.global_position + Vector2(0, _money_label.size.y + 2)
+	l.position = start
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "position:y", start.y + 26, 0.6).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(l.queue_free)
 
 
 func _pop_label(lbl: Control) -> void:
