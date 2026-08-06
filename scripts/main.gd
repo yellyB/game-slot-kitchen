@@ -559,7 +559,7 @@ func _pop_label(lbl: Control) -> void:
 	tw.tween_property(lbl, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 
 
-func _fly_gain(amount: int, from_pos: Vector2, color := Palette.ACCENT) -> void:
+func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void:
 	if amount == 0:
 		return
 	var l := UI.label("+%d" % amount, 20, color, true)
