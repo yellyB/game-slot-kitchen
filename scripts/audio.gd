@@ -8,6 +8,7 @@ const SFX := {
 	"serve": preload("res://assets/audio/sfx/serve.wav"),
 	"coins": preload("res://assets/audio/sfx/coins.wav"),
 	"day_start": preload("res://assets/audio/sfx/day_start.mp3"),
+	"click": preload("res://assets/audio/sfx/click.wav"),
 }
 
 const POOL_SIZE := 8
@@ -22,6 +23,16 @@ func _ready() -> void:
 		p.volume_db = SFX_VOLUME_DB
 		add_child(p)
 		_players.append(p)
+	get_tree().node_added.connect(_hook_button)
+
+
+func _hook_button(node: Node) -> void:
+	if node is BaseButton and not node.pressed.is_connected(_play_click):
+		node.pressed.connect(_play_click)
+
+
+func _play_click() -> void:
+	play("click")
 
 
 func play(id: String) -> void:
