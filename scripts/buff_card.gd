@@ -34,4 +34,8 @@ func _build_content() -> void:
 
 	var lbl := UI.label(BuffDefs.display_label(buff_id), 12, Palette.MAIN)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# 긴 설명은 한 줄로 폭을 늘리지 말고 카드 폭 안에서 줄바꿈 → 카드/슬롯 크기 고정.
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.custom_minimum_size = Vector2.ZERO
 	v.add_child(lbl)
