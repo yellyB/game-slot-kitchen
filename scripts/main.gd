@@ -26,6 +26,7 @@ var _expect_fly := false
 var _hours_bar: ProgressBar
 var _hours_glow: Tween
 var _hours_warning := false
+var _blackout: ColorRect
 
 
 func _ready() -> void:
@@ -556,6 +557,26 @@ func _on_cash_changed(cash: int) -> void:
 		_spawn_loss(-delta)
 
 
+func _fade_to_black(cb: Callable) -> void:
+	_clear_blackout()
+	_blackout = ColorRect.new()
+	_blackout.color = Palette.COCOA_900
+	_blackout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_blackout.modulate.a = 0.0
+	_blackout.z_index = 290
+	_blackout.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_blackout)
+	var tw := create_tween()
+	tw.tween_property(_blackout, "modulate:a", 0.82, 0.8).set_ease(Tween.EASE_IN)
+	tw.tween_callback(cb)
+
+
+func _clear_blackout() -> void:
+	if _blackout != null and is_instance_valid(_blackout):
+		_blackout.queue_free()
+	_blackout = null
+
+
 func _spawn_confetti(count := 46) -> void:
 	var vp := get_viewport_rect().size
 	var colors := [Palette.MAIN, Palette.SUB, Palette.ACCENT, Palette.SUCCESS, Palette.DANGER]
@@ -676,6 +697,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()
+	_clear_blackout()
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
@@ -726,11 +748,12 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
-		Modal.open(self) \
-			.title(Loc.t("gameover_title")) \
-			.row(Loc.t("gameover_day") % summary["day"]) \
-			.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
-			.button(Loc.t("to_title"), _show_title)
+		_fade_to_black(func():
+			Modal.open(self) \
+				.title(Loc.t("gameover_title")) \
+				.row(Loc.t("gameover_day") % summary["day"]) \
+				.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
+				.button(Loc.t("to_title"), _show_title))
 
 
 func _open_shop() -> void:
