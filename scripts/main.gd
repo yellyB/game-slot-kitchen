@@ -779,7 +779,7 @@ func _on_day_started(day: int, rent: int) -> void:
 		if slot:
 			var bc := BuffCard.new()
 			bc.setup(id)
-			slot.place_card(bc)
+			slot.place_card(bc, false)   # 버프 재배치는 무음(매일 리빌드 버스트 방지)
 	for c in _queue_row.get_children():
 		c.queue_free()
 	_refresh_warehouse()

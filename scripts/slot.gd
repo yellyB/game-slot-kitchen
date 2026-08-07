@@ -50,13 +50,16 @@ func place_new(id: String) -> void:
 
 
 ## 이미 만들어진 카드(재료·주문서 등)를 배치.
-func place_card(card: Card) -> void:
+## play_sfx=false: 버프 재배치(매일 리빌드)처럼 소리 없이 얹을 때.
+func place_card(card: Card, play_sfx := true) -> void:
 	if not is_empty() or card == null:
 		return
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
 	card.pop_in()   # 배치 팝 애니
+	if play_sfx:
+		Audio.play("card_place")   # 슬롯에 카드 생김(탁)
 
 
 ## 다른 슬롯/도구석에서 카드를 옮겨오기.
@@ -68,6 +71,7 @@ func take_card(card: Card) -> void:
 		prev.remove_child(card)
 	_holder.add_child(card)
 	card.pop_in()   # 이동 팝 애니
+	Audio.play("card_place")   # 슬롯에 카드 생김(탁)
 	# 완성품을 도구석에서 가져온 경우 → 그 도구석 회복
 	var dc := card as DishCard
 	if dc != null and dc.tool != null:
@@ -85,7 +89,7 @@ func can_accept(payload: Dictionary) -> bool:
 
 
 func accept(payload: Dictionary) -> void:
-	Audio.play("card_place")   # 카드 놓기음(탁)
+	# 놓기음은 place_new/place_card·take_card에서 재생(경로 불문 일관).
 	match payload.get("kind"):
 		"new":
 			place_new(str(payload.get("id")))
