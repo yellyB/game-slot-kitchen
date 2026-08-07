@@ -4,6 +4,9 @@ const SFX := {
 	"trash": preload("res://assets/audio/sfx/trash.wav"),
 	"card_pick": preload("res://assets/audio/sfx/card_pick.wav"),
 	"card_place": preload("res://assets/audio/sfx/card_place.wav"),
+	"cook_start": preload("res://assets/audio/sfx/cook_start.wav"),
+	"serve": preload("res://assets/audio/sfx/serve.wav"),
+	"coins": preload("res://assets/audio/sfx/coins.wav"),
 }
 
 const POOL_SIZE := 8

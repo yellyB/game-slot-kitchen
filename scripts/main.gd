@@ -384,6 +384,7 @@ func _on_order_rejected(order: OrderCard) -> void:
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
+	Audio.play("serve")
 	var rid := order.recipe_id
 	var ctx := _sale_ctx(order, dish)
 	var res := Buffs.sale_amount(rid, ctx)
@@ -553,8 +554,10 @@ func _on_cash_changed(cash: int) -> void:
 	_money_label.text = _fmt(cash)
 	if delta > 0 and not _expect_fly:
 		_pop_label(_money_label)
+		Audio.play("coins")
 	elif delta < 0:
 		_spawn_loss(-delta)
+		Audio.play("coins")
 
 
 func _fade_to_black(cb: Callable) -> void:
@@ -669,7 +672,8 @@ func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void
 	tw.chain().tween_callback(func():
 		if is_instance_valid(l):
 			l.queue_free()
-		_pop_label(_money_label))
+		_pop_label(_money_label)
+		Audio.play("coins"))
 
 
 func _on_progress(t01: float) -> void:

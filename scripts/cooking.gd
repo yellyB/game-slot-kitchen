@@ -116,5 +116,6 @@ func _select(id: String) -> void:
 	board.consume_ingredients(id)
 	var empty := board.empty_slot_count()
 	_active_tool.start_cooking(id, empty)
+	Audio.play("cook_start")
 	_active_tool = null
 	cooked.emit()
