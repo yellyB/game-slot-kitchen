@@ -417,6 +417,7 @@ func _on_order_rejected(order: OrderCard) -> void:
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
+	Audio.play("serve")   # 서빙 완료음(리워드)
 	var rid := order.recipe_id
 	# 판매금 계산(판매금/추가금/콤보/적립 전 카드) — sim_core._serve와 동일한 훅.
 	var ctx := _sale_ctx(order, dish)
@@ -601,8 +602,10 @@ func _on_cash_changed(cash: int) -> void:
 	_money_label.text = _fmt(cash)
 	if delta > 0 and not _expect_fly:   # fly 없는 증가(디버그 등)는 즉시 팝
 		_pop_label(_money_label)
+		Audio.play("coins")             # 소지금 증가음(동전)
 	elif delta < 0:                     # 감소(가게세·페널티) → 빨간 -n 아래로
 		_spawn_loss(-delta)
+		Audio.play("coins")             # 소지금 감소음(동전)
 
 
 ## 폐업 암전 — 화면을 서서히 어둡게(COCOA_900) 덮은 뒤 콜백(게임오버 모달) 실행.
@@ -723,7 +726,8 @@ func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void
 	tw.chain().tween_callback(func():
 		if is_instance_valid(l):
 			l.queue_free()
-		_pop_label(_money_label))   # 합류 → 보유금액 통통
+		_pop_label(_money_label)   # 합류 → 보유금액 통통
+		Audio.play("coins"))       # 도착 시 동전음(서빙 수입 등)
 
 
 func _on_progress(t01: float) -> void:
