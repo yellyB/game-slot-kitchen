@@ -71,7 +71,7 @@ func _make_preview() -> Control:
 	var preview := PanelContainer.new()
 	preview.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2, 12))
 	preview.modulate = Color(1, 1, 1, 0.92)
-	preview.custom_minimum_size = size * 1.08   # 집은 카드보다 살짝 크게(들어올린 느낌)
+	preview.custom_minimum_size = size * 0.9   # 집은 카드보다 살짝 작게
 	var lbl := UI.label(_preview_text(), 30)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
