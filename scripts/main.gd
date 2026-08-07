@@ -604,6 +604,30 @@ func _on_cash_changed(cash: int) -> void:
 		_spawn_loss(-delta)
 
 
+## 승리 축포 — 팔레트 색 색종이가 화면 위에서 흩날리며 떨어져 페이드아웃. 모달 위(z 350).
+func _spawn_confetti(count := 46) -> void:
+	var vp := get_viewport_rect().size
+	var colors := [Palette.MAIN, Palette.SUB, Palette.ACCENT, Palette.SUCCESS, Palette.DANGER]
+	for i in count:
+		var p := ColorRect.new()
+		p.color = colors[i % colors.size()]
+		p.size = Vector2(8, 12)
+		p.z_index = 350   # 모달(z 300) 위로
+		p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		p.pivot_offset = p.size * 0.5
+		add_child(p)
+		p.position = Vector2(randf_range(vp.x * 0.15, vp.x * 0.85), -20.0)
+		var tw := create_tween()
+		tw.set_parallel(true)
+		var fall := randf_range(vp.y * 0.55, vp.y * 0.95)
+		var drift := randf_range(-90.0, 90.0)
+		var dur := randf_range(1.0, 1.8)
+		tw.tween_property(p, "position", p.position + Vector2(drift, fall), dur).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_property(p, "rotation", randf_range(-6.0, 6.0), dur)
+		tw.tween_property(p, "modulate:a", 0.0, dur).set_ease(Tween.EASE_IN)
+		tw.chain().tween_callback(p.queue_free)
+
+
 ## 하루 시작 배너 — 화면 중앙 위쪽에 큰 "N일차"가 팝인 → 잠깐 유지 → 페이드아웃.
 func _show_day_banner(day: int) -> void:
 	var l := UI.label(Loc.t("day_n") % day, 48, Palette.COCOA_800, true)
@@ -749,8 +773,10 @@ func _on_day_ended(summary: Dictionary) -> void:
 	if summary["won"]:
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
-			.row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS) \
+			.stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
 			.button(Loc.t("to_title"), _show_title)
+		_spawn_confetti()   # 축포 한 번
+		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
 	elif summary["passed"]:
 		Modal.open(self) \
 			.title(Loc.t("day_closed") % summary["day"]) \
