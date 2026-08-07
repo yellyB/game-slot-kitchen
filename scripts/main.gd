@@ -30,6 +30,7 @@ var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(�
 var _hours_bar: ProgressBar
 var _hours_glow: Tween      # 마감 임박 펄스
 var _hours_warning := false  # 임박 상태 진입 여부(전환 시 1회만 처리)
+var _blackout: ColorRect    # 폐업 암전 오버레이
 
 
 func _ready() -> void:
@@ -604,6 +605,27 @@ func _on_cash_changed(cash: int) -> void:
 		_spawn_loss(-delta)
 
 
+## 폐업 암전 — 화면을 서서히 어둡게(COCOA_900) 덮은 뒤 콜백(게임오버 모달) 실행.
+func _fade_to_black(cb: Callable) -> void:
+	_clear_blackout()
+	_blackout = ColorRect.new()
+	_blackout.color = Palette.COCOA_900
+	_blackout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_blackout.modulate.a = 0.0
+	_blackout.z_index = 290   # 필드 위, 모달(z300) 아래
+	_blackout.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_blackout)
+	var tw := create_tween()
+	tw.tween_property(_blackout, "modulate:a", 0.82, 0.8).set_ease(Tween.EASE_IN)
+	tw.tween_callback(cb)
+
+
+func _clear_blackout() -> void:
+	if _blackout != null and is_instance_valid(_blackout):
+		_blackout.queue_free()
+	_blackout = null
+
+
 ## 승리 축포 — 팔레트 색 색종이가 화면 위에서 흩날리며 떨어져 페이드아웃. 모달 위(z 350).
 func _spawn_confetti(count := 46) -> void:
 	var vp := get_viewport_rect().size
@@ -730,6 +752,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
+	_clear_blackout()    # 폐업 암전 잔재 제거(재도전 시)
 	# 새 세션 시작 — 시트 강제 닫기(트립 비용 없음)
 	_warehouse.visible = false
 	_cooking.visible = false
@@ -787,11 +810,12 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
-		Modal.open(self) \
-			.title(Loc.t("gameover_title")) \
-			.row(Loc.t("gameover_day") % summary["day"]) \
-			.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
-			.button(Loc.t("to_title"), _show_title)
+		_fade_to_black(func():   # 폐업 암전 후 게임오버 모달
+			Modal.open(self) \
+				.title(Loc.t("gameover_title")) \
+				.row(Loc.t("gameover_day") % summary["day"]) \
+				.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
+				.button(Loc.t("to_title"), _show_title))
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
