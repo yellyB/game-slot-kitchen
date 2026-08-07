@@ -46,6 +46,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
 	close.pressed.connect(func(): close_requested.emit())
+	Audio.attach_click(close)   # X 닫기 클릭음
 	header.add_child(close)
 
 	# 레시피 목록 (많으면 스크롤)

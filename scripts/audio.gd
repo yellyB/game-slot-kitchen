@@ -26,15 +26,12 @@ func _ready() -> void:
 		p.volume_db = SFX_VOLUME_DB
 		add_child(p)
 		_players.append(p)
-	# 모든 버튼 클릭음: 씬에 추가되는 BaseButton마다 pressed → click 자동 연결.
-	# (버튼이 곳곳에서 생성돼 중앙 팩토리가 없으므로 트리 훅으로 일괄 처리)
-	get_tree().node_added.connect(_hook_button)
 
 
-## 새로 트리에 붙는 노드가 버튼이면 클릭음을 붙인다.
-func _hook_button(node: Node) -> void:
-	if node is BaseButton and not node.pressed.is_connected(_play_click):
-		node.pressed.connect(_play_click)
+## UI 버튼에 클릭음 부착 — 클릭음을 넣을 버튼에만 명시적으로 호출(화이트리스트).
+func attach_click(btn: BaseButton) -> void:
+	if is_instance_valid(btn) and not btn.pressed.is_connected(_play_click):
+		btn.pressed.connect(_play_click)
 
 
 func _play_click() -> void:

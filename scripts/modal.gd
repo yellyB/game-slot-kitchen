@@ -97,6 +97,7 @@ func button(text: String, cb: Callable) -> Modal:
 	b.pressed.connect(func():
 		queue_free()
 		cb.call())
+	Audio.attach_click(b)   # 모달 액션 버튼(하루 종료 후 상점으로 등) 클릭음
 	_body.add_child(b)
 	return self
 
