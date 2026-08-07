@@ -718,7 +718,7 @@ func _on_day_started(day: int, rent: int) -> void:
 		if slot:
 			var bc := BuffCard.new()
 			bc.setup(id)
-			slot.place_card(bc)
+			slot.place_card(bc, false)
 	for c in _queue_row.get_children():
 		c.queue_free()
 	_refresh_warehouse()

@@ -42,13 +42,15 @@ func place_new(id: String) -> void:
 	place_card(card)
 
 
-func place_card(card: Card) -> void:
+func place_card(card: Card, play_sfx := true) -> void:
 	if not is_empty() or card == null:
 		return
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
 	card.pop_in()
+	if play_sfx:
+		Audio.play("card_place")
 
 
 func take_card(card: Card) -> void:
@@ -59,6 +61,7 @@ func take_card(card: Card) -> void:
 		prev.remove_child(card)
 	_holder.add_child(card)
 	card.pop_in()
+	Audio.play("card_place")
 	var dc := card as DishCard
 	if dc != null and dc.tool != null:
 		var t := dc.tool
@@ -74,7 +77,6 @@ func can_accept(payload: Dictionary) -> bool:
 
 
 func accept(payload: Dictionary) -> void:
-	Audio.play("card_place")
 	match payload.get("kind"):
 		"new":
 			place_new(str(payload.get("id")))
