@@ -754,10 +754,10 @@ func _on_day_ended(summary: Dictionary) -> void:
 	elif summary["passed"]:
 		Modal.open(self) \
 			.title(Loc.t("day_closed") % summary["day"]) \
-			.row(Loc.t("revenue") % summary["revenue"]) \
-			.row(Loc.t("rent") % summary["rent"], Palette.DANGER) \
+			.count_row(Loc.t("revenue"), summary["revenue"]) \
+			.count_row(Loc.t("rent"), summary["rent"], Palette.DANGER) \
 			.sep() \
-			.row(Loc.t("remaining") % summary["cash_after"], Palette.COCOA_800) \
+			.count_row(Loc.t("remaining"), summary["cash_after"], Palette.COCOA_800) \
 			.row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
