@@ -28,6 +28,8 @@ var _rent_label: Label
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
+var _hours_glow: Tween      # 마감 임박 펄스
+var _hours_warning := false  # 임박 상태 진입 여부(전환 시 1회만 처리)
 
 
 func _ready() -> void:
@@ -680,6 +682,22 @@ func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void
 
 func _on_progress(t01: float) -> void:
 	_hours_bar.value = t01 * 100.0
+	if t01 >= Config.HOURS_WARN_FRAC and not _hours_warning:   # 마감 임박 진입
+		_hours_warning = true
+		_hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.DANGER))
+		_hours_glow = create_tween().set_loops()
+		_hours_glow.tween_property(_hours_bar, "modulate:a", 0.45, 0.35).set_trans(Tween.TRANS_SINE)
+		_hours_glow.tween_property(_hours_bar, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
+
+
+## 영업시간 바를 평상 상태로 되돌림(색·펄스 리셋).
+func _reset_hours_bar() -> void:
+	if _hours_glow != null:
+		_hours_glow.kill()
+		_hours_glow = null
+	_hours_bar.modulate.a = 1.0
+	_hours_warning = false
+	_hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
 
 
 func _on_day_started(day: int, rent: int) -> void:
@@ -687,6 +705,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_show_day_banner(day)   # 화면 중앙 "N일차" 배너
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
+	_reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
 	# 새 세션 시작 — 시트 강제 닫기(트립 비용 없음)
 	_warehouse.visible = false
 	_cooking.visible = false
