@@ -56,6 +56,20 @@ func count_row(fmt: String, value: int, color := Palette.COCOA_800) -> Modal:
 	return self
 
 
+func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
+	var l := _centered(UI.label(text, 20, color, true))
+	_body.add_child(l)
+	l.modulate.a = 0.0
+	l.scale = Vector2(0.5, 0.5)
+	var tw := create_tween()
+	tw.tween_interval(delay)
+	tw.tween_callback(func(): l.pivot_offset = l.size * 0.5)
+	tw.tween_property(l, "modulate:a", 1.0, 0.12)
+	tw.parallel().tween_property(l, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+	return self
+
+
 func sep() -> Modal:
 	var line := ColorRect.new()
 	line.color = Palette.COCOA_200
