@@ -12,6 +12,8 @@ const SFX := {
 	"coins": preload("res://assets/audio/sfx/coins.wav"),           # 소지금 변동(동전)
 	"day_start": preload("res://assets/audio/sfx/day_start.mp3"),   # 하루 시작(어서오세요)
 	"click": preload("res://assets/audio/sfx/click.wav"),           # 버튼 클릭(종이 크런치)
+	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),   # 카드팩 개봉 순간
+	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"), # 팩 카드 등장 완료
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
