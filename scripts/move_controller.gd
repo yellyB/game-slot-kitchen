@@ -84,6 +84,7 @@ func on_drop(target: Object, payload: Dictionary) -> void:
 ## 드래그 시작 시 소스가 호출 — 진행 중이던 클릭 선택을 정리.
 func begin_drag() -> void:
 	clear()
+	Audio.play("card_pick")   # 카드 집기음(드래그 시작)
 
 
 func background_click() -> void:
@@ -96,6 +97,7 @@ func _select(node: Object, payload: Dictionary) -> void:
 	_source = node
 	if node.has_method("set_selected"):
 		node.set_selected(true)
+	Audio.play("card_pick")   # 카드 집기음(클릭 선택)
 
 
 func clear() -> void:

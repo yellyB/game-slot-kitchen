@@ -5,6 +5,8 @@ extends Node
 
 const SFX := {
 	"trash": preload("res://assets/audio/sfx/trash.wav"),  # 휴지통 버리기(종이 구기기)
+	"card_pick": preload("res://assets/audio/sfx/card_pick.wav"),   # 카드 집기(종이 플릭)
+	"card_place": preload("res://assets/audio/sfx/card_place.wav"),  # 카드 놓기(탁)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
