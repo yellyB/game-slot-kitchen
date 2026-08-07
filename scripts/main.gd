@@ -24,6 +24,8 @@ var _rent_label: Label
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
+var _hours_glow: Tween
+var _hours_warning := false
 
 
 func _ready() -> void:
@@ -628,6 +630,21 @@ func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void
 
 func _on_progress(t01: float) -> void:
 	_hours_bar.value = t01 * 100.0
+	if t01 >= Config.HOURS_WARN_FRAC and not _hours_warning:
+		_hours_warning = true
+		_hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.DANGER))
+		_hours_glow = create_tween().set_loops()
+		_hours_glow.tween_property(_hours_bar, "modulate:a", 0.45, 0.35).set_trans(Tween.TRANS_SINE)
+		_hours_glow.tween_property(_hours_bar, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
+
+
+func _reset_hours_bar() -> void:
+	if _hours_glow != null:
+		_hours_glow.kill()
+		_hours_glow = null
+	_hours_bar.modulate.a = 1.0
+	_hours_warning = false
+	_hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
 
 
 func _on_day_started(day: int, rent: int) -> void:
@@ -635,6 +652,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_show_day_banner(day)
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
+	_reset_hours_bar()
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
