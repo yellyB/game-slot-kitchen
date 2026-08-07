@@ -95,6 +95,7 @@ func _close_button() -> Button:
 	b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
 	b.pressed.connect(queue_free)
+	Audio.attach_click(b)
 	return b
 
 

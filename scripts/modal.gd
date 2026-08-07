@@ -93,6 +93,7 @@ func button(text: String, cb: Callable) -> Modal:
 	b.pressed.connect(func():
 		queue_free()
 		cb.call())
+	Audio.attach_click(b)
 	_body.add_child(b)
 	return self
 

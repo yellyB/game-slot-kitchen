@@ -48,6 +48,7 @@ func _ready() -> void:
 	start.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	start.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
 	start.pressed.connect(func(): start_pressed.emit())
+	Audio.attach_click(start)
 	v.add_child(start)
 
 	var gear := Button.new()
@@ -63,6 +64,7 @@ func _ready() -> void:
 	gear.offset_top = 16
 	gear.offset_bottom = 60
 	gear.pressed.connect(_open_settings)
+	Audio.attach_click(gear)
 	add_child(gear)
 
 

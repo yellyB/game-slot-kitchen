@@ -70,6 +70,7 @@ func _ready() -> void:
 	start.pressed.connect(func():
 		queue_free()
 		start_business.emit())
+	Audio.attach_click(start)
 	v.add_child(start)
 
 	_refresh()
@@ -102,6 +103,7 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 	btn.add_theme_stylebox_override("pressed", UI.chip(btn_color.darkened(0.1)))
 	btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
 	btn.pressed.connect(cb)
+	Audio.attach_click(btn)
 	row.add_child(btn)
 	parent.add_child(card)
 	return btn
@@ -200,6 +202,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
 	pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
+	Audio.attach_click(pick)
 	v.add_child(pick)
 	return card
 
