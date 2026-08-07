@@ -758,7 +758,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.count_row(Loc.t("rent"), summary["rent"], Palette.DANGER) \
 			.sep() \
 			.count_row(Loc.t("remaining"), summary["cash_after"], Palette.COCOA_800) \
-			.row(Loc.t("passed"), Palette.SUCCESS) \
+			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
 		Modal.open(self) \
