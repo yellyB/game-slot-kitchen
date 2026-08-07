@@ -9,6 +9,8 @@ const SFX := {
 	"coins": preload("res://assets/audio/sfx/coins.wav"),
 	"day_start": preload("res://assets/audio/sfx/day_start.mp3"),
 	"click": preload("res://assets/audio/sfx/click.wav"),
+	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),
+	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"),
 }
 
 const POOL_SIZE := 8

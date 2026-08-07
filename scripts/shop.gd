@@ -123,6 +123,7 @@ func _on_draw() -> void:
 
 
 func _show_pack(pack: Array) -> void:
+	Audio.play("pack_open")
 	var overlay := Control.new()
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -171,6 +172,7 @@ func _reveal_choice(card: Control, idx: int) -> void:
 	tw.tween_property(card, "scale", Vector2(1.3, 1.3), 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(card, "modulate:a", 1.0, 0.35)
 	tw.tween_property(card, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func(): Audio.play("card_slide"))
 
 
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
