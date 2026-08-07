@@ -698,6 +698,7 @@ func _reset_hours_bar() -> void:
 func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
 	_show_day_banner(day)
+	Audio.play("day_start")
 	_rent_label.text = _fmt(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()
