@@ -169,10 +169,10 @@ func _reveal_choice(card: Control, idx: int) -> void:
 	card.pivot_offset = card.size * 0.5
 	var tw := create_tween()
 	tw.tween_interval(idx * 0.5)
+	tw.tween_callback(func(): Audio.play("card_slide"))
 	tw.tween_property(card, "scale", Vector2(1.3, 1.3), 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(card, "modulate:a", 1.0, 0.35)
 	tw.tween_property(card, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_callback(func(): Audio.play("card_slide"))
 
 
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
