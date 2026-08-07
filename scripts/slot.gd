@@ -74,6 +74,7 @@ func can_accept(payload: Dictionary) -> bool:
 
 
 func accept(payload: Dictionary) -> void:
+	Audio.play("card_place")
 	match payload.get("kind"):
 		"new":
 			place_new(str(payload.get("id")))

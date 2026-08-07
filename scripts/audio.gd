@@ -2,6 +2,8 @@ extends Node
 
 const SFX := {
 	"trash": preload("res://assets/audio/sfx/trash.wav"),
+	"card_pick": preload("res://assets/audio/sfx/card_pick.wav"),
+	"card_place": preload("res://assets/audio/sfx/card_place.wav"),
 }
 
 const POOL_SIZE := 8

@@ -61,6 +61,7 @@ func on_drop(target: Object, payload: Dictionary) -> void:
 
 func begin_drag() -> void:
 	clear()
+	Audio.play("card_pick")
 
 
 func background_click() -> void:
@@ -73,6 +74,7 @@ func _select(node: Object, payload: Dictionary) -> void:
 	_source = node
 	if node.has_method("set_selected"):
 		node.set_selected(true)
+	Audio.play("card_pick")
 
 
 func clear() -> void:
