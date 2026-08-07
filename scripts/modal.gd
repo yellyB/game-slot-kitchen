@@ -47,6 +47,15 @@ func row(text: String, color := Palette.COCOA_800) -> Modal:
 	return self
 
 
+func count_row(fmt: String, value: int, color := Palette.COCOA_800) -> Modal:
+	var l := _centered(UI.label(fmt % 0, 16, color))
+	_body.add_child(l)
+	var tw := create_tween()
+	tw.tween_method(func(v: float): l.text = fmt % int(round(v)), 0.0, float(value), 0.6) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	return self
+
+
 func sep() -> Modal:
 	var line := ColorRect.new()
 	line.color = Palette.COCOA_200
