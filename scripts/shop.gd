@@ -178,11 +178,11 @@ func _reveal_choice(card: Control, idx: int) -> void:
 	card.pivot_offset = card.size * 0.5
 	var tw := create_tween()
 	tw.tween_interval(idx * 0.5)   # 스태거(하나씩 이어서 개봉)
+	tw.tween_callback(func(): Audio.play("card_slide"))   # 꺼내지는 순간(등장 시작)
 	# 0.2 → 1.3(잠시 크게) → 1.0(원래 크기). 한 카드 ~1초로 천천히.
 	tw.tween_property(card, "scale", Vector2(1.3, 1.3), 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(card, "modulate:a", 1.0, 0.35)
 	tw.tween_property(card, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_callback(func(): Audio.play("card_slide"))   # 등장 완료(최종 모습) 타이밍
 
 
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
