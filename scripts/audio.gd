@@ -12,6 +12,7 @@ const SFX := {
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),
 	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"),
 	"whoosh": preload("res://assets/audio/sfx/whoosh.wav"),
+	"switch": preload("res://assets/audio/sfx/switch.ogg"),
 }
 
 const POOL_SIZE := 8
