@@ -543,34 +543,40 @@ func _detach_and_fade(card: Control) -> void:
 	tw.chain().tween_callback(card.queue_free)
 
 
-## 주문 확인 연출 — 주문서가 손님 자리(from_pos)에서 목표 슬롯으로 포물선 없이 스윽 날아가 안착.
-## 슬롯은 먼저 점유(비행 중 중복 배치 방지)하되, 팝·소리는 도착 시점에 낸다.
-func _fly_order_to_slot(card: Card, slot: Slot, from_pos: Vector2) -> void:
-	slot.place_card(card, false, false)   # 점유만 — 소리·팝은 도착 때
-	await get_tree().process_frame        # 슬롯 내 최종 레이아웃(위치·크기) 확보
+## 주문 확인 연출 — 주문서가 손님 자리(from_pos)에서 목표 슬롯으로 스윽 날아가 안착.
+## 실물 카드는 슬롯에 즉시 안착(점유)하되 도착 전까지 숨기고, 겉보기 고스트만 날린다.
+## (실물을 top_level로 날렸다 되돌리면 컨테이너 재정렬이 안 돼 좌표가 틀어지므로 고스트로 분리.)
+func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
+	slot.place_card(card, false, false)   # 점유만 — 팝·소리는 도착 때
+	await get_tree().process_frame        # 슬롯 내 최종 좌표·크기 확보
 	if not is_instance_valid(card) or card.get_parent() == null:
 		return
 	var dest := card.global_position      # 슬롯에서의 최종 좌표
 	var sz := card.size
-	card.top_level = true                 # 컨테이너 정렬 배제 — 좌표 직접 제어
-	card.z_index = 95
-	card.pivot_offset = sz * 0.5
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.global_position = from_pos - sz * 0.5
-	card.scale = Vector2(0.7, 0.7)
-	card.modulate.a = 0.0
+	card.modulate.a = 0.0                 # 도착 시 공개
+
+	# 손님 자리→슬롯으로 날아가는 고스트(실물과 동일 외형).
+	var ghost := OrderCard.new()
+	ghost.setup(card.recipe_id)
+	add_child(ghost)
+	ghost.set_process(false)              # 인내심 타이머 등 로직 정지
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.top_level = true                # 컨테이너 정렬 배제 — 좌표 직접 제어
+	ghost.z_index = 95
+	ghost.size = sz
+	ghost.pivot_offset = sz * 0.5
+	ghost.global_position = from_pos - sz * 0.5
+	ghost.scale = Vector2(0.7, 0.7)
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(card, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(card, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(card, "modulate:a", 1.0, 0.16)
+	tw.tween_property(ghost, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ghost, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.chain().tween_callback(func():
-		if not is_instance_valid(card):
-			return
-		card.top_level = false            # 슬롯 레이아웃에 복귀(제자리 스냅)
-		card.z_index = 0
-		card.scale = Vector2.ONE
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		if is_instance_valid(ghost):
+			ghost.queue_free()
+		if is_instance_valid(card):
+			card.modulate.a = 1.0
+			card.pop_in()                 # 실물 공개 + 배치 팝
 		Audio.play("card_place"))         # 안착음(탁)
 
 
