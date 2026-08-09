@@ -308,7 +308,7 @@ func _close_sheets() -> void:
 	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
-		Audio.play("footstep")   # 창고 닫힘(발소리)
+		Audio.play("footstep_back")   # 창고 닫힘(발소리 역순 1→0)
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
