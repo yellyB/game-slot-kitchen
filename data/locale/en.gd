@@ -21,13 +21,13 @@ const S := {
 	"win_title": "You Win! 🎉",
 	"win_days": "%d days cleared",
 	"day_closed": "Day %d closed",
-	"revenue": "Revenue  %d",
-	"rent": "Rent  %d",
-	"remaining": "Left  %d",
+	"revenue": "Revenue  %s",
+	"rent": "Rent  %s",
+	"remaining": "Left  %s",
 	"passed": "Passed! ✅",
 	"gameover_title": "Closed down 😢",
 	"gameover_day": "Ended on day %d",
-	"gameover_reason": "Revenue %d < Rent %d",
+	"gameover_reason": "Revenue %s < Rent %s",
 	"to_title": "To title",
 	"to_shop": "To shop",
 
@@ -40,7 +40,7 @@ const S := {
 	"shop_start": "Open Shop",
 	"shop_owned": "Buffs",
 	"shop_pick3": "Pick 1 of 3",
-	"shop_price": "Price %d",
+	"shop_price": "Price %s",
 
 	# Customer
 	"customer_wants": "Wants something",

@@ -21,13 +21,13 @@ const S := {
 	"win_title": "승리! 🎉",
 	"win_days": "%d일 완주",
 	"day_closed": "%d일차 마감",
-	"revenue": "매출  %d",
-	"rent": "가게세  %d",
-	"remaining": "남음  %d",
+	"revenue": "매출  %s",
+	"rent": "가게세  %s",
+	"remaining": "남음  %s",
 	"passed": "통과! ✅",
 	"gameover_title": "폐업 😢",
 	"gameover_day": "%d일차에서 끝",
-	"gameover_reason": "매출 %d < 가게세 %d",
+	"gameover_reason": "매출 %s < 가게세 %s",
 	"to_title": "처음으로",
 	"to_shop": "상점으로",
 
@@ -40,7 +40,7 @@ const S := {
 	"shop_start": "영업 시작",
 	"shop_owned": "보유 버프",
 	"shop_pick3": "3개 중 1개 선택",
-	"shop_price": "가격 %d",
+	"shop_price": "가격 %s",
 
 	# 손님
 	"customer_wants": "뭔가 원함",

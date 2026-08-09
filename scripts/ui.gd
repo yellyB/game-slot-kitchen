@@ -45,6 +45,38 @@ static func sheet() -> StyleBoxFlat:
 	s.shadow_offset = Vector2(0, -2)
 	return s
 
+## 금액 표시 통합 — 모든 금액은 이 함수로. 콤마 구분, Config.MONEY_ABBR_AT 이상은 k/m 축약.
+static func money(n: int) -> String:
+	var a := absi(n)
+	var body := _abbr(a) if a >= Config.MONEY_ABBR_AT else _comma(a)
+	return "-" + body if n < 0 else body
+
+## 3자리 콤마 구분.
+static func _comma(a: int) -> String:
+	var s := str(a)
+	var out := ""
+	var c := 0
+	for i in range(s.length() - 1, -1, -1):
+		out = s[i] + out
+		c += 1
+		if c % 3 == 0 and i > 0:
+			out = "," + out
+	return out
+
+## k/m 축약 — 100 이상 단위는 소수 없이, 미만은 소수 1자리(.0 제거).
+static func _abbr(a: int) -> String:
+	if a >= 1_000_000:
+		return _unit(float(a) / 1_000_000.0, "m")
+	if roundi(float(a) / 1_000.0) >= 1000:  # 999,999처럼 반올림이 1000k 되는 경계 → 1m 승격
+		return "1m"
+	return _unit(float(a) / 1_000.0, "k")
+
+static func _unit(val: float, suffix: String) -> String:
+	if val >= 100.0:
+		return "%d%s" % [int(round(val)), suffix]
+	return ("%.1f" % val).trim_suffix(".0") + suffix
+
+
 ## 카드/패널 틀 — 둥근 + 테두리 + 그림자.
 static func card(bg: Color, border: Color = Color.TRANSPARENT, w := 1, radius := 14) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()

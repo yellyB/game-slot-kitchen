@@ -573,18 +573,6 @@ func _spawn_floating(text: String, at_pos: Vector2, color: Color) -> void:
 	tw.tween_callback(l.queue_free)
 
 
-func _fmt(n: int) -> String:
-	var s := str(n)
-	var out := ""
-	var c := 0
-	for i in range(s.length() - 1, -1, -1):
-		out = s[i] + out
-		c += 1
-		if c % 3 == 0 and i > 0:
-			out = "," + out
-	return out
-
-
 # ── 공용 헬퍼 ─────────────────────────────────────────────
 func _dot(color: Color) -> Control:
 	var dot := ColorRect.new()
@@ -599,7 +587,7 @@ func _dot(color: Color) -> Control:
 func _on_cash_changed(cash: int) -> void:
 	var delta := cash - _last_cash
 	_last_cash = cash
-	_money_label.text = _fmt(cash)
+	_money_label.text = UI.money(cash)
 	if delta > 0 and not _expect_fly:   # fly 없는 증가(디버그 등)는 즉시 팝
 		_pop_label(_money_label)
 		Audio.play("coins")             # 소지금 증가음(동전)
@@ -681,7 +669,7 @@ func _show_day_banner(day: int) -> void:
 func _spawn_loss(amount: int) -> void:
 	if amount <= 0:
 		return
-	var l := UI.label("-%d" % amount, 18, Palette.DANGER, true)
+	var l := UI.label("-" + UI.money(amount), 18, Palette.DANGER, true)
 	l.z_index = 100
 	l.add_theme_constant_override("outline_size", 3)
 	l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -708,7 +696,7 @@ func _pop_label(lbl: Control) -> void:
 func _fly_gain(amount: int, from_pos: Vector2, color := Palette.SUCCESS) -> void:
 	if amount == 0:
 		return
-	var l := UI.label("+%d" % amount, 20, color, true)
+	var l := UI.label("+" + UI.money(amount), 20, color, true)
 	l.z_index = 100
 	l.add_theme_constant_override("outline_size", 3)
 	l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -754,7 +742,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
 	_show_day_banner(day)   # 화면 중앙 "N일차" 배너
 	Audio.play("day_start")   # 하루 시작 효과음
-	_rent_label.text = _fmt(rent)
+	_rent_label.text = UI.money(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
 	_clear_blackout()    # 폐업 암전 잔재 제거(재도전 시)
@@ -819,7 +807,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			Modal.open(self) \
 				.title(Loc.t("gameover_title")) \
 				.row(Loc.t("gameover_day") % summary["day"]) \
-				.row(Loc.t("gameover_reason") % [summary["revenue"], summary["rent"]], Palette.DANGER) \
+				.row(Loc.t("gameover_reason") % [UI.money(summary["revenue"]), UI.money(summary["rent"])], Palette.DANGER) \
 				.button(Loc.t("to_title"), _show_title))
 
 
