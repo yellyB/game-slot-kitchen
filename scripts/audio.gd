@@ -14,7 +14,7 @@ const SFX := {
 	"click": preload("res://assets/audio/sfx/click.wav"),           # 버튼 클릭(종이 크런치)
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),   # 카드팩 개봉 순간
 	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"), # 팩 카드 등장 완료
-	"footstep": preload("res://assets/audio/sfx/footstep.wav"),    # 창고 왕복 발소리
+	"whoosh": preload("res://assets/audio/sfx/whoosh.wav"),        # 창고 여닫이(부드러운 슉)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
