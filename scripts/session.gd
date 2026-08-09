@@ -36,7 +36,7 @@ func start_run() -> void:
 
 ## 상점: 슬롯 +1 구매. 성공 시 true(다음 세션부터 반영).
 func buy_slot() -> bool:
-	var price := Config.shop_price(Config.SLOT_PRICE, day)
+	var price := Config.slot_price(day, slots - Config.START_SLOTS)
 	if cash < price or slots >= Config.MAX_SLOTS:
 		return false
 	cash -= price

@@ -41,6 +41,7 @@ const S := {
 	"shop_owned": "Buffs",
 	"shop_pick3": "Pick 1 of 3",
 	"shop_price": "Price %s",
+	"sold_out": "SOLD OUT",
 
 	# Customer
 	"customer_wants": "Wants something",

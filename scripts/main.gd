@@ -113,21 +113,6 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
-	if "--fxshop" in OS.get_cmdline_user_args():
-		_start_game()
-		await get_tree().create_timer(0.4).timeout
-		_board.rebuild(Config.MAX_SLOTS)   # 12슬롯 레이아웃 확인
-		await get_tree().process_frame
-		get_viewport().get_texture().get_image().save_png("/tmp/fxboard.png")
-		var shop := Shop.new()
-		shop.session = _session
-		_session.slots = Config.MAX_SLOTS   # 슬롯 MAX → SOLD OUT
-		shop._drew = true                   # 이미 뽑음 → 팩 SOLD OUT
-		add_child(shop)
-		await get_tree().create_timer(0.3).timeout
-		get_viewport().get_texture().get_image().save_png("/tmp/fxshop.png")
-		get_tree().quit()
-
 	# 헤드리스 시뮬레이션: godot4 ... -- --sim
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()

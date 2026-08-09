@@ -76,7 +76,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 func _shop() -> void:
 	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day + 1).get("rent", 0)))))
 	while session.slots < Config.MAX_SLOTS:
-		if session.cash - Config.shop_price(Config.SLOT_PRICE, session.day) < next_rent:
+		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
 			break
 		if not session.buy_slot():
 			break

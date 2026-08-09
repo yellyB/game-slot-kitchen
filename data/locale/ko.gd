@@ -41,6 +41,7 @@ const S := {
 	"shop_owned": "보유 버프",
 	"shop_pick3": "3개 중 1개 선택",
 	"shop_price": "가격 %s",
+	"sold_out": "품절",
 
 	# 손님
 	"customer_wants": "뭔가 원함",

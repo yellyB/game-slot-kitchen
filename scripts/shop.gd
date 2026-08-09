@@ -11,6 +11,8 @@ var _buy_slot_btn: Button
 var _draw_btn: Button
 var _owned_row: HBoxContainer
 var _drew := false   # 이번 상점 방문에서 이미 뽑았는지(방문당 1회). 다음날 재진입 시 새 인스턴스로 리셋.
+var _slot_price_label: Label   # 슬롯 가격 표시(구매마다 갱신)
+var _last_price_label: Label   # _product가 방금 만든 가격 라벨(호출 직후 회수용)
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -53,7 +55,9 @@ func _ready() -> void:
 	header.add_child(_cash_label)
 
 	# 상품: 슬롯 확장 / 버프 팩
-	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.SLOT_PRICE, session.day)), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(slot_price), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	_slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
 	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	# 보유 버프
@@ -99,13 +103,15 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 	info.add_theme_constant_override("separation", 2)
 	row.add_child(info)
 	info.add_child(UI.label(title, 18, Palette.COCOA_800, true))
-	info.add_child(UI.label(price, 14, Palette.COCOA_600))
+	_last_price_label = UI.label(price, 14, Palette.COCOA_600)
+	info.add_child(_last_price_label)
 	var btn := Button.new()
 	btn.text = btn_text
 	btn.custom_minimum_size = Vector2(72, 40)
 	btn.add_theme_font_size_override("font_size", 15)
 	btn.add_theme_color_override("font_color", Palette.WHITE)
 	btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)   # 비활성(SOLD OUT 등) 글자 대비
 	btn.add_theme_stylebox_override("normal", UI.chip(btn_color))
 	btn.add_theme_stylebox_override("hover", UI.chip(btn_color.lightened(0.08)))
 	btn.add_theme_stylebox_override("pressed", UI.chip(btn_color.darkened(0.1)))
@@ -256,12 +262,31 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
 
 func _refresh() -> void:
 	_cash_label.text = UI.money(session.cash)
-	var can_slot := session.cash >= Config.shop_price(Config.SLOT_PRICE, session.day) and session.slots < Config.MAX_SLOTS
-	_buy_slot_btn.disabled = not can_slot
-	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-	var can_draw := not _drew and session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day) and not Buffs.is_full()
-	_draw_btn.disabled = not can_draw
-	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+
+	# 슬롯 확장 — 구매마다 가격 급증. 갱신 후 표시. MAX 도달 시 SOLD OUT.
+	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+	if _slot_price_label != null:
+		_slot_price_label.text = Loc.t("shop_price") % UI.money(slot_price)
+	if session.slots >= Config.MAX_SLOTS:
+		_buy_slot_btn.text = Loc.t("sold_out")
+		_buy_slot_btn.disabled = true
+		_buy_slot_btn.modulate = Color.WHITE   # SOLD OUT은 또렷하게(글자 대비 위해 안 흐림)
+	else:
+		_buy_slot_btn.text = Loc.t("shop_buy")
+		var can_slot := session.cash >= slot_price
+		_buy_slot_btn.disabled = not can_slot
+		_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+
+	# 버프 팩 — 방문당 1회. 뽑았거나 보유 가득이면 SOLD OUT.
+	if _drew or Buffs.is_full():
+		_draw_btn.text = Loc.t("sold_out")
+		_draw_btn.disabled = true
+		_draw_btn.modulate = Color.WHITE   # SOLD OUT은 또렷하게
+	else:
+		_draw_btn.text = Loc.t("shop_draw")
+		var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day)
+		_draw_btn.disabled = not can_draw
+		_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
 	for c in _owned_row.get_children():
 		c.queue_free()
