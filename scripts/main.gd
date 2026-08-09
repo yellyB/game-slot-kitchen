@@ -96,6 +96,7 @@ func _ready() -> void:
 
 	_title = TitleScreen.new()
 	_title.start_pressed.connect(_start_game)
+	_title.tutorial_pressed.connect(_start_tutorial)
 	add_child(_title)
 
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
@@ -119,6 +120,15 @@ func _start_game() -> void:
 
 func _show_title() -> void:
 	_title.show()
+
+
+func _start_tutorial() -> void:
+	_title.hide()
+	var tut := Tutorial.new()
+	tut.finished.connect(func():
+		tut.queue_free()
+		_show_title())
+	add_child(tut)
 
 
 func _build_top_bar() -> Control:
@@ -274,6 +284,7 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 func _close_sheets() -> void:
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
+		Audio.play("footstep")
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
