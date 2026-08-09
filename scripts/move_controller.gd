@@ -17,8 +17,17 @@ signal performed  ## 동작 성공 시 (보드 상태 갱신용)
 ## quick 동작의 기본 타깃 제공자: func(payload) -> Node (예: 첫 빈 슬롯). main이 주입.
 var default_target := Callable()
 
+## 선택적 동작 게이트: func(payload) -> bool. false면 그 배치를 무시(적용 안 함).
+## 기본(비어있음)이면 항상 허용 — 본격 게임 동작 불변. (튜토리얼에서만 주입)
+var action_allowed := Callable()
+
 var _payload: Dictionary = {}
 var _source: Object = null
+
+
+## 게이트 통과 여부 — 필터 없으면 항상 허용.
+func _blocked(payload: Dictionary) -> bool:
+	return not action_allowed.is_null() and not action_allowed.call(payload)
 
 
 func has_selection() -> bool:
@@ -43,8 +52,10 @@ func on_click(node: Object) -> void:
 		clear()
 		return
 
-	# 선택 중이고 node가 payload를 받을 수 있으면 → 이동 실행
+	# 선택 중이고 node가 payload를 받을 수 있으면 → 이동 실행 (게이트 막히면 무시)
 	if has_selection() and node.has_method("can_accept") and node.can_accept(_payload):
+		if _blocked(_payload):
+			return
 		node.accept(_payload)
 		clear()
 		performed.emit()
@@ -65,6 +76,8 @@ func on_click(node: Object) -> void:
 func quick(payload: Dictionary) -> bool:
 	if default_target.is_null() or payload.is_empty():
 		return false
+	if _blocked(payload):
+		return false
 	var target = default_target.call(payload)
 	if target != null and is_instance_valid(target) \
 			and target.has_method("can_accept") and target.can_accept(payload):
@@ -76,6 +89,8 @@ func quick(payload: Dictionary) -> bool:
 
 ## 드래그앤드롭에서 타깃이 _drop_data 안에서 호출.
 func on_drop(target: Object, payload: Dictionary) -> void:
+	if _blocked(payload):
+		return
 	if target.has_method("can_accept") and target.can_accept(payload):
 		target.accept(payload)
 		performed.emit()

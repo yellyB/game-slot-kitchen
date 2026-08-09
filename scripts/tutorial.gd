@@ -21,6 +21,7 @@ var _order: OrderCard
 var _spot: TutorialSpotlight
 var _step := S_ACCEPT
 var _prev_move_target: Callable
+var _prev_move_allowed: Callable
 var _clock := 0.0   # 자체 클록(완성품 born 스탬프용)
 
 
@@ -116,6 +117,9 @@ func _ready() -> void:
 	# Move 전역 타깃을 튜토리얼 보드로(끝나면 복원). 배치 성공 감지도 구독.
 	_prev_move_target = Move.default_target
 	Move.default_target = func(_p): return _board.first_empty_slot()
+	# 게이트: 정해진 동작만 허용, 나머지는 무시(적용 안 함). 끝나면 복원.
+	_prev_move_allowed = Move.action_allowed
+	Move.action_allowed = _gate
 	Move.performed.connect(_on_move_performed)
 
 	# 스포트라이트(최상단)
@@ -128,6 +132,29 @@ func _ready() -> void:
 
 func _now() -> float:
 	return _clock
+
+
+# ── 동작 게이트 (정해진 것만 허용, 나머지 무시) ──────────────
+## Move가 배치 직전 호출. false면 그 배치를 적용하지 않고 무시.
+func _gate(payload: Dictionary) -> bool:
+	match payload.get("kind"):
+		"new":   # 창고 재료 꺼내기 — 재료 단계에서 '필요한 재료·필요 수량'만 허용
+			return _step == S_INGREDIENTS and _needs_more(str(payload.get("id")))
+		"dish":  # 완성품 서빙 — 서빙 단계에서만
+			return _step == S_SERVE
+		_:
+			return false   # 슬롯↔슬롯 이동 등 그 외는 튜토리얼에서 무시
+
+
+## 레시피에 필요하고 아직 덜 채운 재료면 true(예: 원두1·물1까지만).
+func _needs_more(id: String) -> bool:
+	var need := 0
+	for iid in Recipes.get_def(RECIPE).get("ingredients", []):
+		if iid == id:
+			need += 1
+	if need == 0:
+		return false
+	return _board.ingredient_counts().get(id, 0) < need
 
 
 # ── 손님 / 주문 ───────────────────────────────────────────
@@ -166,15 +193,19 @@ func _on_served(_order_card: OrderCard, _dish: DishCard) -> void:
 # ── 창고 / 조리 시트 ──────────────────────────────────────
 func _toggle_warehouse() -> void:
 	if _warehouse.visible:
-		_close_sheets()
-	else:
-		_cooking.visible = false
-		_warehouse.visible = true
-		_backdrop.visible = true
-		_warehouse.refresh(_board.is_full())
+		_close_sheets()   # 닫기는 항상 허용
+		return
+	if _step != S_WAREHOUSE and _step != S_INGREDIENTS:
+		return   # 그 외 단계에서 창고 열기는 무시
+	_cooking.visible = false
+	_warehouse.visible = true
+	_backdrop.visible = true
+	_warehouse.refresh(_board.is_full())
 
 
 func _on_tool_tapped(tool: ToolStation) -> void:
+	if _step != S_COOK:
+		return   # 조리 단계 전 도구 탭은 무시
 	_warehouse.visible = false
 	_backdrop.visible = true
 	_cooking.open_for(tool)
@@ -293,5 +324,6 @@ func _finish() -> void:
 	if Move.performed.is_connected(_on_move_performed):
 		Move.performed.disconnect(_on_move_performed)
 	Move.default_target = _prev_move_target   # 본격 게임 상태 복원
+	Move.action_allowed = _prev_move_allowed  # 게이트 해제
 	Move.clear()
 	finished.emit()
