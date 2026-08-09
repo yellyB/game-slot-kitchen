@@ -12,6 +12,7 @@ const SFX := {
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),
 	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"),
 	"footstep": preload("res://assets/audio/sfx/footstep.wav"),
+	"footstep_back": preload("res://assets/audio/sfx/footstep_back.wav"),
 	"switch": preload("res://assets/audio/sfx/switch.ogg"),
 }
 
