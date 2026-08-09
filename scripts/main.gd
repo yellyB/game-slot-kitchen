@@ -272,6 +272,7 @@ func _open_warehouse() -> void:
 	_cooking.visible = false
 	_warehouse.visible = true
 	_backdrop.visible = true
+	Audio.play("footstep")
 	_refresh_warehouse()
 
 
