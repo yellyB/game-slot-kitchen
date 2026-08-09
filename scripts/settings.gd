@@ -159,6 +159,7 @@ func _lang_chip(code: String) -> Button:
 		if Loc.locale != code:
 			Loc.locale = code
 			_build())   # 언어 바뀌면 전체 텍스트 재구성
+	Audio.attach_click(b)   # 언어 선택 클릭음
 	_lang_buttons.append(b)
 	return b
 
