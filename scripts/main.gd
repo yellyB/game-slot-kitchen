@@ -107,6 +107,7 @@ func _ready() -> void:
 	# 시작(타이틀) 화면 — 앱 실행 시 게임 위에 덮음. [시작] → 게임 시작.
 	_title = TitleScreen.new()
 	_title.start_pressed.connect(_start_game)
+	_title.tutorial_pressed.connect(_start_tutorial)
 	add_child(_title)
 
 	# 개발용 테스트 하니스 (릴리스엔 영향 없음): godot4 ... -- --test
@@ -132,6 +133,16 @@ func _start_game() -> void:
 
 func _show_title() -> void:
 	_title.show()
+
+
+## 독립 튜토리얼 진입 — 본격 게임(세션)과 분리. 끝나면 타이틀 복귀.
+func _start_tutorial() -> void:
+	_title.hide()
+	var tut := Tutorial.new()
+	tut.finished.connect(func():
+		tut.queue_free()
+		_show_title())
+	add_child(tut)
 
 
 # ── 상단바: 일차·돈·가게세 + 영업시간 바 ──────────────────────
@@ -296,6 +307,7 @@ func _close_sheets() -> void:
 	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
+		Audio.play("footstep")   # 창고 왕복 발소리
 	_warehouse.visible = false
 	_cooking.visible = false
 	_backdrop.visible = false
