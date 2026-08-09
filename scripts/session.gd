@@ -33,7 +33,7 @@ func start_run() -> void:
 
 
 func buy_slot() -> bool:
-	var price := Config.shop_price(Config.SLOT_PRICE, day)
+	var price := Config.slot_price(day, slots - Config.START_SLOTS)
 	if cash < price or slots >= Config.MAX_SLOTS:
 		return false
 	cash -= price

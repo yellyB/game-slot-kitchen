@@ -36,6 +36,7 @@ const S := {
 	"shop_owned": "所持バフ",
 	"shop_pick3": "3つから1つ選択",
 	"shop_price": "価格 %s",
+	"sold_out": "売り切れ",
 
 	"customer_wants": "何か欲しい",
 

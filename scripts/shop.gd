@@ -9,6 +9,8 @@ var _buy_slot_btn: Button
 var _draw_btn: Button
 var _owned_row: HBoxContainer
 var _drew := false
+var _slot_price_label: Label
+var _last_price_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -49,7 +51,9 @@ func _ready() -> void:
 	_cash_label = UI.label("0", 18, Palette.COCOA_800, true)
 	header.add_child(_cash_label)
 
-	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.SLOT_PRICE, session.day)), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(slot_price), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	_slot_price_label = _last_price_label
 	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	v.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
@@ -92,13 +96,15 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 	info.add_theme_constant_override("separation", 2)
 	row.add_child(info)
 	info.add_child(UI.label(title, 18, Palette.COCOA_800, true))
-	info.add_child(UI.label(price, 14, Palette.COCOA_600))
+	_last_price_label = UI.label(price, 14, Palette.COCOA_600)
+	info.add_child(_last_price_label)
 	var btn := Button.new()
 	btn.text = btn_text
 	btn.custom_minimum_size = Vector2(72, 40)
 	btn.add_theme_font_size_override("font_size", 15)
 	btn.add_theme_color_override("font_color", Palette.WHITE)
 	btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
 	btn.add_theme_stylebox_override("normal", UI.chip(btn_color))
 	btn.add_theme_stylebox_override("hover", UI.chip(btn_color.lightened(0.08)))
 	btn.add_theme_stylebox_override("pressed", UI.chip(btn_color.darkened(0.1)))
@@ -245,12 +251,29 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
 
 func _refresh() -> void:
 	_cash_label.text = UI.money(session.cash)
-	var can_slot := session.cash >= Config.shop_price(Config.SLOT_PRICE, session.day) and session.slots < Config.MAX_SLOTS
-	_buy_slot_btn.disabled = not can_slot
-	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-	var can_draw := not _drew and session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day) and not Buffs.is_full()
-	_draw_btn.disabled = not can_draw
-	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+
+	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+	if _slot_price_label != null:
+		_slot_price_label.text = Loc.t("shop_price") % UI.money(slot_price)
+	if session.slots >= Config.MAX_SLOTS:
+		_buy_slot_btn.text = Loc.t("sold_out")
+		_buy_slot_btn.disabled = true
+		_buy_slot_btn.modulate = Color.WHITE
+	else:
+		_buy_slot_btn.text = Loc.t("shop_buy")
+		var can_slot := session.cash >= slot_price
+		_buy_slot_btn.disabled = not can_slot
+		_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+
+	if _drew or Buffs.is_full():
+		_draw_btn.text = Loc.t("sold_out")
+		_draw_btn.disabled = true
+		_draw_btn.modulate = Color.WHITE
+	else:
+		_draw_btn.text = Loc.t("shop_draw")
+		var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day)
+		_draw_btn.disabled = not can_draw
+		_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
 	for c in _owned_row.get_children():
 		c.queue_free()

@@ -4,7 +4,7 @@ extends RefCounted
 const BOARD_COLS := 3
 const START_SLOTS := 9
 const TOOL_COUNT := 2
-const MAX_SLOTS := 10
+const MAX_SLOTS := 12
 
 const MAX_QUEUE := 4
 const MAX_ORDERS := 6
@@ -22,6 +22,7 @@ const START_MONEY := 0
 const SLOT_PRICE := 500
 const BUFF_PACK_PRICE := 200
 const SHOP_PRICE_GROWTH := 1.65
+const SLOT_PRICE_STEP := 4.0
 const MAX_BUFFS := 5
 const MONEY_ABBR_AT := 100000
 
@@ -34,3 +35,6 @@ const WAREHOUSE_EXIT_COST := 1.5
 
 static func shop_price(base: int, day: int) -> int:
 	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
+
+static func slot_price(day: int, bought: int) -> int:
+	return int(ceil(SLOT_PRICE * pow(SHOP_PRICE_GROWTH, day - 1) * pow(SLOT_PRICE_STEP, max(0, bought))))

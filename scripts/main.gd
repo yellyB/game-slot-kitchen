@@ -101,21 +101,6 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
-	if "--fxshop" in OS.get_cmdline_user_args():
-		_start_game()
-		await get_tree().create_timer(0.4).timeout
-		_board.rebuild(Config.MAX_SLOTS)
-		await get_tree().process_frame
-		get_viewport().get_texture().get_image().save_png("/tmp/fxboard.png")
-		var shop := Shop.new()
-		shop.session = _session
-		_session.slots = Config.MAX_SLOTS
-		shop._drew = true
-		add_child(shop)
-		await get_tree().create_timer(0.3).timeout
-		get_viewport().get_texture().get_image().save_png("/tmp/fxshop.png")
-		get_tree().quit()
-
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
 		var n := 200
