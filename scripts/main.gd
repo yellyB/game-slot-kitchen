@@ -548,11 +548,12 @@ func _detach_and_fade(card: Control) -> void:
 ## (실물을 top_level로 날렸다 되돌리면 컨테이너 재정렬이 안 돼 좌표가 틀어지므로 고스트로 분리.)
 func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 	slot.place_card(card, false, false)   # 점유만 — 팝·소리는 도착 때
-	await get_tree().process_frame        # 슬롯 내 최종 좌표·크기 확보
 	if not is_instance_valid(card) or card.get_parent() == null:
 		return
-	var dest := card.global_position      # 슬롯에서의 최종 좌표
-	var sz := card.size
+	# 착지 목표는 슬롯 기하로 확정 — 갓 놓인 카드의 폭 확장 전 측정을 피함(좁게 날던 버그).
+	var rect := slot.card_rect()
+	var dest := rect.position             # 슬롯에서의 최종 좌표(좌상단)
+	var sz := rect.size
 	card.modulate.a = 0.0                 # 도착 시 공개
 
 	# 손님 자리→슬롯으로 날아가는 고스트(실물과 동일 외형).

@@ -4,6 +4,8 @@ extends PanelContainer
 ##   "new"(창고 신규) / "move"(슬롯↔슬롯) / "dish"(완성품).
 ## (도구석은 Slot이 아니라 ToolStation)
 
+const PAD := 6   ## holder 내부 여백(카드와 슬롯 경계). card_rect()도 이 값을 참조.
+
 var _holder: MarginContainer
 
 func _ready() -> void:
@@ -14,8 +16,13 @@ func _ready() -> void:
 	# 빈 슬롯의 클릭/드롭이 Slot 자신에게 오도록 holder는 마우스 통과 무시
 	_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
-		_holder.add_theme_constant_override("margin_" + side, 6)
+		_holder.add_theme_constant_override("margin_" + side, PAD)
 	add_child(_holder)
+
+
+## 놓인 카드가 차지하는 화면 사각형(날아오기 연출의 착지 목표). 슬롯 기하 기반이라 타이밍 무관.
+func card_rect() -> Rect2:
+	return Rect2(_holder.global_position + Vector2(PAD, PAD), _holder.size - Vector2(PAD, PAD) * 2.0)
 
 
 func is_empty() -> bool:
