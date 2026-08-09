@@ -294,6 +294,7 @@ func _open_warehouse() -> void:
 	_cooking.visible = false
 	_warehouse.visible = true
 	_backdrop.visible = true
+	Audio.play("footstep")   # 창고로 들어가는 발소리(왕복 중 '감')
 	_refresh_warehouse()
 
 
