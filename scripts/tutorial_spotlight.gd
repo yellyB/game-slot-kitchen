@@ -5,6 +5,7 @@ const DIM := Color(0.164, 0.129, 0.106, 0.62)
 const PAD := 8.0
 
 var target: Control
+var _blk: Array[ColorRect] = []
 var _msg_pill: PanelContainer
 var _msg_label: Label
 var _t := 0.0
@@ -13,6 +14,13 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = 500
+
+	for i in 4:
+		var b := ColorRect.new()
+		b.color = DIM
+		b.mouse_filter = Control.MOUSE_FILTER_STOP
+		add_child(b)
+		_blk.append(b)
 
 	_msg_pill = PanelContainer.new()
 	_msg_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -29,15 +37,14 @@ func _ready() -> void:
 	add_child(_msg_pill)
 
 
-func show_step(t: Control, msg: String) -> void:
-	target = t
+func set_message(msg: String) -> void:
 	_msg_label.text = msg
 	_msg_pill.visible = msg != ""
-	queue_redraw()
 
 
 func _process(delta: float) -> void:
 	_t += delta
+	_layout_blockers()
 	queue_redraw()
 	_place_message()
 
@@ -48,16 +55,30 @@ func _hole() -> Rect2:
 	return target.get_global_rect().grow(PAD)
 
 
+func _layout_blockers() -> void:
+	var r := _hole()
+	if r.size == Vector2.ZERO:
+		_set_blk(0, Rect2(Vector2.ZERO, size))
+		for i in range(1, 4):
+			_set_blk(i, Rect2())
+		return
+	_set_blk(0, Rect2(0, 0, size.x, maxf(0.0, r.position.y)))
+	_set_blk(1, Rect2(0, r.end.y, size.x, maxf(0.0, size.y - r.end.y)))
+	_set_blk(2, Rect2(0, r.position.y, maxf(0.0, r.position.x), r.size.y))
+	_set_blk(3, Rect2(r.end.x, r.position.y, maxf(0.0, size.x - r.end.x), r.size.y))
+
+
+func _set_blk(i: int, rect: Rect2) -> void:
+	var b := _blk[i]
+	b.position = rect.position
+	b.size = rect.size
+	b.visible = rect.size.x > 0.0 and rect.size.y > 0.0
+
+
 func _draw() -> void:
 	var r := _hole()
 	if r.size == Vector2.ZERO:
-		draw_rect(Rect2(Vector2.ZERO, size), DIM)
 		return
-	var bottom_h := maxf(0.0, size.y - r.end.y)
-	draw_rect(Rect2(0, 0, size.x, maxf(0.0, r.position.y)), DIM)
-	draw_rect(Rect2(0, r.end.y, size.x, bottom_h), DIM)
-	draw_rect(Rect2(0, r.position.y, maxf(0.0, r.position.x), r.size.y), DIM)
-	draw_rect(Rect2(r.end.x, r.position.y, maxf(0.0, size.x - r.end.x), r.size.y), DIM)
 	var a: float = 0.55 + 0.35 * sin(_t * 4.0)
 	draw_rect(r, Color(Palette.ACCENT, a), false, 3.0)
 
