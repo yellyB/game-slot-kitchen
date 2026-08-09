@@ -5,6 +5,14 @@ extends RefCounted
 const S := {
 	# タイトル / 設定
 	"start": "スタート",
+	"tutorial": "チュートリアル",
+	"tut_accept": "お客さんの 📋 を押して注文を受けよう",
+	"tut_warehouse": "🏬 倉庫を開いて材料を取り出そう",
+	"tut_ingredients": "豆 🌰 と水 💧 をスロットに置こう",
+	"tut_cook": "🔥 道具を押してコーヒー ☕ を調理!",
+	"tut_serve": "完成! ☕ をお客さんの注文へ提供",
+	"tut_done": "よくできました!",
+	"tut_to_menu": "メニューへ",
 	"settings": "設定",
 	"sound": "サウンド",
 	"bgm": "音楽",

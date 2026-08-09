@@ -4,8 +4,10 @@ extends Control
 ## [시작] → start_pressed. main이 받아 세션 시작.
 
 signal start_pressed
+signal tutorial_pressed
 
 var _start_btn: Button
+var _tut_btn: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -53,6 +55,21 @@ func _ready() -> void:
 	Audio.attach_click(start)   # 시작 버튼 클릭음
 	v.add_child(start)
 
+	# 튜토리얼(핵심 루프 1회 체험) — 본격 게임과 분리, 이 버튼으로만 진입
+	var tut := Button.new()
+	tut.text = Loc.t("tutorial")
+	_tut_btn = tut
+	tut.custom_minimum_size = Vector2(180, 48)
+	tut.add_theme_font_size_override("font_size", 18)
+	tut.add_theme_color_override("font_color", Palette.COCOA_800)
+	tut.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+	tut.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	tut.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	tut.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	tut.pressed.connect(func(): tutorial_pressed.emit())
+	Audio.attach_click(tut)   # 튜토리얼 버튼 클릭음
+	v.add_child(tut)
+
 	# 우상단 설정 버튼(⚙️) → 설정 오버레이
 	var gear := Button.new()
 	gear.text = "⚙️"
@@ -80,3 +97,5 @@ func _open_settings() -> void:
 func _refresh_texts() -> void:
 	if is_instance_valid(_start_btn):
 		_start_btn.text = Loc.t("start")
+	if is_instance_valid(_tut_btn):
+		_tut_btn.text = Loc.t("tutorial")
