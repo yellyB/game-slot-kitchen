@@ -49,8 +49,8 @@ func _ready() -> void:
 	_cash_label = UI.label("0", 18, Palette.COCOA_800, true)
 	header.add_child(_cash_label)
 
-	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % Config.shop_price(Config.SLOT_PRICE, session.day), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
-	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.SLOT_PRICE, session.day)), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	v.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
 	_owned_row = HBoxContainer.new()
@@ -244,7 +244,7 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
 
 
 func _refresh() -> void:
-	_cash_label.text = str(session.cash)
+	_cash_label.text = UI.money(session.cash)
 	var can_slot := session.cash >= Config.shop_price(Config.SLOT_PRICE, session.day) and session.slots < Config.MAX_SLOTS
 	_buy_slot_btn.disabled = not can_slot
 	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
