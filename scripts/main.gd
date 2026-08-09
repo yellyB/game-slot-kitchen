@@ -498,32 +498,36 @@ func _detach_and_fade(card: Control) -> void:
 	tw.chain().tween_callback(card.queue_free)
 
 
-func _fly_order_to_slot(card: Card, slot: Slot, from_pos: Vector2) -> void:
+func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 	slot.place_card(card, false, false)
 	await get_tree().process_frame
 	if not is_instance_valid(card) or card.get_parent() == null:
 		return
 	var dest := card.global_position
 	var sz := card.size
-	card.top_level = true
-	card.z_index = 95
-	card.pivot_offset = sz * 0.5
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.global_position = from_pos - sz * 0.5
-	card.scale = Vector2(0.7, 0.7)
 	card.modulate.a = 0.0
+
+	var ghost := OrderCard.new()
+	ghost.setup(card.recipe_id)
+	add_child(ghost)
+	ghost.set_process(false)
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.top_level = true
+	ghost.z_index = 95
+	ghost.size = sz
+	ghost.pivot_offset = sz * 0.5
+	ghost.global_position = from_pos - sz * 0.5
+	ghost.scale = Vector2(0.7, 0.7)
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(card, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(card, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(card, "modulate:a", 1.0, 0.16)
+	tw.tween_property(ghost, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ghost, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.chain().tween_callback(func():
-		if not is_instance_valid(card):
-			return
-		card.top_level = false
-		card.z_index = 0
-		card.scale = Vector2.ONE
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		if is_instance_valid(ghost):
+			ghost.queue_free()
+		if is_instance_valid(card):
+			card.modulate.a = 1.0
+			card.pop_in()
 		Audio.play("card_place"))
 
 
