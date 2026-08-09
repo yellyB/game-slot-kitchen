@@ -49,22 +49,9 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 10)
 	margin.add_child(col)
 
-	# 상단: 타이틀 + 나가기(X)
+	# 상단: 타이틀 (나가기 X는 스포트라이트 위에 별도로 — 항상 클릭 가능)
 	var top := HBoxContainer.new()
 	top.add_child(UI.label("🎓 " + Loc.t("tutorial"), 18, Palette.COCOA_800, true))
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(gap)
-	var exit := Button.new()
-	exit.text = "✕"
-	exit.add_theme_font_size_override("font_size", 16)
-	exit.add_theme_color_override("font_color", Palette.COCOA_600)
-	exit.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	exit.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	exit.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	exit.pressed.connect(_finish)
-	Audio.attach_click(exit)
-	top.add_child(exit)
 	col.add_child(top)
 
 	# 손님 큐
@@ -122,9 +109,28 @@ func _ready() -> void:
 	Move.action_allowed = _gate
 	Move.performed.connect(_on_move_performed)
 
-	# 스포트라이트(최상단)
+	# 스포트라이트(입력 차단형)
 	_spot = TutorialSpotlight.new()
 	add_child(_spot)
+
+	# 나가기(X) — 스포트라이트 다음에 추가해 항상 최상단·클릭 가능
+	var exit := Button.new()
+	exit.text = "✕"
+	exit.add_theme_font_size_override("font_size", 16)
+	exit.add_theme_color_override("font_color", Palette.COCOA_600)
+	exit.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	exit.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	exit.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	exit.anchor_left = 1.0
+	exit.anchor_right = 1.0
+	exit.offset_left = -52
+	exit.offset_right = -12
+	exit.offset_top = 12
+	exit.offset_bottom = 46
+	exit.z_index = 600
+	exit.pressed.connect(_finish)
+	Audio.attach_click(exit)
+	add_child(exit)
 
 	_spawn_customer()
 	_goto_step(S_ACCEPT)
@@ -237,6 +243,7 @@ func _process(_delta: float) -> void:
 	if _order != null and is_instance_valid(_order):
 		_order.set_servable(_board.available_dish_ids().has(RECIPE))
 	_check_step()
+	_update_spot_target()   # 구멍(허용 영역) 매 프레임 갱신(시트 열림 등 반영)
 
 
 ## 상태 기반 단계는 매 프레임 폴링으로 전진(신호 기반은 각 핸들러에서 처리).
@@ -258,19 +265,30 @@ func _check_step() -> void:
 func _goto_step(s: int) -> void:
 	_step = s
 	match s:
-		S_ACCEPT:
-			_spot.show_step(_customer, Loc.t("tut_accept"))
-		S_WAREHOUSE:
-			_spot.show_step(_wh_btn, Loc.t("tut_warehouse"))
-		S_INGREDIENTS:
-			_spot.show_step(_warehouse, Loc.t("tut_ingredients"))
-		S_COOK:
-			var tool: Control = _board.tools[0] if _board.tools.size() > 0 else null
-			_spot.show_step(tool, Loc.t("tut_cook"))
-		S_SERVE:
-			_spot.show_step(_find_dish(), Loc.t("tut_serve"))
-		S_DONE:
-			_show_done()
+		S_ACCEPT: _spot.set_message(Loc.t("tut_accept"))
+		S_WAREHOUSE: _spot.set_message(Loc.t("tut_warehouse"))
+		S_INGREDIENTS: _spot.set_message(Loc.t("tut_ingredients"))
+		S_COOK: _spot.set_message(Loc.t("tut_cook"))
+		S_SERVE: _spot.set_message(Loc.t("tut_serve"))
+		S_DONE: _show_done()
+	_update_spot_target()
+
+
+## 현재 단계에서 클릭 허용할 영역(구멍). 나머지는 스포트라이트가 전부 차단.
+## 시트가 열리면 그 시트를, 조리/서빙은 보드 전체를 허용(도구·완성품·주문서 상호작용).
+func _current_target() -> Control:
+	match _step:
+		S_ACCEPT: return _customer
+		S_WAREHOUSE: return _wh_btn
+		S_INGREDIENTS: return _warehouse if _warehouse.visible else _wh_btn
+		S_COOK: return _cooking if _cooking.visible else _board
+		S_SERVE: return _board
+	return null
+
+
+func _update_spot_target() -> void:
+	if _spot != null and _spot.visible:
+		_spot.target = _current_target()
 
 
 ## 완성품(도구석 위 우선, 없으면 슬롯) 노드 — 없으면 null.
