@@ -148,6 +148,7 @@ func _lang_chip(code: String) -> Button:
 		if Loc.locale != code:
 			Loc.locale = code
 			_build())
+	Audio.attach_click(b)
 	_lang_buttons.append(b)
 	return b
 
