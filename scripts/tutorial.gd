@@ -18,6 +18,7 @@ var _order: OrderCard
 var _spot: TutorialSpotlight
 var _step := S_ACCEPT
 var _prev_move_target: Callable
+var _prev_move_allowed: Callable
 var _clock := 0.0
 
 
@@ -107,6 +108,8 @@ func _ready() -> void:
 
 	_prev_move_target = Move.default_target
 	Move.default_target = func(_p): return _board.first_empty_slot()
+	_prev_move_allowed = Move.action_allowed
+	Move.action_allowed = _gate
 	Move.performed.connect(_on_move_performed)
 
 	_spot = TutorialSpotlight.new()
@@ -118,6 +121,26 @@ func _ready() -> void:
 
 func _now() -> float:
 	return _clock
+
+
+func _gate(payload: Dictionary) -> bool:
+	match payload.get("kind"):
+		"new":
+			return _step == S_INGREDIENTS and _needs_more(str(payload.get("id")))
+		"dish":
+			return _step == S_SERVE
+		_:
+			return false
+
+
+func _needs_more(id: String) -> bool:
+	var need := 0
+	for iid in Recipes.get_def(RECIPE).get("ingredients", []):
+		if iid == id:
+			need += 1
+	if need == 0:
+		return false
+	return _board.ingredient_counts().get(id, 0) < need
 
 
 func _spawn_customer() -> void:
@@ -155,14 +178,18 @@ func _on_served(_order_card: OrderCard, _dish: DishCard) -> void:
 func _toggle_warehouse() -> void:
 	if _warehouse.visible:
 		_close_sheets()
-	else:
-		_cooking.visible = false
-		_warehouse.visible = true
-		_backdrop.visible = true
-		_warehouse.refresh(_board.is_full())
+		return
+	if _step != S_WAREHOUSE and _step != S_INGREDIENTS:
+		return
+	_cooking.visible = false
+	_warehouse.visible = true
+	_backdrop.visible = true
+	_warehouse.refresh(_board.is_full())
 
 
 func _on_tool_tapped(tool: ToolStation) -> void:
+	if _step != S_COOK:
+		return
 	_warehouse.visible = false
 	_backdrop.visible = true
 	_cooking.open_for(tool)
@@ -276,5 +303,6 @@ func _finish() -> void:
 	if Move.performed.is_connected(_on_move_performed):
 		Move.performed.disconnect(_on_move_performed)
 	Move.default_target = _prev_move_target
+	Move.action_allowed = _prev_move_allowed
 	Move.clear()
 	finished.emit()

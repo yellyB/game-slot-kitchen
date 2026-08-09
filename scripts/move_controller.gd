@@ -4,8 +4,14 @@ signal performed
 
 var default_target := Callable()
 
+var action_allowed := Callable()
+
 var _payload: Dictionary = {}
 var _source: Object = null
+
+
+func _blocked(payload: Dictionary) -> bool:
+	return not action_allowed.is_null() and not action_allowed.call(payload)
 
 
 func has_selection() -> bool:
@@ -27,6 +33,8 @@ func on_click(node: Object) -> void:
 		return
 
 	if has_selection() and node.has_method("can_accept") and node.can_accept(_payload):
+		if _blocked(_payload):
+			return
 		node.accept(_payload)
 		clear()
 		performed.emit()
@@ -44,6 +52,8 @@ func on_click(node: Object) -> void:
 func quick(payload: Dictionary) -> bool:
 	if default_target.is_null() or payload.is_empty():
 		return false
+	if _blocked(payload):
+		return false
 	var target = default_target.call(payload)
 	if target != null and is_instance_valid(target) \
 			and target.has_method("can_accept") and target.can_accept(payload):
@@ -54,6 +64,8 @@ func quick(payload: Dictionary) -> bool:
 
 
 func on_drop(target: Object, payload: Dictionary) -> void:
+	if _blocked(payload):
+		return
 	if target.has_method("can_accept") and target.can_accept(payload):
 		target.accept(payload)
 		performed.emit()
