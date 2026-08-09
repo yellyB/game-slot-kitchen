@@ -14,7 +14,7 @@ const SFX := {
 	"click": preload("res://assets/audio/sfx/click.wav"),           # 버튼 클릭(종이 크런치)
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),   # 카드팩 개봉 순간
 	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"), # 팩 카드 등장 완료
-	"whoosh": preload("res://assets/audio/sfx/whoosh.wav"),        # 창고 여닫이(부드러운 슉)
+	"footstep": preload("res://assets/audio/sfx/footstep.wav"),    # 창고 여닫이(콘크리트 발소리)
 	"switch": preload("res://assets/audio/sfx/switch.ogg"),        # 설정 토글 스위치(딸깍)
 }
 
