@@ -1,6 +1,8 @@
 class_name Slot
 extends PanelContainer
 
+const PAD := 6
+
 var _holder: MarginContainer
 
 func _ready() -> void:
@@ -10,8 +12,12 @@ func _ready() -> void:
 	_holder = MarginContainer.new()
 	_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
-		_holder.add_theme_constant_override("margin_" + side, 6)
+		_holder.add_theme_constant_override("margin_" + side, PAD)
 	add_child(_holder)
+
+
+func card_rect() -> Rect2:
+	return Rect2(_holder.global_position + Vector2(PAD, PAD), _holder.size - Vector2(PAD, PAD) * 2.0)
 
 
 func is_empty() -> bool:

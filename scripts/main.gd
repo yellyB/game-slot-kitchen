@@ -500,11 +500,11 @@ func _detach_and_fade(card: Control) -> void:
 
 func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 	slot.place_card(card, false, false)
-	await get_tree().process_frame
 	if not is_instance_valid(card) or card.get_parent() == null:
 		return
-	var dest := card.global_position
-	var sz := card.size
+	var rect := slot.card_rect()
+	var dest := rect.position
+	var sz := rect.size
 	card.modulate.a = 0.0
 
 	var ghost := OrderCard.new()
