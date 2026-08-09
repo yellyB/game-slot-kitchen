@@ -51,13 +51,15 @@ func place_new(id: String) -> void:
 
 ## 이미 만들어진 카드(재료·주문서 등)를 배치.
 ## play_sfx=false: 버프 재배치(매일 리빌드)처럼 소리 없이 얹을 때.
-func place_card(card: Card, play_sfx := true) -> void:
+## pop=false: 주문서 날아오기처럼 배치 애니·소리를 호출측이 직접 처리할 때(슬롯 점유만).
+func place_card(card: Card, play_sfx := true, pop := true) -> void:
 	if not is_empty() or card == null:
 		return
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
-	card.pop_in()   # 배치 팝 애니
+	if pop:
+		card.pop_in()   # 배치 팝 애니
 	if play_sfx:
 		Audio.play("card_place")   # 슬롯에 카드 생김(탁)
 

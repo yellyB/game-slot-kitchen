@@ -113,6 +113,21 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+	if "--fxshop" in OS.get_cmdline_user_args():
+		_start_game()
+		await get_tree().create_timer(0.4).timeout
+		_board.rebuild(Config.MAX_SLOTS)   # 12슬롯 레이아웃 확인
+		await get_tree().process_frame
+		get_viewport().get_texture().get_image().save_png("/tmp/fxboard.png")
+		var shop := Shop.new()
+		shop.session = _session
+		_session.slots = Config.MAX_SLOTS   # 슬롯 MAX → SOLD OUT
+		shop._drew = true                   # 이미 뽑음 → 팩 SOLD OUT
+		add_child(shop)
+		await get_tree().create_timer(0.3).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/fxshop.png")
+		get_tree().quit()
+
 	# 헤드리스 시뮬레이션: godot4 ... -- --sim
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
@@ -366,8 +381,10 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
 	order.rejected.connect(_on_order_rejected)
-	slot.place_card(order)
+	# 주문서가 손님 자리에서 슬롯으로 날아가 안착(손님은 즉시 퇴장).
+	var from_pos := customer.global_position + customer.size * 0.5
 	customer.queue_free()
+	_fly_order_to_slot(order, slot, from_pos)
 	_accepted_today += 1
 	# 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략).
 	if Buffs.consume_instant_order():
@@ -539,6 +556,37 @@ func _detach_and_fade(card: Control) -> void:
 	tw.tween_property(card, "scale", Vector2(0.6, 0.6), 0.3).set_ease(Tween.EASE_IN)
 	tw.tween_property(card, "modulate:a", 0.0, 0.3)
 	tw.chain().tween_callback(card.queue_free)
+
+
+## 주문 확인 연출 — 주문서가 손님 자리(from_pos)에서 목표 슬롯으로 포물선 없이 스윽 날아가 안착.
+## 슬롯은 먼저 점유(비행 중 중복 배치 방지)하되, 팝·소리는 도착 시점에 낸다.
+func _fly_order_to_slot(card: Card, slot: Slot, from_pos: Vector2) -> void:
+	slot.place_card(card, false, false)   # 점유만 — 소리·팝은 도착 때
+	await get_tree().process_frame        # 슬롯 내 최종 레이아웃(위치·크기) 확보
+	if not is_instance_valid(card) or card.get_parent() == null:
+		return
+	var dest := card.global_position      # 슬롯에서의 최종 좌표
+	var sz := card.size
+	card.top_level = true                 # 컨테이너 정렬 배제 — 좌표 직접 제어
+	card.z_index = 95
+	card.pivot_offset = sz * 0.5
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.global_position = from_pos - sz * 0.5
+	card.scale = Vector2(0.7, 0.7)
+	card.modulate.a = 0.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "modulate:a", 1.0, 0.16)
+	tw.chain().tween_callback(func():
+		if not is_instance_valid(card):
+			return
+		card.top_level = false            # 슬롯 레이아웃에 복귀(제자리 스냅)
+		card.z_index = 0
+		card.scale = Vector2.ONE
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		Audio.play("card_place"))         # 안착음(탁)
 
 
 ## 팝 버스트 — 작게 나타나 크게 튀며(스케일) 살짝 떠오르다 사라짐. 서빙 성공 😊 등.
