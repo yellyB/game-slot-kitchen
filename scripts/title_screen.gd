@@ -2,8 +2,10 @@ class_name TitleScreen
 extends Control
 
 signal start_pressed
+signal tutorial_pressed
 
 var _start_btn: Button
+var _tut_btn: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -51,6 +53,20 @@ func _ready() -> void:
 	Audio.attach_click(start)
 	v.add_child(start)
 
+	var tut := Button.new()
+	tut.text = Loc.t("tutorial")
+	_tut_btn = tut
+	tut.custom_minimum_size = Vector2(180, 48)
+	tut.add_theme_font_size_override("font_size", 18)
+	tut.add_theme_color_override("font_color", Palette.COCOA_800)
+	tut.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+	tut.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	tut.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	tut.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	tut.pressed.connect(func(): tutorial_pressed.emit())
+	Audio.attach_click(tut)
+	v.add_child(tut)
+
 	var gear := Button.new()
 	gear.text = "⚙️"
 	gear.add_theme_font_size_override("font_size", 22)
@@ -77,3 +93,5 @@ func _open_settings() -> void:
 func _refresh_texts() -> void:
 	if is_instance_valid(_start_btn):
 		_start_btn.text = Loc.t("start")
+	if is_instance_valid(_tut_btn):
+		_tut_btn.text = Loc.t("tutorial")
