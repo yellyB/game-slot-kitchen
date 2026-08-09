@@ -101,6 +101,21 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+	if "--fxshop" in OS.get_cmdline_user_args():
+		_start_game()
+		await get_tree().create_timer(0.4).timeout
+		_board.rebuild(Config.MAX_SLOTS)
+		await get_tree().process_frame
+		get_viewport().get_texture().get_image().save_png("/tmp/fxboard.png")
+		var shop := Shop.new()
+		shop.session = _session
+		_session.slots = Config.MAX_SLOTS
+		shop._drew = true
+		add_child(shop)
+		await get_tree().create_timer(0.3).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/fxshop.png")
+		get_tree().quit()
+
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
 		var n := 200
@@ -339,8 +354,9 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
 	order.rejected.connect(_on_order_rejected)
-	slot.place_card(order)
+	var from_pos := customer.global_position + customer.size * 0.5
 	customer.queue_free()
+	_fly_order_to_slot(order, slot, from_pos)
 	_accepted_today += 1
 	if Buffs.consume_instant_order():
 		_produce_dish(rid)
@@ -495,6 +511,35 @@ func _detach_and_fade(card: Control) -> void:
 	tw.tween_property(card, "scale", Vector2(0.6, 0.6), 0.3).set_ease(Tween.EASE_IN)
 	tw.tween_property(card, "modulate:a", 0.0, 0.3)
 	tw.chain().tween_callback(card.queue_free)
+
+
+func _fly_order_to_slot(card: Card, slot: Slot, from_pos: Vector2) -> void:
+	slot.place_card(card, false, false)
+	await get_tree().process_frame
+	if not is_instance_valid(card) or card.get_parent() == null:
+		return
+	var dest := card.global_position
+	var sz := card.size
+	card.top_level = true
+	card.z_index = 95
+	card.pivot_offset = sz * 0.5
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.global_position = from_pos - sz * 0.5
+	card.scale = Vector2(0.7, 0.7)
+	card.modulate.a = 0.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "global_position", dest, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "scale", Vector2.ONE, 0.34).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "modulate:a", 1.0, 0.16)
+	tw.chain().tween_callback(func():
+		if not is_instance_valid(card):
+			return
+		card.top_level = false
+		card.z_index = 0
+		card.scale = Vector2.ONE
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		Audio.play("card_place"))
 
 
 func _spawn_pop(text: String, at_pos: Vector2) -> void:

@@ -42,13 +42,14 @@ func place_new(id: String) -> void:
 	place_card(card)
 
 
-func place_card(card: Card, play_sfx := true) -> void:
+func place_card(card: Card, play_sfx := true, pop := true) -> void:
 	if not is_empty() or card == null:
 		return
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(card)
-	card.pop_in()
+	if pop:
+		card.pop_in()
 	if play_sfx:
 		Audio.play("card_place")
 
