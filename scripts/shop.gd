@@ -192,7 +192,7 @@ func _reveal_choice(card: Control, idx: int) -> void:
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
 	var def := BuffDefs.get_def(id)
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(84, 0)
+	card.custom_minimum_size = Vector2(92, 0)   # 세 후보 동일 고정폭(라벨 autowrap과 함께 폭 안정화)
 	card.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2))
 	var pad := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -207,9 +207,15 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
 	v.add_child(icon)
 	var nm := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)
 	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nm.custom_minimum_size = Vector2.ZERO
 	v.add_child(nm)
 	var lb := UI.label(BuffDefs.display_label(id), 12, Palette.MAIN)
 	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lb.custom_minimum_size = Vector2.ZERO
 	v.add_child(lb)
 	var pick := Button.new()
 	pick.text = Loc.t("shop_pick")
