@@ -15,6 +15,7 @@ const SFX := {
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),   # 카드팩 개봉 순간
 	"card_slide": preload("res://assets/audio/sfx/card_slide.ogg"), # 팩 카드 등장 완료
 	"whoosh": preload("res://assets/audio/sfx/whoosh.wav"),        # 창고 여닫이(부드러운 슉)
+	"switch": preload("res://assets/audio/sfx/switch.ogg"),        # 설정 토글 스위치(딸깍)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수

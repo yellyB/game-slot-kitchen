@@ -142,7 +142,8 @@ func _toggle(key: String) -> Control:
 		knob.position = Vector2(25.0 if on else 3.0, 3.0)
 	hit.pressed.connect(func():
 		settings[key] = not settings[key]
-		refresh.call())
+		refresh.call()
+		Audio.play("switch"))   # 토글 스위칭음(딸깍)
 	refresh.call()
 	return pill
 
