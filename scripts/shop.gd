@@ -8,6 +8,7 @@ var _cash_label: Label
 var _buy_slot_btn: Button
 var _draw_btn: Button
 var _owned_row: HBoxContainer
+var _drew := false
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -115,9 +116,12 @@ func _on_buy_slot() -> void:
 
 
 func _on_draw() -> void:
+	if _drew:
+		return
 	var pack := session.buy_buff_pack()
 	if pack.is_empty():
 		return
+	_drew = true
 	_refresh()
 	_show_pack(pack)
 
@@ -238,7 +242,7 @@ func _refresh() -> void:
 	var can_slot := session.cash >= Config.shop_price(Config.SLOT_PRICE, session.day) and session.slots < Config.MAX_SLOTS
 	_buy_slot_btn.disabled = not can_slot
 	_buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-	var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day) and not Buffs.is_full()
+	var can_draw := not _drew and session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day) and not Buffs.is_full()
 	_draw_btn.disabled = not can_draw
 	_draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
