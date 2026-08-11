@@ -125,6 +125,7 @@ func _finish_cooking() -> void:
 	dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_holder.add_child(dish)
 	dish.pop_in()
+	Audio.play("cook_done")
 
 
 func _process(delta: float) -> void:
