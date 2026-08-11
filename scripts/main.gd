@@ -337,6 +337,7 @@ func _spawn_customer() -> void:
 	c.urged.connect(_on_urged)
 	_queue_row.add_child(c)
 	c.slide_in()
+	Audio.play("customer_in")
 	_visited_today += 1
 
 

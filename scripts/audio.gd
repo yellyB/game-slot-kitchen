@@ -16,6 +16,7 @@ const SFX := {
 	"switch": preload("res://assets/audio/sfx/switch.ogg"),
 	"reject": preload("res://assets/audio/sfx/reject.ogg"),
 	"cook_done": preload("res://assets/audio/sfx/cook_done.mp3"),
+	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),
 }
 
 const POOL_SIZE := 8
