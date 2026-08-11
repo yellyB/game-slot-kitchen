@@ -5,6 +5,10 @@ extends CenterContainer
 
 signal tool_tapped(tool: ToolStation)
 
+const BASE_SLOT := 104.0   ## 슬롯 기본 한 변(px). 공간이 남으면 이 크기, 부족하면 자동 축소.
+const MAX_COLS := 5        ## 가로 확장 상한(칸 늘리기 시 열 수 한도).
+const SEP := 8.0           ## 슬롯 간격(h/v 공통).
+
 var slots: Array[Slot] = []
 var tools: Array[ToolStation] = []
 var now_provider: Callable = func() -> float: return 0.0  ## 게임 클록(초) 공급 — main이 세션에 연결. 완성품 나이 스탬프용.
@@ -15,9 +19,10 @@ func _ready() -> void:
 	_grid = GridContainer.new()
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_grid.columns = Config.BOARD_COLS
-	_grid.add_theme_constant_override("h_separation", 8)
-	_grid.add_theme_constant_override("v_separation", 8)
+	_grid.add_theme_constant_override("h_separation", SEP)
+	_grid.add_theme_constant_override("v_separation", SEP)
 	add_child(_grid)
+	resized.connect(_relayout)   # 가용 공간 바뀌면 열 수·슬롯 크기 재계산
 
 
 ## 슬롯 수만큼 그리드 재구성(도구석은 마지막 TOOL_COUNT칸).
@@ -42,6 +47,32 @@ func rebuild(slot_count: int) -> void:
 			tool.tapped.connect(tool_tapped.emit)
 			tools.append(tool)
 			_grid.add_child(tool)
+	_relayout()
+
+
+## 가용 공간(남는 세로 + 가로)에 맞춰 열 수와 슬롯 한 변을 정한다.
+## - 슬롯이 늘어 세로가 부족하면 먼저 열을 늘려(3→4→5) 행을 줄이고, 그래도 부족하면 슬롯을 축소.
+## - 공간이 넉넉하면 기본 열(BOARD_COLS)·기본 크기(BASE_SLOT) 유지.
+func _relayout() -> void:
+	var total := slots.size() + tools.size()
+	if total == 0 or size.x <= 0.0 or size.y <= 0.0:
+		return
+	# 후보 열 수마다 (가로·세로 모두 맞는) 슬롯 한 변을 구해, 가장 큰 변을 주는 열 수 선택.
+	var best_cols := Config.BOARD_COLS
+	var best_edge := 0.0
+	for cols in range(Config.BOARD_COLS, MAX_COLS + 1):
+		var rows := int(ceil(float(total) / cols))
+		var edge_w := (size.x - (cols - 1) * SEP) / cols
+		var edge_h := (size.y - (rows - 1) * SEP) / rows
+		var edge := minf(edge_w, edge_h)
+		if edge > best_edge:
+			best_edge = edge
+			best_cols = cols
+	best_edge = clampf(best_edge, 1.0, BASE_SLOT)
+	_grid.columns = best_cols
+	var s := Vector2(best_edge, best_edge)
+	for ch in _grid.get_children():
+		(ch as Control).custom_minimum_size = s
 
 
 func first_empty_slot() -> Slot:
