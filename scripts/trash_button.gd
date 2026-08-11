@@ -43,9 +43,9 @@ func _suck(card: Card) -> void:
 	var target := global_position + size * 0.5 - sz * 0.5
 	var tw := card.create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(card, "global_position", target, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_property(card, "scale", Vector2(0.08, 0.08), 0.28).set_ease(Tween.EASE_IN)
-	tw.tween_property(card, "modulate:a", 0.0, 0.28).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "global_position", target, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "scale", Vector2(0.12, 0.12), 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "modulate:a", 0.0, 0.1).set_delay(0.22)
 	tw.chain().tween_callback(card.queue_free)
 
 
