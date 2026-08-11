@@ -363,6 +363,7 @@ func _spawn_customer() -> void:
 	c.urged.connect(_on_urged)
 	_queue_row.add_child(c)
 	c.slide_in()   # 오른쪽에서 슬라이드 인 등장
+	Audio.play("customer_in")   # 손님 방문음
 	_visited_today += 1   # 정산(served_ratio)용 등장 손님 집계 — sim_core._on_spawn과 동치
 
 
