@@ -23,7 +23,37 @@ func accept(payload: Dictionary) -> void:
 	if card == null or not is_instance_valid(card):
 		return
 	Audio.play("trash")   # 종이 구기기 효과음
-	card.dispose()   # 카드별 정리(완성품이면 도구 리셋)
+	_suck(card)   # 휴지통으로 빨려 들어가며 축소·페이드
+
+
+## 버린 카드가 휴지통 쪽으로 빨려 들어가며 작아지고 사라짐.
+## 논리적 정리(슬롯/도구 회복)는 먼저 처리하고, 노드는 살려서 애니 후 제거.
+func _suck(card: Card) -> void:
+	var gpos := card.global_position
+	var sz := card.size
+	# 부모(슬롯)에서 떼기 + 완성품이면 도구석 회복 (dispose 부수효과 대체)
+	var holder := card.get_parent()
+	if holder:
+		holder.remove_child(card)
+	var dc := card as DishCard
+	if dc != null and dc.tool != null:
+		var t := dc.tool
+		dc.tool = null
+		t.reset()
+	# 애니용 최상위 부착 — 좌표 고정
+	get_tree().root.add_child(card)
+	card.top_level = true
+	card.z_index = 400
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.global_position = gpos
+	card.pivot_offset = sz * 0.5
+	var target := global_position + size * 0.5 - sz * 0.5   # 휴지통 중심으로 카드 중심 이동
+	var tw := card.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(card, "global_position", target, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "scale", Vector2(0.08, 0.08), 0.28).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "modulate:a", 0.0, 0.28).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(card.queue_free)
 
 
 # ── 드래그앤드롭 타깃 ─────────────────────────────────────
