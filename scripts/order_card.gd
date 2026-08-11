@@ -119,6 +119,13 @@ func can_accept(payload: Dictionary) -> bool:
 func accept(payload: Dictionary) -> void:
 	served.emit(self, payload.get("card"))
 
+## 클릭 서빙에서 안 맞는 완성품이 올 때 반려(흔들림+땡). 처리했으면 true. (Move가 조회)
+func reject_payload(payload: Dictionary) -> bool:
+	if payload.get("kind") == "dish" and not can_accept(payload):
+		_reject()
+		return true
+	return false
+
 ## 어떤 완성품이든 드롭은 받음(맞으면 서빙, 틀리면 반려 연출). 재료·기타는 거부.
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	return typeof(data) == TYPE_DICTIONARY and data.get("kind") == "dish"

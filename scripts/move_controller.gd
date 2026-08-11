@@ -61,6 +61,11 @@ func on_click(node: Object) -> void:
 		performed.emit()
 		return
 
+	# 선택된 완성품이 안 맞는 주문서에 올 때 → 반려 연출(선택 유지, 재시도 가능)
+	if has_selection() and not _blocked(_payload) \
+			and node.has_method("reject_payload") and node.reject_payload(_payload):
+		return
+
 	# node가 소스면 → 선택(또는 다른 소스로 전환)
 	if node.has_method("get_move_payload"):
 		var p: Dictionary = node.get_move_payload()
