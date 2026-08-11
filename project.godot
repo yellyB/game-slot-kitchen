@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 Move="*res://scripts/move_controller.gd"
 Buffs="*res://scripts/buffs.gd"
 Audio="*res://scripts/audio.gd"
+UIFx="*res://scripts/ui_fx.gd"
 
 [display]
 
