@@ -106,6 +106,12 @@ func can_accept(payload: Dictionary) -> bool:
 func accept(payload: Dictionary) -> void:
 	served.emit(self, payload.get("card"))
 
+func reject_payload(payload: Dictionary) -> bool:
+	if payload.get("kind") == "dish" and not can_accept(payload):
+		_reject()
+		return true
+	return false
+
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	return typeof(data) == TYPE_DICTIONARY and data.get("kind") == "dish"
 

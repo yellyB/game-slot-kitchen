@@ -40,6 +40,10 @@ func on_click(node: Object) -> void:
 		performed.emit()
 		return
 
+	if has_selection() and not _blocked(_payload) \
+			and node.has_method("reject_payload") and node.reject_payload(_payload):
+		return
+
 	if node.has_method("get_move_payload"):
 		var p: Dictionary = node.get_move_payload()
 		if not p.is_empty():
