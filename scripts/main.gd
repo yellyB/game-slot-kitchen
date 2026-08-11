@@ -358,6 +358,7 @@ func _spawn_customer() -> void:
 	c.setup(Stats.random_recipe())
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
+	c.urged.connect(_on_urged)
 	_queue_row.add_child(c)
 	c.slide_in()   # 오른쪽에서 슬라이드 인 등장
 	_visited_today += 1   # 정산(served_ratio)용 등장 손님 집계 — sim_core._on_spawn과 동치
@@ -380,6 +381,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
 	order.rejected.connect(_on_order_rejected)
+	order.urged.connect(_on_urged)
 	# 주문서가 손님 자리에서 슬롯으로 날아가 안착(손님은 즉시 퇴장).
 	var from_pos := customer.global_position + customer.size * 0.5
 	customer.queue_free()
@@ -404,6 +406,13 @@ func _produce_dish(rid: String) -> void:
 	dish.setup(rid)
 	dish.born = _session.now()
 	s.place_card(dish)
+
+
+## 인내심 임박 재촉 — 카드 위에 💢 팝(카드 흔들림은 카드가 자체 처리).
+func _on_urged(card: Control) -> void:
+	if not is_instance_valid(card):
+		return
+	_spawn_pop("💢", card.global_position + Vector2(card.size.x * 0.5, -8))
 
 
 func _on_customer_expired(customer: Customer) -> void:

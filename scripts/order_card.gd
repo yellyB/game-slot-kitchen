@@ -8,6 +8,7 @@ extends Card
 signal expired(card: OrderCard)
 signal served(card: OrderCard, dish: DishCard)
 signal rejected(card: OrderCard)   # 안 맞는 완성품 서빙 시도 → 반려 연출용
+signal urged(card: OrderCard)      # 음식대기 인내심 임박(빨강) 진입 1회
 
 var recipe_id: String
 var born := 0.0   ## 슬롯에 놓인 게임시각(초). 판매 ctx의 order_age 계산용. main이 스탬프.
@@ -15,6 +16,7 @@ var born := 0.0   ## 슬롯에 놓인 게임시각(초). 판매 ctx의 order_age
 var _max := Config.PATIENCE_DISH
 var _time_left := Config.PATIENCE_DISH
 var _done := false
+var _warned := false   # 임박 재촉 1회만
 var _fill := Palette.SUB
 var _gauge: ProgressBar
 var _servable := false
@@ -156,7 +158,21 @@ func _process(delta: float) -> void:
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", UI.chip(col))
+		if col == Palette.DANGER and not _warned:   # 임박 진입 → 재촉 1회
+			_warned = true
+			_urge()
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
 		expired.emit(self)
+
+
+## 임박 재촉 — 좌우로 짧게 흔들 + urged 신호(main이 💢 팝).
+func _urge() -> void:
+	urged.emit(self)
+	var bx := position.x
+	var tw := create_tween()
+	tw.tween_property(self, "position:x", bx + 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx - 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx + 3.0, 0.05)
+	tw.tween_property(self, "position:x", bx, 0.05)
