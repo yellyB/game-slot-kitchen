@@ -116,6 +116,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		_reject()
 
 func _reject() -> void:
+	Audio.play("reject")
 	var bx := position.x
 	var tw := create_tween()
 	tw.tween_property(self, "position:x", bx + 6.0, 0.05)

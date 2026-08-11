@@ -14,6 +14,7 @@ const SFX := {
 	"footstep": preload("res://assets/audio/sfx/footstep.wav"),
 	"footstep_back": preload("res://assets/audio/sfx/footstep_back.wav"),
 	"switch": preload("res://assets/audio/sfx/switch.ogg"),
+	"reject": preload("res://assets/audio/sfx/reject.ogg"),
 }
 
 const POOL_SIZE := 8
