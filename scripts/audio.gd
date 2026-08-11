@@ -20,6 +20,8 @@ const SFX := {
 	"reject": preload("res://assets/audio/sfx/reject.ogg"),        # 다른 메뉴 서빙(반려·땡)
 	"cook_done": preload("res://assets/audio/sfx/cook_done.mp3"),  # 조리 완료(완성품 나옴)
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),  # 손님 방문(큐 등장)
+	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),   # 창고 들어갈 때(문 열림)
+	"door_close": preload("res://assets/audio/sfx/door_close.mp3"), # 창고 나올 때(문 닫힘)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수

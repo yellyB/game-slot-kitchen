@@ -296,7 +296,7 @@ func _open_warehouse() -> void:
 	_cooking.visible = false
 	_backdrop.visible = true
 	_warehouse.slide_open()   # 아래서 슬라이드 업
-	Audio.play("footstep")   # 창고 열림(발소리)
+	Audio.play("door_open")   # 창고 들어감(문 열림)
 	_refresh_warehouse()
 
 
@@ -310,7 +310,7 @@ func _close_sheets() -> void:
 	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
-		Audio.play("footstep_back")   # 창고 닫힘(발소리 역순 1→0)
+		Audio.play("door_close")   # 창고 나옴(문 닫힘)
 		_warehouse.slide_close()   # 아래로 슬라이드 다운
 	if _cooking.visible:
 		_cooking.slide_close()
