@@ -62,12 +62,10 @@ func _ready() -> void:
 
 	_board = Board.new()
 	_board.tool_tapped.connect(_on_tool_tapped)
+	# 보드가 큐~하단버튼 사이 남는 세로 공간을 차지 → 슬롯이 늘어도 그 공간에 맞춰
+	# 열 수·슬롯 크기를 자동 조절(하단 버튼이 잘리지 않음). [[Board._relayout]]
+	_board.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(_board)
-
-	var spacer := Control.new()
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(spacer)
 
 	col.add_child(_build_bottom_buttons())
 
@@ -385,10 +383,14 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.served.connect(_on_served)
 	order.rejected.connect(_on_order_rejected)
 	order.urged.connect(_on_urged)
-	# 주문서가 손님 자리에서 슬롯으로 날아가 안착(손님은 즉시 퇴장).
+	# 주문서가 클릭한 손님 자리에서 슬롯으로 날아가 안착.
+	# 자리는 착지까지 유지(dismiss=투명 홀드) → 뒤 손님이 즉시 안 밀려 "그 손님 주문서"로 읽힘.
 	var from_pos := customer.global_position + customer.size * 0.5
-	customer.queue_free()
+	customer.dismiss()
 	_fly_order_to_slot(order, slot, from_pos)
+	get_tree().create_timer(0.36).timeout.connect(func():
+		if is_instance_valid(customer):
+			customer.queue_free())   # 착지 후 제거 → 그때 큐가 좁혀짐
 	_accepted_today += 1
 	# 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략).
 	if Buffs.consume_instant_order():
@@ -865,9 +867,11 @@ func _on_day_started(day: int, rent: int) -> void:
 	_refresh_warehouse()
 
 
-## 하루 종료 시 필드 정리 — 슬롯 카드·도구·큐 제거로 타이머(_process) 즉시 정지.
+## 하루 종료 시 필드 정리 — 재료·주문·완성품·큐 제거(타이머 즉시 정지). 버프 카드는 유지.
 func _clear_play_field() -> void:
 	for s in _board.slots:
+		if s.get_card() is BuffCard:
+			continue   # 버프 카드는 남김(플레이어 빌드)
 		s.clear()
 	for t in _board.tools:
 		t.reset()
