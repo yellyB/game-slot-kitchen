@@ -38,6 +38,7 @@ const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 �
 
 # ── 세션 / 하루 ───────────────────────────────────────────
 const DAY_LENGTH := 90.0       # 영업시간(초)
+const DAY_INTRO_DELAY := 0.5   # 하루 시작 시 게임플레이(시계·스폰) 홀드 후 배너·시작음 (초)
 const HOURS_WARN_FRAC := 0.8   # 이 진행도 이상이면 영업시간 바 빨강 + 임박 펄스(마감 임박)
 const WAVES := 3                # 웨이브 수(고정). 웨이브당 손님 수는 data/levels.gd
 const WAVE_SPACING := 0.7       # 웨이브 내 손님 간격(초)

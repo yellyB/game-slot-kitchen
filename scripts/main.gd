@@ -823,8 +823,15 @@ func _reset_hours_bar() -> void:
 
 func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
-	_show_day_banner(day)   # 화면 중앙 "N일차" 배너
-	Audio.play("day_start")   # 하루 시작 효과음
+	# 하루 시작 홀드 — 플레이 화면만 먼저 보이고, 게임플레이(시계·스폰)는 잠깐 멈춤.
+	# DAY_INTRO_DELAY 뒤에 재개 + "N일차" 배너 + 시작음(그때 재생).
+	_session.set_process(false)
+	get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
+		if not is_inside_tree():
+			return
+		_session.set_process(true)   # 시계·손님 스폰 시작
+		_show_day_banner(day)        # 화면 중앙 "N일차" 배너
+		Audio.play("day_start"))     # 하루 시작 효과음
 	_rent_label.text = UI.money(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
