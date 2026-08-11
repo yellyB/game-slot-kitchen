@@ -274,7 +274,7 @@ func _open_warehouse() -> void:
 	_cooking.visible = false
 	_backdrop.visible = true
 	_warehouse.slide_open()
-	Audio.play("footstep")
+	Audio.play("door_open")
 	_refresh_warehouse()
 
 
@@ -287,7 +287,7 @@ func _on_tool_tapped(tool: ToolStation) -> void:
 func _close_sheets() -> void:
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
-		Audio.play("footstep_back")
+		Audio.play("door_close")
 		_warehouse.slide_close()
 	if _cooking.visible:
 		_cooking.slide_close()
