@@ -57,12 +57,8 @@ func _ready() -> void:
 
 	_board = Board.new()
 	_board.tool_tapped.connect(_on_tool_tapped)
+	_board.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(_board)
-
-	var spacer := Control.new()
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(spacer)
 
 	col.add_child(_build_bottom_buttons())
 
@@ -358,8 +354,11 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.rejected.connect(_on_order_rejected)
 	order.urged.connect(_on_urged)
 	var from_pos := customer.global_position + customer.size * 0.5
-	customer.queue_free()
+	customer.dismiss()
 	_fly_order_to_slot(order, slot, from_pos)
+	get_tree().create_timer(0.36).timeout.connect(func():
+		if is_instance_valid(customer):
+			customer.queue_free())
 	_accepted_today += 1
 	if Buffs.consume_instant_order():
 		_produce_dish(rid)
@@ -795,6 +794,8 @@ func _on_day_started(day: int, rent: int) -> void:
 
 func _clear_play_field() -> void:
 	for s in _board.slots:
+		if s.get_card() is BuffCard:
+			continue
 		s.clear()
 	for t in _board.tools:
 		t.reset()
