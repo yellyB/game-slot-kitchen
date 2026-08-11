@@ -129,10 +129,17 @@ func has_ingredients(recipe_id: String) -> bool:
 
 
 ## 필요재료를 보드에서 소비(제거).
-func consume_ingredients(recipe_id: String) -> void:
+## 레시피 필요 재료 카드들을 슬롯에서 떼어(제거만, free 안 함) 반환 — 조리 연출(도구석으로 날림)용.
+## 떼기 전에 global_position을 캡처해 함께 반환(떼면 좌표가 로컬로 붕괴되므로).
+func take_ingredient_cards(recipe_id: String) -> Array:
+	var out: Array = []
 	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
 		for s in slots:
 			var c := s.get_card()
-			if c is IngredientCard and c.ing_id == iid:
-				s.clear()
+			if c is IngredientCard and (c as IngredientCard).ing_id == iid:
+				out.append({"card": c, "gpos": c.global_position, "size": c.size})
+				var holder := c.get_parent()
+				if holder:
+					holder.remove_child(c)
 				break
+	return out

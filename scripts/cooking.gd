@@ -118,10 +118,39 @@ func _select(id: String) -> void:
 		return
 	if not board.has_ingredients(id):
 		return
-	board.consume_ingredients(id)
+	var tool := _active_tool
+	var cards := board.take_ingredient_cards(id)   # 슬롯에서 떼기(연출 후 제거)
 	# 재료 소비 후의 빈 슬롯 수 = 카드37(빈 슬롯당 조리 가속) 입력.
 	var empty := board.empty_slot_count()
-	_active_tool.start_cooking(id, empty)
+	tool.start_cooking(id, empty)
 	Audio.play("cook_start")   # 조리 시작음(팝)
 	_active_tool = null
 	cooked.emit()  # main이 닫기 + 갱신
+	_fly_ingredients_to(cards, tool)   # 재료 카드가 도구석으로 날아가 사라짐
+
+
+## 소비된 재료 카드들이 도구석으로 날아가 축소·페이드(순차 스태거). 최상위로 옮겨 시트 위에서도 보이게.
+func _fly_ingredients_to(cards: Array, tool: ToolStation) -> void:
+	if not is_instance_valid(tool):
+		return
+	var target := tool.global_position + tool.size * 0.5
+	for i in cards.size():
+		var it: Dictionary = cards[i]
+		var c: Control = it["card"]
+		if not is_instance_valid(c):
+			continue
+		var gpos: Vector2 = it["gpos"]
+		var sz: Vector2 = it["size"]
+		get_tree().root.add_child(c)
+		c.top_level = true
+		c.z_index = 400
+		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		c.global_position = gpos
+		c.pivot_offset = sz * 0.5
+		var delay := i * 0.05
+		var tw := c.create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(c, "global_position", target - sz * 0.5, 0.32).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).set_delay(delay)
+		tw.tween_property(c, "scale", Vector2(0.2, 0.2), 0.32).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).set_delay(delay)
+		tw.tween_property(c, "modulate:a", 0.0, 0.1).set_delay(delay + 0.24)
+		tw.chain().tween_callback(c.queue_free)
