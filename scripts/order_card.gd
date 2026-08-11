@@ -131,6 +131,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 ## 반려 연출 — 좌우로 흔들림 + 😠(main이 신호 받아 팝).
 func _reject() -> void:
+	Audio.play("reject")   # 다른 메뉴 서빙 → 반려음
 	var bx := position.x
 	var tw := create_tween()
 	tw.tween_property(self, "position:x", bx + 6.0, 0.05)

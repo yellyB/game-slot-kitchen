@@ -17,6 +17,7 @@ const SFX := {
 	"footstep": preload("res://assets/audio/sfx/footstep.wav"),    # 창고 입장(발소리 0→1)
 	"footstep_back": preload("res://assets/audio/sfx/footstep_back.wav"),  # 창고 퇴장(발소리 1→0, 역순)
 	"switch": preload("res://assets/audio/sfx/switch.ogg"),        # 설정 토글 스위치(딸깍)
+	"reject": preload("res://assets/audio/sfx/reject.ogg"),        # 다른 메뉴 서빙(반려·땡)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
