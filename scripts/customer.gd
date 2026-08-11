@@ -13,6 +13,8 @@ var _done := false
 var _warned := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
+var _confirm: Button
+var _slide_tw: Tween
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -48,6 +50,7 @@ func _ready() -> void:
 	v.add_child(_gauge)
 
 	var confirm := Button.new()
+	_confirm = confirm
 	confirm.text = "📋"
 	confirm.add_theme_font_size_override("font_size", 15)
 	confirm.add_theme_stylebox_override("normal", UI.chip(Palette.ACCENT))
@@ -55,6 +58,17 @@ func _ready() -> void:
 	confirm.add_theme_stylebox_override("pressed", UI.chip(Palette.ACCENT.darkened(0.1)))
 	confirm.pressed.connect(func(): confirm_pressed.emit(self))
 	v.add_child(confirm)
+
+
+func dismiss() -> void:
+	_done = true
+	set_process(false)
+	if _slide_tw != null and _slide_tw.is_valid():
+		_slide_tw.kill()
+	modulate.a = 0.0
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _confirm != null:
+		_confirm.disabled = true
 
 
 func force_expire() -> void:
@@ -73,6 +87,7 @@ func slide_in() -> void:
 	position = target + Vector2(44, 0)
 	modulate.a = 0.0
 	var tw := create_tween()
+	_slide_tw = tw
 	tw.set_parallel(true)
 	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)
