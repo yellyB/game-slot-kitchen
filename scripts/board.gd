@@ -116,10 +116,15 @@ func has_ingredients(recipe_id: String) -> bool:
 	return true
 
 
-func consume_ingredients(recipe_id: String) -> void:
+func take_ingredient_cards(recipe_id: String) -> Array:
+	var out: Array = []
 	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
 		for s in slots:
 			var c := s.get_card()
-			if c is IngredientCard and c.ing_id == iid:
-				s.clear()
+			if c is IngredientCard and (c as IngredientCard).ing_id == iid:
+				out.append({"card": c, "gpos": c.global_position, "size": c.size})
+				var holder := c.get_parent()
+				if holder:
+					holder.remove_child(c)
 				break
+	return out
