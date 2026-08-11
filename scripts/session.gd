@@ -80,6 +80,10 @@ func now() -> float:
 	return _elapsed
 
 
+func time_left() -> float:
+	return maxf(0.0, _day_length - _elapsed)
+
+
 func is_running() -> bool:
 	return _running
 

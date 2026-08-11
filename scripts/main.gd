@@ -27,6 +27,8 @@ var _hours_bar: ProgressBar
 var _hours_glow: Tween
 var _hours_warning := false
 var _blackout: ColorRect
+var _last_countdown := 0
+const COUNTDOWN_FROM := 5
 
 
 func _ready() -> void:
@@ -727,6 +729,37 @@ func _on_progress(t01: float) -> void:
 		_hours_glow = create_tween().set_loops()
 		_hours_glow.tween_property(_hours_bar, "modulate:a", 0.45, 0.35).set_trans(Tween.TRANS_SINE)
 		_hours_glow.tween_property(_hours_bar, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
+	var left := _session.time_left()
+	if left > 0.0 and left <= COUNTDOWN_FROM:
+		var sec := int(ceil(left))
+		if sec != _last_countdown:
+			_last_countdown = sec
+			_countdown_pop(sec)
+	else:
+		_last_countdown = 0
+
+
+func _countdown_pop(sec: int) -> void:
+	var l := UI.label(str(sec), 46, Palette.DANGER, true)
+	l.add_theme_constant_override("outline_size", 5)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	l.z_index = 200
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(l)
+	await get_tree().process_frame
+	if not is_instance_valid(l):
+		return
+	var vp := get_viewport_rect().size
+	l.pivot_offset = l.size * 0.5
+	l.position = (vp - l.size) * 0.5 - Vector2(0, vp.y * 0.15)
+	l.scale = Vector2(1.6, 1.6)
+	l.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(l, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(l, "modulate:a", 1.0, 0.1)
+	tw.tween_interval(0.25)
+	tw.tween_property(l, "modulate:a", 0.0, 0.4)
+	tw.tween_callback(l.queue_free)
 
 
 func _reset_hours_bar() -> void:
@@ -745,6 +778,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_rent_label.text = UI.money(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()
+	_last_countdown = 0
 	_clear_blackout()
 	_warehouse.visible = false
 	_cooking.visible = false
