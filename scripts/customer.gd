@@ -16,6 +16,8 @@ var _done := false
 var _warned := false   # 임박 재촉 1회만
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
+var _confirm: Button
+var _slide_tw: Tween   # 등장 슬라이드 — 즉시 접수(dismiss) 시 죽여야 페이드인이 안 덮음
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -53,6 +55,7 @@ func _ready() -> void:
 
 	# 주문 확인 버튼 (아이콘)
 	var confirm := Button.new()
+	_confirm = confirm
 	confirm.text = "📋"
 	confirm.add_theme_font_size_override("font_size", 15)
 	confirm.add_theme_stylebox_override("normal", UI.chip(Palette.ACCENT))
@@ -60,6 +63,19 @@ func _ready() -> void:
 	confirm.add_theme_stylebox_override("pressed", UI.chip(Palette.ACCENT.darkened(0.1)))
 	confirm.pressed.connect(func(): confirm_pressed.emit(self))
 	v.add_child(confirm)
+
+
+## 주문 접수됨 — 자리는 유지하되 사라진 척(투명·입력차단). 뒤 손님이 즉시 안 밀리게.
+## 호출측이 주문서 날아가기 착지 후 queue_free.
+func dismiss() -> void:
+	_done = true
+	set_process(false)
+	if _slide_tw != null and _slide_tw.is_valid():
+		_slide_tw.kill()                          # 등장 페이드인 중단(안 그러면 a=0을 덮어씀)
+	modulate.a = 0.0                              # 레이아웃 자리 유지(visible=false와 달리 공간 남김)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _confirm != null:
+		_confirm.disabled = true
 
 
 ## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
@@ -80,6 +96,7 @@ func slide_in() -> void:
 	position = target + Vector2(44, 0)   # 오른쪽 바깥에서 진입
 	modulate.a = 0.0
 	var tw := create_tween()
+	_slide_tw = tw
 	tw.set_parallel(true)
 	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)
