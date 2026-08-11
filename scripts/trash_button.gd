@@ -50,9 +50,11 @@ func _suck(card: Card) -> void:
 	var target := global_position + size * 0.5 - sz * 0.5   # 휴지통 중심으로 카드 중심 이동
 	var tw := card.create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(card, "global_position", target, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_property(card, "scale", Vector2(0.08, 0.08), 0.28).set_ease(Tween.EASE_IN)
-	tw.tween_property(card, "modulate:a", 0.0, 0.28).set_ease(Tween.EASE_IN)
+	# 휴지통으로 가속하며 진입(뒤로 당김 없음), 이동하며 서서히 축소
+	tw.tween_property(card, "global_position", target, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(card, "scale", Vector2(0.12, 0.12), 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	# 페이드는 도착 직전에만 → 중간에 사라지지 않게
+	tw.tween_property(card, "modulate:a", 0.0, 0.1).set_delay(0.22)
 	tw.chain().tween_callback(card.queue_free)
 
 
