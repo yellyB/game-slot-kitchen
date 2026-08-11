@@ -3,12 +3,14 @@ extends PanelContainer
 
 signal confirm_pressed(customer: Customer)
 signal expired(customer: Customer)
+signal urged(customer: Customer)
 
 var recipe_id: String
 
 var _max := Config.PATIENCE_ORDER
 var _time_left := 0.0
 var _done := false
+var _warned := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
 
@@ -85,7 +87,20 @@ func _process(delta: float) -> void:
 	if col != _fill:
 		_fill = col
 		_gauge.add_theme_stylebox_override("fill", UI.chip(col))
+		if col == Palette.DANGER and not _warned:
+			_warned = true
+			_urge()
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
 		expired.emit(self)
+
+
+func _urge() -> void:
+	urged.emit(self)
+	var bx := position.x
+	var tw := create_tween()
+	tw.tween_property(self, "position:x", bx + 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx - 4.0, 0.05)
+	tw.tween_property(self, "position:x", bx + 3.0, 0.05)
+	tw.tween_property(self, "position:x", bx, 0.05)

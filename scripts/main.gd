@@ -332,6 +332,7 @@ func _spawn_customer() -> void:
 	c.setup(Stats.random_recipe())
 	c.confirm_pressed.connect(_on_confirm_order)
 	c.expired.connect(_on_customer_expired)
+	c.urged.connect(_on_urged)
 	_queue_row.add_child(c)
 	c.slide_in()
 	_visited_today += 1
@@ -352,6 +353,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
 	order.rejected.connect(_on_order_rejected)
+	order.urged.connect(_on_urged)
 	var from_pos := customer.global_position + customer.size * 0.5
 	customer.queue_free()
 	_fly_order_to_slot(order, slot, from_pos)
@@ -373,6 +375,12 @@ func _produce_dish(rid: String) -> void:
 	dish.setup(rid)
 	dish.born = _session.now()
 	s.place_card(dish)
+
+
+func _on_urged(card: Control) -> void:
+	if not is_instance_valid(card):
+		return
+	_spawn_pop("💢", card.global_position + Vector2(card.size.x * 0.5, -8))
 
 
 func _on_customer_expired(customer: Customer) -> void:
