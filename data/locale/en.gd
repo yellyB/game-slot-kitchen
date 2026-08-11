@@ -46,7 +46,6 @@ const S := {
 	"shop_price": "Price %s",
 	"sold_out": "SOLD OUT",
 
-	"customer_wants": "Wants something",
 
 	"b.cook.name": "Cook Speed", "b.cook.label": "Cook -25%",
 	"b.patience.name": "Patience", "b.patience.label": "Patience +10%",

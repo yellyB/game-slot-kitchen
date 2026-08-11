@@ -46,7 +46,6 @@ const S := {
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
 
-	"customer_wants": "뭔가 원함",
 
 	"b.cook.name": "조리 속도", "b.cook.label": "조리 -25%",
 	"b.patience.name": "인내심", "b.patience.label": "인내심 +10%",
