@@ -59,6 +59,37 @@ func _ready() -> void:
 		grid.add_child(tile)
 
 
+## 하단에서 슬라이드 업 등장. (하단 앵커 offset_top/bottom을 함께 tween → 밀림 없음)
+func slide_open() -> void:
+	visible = true
+	var rt := offset_top
+	var rb := offset_bottom
+	var d := -rt + 20.0   # 화면 밖(아래)까지 이동 거리
+	offset_top = rt + d
+	offset_bottom = rb + d
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_top", rt, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "offset_bottom", rb, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+## 아래로 슬라이드 다운 후 숨김.
+func slide_close() -> void:
+	if not visible:
+		return
+	var rt := offset_top
+	var rb := offset_bottom
+	var d := -rt + 20.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_top", rt + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "offset_bottom", rb + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(func():
+		visible = false
+		offset_top = rt
+		offset_bottom = rb)
+
+
 ## 보드 꽉 차면 타일 비활성(회색).
 func refresh(full: bool) -> void:
 	for tile in _tiles:

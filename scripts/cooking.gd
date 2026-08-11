@@ -68,7 +68,38 @@ func _ready() -> void:
 func open_for(tool: ToolStation) -> void:
 	_active_tool = tool
 	_refresh()
+	slide_open()
+
+
+## 하단에서 슬라이드 업 등장. (하단 앵커 offset_top/bottom을 함께 tween → 밀림 없음)
+func slide_open() -> void:
 	visible = true
+	var rt := offset_top
+	var rb := offset_bottom
+	var d := -rt + 20.0
+	offset_top = rt + d
+	offset_bottom = rb + d
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_top", rt, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "offset_bottom", rb, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+## 아래로 슬라이드 다운 후 숨김.
+func slide_close() -> void:
+	if not visible:
+		return
+	var rt := offset_top
+	var rb := offset_bottom
+	var d := -rt + 20.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_top", rt + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "offset_bottom", rb + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(func():
+		visible = false
+		offset_top = rt
+		offset_bottom = rb)
 
 
 ## 레시피 항목: [요리] [필요재료…] … [⏱️n]. 탭 → 조리.
