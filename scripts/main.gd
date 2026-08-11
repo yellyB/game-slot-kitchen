@@ -270,8 +270,8 @@ func _toggle_warehouse() -> void:
 
 func _open_warehouse() -> void:
 	_cooking.visible = false
-	_warehouse.visible = true
 	_backdrop.visible = true
+	_warehouse.slide_open()
 	Audio.play("footstep")
 	_refresh_warehouse()
 
@@ -286,8 +286,9 @@ func _close_sheets() -> void:
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
 		Audio.play("footstep_back")
-	_warehouse.visible = false
-	_cooking.visible = false
+		_warehouse.slide_close()
+	if _cooking.visible:
+		_cooking.slide_close()
 	_backdrop.visible = false
 
 
