@@ -51,8 +51,6 @@ const S := {
 	"shop_price": "価格 %s",
 	"sold_out": "売り切れ",
 
-	# 顧客
-	"customer_wants": "何か欲しい",
 
 	# バフカード (名前/ラベル) — キー: b.<slug>.name / b.<slug>.label
 	"b.cook.name": "調理速度", "b.cook.label": "調理 -25%",

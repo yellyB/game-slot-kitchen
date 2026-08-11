@@ -622,22 +622,6 @@ func _spawn_pop(text: String, at_pos: Vector2) -> void:
 	tw.chain().tween_callback(l.queue_free)
 
 
-## 인플레이 피드백 — 위로 떠오르며 사라지는 텍스트.
-func _spawn_floating(text: String, at_pos: Vector2, color: Color) -> void:
-	var l := UI.label(text, 20, color, true)
-	l.z_index = 100
-	l.add_theme_constant_override("outline_size", 3)
-	l.add_theme_color_override("font_outline_color", Palette.WHITE)
-	add_child(l)
-	l.position = at_pos
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(l, "position:y", at_pos.y - 44, 0.8)
-	tw.tween_property(l, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
-	tw.set_parallel(false)
-	tw.tween_callback(l.queue_free)
-
-
 # ── 공용 헬퍼 ─────────────────────────────────────────────
 func _dot(color: Color) -> Control:
 	var dot := ColorRect.new()

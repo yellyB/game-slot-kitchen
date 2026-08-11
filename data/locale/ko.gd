@@ -51,8 +51,6 @@ const S := {
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
 
-	# 손님
-	"customer_wants": "뭔가 원함",
 
 	# 버프 카드 (이름/라벨) — 키: b.<slug>.name / b.<slug>.label
 	"b.cook.name": "조리 속도", "b.cook.label": "조리 -25%",

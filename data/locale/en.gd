@@ -51,8 +51,6 @@ const S := {
 	"shop_price": "Price %s",
 	"sold_out": "SOLD OUT",
 
-	# Customer
-	"customer_wants": "Wants something",
 
 	# Buff cards (name/label) — keys: b.<slug>.name / b.<slug>.label
 	"b.cook.name": "Cook Speed", "b.cook.label": "Cook -25%",
