@@ -3,6 +3,10 @@ extends CenterContainer
 
 signal tool_tapped(tool: ToolStation)
 
+const BASE_SLOT := 104.0
+const MAX_COLS := 5
+const SEP := 8.0
+
 var slots: Array[Slot] = []
 var tools: Array[ToolStation] = []
 var now_provider: Callable = func() -> float: return 0.0
@@ -13,9 +17,10 @@ func _ready() -> void:
 	_grid = GridContainer.new()
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_grid.columns = Config.BOARD_COLS
-	_grid.add_theme_constant_override("h_separation", 8)
-	_grid.add_theme_constant_override("v_separation", 8)
+	_grid.add_theme_constant_override("h_separation", SEP)
+	_grid.add_theme_constant_override("v_separation", SEP)
 	add_child(_grid)
+	resized.connect(_relayout)
 
 
 func rebuild(slot_count: int) -> void:
@@ -38,6 +43,28 @@ func rebuild(slot_count: int) -> void:
 			tool.tapped.connect(tool_tapped.emit)
 			tools.append(tool)
 			_grid.add_child(tool)
+	_relayout()
+
+
+func _relayout() -> void:
+	var total := slots.size() + tools.size()
+	if total == 0 or size.x <= 0.0 or size.y <= 0.0:
+		return
+	var best_cols := Config.BOARD_COLS
+	var best_edge := 0.0
+	for cols in range(Config.BOARD_COLS, MAX_COLS + 1):
+		var rows := int(ceil(float(total) / cols))
+		var edge_w := (size.x - (cols - 1) * SEP) / cols
+		var edge_h := (size.y - (rows - 1) * SEP) / rows
+		var edge := minf(edge_w, edge_h)
+		if edge > best_edge:
+			best_edge = edge
+			best_cols = cols
+	best_edge = clampf(best_edge, 1.0, BASE_SLOT)
+	_grid.columns = best_cols
+	var s := Vector2(best_edge, best_edge)
+	for ch in _grid.get_children():
+		(ch as Control).custom_minimum_size = s
 
 
 func first_empty_slot() -> Slot:
