@@ -87,6 +87,11 @@ func now() -> float:
 	return _elapsed
 
 
+## 남은 영업시간(초). 막판 카운트다운용.
+func time_left() -> float:
+	return maxf(0.0, _day_length - _elapsed)
+
+
 func is_running() -> bool:
 	return _running
 
