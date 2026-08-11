@@ -27,6 +27,7 @@ const MAX_BUFFS := 5
 const MONEY_ABBR_AT := 100000
 
 const DAY_LENGTH := 90.0
+const DAY_INTRO_DELAY := 0.5
 const HOURS_WARN_FRAC := 0.8
 const WAVES := 3
 const WAVE_SPACING := 0.7

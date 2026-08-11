@@ -759,8 +759,13 @@ func _reset_hours_bar() -> void:
 
 func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
-	_show_day_banner(day)
-	Audio.play("day_start")
+	_session.set_process(false)
+	get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
+		if not is_inside_tree():
+			return
+		_session.set_process(true)
+		_show_day_banner(day)
+		Audio.play("day_start"))
 	_rent_label.text = UI.money(rent)
 	_hours_bar.value = 0
 	_reset_hours_bar()
