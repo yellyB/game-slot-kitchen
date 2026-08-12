@@ -49,12 +49,7 @@ func _build_content() -> void:
 	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(face)
 
-	var dish := Label.new()
-	dish.text = str(def.get("icon", "?"))
-	dish.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dish.add_theme_font_size_override("font_size", 22)
-	dish.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(dish)
+	v.add_child(Recipes.icon_node(recipe_id, 30))
 
 	var reqs := HBoxContainer.new()
 	reqs.mouse_filter = Control.MOUSE_FILTER_IGNORE
