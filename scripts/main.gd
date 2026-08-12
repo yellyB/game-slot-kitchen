@@ -803,9 +803,59 @@ func _clear_play_field() -> void:
 		c.queue_free()
 
 
+func _dayend_sequence() -> void:
+	_freeze_field()
+	await get_tree().create_timer(Config.DAY_END_PAUSE).timeout
+	await _pop_clear_slots()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
+
+
+func _freeze_field() -> void:
+	for s in _board.slots:
+		var c := s.get_card()
+		if c != null:
+			c.set_process(false)
+	for t in _board.tools:
+		t.set_process(false)
+	for c in _queue_row.get_children():
+		c.set_process(false)
+
+
+func _pop_clear_slots() -> void:
+	var cards: Array = []
+	for s in _board.slots:
+		var c := s.get_card()
+		if c != null and not (c is BuffCard):
+			cards.append(c)
+	if cards.is_empty():
+		return
+	var last: Tween = null
+	var i := 0
+	for c in cards:
+		c.set_process(false)
+		if c.has_method("set_servable"):
+			c.set_servable(false)
+		c.pivot_offset = c.size * 0.5
+		var tw := create_tween()
+		tw.tween_interval(i * 0.07)
+		tw.tween_property(c, "scale", Vector2(1.25, 1.25), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(c, "scale", Vector2(0.05, 0.05), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(c, "modulate:a", 0.0, 0.16)
+		last = tw
+		i += 1
+	if last != null:
+		await last.finished
+	for s in _board.slots:
+		if not (s.get_card() is BuffCard):
+			s.clear()
+
+
 func _on_day_ended(summary: Dictionary) -> void:
-	_clear_play_field()
 	if summary["won"]:
+		_clear_play_field()
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
 			.stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
@@ -813,6 +863,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 		_spawn_confetti()
 		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))
 	elif summary["passed"]:
+		await _dayend_sequence()
 		Modal.open(self) \
 			.title(Loc.t("day_closed") % summary["day"]) \
 			.count_row(Loc.t("revenue"), summary["revenue"]) \
@@ -822,6 +873,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
+		_clear_play_field()
 		_fade_to_black(func():
 			Modal.open(self) \
 				.title(Loc.t("gameover_title")) \
