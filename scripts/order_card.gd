@@ -57,7 +57,7 @@ func _build_content() -> void:
 	reqs.add_theme_constant_override("separation", 1)
 	v.add_child(reqs)
 	for iid in def.get("ingredients", []):
-		reqs.add_child(Ingredients.icon_node(iid, 16))
+		reqs.add_child(Ingredients.icon_node(iid, 22))
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
