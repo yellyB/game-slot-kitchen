@@ -24,8 +24,12 @@ const SFX := {
 const POOL_SIZE := 8
 const SFX_VOLUME_DB := 0.0
 
+const BGM := preload("res://assets/audio/bgm/kitchen_table_notes.mp3")
+const BGM_VOLUME_DB := -10.0
+
 var _players: Array[AudioStreamPlayer] = []
 var _next := 0
+var _bgm: AudioStreamPlayer
 
 func _ready() -> void:
 	for i in POOL_SIZE:
@@ -33,6 +37,12 @@ func _ready() -> void:
 		p.volume_db = SFX_VOLUME_DB
 		add_child(p)
 		_players.append(p)
+	_bgm = AudioStreamPlayer.new()
+	_bgm.stream = BGM
+	_bgm.volume_db = BGM_VOLUME_DB
+	_bgm.finished.connect(_bgm.play)
+	add_child(_bgm)
+	_bgm.play()
 
 
 func attach_click(btn: BaseButton) -> void:
