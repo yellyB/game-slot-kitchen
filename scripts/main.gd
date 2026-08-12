@@ -879,9 +879,62 @@ func _clear_play_field() -> void:
 		c.queue_free()
 
 
+## 마감 연출 — 잠깐 정지 → 남은 슬롯 카드 팝 소멸. (호출측이 이후 정산 모달)
+func _dayend_sequence() -> void:
+	_freeze_field()
+	await get_tree().create_timer(Config.DAY_END_PAUSE).timeout   # 잠깐 정지(마감 여운)
+	await _pop_clear_slots()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
+
+
+## 남은 카드·손님 타이머 정지(제거는 아직 — 팝 연출 후).
+func _freeze_field() -> void:
+	for s in _board.slots:
+		var c := s.get_card()
+		if c != null:
+			c.set_process(false)
+	for t in _board.tools:
+		t.set_process(false)
+	for c in _queue_row.get_children():
+		c.set_process(false)
+
+
+## 남은 슬롯 카드(버프 제외)를 하나씩 팝 소멸 — 스태거. 마지막 트윈까지 await.
+func _pop_clear_slots() -> void:
+	var cards: Array = []
+	for s in _board.slots:
+		var c := s.get_card()
+		if c != null and not (c is BuffCard):
+			cards.append(c)
+	if cards.is_empty():
+		return
+	var last: Tween = null
+	var i := 0
+	for c in cards:
+		c.set_process(false)
+		if c.has_method("set_servable"):
+			c.set_servable(false)   # 서빙 발광 트윈 정지(스케일 충돌 방지)
+		c.pivot_offset = c.size * 0.5
+		var tw := create_tween()
+		tw.tween_interval(i * 0.07)   # 하나씩 이어서
+		tw.tween_property(c, "scale", Vector2(1.25, 1.25), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(c, "scale", Vector2(0.05, 0.05), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(c, "modulate:a", 0.0, 0.16)
+		last = tw
+		i += 1
+	if last != null:
+		await last.finished
+	for s in _board.slots:
+		if not (s.get_card() is BuffCard):
+			s.clear()
+
+
 func _on_day_ended(summary: Dictionary) -> void:
-	_clear_play_field()   # 마감 즉시 필드 비움 — 남은 주문/조리 타이머 정지(모달/상점 구간)
 	if summary["won"]:
+		_clear_play_field()   # 마감 즉시 필드 비움
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
 			.stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
@@ -889,6 +942,8 @@ func _on_day_ended(summary: Dictionary) -> void:
 		_spawn_confetti()   # 축포 한 번
 		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
 	elif summary["passed"]:
+		# 카운트다운 종료 → 1초 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 모달.
+		await _dayend_sequence()
 		Modal.open(self) \
 			.title(Loc.t("day_closed") % summary["day"]) \
 			.count_row(Loc.t("revenue"), summary["revenue"]) \
@@ -898,6 +953,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
 			.button(Loc.t("to_shop"), _open_shop)
 	else:
+		_clear_play_field()   # 마감 즉시 필드 비움
 		_fade_to_black(func():   # 폐업 암전 후 게임오버 모달
 			Modal.open(self) \
 				.title(Loc.t("gameover_title")) \
