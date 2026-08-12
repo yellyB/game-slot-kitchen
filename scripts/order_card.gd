@@ -62,11 +62,7 @@ func _build_content() -> void:
 	reqs.add_theme_constant_override("separation", 1)
 	v.add_child(reqs)
 	for iid in def.get("ingredients", []):
-		var mi := Label.new()
-		mi.text = str(Ingredients.get_def(iid).get("icon", "?"))
-		mi.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		mi.add_theme_font_size_override("font_size", 13)
-		reqs.add_child(mi)
+		reqs.add_child(Ingredients.icon_node(iid, 16))
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0

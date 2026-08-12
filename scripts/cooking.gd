@@ -88,7 +88,7 @@ func _entry(id: String) -> Button:
 
 	row.add_child(UI.label(str(def.get("icon", "?")), 24))
 	for iid in def.get("ingredients", []):
-		row.add_child(UI.label(str(Ingredients.get_def(iid).get("icon", "?")), 18))
+		row.add_child(Ingredients.icon_node(iid, 20))
 
 	var gap := Control.new()
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE

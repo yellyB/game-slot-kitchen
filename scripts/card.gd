@@ -57,15 +57,20 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	return get_move_payload()
 
 
+func _preview_icon() -> Control:
+	var lbl := UI.label(_preview_text(), 30)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return lbl
+
+
 func _make_preview() -> Control:
 	var preview := PanelContainer.new()
 	preview.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2, 12))
 	preview.modulate = Color(1, 1, 1, 0.92)
 	preview.custom_minimum_size = size * 0.9
-	var lbl := UI.label(_preview_text(), 30)
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	preview.add_child(lbl)
+	var ic := _preview_icon()
+	ic.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ic.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	preview.add_child(ic)
 	return preview
