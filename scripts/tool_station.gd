@@ -90,12 +90,8 @@ func start_cooking(id: String, empty := 0) -> void:
 	v.add_theme_constant_override("separation", 4)
 	_holder.add_child(v)
 
-	var dish := Label.new()
-	dish.text = str(Recipes.get_def(id).get("icon", "?"))
-	dish.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var dish := Recipes.icon_node(id, 34)
 	dish.modulate = Color(1, 1, 1, 0.6)  # 조리 중엔 흐리게
-	dish.add_theme_font_size_override("font_size", 30)
-	dish.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(dish)
 
 	_cook_bar = ProgressBar.new()

@@ -23,6 +23,10 @@ func dispose() -> void:
 func _preview_text() -> String:
 	return str(Recipes.get_def(recipe_id).get("icon", "?"))
 
+## 드래그 프리뷰도 손그림 완성품으로(있으면).
+func _preview_icon() -> Control:
+	return Recipes.icon_node(recipe_id, 44)
+
 ## 서빙용 payload — OrderCard가 recipe_id로 매칭.
 func get_move_payload() -> Dictionary:
 	return {"kind": "dish", "recipe_id": recipe_id, "card": self}
@@ -36,11 +40,4 @@ func _build_content() -> void:
 	_style.border_color = Palette.SUCCESS
 	_style.set_border_width_all(2)
 
-	var icon := Label.new()
-	icon.text = str(Recipes.get_def(recipe_id).get("icon", "?"))
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	icon.add_theme_font_size_override("font_size", 40)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(icon)
+	add_child(Recipes.icon_node(recipe_id, 48))

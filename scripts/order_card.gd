@@ -57,12 +57,7 @@ func _build_content() -> void:
 	v.add_child(face)
 
 	# 주문 메뉴: 요리 아이콘
-	var dish := Label.new()
-	dish.text = str(def.get("icon", "?"))
-	dish.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dish.add_theme_font_size_override("font_size", 22)
-	dish.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(dish)
+	v.add_child(Recipes.icon_node(recipe_id, 30))
 
 	# 필요재료 아이콘들
 	var reqs := HBoxContainer.new()

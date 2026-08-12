@@ -90,7 +90,7 @@ func _entry(id: String) -> Button:
 	row.offset_right = -12
 	entry.add_child(row)
 
-	row.add_child(UI.label(str(def.get("icon", "?")), 24))   # 메뉴 아이콘(아직 이모지)
+	row.add_child(Recipes.icon_node(id, 28))
 	for iid in def.get("ingredients", []):
 		row.add_child(Ingredients.icon_node(iid, 20))   # 재료: 손그림/이모지
 

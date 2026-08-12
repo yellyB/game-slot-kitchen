@@ -24,3 +24,29 @@ static func get_def(id: String) -> Dictionary:
 static func random_id() -> String:
 	var ids := ALL.keys()
 	return ids[randi() % ids.size()]
+
+
+static var _tex_cache := {}
+
+## 완성품 손그림 텍스처(assets/art/recipes/<id>.png). 없으면 null → 이모지 폴백.
+static func tex(id: String) -> Texture2D:
+	if not _tex_cache.has(id):
+		var path := "res://assets/art/recipes/%s.png" % id
+		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
+	return _tex_cache[id]
+
+## 메뉴/완성품 아이콘 노드 — 텍스처 있으면 TextureRect(px×px), 없으면 이모지 라벨(font=px).
+static func icon_node(id: String, px: int) -> Control:
+	var t := tex(id)
+	if t != null:
+		var tr := TextureRect.new()
+		tr.texture = t
+		tr.custom_minimum_size = Vector2(px, px)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return tr
+	var lbl := UI.label(str(get_def(id).get("icon", "?")), px)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return lbl
