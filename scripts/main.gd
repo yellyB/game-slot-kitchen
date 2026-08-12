@@ -111,6 +111,32 @@ func _ready() -> void:
 		get_tree().quit()
 
 
+func _on_home_pressed() -> void:
+	Modal.open(self) \
+		.title(Loc.t("home_title")) \
+		.row(Loc.t("home_warn"), Palette.COCOA_600) \
+		.button(Loc.t("go_home"), _go_home) \
+		.button(Loc.t("cancel"), func(): pass)
+
+
+func _go_home() -> void:
+	_session.set_process(false)
+	_warehouse.visible = false
+	_cooking.visible = false
+	_backdrop.visible = false
+	_clear_blackout()
+	for s in _board.slots:
+		s.clear()
+	for t in _board.tools:
+		t.reset()
+	for c in _queue_row.get_children():
+		c.queue_free()
+	for ch in get_children():
+		if ch is Shop or ch is Modal:
+			ch.queue_free()
+	_show_title()
+
+
 func _start_game() -> void:
 	_title.hide()
 	_session.start_run()
@@ -145,6 +171,17 @@ func _build_top_bar() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
+
+	var home := Button.new()
+	home.text = "🏠"
+	home.add_theme_font_size_override("font_size", 16)
+	home.custom_minimum_size = Vector2(34, 34)
+	home.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	home.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	home.pressed.connect(_on_home_pressed)
+	Audio.attach_click(home)
+	row.add_child(home)
 
 	_day_label = UI.label(Loc.t("day_n") % 1, 20, Palette.COCOA_800, true)
 	row.add_child(_day_label)
@@ -760,7 +797,7 @@ func _on_day_started(day: int, rent: int) -> void:
 	_day_label.text = Loc.t("day_n") % day
 	_session.set_process(false)
 	get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
-		if not is_inside_tree():
+		if not is_inside_tree() or _title.visible:
 			return
 		_session.set_process(true)
 		_show_day_banner(day)
