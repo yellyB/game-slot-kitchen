@@ -90,9 +90,9 @@ func _entry(id: String) -> Button:
 	row.offset_right = -12
 	entry.add_child(row)
 
-	row.add_child(UI.label(str(def.get("icon", "?")), 24))
+	row.add_child(UI.label(str(def.get("icon", "?")), 24))   # 메뉴 아이콘(아직 이모지)
 	for iid in def.get("ingredients", []):
-		row.add_child(UI.label(str(Ingredients.get_def(iid).get("icon", "?")), 18))
+		row.add_child(Ingredients.icon_node(iid, 20))   # 재료: 손그림/이모지
 
 	var gap := Control.new()
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE

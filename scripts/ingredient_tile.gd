@@ -14,14 +14,9 @@ func _ready() -> void:
 	toggle_mode = false
 	_apply_style()
 
-	# 인포그래픽 우선 — 아이콘만(이름 텍스트 없음). [[infographic-not-text]]
-	var icon := Label.new()
-	icon.text = str(Ingredients.get_def(ing_id).get("icon", "?"))
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# 인포그래픽 우선 — 아이콘만(이름 텍스트 없음). 손그림 있으면 텍스처, 없으면 이모지. [[infographic-not-text]]
+	var icon := Ingredients.icon_node(ing_id, 44)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	icon.add_theme_font_size_override("font_size", 34)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	add_child(icon)
 
 	pressed.connect(func(): Move.on_click(self))
@@ -52,10 +47,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	ps.border_color = Palette.MAIN
 	preview.add_theme_stylebox_override("panel", ps)
 	preview.modulate = Color(1, 1, 1, 0.9)
-	var lbl := Label.new()
-	lbl.text = str(Ingredients.get_def(ing_id).get("icon", "?"))
-	lbl.add_theme_font_size_override("font_size", 26)
-	preview.add_child(lbl)
+	preview.add_child(Ingredients.icon_node(ing_id, 40))
 	set_drag_preview(preview)
 	return get_move_payload()
 

@@ -14,13 +14,10 @@ func is_trashable() -> bool:
 func _preview_text() -> String:
 	return str(Ingredients.get_def(ing_id).get("icon", "?"))
 
+## 드래그 프리뷰도 손그림 아이콘으로(있으면).
+func _preview_icon() -> Control:
+	return Ingredients.icon_node(ing_id, 44)
+
 func _build_content() -> void:
-	# 인포그래픽 우선 — 아이콘만(이름 텍스트 없음). [[infographic-not-text]]
-	var icon := Label.new()
-	icon.text = str(Ingredients.get_def(ing_id).get("icon", "?"))
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.add_theme_font_size_override("font_size", 40)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(icon)
+	# 인포그래픽 우선 — 아이콘만(이름 텍스트 없음). 손그림 있으면 텍스처, 없으면 이모지. [[infographic-not-text]]
+	add_child(Ingredients.icon_node(ing_id, 48))
