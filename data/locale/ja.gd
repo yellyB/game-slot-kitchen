@@ -37,6 +37,10 @@ const S := {
 	"gameover_day": "%d日目で終了",
 	"gameover_reason": "売上 %s < 家賃 %s",
 	"to_title": "タイトルへ",
+	"home_title": "ホームに戻る?",
+	"home_warn": "進行中のプレイは失われます",
+	"go_home": "ホームへ",
+	"cancel": "キャンセル",
 	"to_shop": "ショップへ",
 
 	# ショップ

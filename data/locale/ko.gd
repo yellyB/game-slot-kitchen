@@ -37,6 +37,10 @@ const S := {
 	"gameover_day": "%d일차에서 끝",
 	"gameover_reason": "매출 %s < 가게세 %s",
 	"to_title": "처음으로",
+	"home_title": "홈으로 나갈까요?",
+	"home_warn": "진행 중인 판이 사라져요",
+	"go_home": "홈으로",
+	"cancel": "취소",
 	"to_shop": "상점으로",
 
 	# 상점
