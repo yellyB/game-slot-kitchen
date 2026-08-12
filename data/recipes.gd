@@ -44,6 +44,7 @@ static func icon_node(id: String, px: int) -> Control:
 		tr.custom_minimum_size = Vector2(px, px)
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS   # 작게 축소 시 깨짐 방지
 		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return tr
 	var lbl := UI.label(str(get_def(id).get("icon", "?")), px)

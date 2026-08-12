@@ -92,7 +92,7 @@ func _entry(id: String) -> Button:
 
 	row.add_child(Recipes.icon_node(id, 28))
 	for iid in def.get("ingredients", []):
-		row.add_child(Ingredients.icon_node(iid, 20))   # 재료: 손그림/이모지
+		row.add_child(Ingredients.icon_node(iid, 26))
 
 	var gap := Control.new()
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
