@@ -27,8 +27,13 @@ const SFX := {
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
 const SFX_VOLUME_DB := 0.0    # 효과음 볼륨(dB) — 튜닝 시 조정
 
+## 배경음(홈·플레이 화면 통틀어 계속 재생, 곡 끝나면 다시). Audio는 오토로드라 화면 전환에도 안 끊김.
+const BGM := preload("res://assets/audio/bgm/kitchen_table_notes.mp3")
+const BGM_VOLUME_DB := -10.0  # 배경음 볼륨(dB) — 효과음보다 낮게
+
 var _players: Array[AudioStreamPlayer] = []
 var _next := 0
+var _bgm: AudioStreamPlayer
 
 func _ready() -> void:
 	for i in POOL_SIZE:
@@ -36,6 +41,13 @@ func _ready() -> void:
 		p.volume_db = SFX_VOLUME_DB
 		add_child(p)
 		_players.append(p)
+	# 배경음 — 한 곡 끝나면 다시 재생(루프)
+	_bgm = AudioStreamPlayer.new()
+	_bgm.stream = BGM
+	_bgm.volume_db = BGM_VOLUME_DB
+	_bgm.finished.connect(_bgm.play)   # 끝나면 재생
+	add_child(_bgm)
+	_bgm.play()
 
 
 ## UI 버튼에 클릭음 부착 — 클릭음을 넣을 버튼에만 명시적으로 호출(화이트리스트).
