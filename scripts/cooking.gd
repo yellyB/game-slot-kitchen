@@ -6,7 +6,9 @@ extends Sheet
 signal cooked          ## 조리 시작(재료 소비)됨 → 보드 상태 갱신용
 signal close_requested ## ✕ 닫기
 
-const ENTRY_H := 68        # 레시피 항목 높이
+const ICON := 44           # 메뉴 아이콘 크기
+const ING := 32            # 재료 아이콘 크기(작게 — 한 줄에 여러 개 들어가게)
+const ENTRY_H := 64        # 레시피 항목 높이(1줄: 메뉴·재료 … 가격·⏱시간)
 const ROW_SEP := 8         # 항목 간격
 const SHEET_CHROME := 84   # 헤더 + 상하 패딩 여유(시트 높이 계산용)
 
@@ -85,42 +87,60 @@ func _entry(id: String) -> Button:
 	entry.add_theme_stylebox_override("disabled", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	entry.set_meta("recipe_id", id)
 
+	# 한 줄: 메뉴 | 재료들 … 가격 | ⏱시간. (재료는 작게 — 4개여도 안 잘림)
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.add_theme_constant_override("separation", 6)
-	row.offset_left = 12
-	row.offset_right = -12
+	row.offset_left = 14
+	row.offset_right = -14
+	row.add_theme_constant_override("separation", 10)
 	entry.add_child(row)
+	var menu_node := Recipes.icon_node(id, ICON)          # 메뉴(완성 요리)
+	row.add_child(menu_node)
+	row.add_child(_col_divider())                          # 완성품 | 재료 구분
 
-	# 1) 메뉴(완성 요리)
-	var menu := CenterContainer.new()
-	menu.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	menu.custom_minimum_size = Vector2(52, 0)
-	menu.add_child(Recipes.icon_node(id, 36))
-	row.add_child(menu)
-	row.add_child(_col_divider())
-
-	# 2) 재료(필요 입력) — 가운데 가변폭 칸
+	# 재료(필요 입력) — 작게. 노드는 _refresh에서 보유여부에 따라 진하게/흐리게.
 	var ing := HBoxContainer.new()
 	ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ing.alignment = BoxContainer.ALIGNMENT_CENTER
-	ing.add_theme_constant_override("separation", 6)
+	ing.add_theme_constant_override("separation", 4)
+	var ing_nodes: Array = []
 	for iid in def.get("ingredients", []):
-		ing.add_child(Ingredients.icon_node(iid, 24))
+		var node := Ingredients.icon_node(iid, ING)
+		ing.add_child(node)
+		ing_nodes.append({"node": node, "iid": iid})
+	entry.set_meta("ings", ing_nodes)
 	row.add_child(ing)
-	row.add_child(_col_divider())
 
-	# 3) 걸리는 시간
-	var time := CenterContainer.new()
-	time.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	time.custom_minimum_size = Vector2(52, 0)
-	time.add_child(UI.label("⏱️%d" % int(def.get("cook_time", 0)), 16, Palette.COCOA_600))
-	row.add_child(time)
+	var gap := Control.new()
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(gap)
+	var coin_node := _coin(int(def.get("price", 0)))      # 가격
+	row.add_child(coin_node)
+	var time_node := UI.label("⏱️%d" % int(def.get("cook_time", 0)), 20, Palette.COCOA_600)   # 시간
+	row.add_child(time_node)
+
+	# 제작 불가(비활성) 시 흐리게 할 "제안" 부분 — 재료 아이콘은 보유여부대로 별도 처리.
+	entry.set_meta("offer", [menu_node, coin_node, time_node])
 
 	entry.pressed.connect(func(): _select(id))
 	return entry
+
+
+## 가격 표시 — 코인점 + 금액.
+func _coin(amount: int) -> Control:
+	var box := HBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", 4)
+	var dot := ColorRect.new()
+	dot.color = Palette.ACCENT
+	dot.custom_minimum_size = Vector2(12, 12)
+	var wrap := CenterContainer.new()
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.add_child(dot)
+	box.add_child(wrap)
+	box.add_child(UI.label(UI.money(amount), 18, Palette.COCOA_800, true))
+	return box
 
 ## 항목 내 세로 구분선 — 메뉴 | 재료 | 시간 구획.
 func _col_divider() -> Control:
@@ -137,11 +157,20 @@ func _col_divider() -> Control:
 
 
 func _refresh() -> void:
+	var have := board.ingredient_counts()   # ing_id → 보드 위 개수
 	for entry in _entries:
 		var id: String = entry.get_meta("recipe_id")
 		var ok := board.has_ingredients(id)
 		entry.disabled = not ok
-		entry.modulate = Color.WHITE if ok else Color(1, 1, 1, 0.45)
+		entry.modulate = Color.WHITE
+		# 제작 불가 → 메뉴·가격·시간(제안)만 흐리게(비활성 표시)
+		var offer_a := 1.0 if ok else 0.35
+		for n in entry.get_meta("offer", []):
+			n.modulate = Color(1, 1, 1, offer_a)
+		# 재료별: 보유하면 진하게, 없으면 흐리게 → "뭐가 없어서 못 만드는지" 표시(비활성이어도 유지)
+		for it in entry.get_meta("ings", []):
+			var present: bool = have.get(it["iid"], 0) > 0
+			it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
 
 
 func _select(id: String) -> void:
