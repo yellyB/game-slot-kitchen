@@ -81,6 +81,7 @@ func set_paused(p: bool) -> void:
 func stop_slide() -> void:
 	if _slide_tw != null and _slide_tw.is_valid():
 		_slide_tw.kill()
+	modulate.a = 1.0
 
 
 func force_expire() -> void:
