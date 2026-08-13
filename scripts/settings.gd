@@ -1,10 +1,9 @@
 class_name SettingsPanel
 extends Control
-## 설정 오버레이 — 배경음·효과음·진동 토글 + 언어 선택.
-## 언어는 실제로 작동(Loc.locale 변경 → 이 화면 + 타이틀 텍스트 갱신).
-## ※ 사운드/진동은 아직 UI만(상태만 SettingsPanel.settings에 보관, 오디오/진동 연결 추후).
+## 설정 오버레이 — 배경음·효과음·진동 토글 + 언어 선택. 모두 실제 작동.
+## bgm→Audio.set_bgm, sfx→Audio.play 게이트, vibrate→Audio.vibrate, 언어→Loc.locale.
 
-# 세션 동안 유지되는 사운드 상태(패널 다시 열어도 기억). 기능 연결 전 placeholder.
+# 세션 동안 유지되는 설정 상태(패널 다시 열어도 기억). Audio 오토로드가 이 값을 참조.
 static var settings := {"bgm": true, "sfx": true, "vibrate": true}
 
 var _col: VBoxContainer
@@ -143,7 +142,11 @@ func _toggle(key: String) -> Control:
 	hit.pressed.connect(func():
 		settings[key] = not settings[key]
 		refresh.call()
-		Audio.play("switch"))   # 토글 스위칭음(딸깍)
+		Audio.play("switch")   # 토글 스위칭음(딸깍) — sfx 꺼지면 자동 무음
+		if key == "bgm":
+			Audio.set_bgm(settings["bgm"])
+		elif key == "vibrate" and settings["vibrate"]:
+			Audio.vibrate())   # 켤 때 짧은 진동 피드백
 	refresh.call()
 	return pill
 

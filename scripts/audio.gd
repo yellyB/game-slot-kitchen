@@ -41,13 +41,29 @@ func _ready() -> void:
 		p.volume_db = SFX_VOLUME_DB
 		add_child(p)
 		_players.append(p)
-	# 배경음 — 한 곡 끝나면 다시 재생(루프)
+	# 배경음 — 한 곡 끝나면 다시 재생(루프). 설정에서 켜져 있을 때만.
 	_bgm = AudioStreamPlayer.new()
 	_bgm.stream = BGM
 	_bgm.volume_db = BGM_VOLUME_DB
 	_bgm.finished.connect(_bgm.play)   # 끝나면 재생
 	add_child(_bgm)
-	_bgm.play()
+	if SettingsPanel.settings.get("bgm", true):
+		_bgm.play()
+
+
+## 배경음 켜기/끄기 — 설정 토글에서 호출.
+func set_bgm(on: bool) -> void:
+	if on:
+		if not _bgm.playing:
+			_bgm.play()
+	else:
+		_bgm.stop()
+
+
+## 진동(모바일) — 설정에서 켜져 있을 때만. 데스크톱은 무동작.
+func vibrate(ms := 30) -> void:
+	if SettingsPanel.settings.get("vibrate", true):
+		Input.vibrate_handheld(ms)
 
 
 ## UI 버튼에 클릭음 부착 — 클릭음을 넣을 버튼에만 명시적으로 호출(화이트리스트).
@@ -60,8 +76,10 @@ func _play_click() -> void:
 	play("click")
 
 
-## 효과음 재생. id는 SFX 키. 풀에서 라운드로빈으로 빈 플레이어 사용.
+## 효과음 재생. id는 SFX 키. 풀에서 라운드로빈으로 빈 플레이어 사용. (효과음 꺼져 있으면 무음)
 func play(id: String) -> void:
+	if not SettingsPanel.settings.get("sfx", true):
+		return
 	var stream: AudioStream = SFX.get(id)
 	if stream == null:
 		push_warning("Audio.play: 없는 효과음 id '%s'" % id)

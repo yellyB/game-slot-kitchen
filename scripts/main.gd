@@ -485,10 +485,12 @@ func _on_order_expired(order: OrderCard) -> void:
 ## 안 맞는 완성품 서빙 시도 → 😠 팝(카드 흔들림은 OrderCard가 처리).
 func _on_order_rejected(order: OrderCard) -> void:
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
+	Audio.vibrate(30)   # 반려 — 짧은 에러 진동
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
 	Audio.play("serve")   # 서빙 완료음(리워드)
+	Audio.vibrate(20)   # 서빙 성공 — 짧은 확정 진동
 	var rid := order.recipe_id
 	# 판매금 계산(판매금/추가금/콤보/적립 전 카드) — sim_core._serve와 동일한 훅.
 	var ctx := _sale_ctx(order, dish)
