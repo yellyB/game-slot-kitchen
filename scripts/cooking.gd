@@ -67,7 +67,8 @@ func open_for(tool: ToolStation) -> void:
 	slide_open()   # Sheet 베이스 — 아래서 슬라이드 업
 
 
-## 레시피 항목: [요리] [필요재료…] … [⏱️n]. 탭 → 조리.
+## 레시피 항목: [필요재료…] → [완성요리] … [⏱️n]. 탭 → 조리.
+## 재료(입력)와 완성품(결과)을 화살표로 구분 — 요리를 재료로 착각 안 하게.
 func _entry(id: String) -> Button:
 	var def := Recipes.get_def(id)
 	var entry := Button.new()
@@ -86,9 +87,17 @@ func _entry(id: String) -> Button:
 	row.offset_right = -12
 	entry.add_child(row)
 
-	row.add_child(Recipes.icon_node(id, 28))
+	# 필요재료(입력)
 	for iid in def.get("ingredients", []):
-		row.add_child(Ingredients.icon_node(iid, 26))
+		row.add_child(Ingredients.icon_node(iid, 24))
+
+	# 입력 → 결과 구분 화살표
+	var arrow := UI.label("→", 20, Palette.COCOA_400, true)
+	arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(arrow)
+
+	# 완성 요리(결과) — 조금 크게 강조
+	row.add_child(Recipes.icon_node(id, 36))
 
 	var gap := Control.new()
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
