@@ -100,7 +100,15 @@ func _ready() -> void:
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
 
-
+  if "--shotdone" in OS.get_cmdline_user_args():
+    _start_game()
+    for _i in 6:
+      await get_tree().process_frame
+    _board.tools[0].produce_instant(Stats.random_recipe())
+    for _i in 6:
+      await get_tree().process_frame
+    get_viewport().get_texture().get_image().save_png("/tmp/done.png")
+    get_tree().quit()
 
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
@@ -266,7 +274,7 @@ func _debug_btn(text: String, cb: Callable) -> Button:
 func _build_customer_queue() -> Control:
   var panel := PanelContainer.new()
   panel.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
-  panel.custom_minimum_size = Vector2(0, 114)
+  panel.custom_minimum_size = Vector2(0, 89)
 
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:

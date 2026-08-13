@@ -14,7 +14,6 @@ var _done := false
 var _warned := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
-var _confirm: Button
 var _slide_tw: Tween
 
 func setup(id: String) -> void:
@@ -23,15 +22,18 @@ func setup(id: String) -> void:
 func _ready() -> void:
 	_max = Stats.order_patience()
 	_time_left = _max
-	custom_minimum_size = Vector2(66, 92)
+	custom_minimum_size = Vector2(66, 66)
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12))
 
 	var pad := MarginContainer.new()
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
 		pad.add_theme_constant_override("margin_" + side, 5)
 	add_child(pad)
 
 	var v := VBoxContainer.new()
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", 3)
 	pad.add_child(v)
@@ -46,19 +48,18 @@ func _ready() -> void:
 	_gauge.value = _max
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
+	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
 	v.add_child(_gauge)
 
-	var confirm := Button.new()
-	_confirm = confirm
-	confirm.text = "📋"
-	confirm.add_theme_font_size_override("font_size", 15)
-	confirm.add_theme_stylebox_override("normal", UI.chip(Palette.ACCENT))
-	confirm.add_theme_stylebox_override("hover", UI.chip(Palette.ACCENT.lightened(0.12)))
-	confirm.add_theme_stylebox_override("pressed", UI.chip(Palette.ACCENT.darkened(0.1)))
-	confirm.pressed.connect(func(): confirm_pressed.emit(self))
-	v.add_child(confirm)
+
+func _gui_input(event: InputEvent) -> void:
+	if _done:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		confirm_pressed.emit(self)
+		accept_event()
 
 
 func dismiss() -> void:
@@ -68,8 +69,6 @@ func dismiss() -> void:
 		_slide_tw.kill()
 	modulate.a = 0.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if _confirm != null:
-		_confirm.disabled = true
 
 
 func set_paused(p: bool) -> void:
