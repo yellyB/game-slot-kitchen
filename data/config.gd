@@ -38,5 +38,5 @@ const WAREHOUSE_EXIT_COST := 1.5
 static func shop_price(base: int, day: int) -> int:
 	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
 
-static func slot_price(day: int, bought: int) -> int:
-	return int(ceil(SLOT_PRICE * pow(SHOP_PRICE_GROWTH, day - 1) * pow(SLOT_PRICE_STEP, max(0, bought))))
+static func slot_price(_day: int, bought: int) -> int:
+	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))
