@@ -293,7 +293,6 @@ func _refresh() -> void:
 
 
 func _owned_chip(id: String) -> Control:
-	var def := BuffDefs.get_def(id)
 	var chip := PanelContainer.new()
 	chip.add_theme_stylebox_override("panel", UI.chip(Palette.MAIN.lightened(0.82), Palette.MAIN))
 	var pad := MarginContainer.new()
@@ -302,7 +301,13 @@ func _owned_chip(id: String) -> Control:
 	pad.add_theme_constant_override("margin_top", 3)
 	pad.add_theme_constant_override("margin_bottom", 3)
 	chip.add_child(pad)
-	pad.add_child(UI.label("%s %s" % [def.get("icon", "?"), BuffDefs.display_label(id)], 13, Palette.COCOA_800))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	pad.add_child(row)
+	row.add_child(BuffDefs.icon_node(id, 18))   # 카테고리 아이콘(손그림)
+	var lbl := UI.label(BuffDefs.display_label(id), 13, Palette.COCOA_800)
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(lbl)
 	return chip
 
 
