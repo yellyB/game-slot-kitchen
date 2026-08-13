@@ -535,10 +535,10 @@ func _show_gain_breakdown(breakdown: Array) -> void:
 		var is_base: bool = entry.get("src", "") == "base"
 		var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
 		var icon: String = str(entry.get("icon", ""))
-		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
+		get_tree().create_timer(i * 0.42).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
 		i += 1
 	# 마지막 항목 뒤 보유금액 라벨 통통 + 코인음
-	get_tree().create_timer(i * 0.15 + 0.05).timeout.connect(func():
+	get_tree().create_timer(i * 0.42 + 0.1).timeout.connect(func():
 		if is_inside_tree():
 			_pop_label(_money_label)
 			Audio.play("coins"))
@@ -563,14 +563,14 @@ func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> vo
 	if not is_instance_valid(box):
 		return
 	box.pivot_offset = box.size * 0.5
-	box.position = size * 0.5 - box.size * 0.5 + Vector2(0, -idx * 8.0)
+	box.position = size * 0.5 - box.size * 0.5
 	box.scale = Vector2(0.4, 0.4)
 	var tw := create_tween()
 	tw.tween_property(box, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(box, "scale", Vector2.ONE, 0.08)
-	tw.tween_interval(0.2)
-	tw.tween_property(box, "position:y", box.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(box, "modulate:a", 0.0, 0.3)
+	tw.tween_interval(0.12)
+	tw.tween_property(box, "position:y", box.position.y - 40.0, 0.34).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(box, "modulate:a", 0.0, 0.34)
 	tw.tween_callback(box.queue_free)
 
 
