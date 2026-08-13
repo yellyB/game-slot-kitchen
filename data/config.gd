@@ -53,6 +53,7 @@ const WAREHOUSE_EXIT_COST := 1.5  # 창고 닫을 때(퇴장) 소모 영업시�
 static func shop_price(base: int, day: int) -> int:
 	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
 
-## 슬롯 확장가 = 일당 증가 × 구매수 배수(bought=이미 확장한 수). 살수록 기하급수 상승.
-static func slot_price(day: int, bought: int) -> int:
-	return int(ceil(SLOT_PRICE * pow(SHOP_PRICE_GROWTH, day - 1) * pow(SLOT_PRICE_STEP, max(0, bought))))
+## 슬롯 확장가 = 기본가 × 구매수 배수(bought=이미 확장한 수). 살수록 기하급수 상승.
+## 날짜 인플레는 적용 안 함 — 슬롯은 몇 일차든 같은 기준가(그래서 _day는 미사용).
+static func slot_price(_day: int, bought: int) -> int:
+	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))
