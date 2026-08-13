@@ -1028,6 +1028,8 @@ func _on_progress(t01: float) -> void:
 
 ## 막판 카운트다운 숫자 — 화면 중앙 위쪽에 큰 빨간 숫자 팝 후 페이드.
 func _countdown_pop(sec: int) -> void:
+  # 카운트다운마다 화면 흔들림 — 0초에 가까울수록 강하게(긴장 고조). dur<1s라 겹침 없음.
+  _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
