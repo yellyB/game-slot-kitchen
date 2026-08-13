@@ -65,14 +65,26 @@ func _show_idle() -> void:
   recipe_id = ""
   _clear_holder()
   _style.border_color = Palette.SUB
-  var lbl := Label.new()
-  lbl.text = "🔥"
-  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  lbl.add_theme_font_size_override("font_size", 28)
-  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  _holder.add_child(lbl)
+  # 화구(불꽃) 손그림 있으면 텍스처, 없으면 🔥 이모지 폴백. [[재료 아트 로딩과 동일 패턴]]
+  var path := "res://assets/art/tools/burner.png"
+  var icon: Control
+  if ResourceLoader.exists(path):
+    var tr := TextureRect.new()
+    tr.texture = load(path)
+    tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS   # 작게 축소 시 깨짐 방지
+    icon = tr
+  else:
+    var lbl := Label.new()
+    lbl.text = "🔥"
+    lbl.add_theme_font_size_override("font_size", 28)
+    lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    icon = lbl
+  icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _holder.add_child(icon)
 
 
 ## 조리 시작 (재료 소비는 호출 측에서 이미 처리). empty=현재 빈 슬롯 수(카드37 가속).
