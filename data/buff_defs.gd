@@ -134,6 +134,56 @@ static func display_name(id: String) -> String:
 static func display_label(id: String) -> String:
 	return Loc.t("b." + id + ".label")
 
+
+## 버프 → 아이콘 카테고리(9종). assets/art/buffs/buff_<cat>.png 공용.
+const _CAT_OVERRIDE := {
+	"cook": "cook", "cook_empty": "cook",
+	"patience": "time", "day_len": "time", "pat_extend": "time", "pat_down": "time",
+	"wh_chance": "time", "wh_fast": "time",
+	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
+	"no_buy": "money", "sale_cash": "money", "onlost_pay": "money", "settle_leave": "money",
+	"settle_100": "money", "settle_90": "money", "settle_same": "money",
+	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
+	"opt_egg": "struct", "opt_flour": "struct",
+	"accum_sale": "growth",
+	"prob_x2": "luck", "prob_bonus": "luck", "sale_risk": "luck", "onlost_x2": "luck",
+}
+
+static func category(id: String) -> String:
+	if _CAT_OVERRIDE.has(id):
+		return _CAT_OVERRIDE[id]
+	if id.begins_with("dmd_"): return "demand"
+	if id.begins_with("ramp_") or id.begins_with("rt_"): return "growth"
+	if id.begins_with("auto_") or id.begins_with("inst_"): return "auto"
+	if id.begins_with("mp_") or id.begins_with("sc_") or id.begins_with("sale_"): return "sale"
+	return "sale"
+
+static var _tex_cache := {}
+
+static func tex(id: String) -> Texture2D:
+	var cat := category(id)
+	if not _tex_cache.has(cat):
+		var path := "res://assets/art/buffs/buff_%s.png" % cat
+		_tex_cache[cat] = load(path) if ResourceLoader.exists(path) else null
+	return _tex_cache[cat]
+
+## 버프 아이콘 노드 — 카테고리 텍스처 있으면 TextureRect(px, 밉맵), 없으면 이모지(⚡).
+static func icon_node(id: String, px: int) -> Control:
+	var t := tex(id)
+	if t != null:
+		var tr := TextureRect.new()
+		tr.texture = t
+		tr.custom_minimum_size = Vector2(px, px)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return tr
+	var lbl := UI.label(str(get_def(id).get("icon", "?")), px)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return lbl
+
 ## 팩: 서로 다른 버프 n개 랜덤(차단 카드 제외).
 static func random_pack(n := 3) -> Array:
 	var pool := []

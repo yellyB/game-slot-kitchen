@@ -208,9 +208,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", 4)
 	pad.add_child(v)
-	var icon := UI.label(str(def.get("icon", "?")), 30)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(icon)
+	v.add_child(BuffDefs.icon_node(id, 40))   # 카테고리 아이콘(손그림)
 	var nm := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)
 	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
