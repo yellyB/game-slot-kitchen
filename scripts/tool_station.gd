@@ -23,12 +23,16 @@ func _ready() -> void:
 
   _holder = MarginContainer.new()
   _holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  for side in ["left", "right", "top", "bottom"]:
-    _holder.add_theme_constant_override("margin_" + side, 6)
+  _set_holder_pad(6)
   add_child(_holder)
 
   set_process(false)
   _show_idle()
+
+
+func _set_holder_pad(px: int) -> void:
+  for side in ["left", "right", "top", "bottom"]:
+    _holder.add_theme_constant_override("margin_" + side, px)
 
 
 func is_idle() -> bool:
@@ -56,6 +60,7 @@ func _show_idle() -> void:
   state = State.IDLE
   recipe_id = ""
   _clear_holder()
+  _set_holder_pad(6)
   _style.border_color = Palette.SUB
   var path := "res://assets/art/tools/burner.png"
   var icon: Control
@@ -122,7 +127,8 @@ func _finish_cooking() -> void:
   state = State.DONE
   set_process(false)
   _stop_glow()
-  _style.border_color = Palette.SUB
+  _style.border_color = Palette.SUCCESS
+  _set_holder_pad(4)
   _clear_holder()
   var dish := DishCard.new()
   dish.setup(recipe_id)
