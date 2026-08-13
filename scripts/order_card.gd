@@ -31,6 +31,9 @@ func pat_frac() -> float:
 func _preview_text() -> String:
 	return str(Recipes.get_def(recipe_id).get("icon", "?"))
 
+func _preview_icon() -> Control:
+	return Recipes.icon_node(recipe_id, 44)
+
 func _build_content() -> void:
 	_style.bg_color = Palette.TICKET
 	_style.border_color = Palette.ACCENT
