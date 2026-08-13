@@ -570,6 +570,7 @@ func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 
 	var ghost := OrderCard.new()
 	ghost.setup(card.recipe_id)
+	ghost.animal = card.animal
 	add_child(ghost)
 	ghost.set_process(false)
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
