@@ -31,7 +31,7 @@ static var _tex_cache := {}
 ## 재료 손그림 텍스처(assets/art/ingredients/<id>.png). 없으면 null → 이모지 폴백.
 static func tex(id: String) -> Texture2D:
 	if not _tex_cache.has(id):
-		var path := "res://assets/art/ingredients/%s.png" % id
+		var path := "res://assets/art/ingredients_128/%s.png" % id   # 128px 축소본(카드 선명도 테스트)
 		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
 	return _tex_cache[id]
 
