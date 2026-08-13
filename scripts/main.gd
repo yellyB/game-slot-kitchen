@@ -174,6 +174,7 @@ func _start_game() -> void:
 
 
 func _show_title() -> void:
+  _clear_blackout()   # 게임오버 암전 잔재 제거(안 치우면 시작해도 검은 화면+입력 차단)
   _title.show()
 
 
