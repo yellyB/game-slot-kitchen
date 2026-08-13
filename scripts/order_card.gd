@@ -48,9 +48,21 @@ func _build_content() -> void:
 
 	if animal == "":
 		animal = Customers.random_id()
-	v.add_child(Customers.icon_node(animal, 26))
+	var top := HBoxContainer.new()
+	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top.alignment = BoxContainer.ALIGNMENT_CENTER
+	top.add_theme_constant_override("separation", 2)
+	v.add_child(top)
 
-	v.add_child(Recipes.icon_node(recipe_id, 30))
+	var bubble := CenterContainer.new()
+	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var think := UI.label("💭", 32)
+	think.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bubble.add_child(think)
+	bubble.add_child(Recipes.icon_node(recipe_id, 20))
+	top.add_child(bubble)
+
+	top.add_child(Customers.icon_node(animal, 30))
 
 	var reqs := HBoxContainer.new()
 	reqs.mouse_filter = Control.MOUSE_FILTER_IGNORE
