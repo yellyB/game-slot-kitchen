@@ -114,6 +114,7 @@ func _ready() -> void:
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
 
+
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
@@ -1108,12 +1109,14 @@ func _show_settlement(summary: Dictionary) -> void:
     Palette.SUCCESS if passed else Palette.DANGER, 20, true)
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
-  if passed:
-    m.button(Loc.t("to_shop"), func():
-      _session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
-      _open_shop())
-  else:
-    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+  # 버튼은 모든 정산 내용이 다 뜬 뒤(연출 끝)에 등장 — 아래 tw 마지막 콜백에서 추가.
+  var reveal_button := func():
+    if passed:
+      m.button(Loc.t("to_shop"), func():
+        _session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
+        _open_shop())
+    else:
+      m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
 
   # 순차 페이드인: 보유금 → 오늘 매출 → 가게세(차감·카운트다운) → 결과 도장.
   var tw := create_tween()
@@ -1133,6 +1136,7 @@ func _show_settlement(summary: Dictionary) -> void:
   tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
   tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+  tw.tween_callback(reveal_button)   # 정산 내용 다 뜬 뒤 버튼 등장
 
 
 ## 정산 팝업 행 라벨 — 가운데 정렬 + 처음엔 투명(순차 페이드인용).
