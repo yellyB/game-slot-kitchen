@@ -11,6 +11,7 @@ signal rejected(card: OrderCard)   # 안 맞는 완성품 서빙 시도 → 반�
 signal urged(card: OrderCard)      # 음식대기 인내심 임박(빨강) 진입 1회
 
 var recipe_id: String
+var animal := ""   # 손님 동물(큐에서 이어받음). 빈 값이면 랜덤.
 var born := 0.0   ## 슬롯에 놓인 게임시각(초). 판매 ctx의 order_age 계산용. main이 스탬프.
 
 var _max := Config.PATIENCE_DISH
@@ -48,13 +49,10 @@ func _build_content() -> void:
 	v.add_theme_constant_override("separation", 1)
 	add_child(v)
 
-	# 손님 얼굴
-	var face := Label.new()
-	face.text = "🙋"
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.add_theme_font_size_override("font_size", 16)
-	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(face)
+	# 손님 얼굴 — 큐에서 이어받은 동물(없으면 랜덤)
+	if animal == "":
+		animal = Customers.random_id()
+	v.add_child(Customers.icon_node(animal, 26))
 
 	# 주문 메뉴: 요리 아이콘
 	v.add_child(Recipes.icon_node(recipe_id, 30))

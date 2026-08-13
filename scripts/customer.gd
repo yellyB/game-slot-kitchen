@@ -9,6 +9,7 @@ signal expired(customer: Customer)
 signal urged(customer: Customer)   # 인내심 임박(빨강) 진입 1회
 
 var recipe_id: String
+var animal := ""   # 손님 동물 종류(빈 값이면 랜덤). 주문 확인 시 주문서로 이어짐.
 
 var _max := Config.PATIENCE_ORDER
 var _time_left := 0.0
@@ -38,10 +39,10 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 3)
 	pad.add_child(v)
 
-	# 얼굴 + "뭔가 원함" 힌트(💭) — 메뉴 숨김
-	var face := UI.label("🙋💭", 20)
-	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(face)
+	# 얼굴 — 랜덤 동물 손님(상반신). 메뉴는 숨김.
+	if animal == "":
+		animal = Customers.random_id()
+	v.add_child(Customers.icon_node(animal, 44))
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0

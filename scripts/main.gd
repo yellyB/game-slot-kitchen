@@ -418,6 +418,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	var rid := customer.recipe_id
 	var order := OrderCard.new()
 	order.setup(rid)
+	order.animal = customer.animal   # 같은 손님(동물)이 주문서로 이어짐
 	order.born = _session.now()   # 주문 접수 시각 스탬프 — 판매 ctx의 order_age(빠른/느린 서빙 카드)
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)
