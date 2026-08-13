@@ -435,7 +435,7 @@ func _on_order_expired(order: OrderCard) -> void:
 		_expect_fly = true
 		_session.earn(gain)
 		_expect_fly = false
-		_show_gain_breakdown([{"src": "buff", "amount": gain}])
+		_show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
 	_detach_and_fade(order)
@@ -458,7 +458,8 @@ func _show_gain_breakdown(breakdown: Array) -> void:
 			continue
 		var is_base: bool = entry.get("src", "") == "base"
 		var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
-		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i))
+		var icon: String = str(entry.get("icon", ""))
+		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
 		i += 1
 	get_tree().create_timer(i * 0.15 + 0.05).timeout.connect(func():
 		if is_inside_tree():
@@ -466,27 +467,33 @@ func _show_gain_breakdown(breakdown: Array) -> void:
 			Audio.play("coins"))
 
 
-func _spawn_center_gain(amount: int, color: Color, idx: int) -> void:
+func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> void:
 	if not is_inside_tree():
 		return
-	var l := UI.label("+" + UI.money(amount), 32, color, true)
-	l.z_index = 110
-	l.add_theme_constant_override("outline_size", 4)
-	l.add_theme_color_override("font_outline_color", Palette.WHITE)
-	add_child(l)
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.z_index = 110
+	if icon != "":
+		box.add_child(UI.label(icon, 30))
+	var amt_l := UI.label("+" + UI.money(amount), 32, color, true)
+	amt_l.add_theme_constant_override("outline_size", 4)
+	amt_l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	box.add_child(amt_l)
+	add_child(box)
 	await get_tree().process_frame
-	if not is_instance_valid(l):
+	if not is_instance_valid(box):
 		return
-	l.pivot_offset = l.size * 0.5
-	l.position = size * 0.5 - l.size * 0.5 + Vector2(0, -idx * 8.0)
-	l.scale = Vector2(0.4, 0.4)
+	box.pivot_offset = box.size * 0.5
+	box.position = size * 0.5 - box.size * 0.5 + Vector2(0, -idx * 8.0)
+	box.scale = Vector2(0.4, 0.4)
 	var tw := create_tween()
-	tw.tween_property(l, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(l, "scale", Vector2.ONE, 0.08)
+	tw.tween_property(box, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(box, "scale", Vector2.ONE, 0.08)
 	tw.tween_interval(0.2)
-	tw.tween_property(l, "position:y", l.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.3)
-	tw.tween_callback(l.queue_free)
+	tw.tween_property(box, "position:y", box.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(box, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(box.queue_free)
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
@@ -944,6 +951,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 		_cooking.slide_close()
 	_backdrop.visible = false
 	if summary["won"]:
+		_session.pay_rent()
 		_clear_play_field()
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
@@ -951,24 +959,58 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.button(Loc.t("to_title"), _show_title)
 		_spawn_confetti()
 		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))
-	elif summary["passed"]:
-		await _dayend_sequence()
-		Modal.open(self) \
-			.title(Loc.t("day_closed") % summary["day"]) \
-			.count_row(Loc.t("revenue"), summary["revenue"]) \
-			.count_row(Loc.t("rent"), summary["rent"], Palette.DANGER) \
-			.sep() \
-			.count_row(Loc.t("remaining"), summary["cash_after"], Palette.COCOA_800) \
-			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
-			.button(Loc.t("to_shop"), _open_shop)
 	else:
-		_clear_play_field()
-		_fade_to_black(func():
-			Modal.open(self) \
-				.title(Loc.t("gameover_title")) \
-				.row(Loc.t("gameover_day") % summary["day"]) \
-				.row(Loc.t("gameover_reason") % [UI.money(summary["revenue"]), UI.money(summary["rent"])], Palette.DANGER) \
-				.button(Loc.t("to_title"), _show_title))
+		await _dayend_sequence()
+		_show_settlement(summary)
+
+
+func _show_settlement(summary: Dictionary) -> void:
+	var passed: bool = summary["passed"]
+	var cash_before: int = summary["cash"]
+	var rev: int = summary["revenue"]
+	var rent: int = summary["rent"]
+	var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+	var cash_after: int = (cash_before - rent) if will_pay else cash_before
+
+	var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+	var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
+	var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
+	var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
+	var stamp := _settle_label(Loc.t("passed") if passed else Loc.t("failed"), \
+		Palette.SUCCESS if passed else Palette.DANGER, 20, true)
+	stamp.scale = Vector2(0.5, 0.5)
+	m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
+	if passed:
+		m.button(Loc.t("to_shop"), func():
+			_session.pay_rent()
+			_open_shop())
+	else:
+		m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+
+	var tw := create_tween()
+	tw.tween_interval(0.15)
+	tw.tween_property(held, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(0.35)
+	tw.tween_property(earned, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(0.35)
+	tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
+	tw.tween_callback(func(): if will_pay: _session.pay_rent())
+	if will_pay:
+		tw.parallel().tween_method(func(v: float): held.text = Loc.t("held") % UI.money(int(round(v))), \
+			float(cash_before), float(cash_after), 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(0.2)
+	tw.tween_callback(func(): stamp.pivot_offset = stamp.size * 0.5)
+	tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
+	tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
+
+func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
+	var l := UI.label(text, font, color, bold)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.modulate.a = 0.0
+	return l
 
 
 func _open_shop() -> void:
