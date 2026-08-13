@@ -134,7 +134,7 @@ func _finish_cooking() -> void:
   state = State.DONE
   set_process(false)
   _stop_glow()
-  _style.border_color = Palette.SUCCESS
+  _style.border_color = Palette.SUB   # 도구석 테두리는 기본색 유지 — 완성 표시는 완성품 카드의 2px 초록 테두리로(이중 초록 방지)
   _clear_holder()
   var dish := DishCard.new()
   dish.setup(recipe_id)
