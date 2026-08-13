@@ -266,7 +266,7 @@ func _debug_btn(text: String, cb: Callable) -> Button:
 func _build_customer_queue() -> Control:
   var panel := PanelContainer.new()
   panel.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
-  panel.custom_minimum_size = Vector2(0, 96)
+  panel.custom_minimum_size = Vector2(0, 114)
 
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
