@@ -74,6 +74,12 @@ func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
 	return self
 
 
+## 임의 컨트롤을 본문에 추가(정산 순차 페이드인 등 커스텀 연출용 — 호출측이 애니 직접 제어).
+func add_row(ctrl: Control) -> Modal:
+	_body.add_child(ctrl)
+	return self
+
+
 func sep() -> Modal:
 	var line := ColorRect.new()
 	line.color = Palette.COCOA_200
