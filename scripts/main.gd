@@ -336,9 +336,13 @@ func _set_world_paused(p: bool) -> void:
 func _close_sheets() -> void:
   _set_world_paused(false)
   if _warehouse.visible:
-    _session.spend_time(Stats.warehouse_cost())
+    var cost := Stats.warehouse_cost()
+    var before_v := _hours_bar.value
+    _session.spend_time(cost)
+    var after_v := _hours_bar.value
     Audio.play("door_close")
     _warehouse.slide_close()
+    _show_trip_cost(cost, before_v, after_v)
   if _cooking.visible:
     _cooking.slide_close()
   _backdrop.visible = false
@@ -797,6 +801,36 @@ func _spawn_loss(amount: int) -> void:
   tw.tween_property(l, "position:y", start.y + 26, 0.6).set_ease(Tween.EASE_OUT)
   tw.tween_property(l, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
   tw.chain().tween_callback(l.queue_free)
+
+
+func _show_trip_cost(cost: float, before_v: float, after_v: float) -> void:
+  if cost <= 0.0 or after_v <= before_v:
+    return
+  var bx := _hours_bar.global_position
+  var bw := _hours_bar.size.x
+  var bh := _hours_bar.size.y
+  var seg := ColorRect.new()
+  seg.color = Palette.DANGER
+  seg.z_index = 120
+  seg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(seg)
+  seg.global_position = Vector2(bx.x + bw * before_v / 100.0, bx.y)
+  seg.size = Vector2(maxf(6.0, bw * (after_v - before_v) / 100.0), bh)
+  var st := create_tween()
+  st.tween_property(seg, "modulate:a", 0.0, 0.55).set_ease(Tween.EASE_IN)
+  st.chain().tween_callback(seg.queue_free)
+  var l := UI.label("⏱ -%.1f초" % cost, 16, Palette.DANGER, true)
+  l.add_theme_constant_override("outline_size", 4)
+  l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  l.z_index = 121
+  l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(l)
+  l.position = Vector2(bx.x + bw * 0.5 - 30.0, bx.y - 24.0)
+  var lt := create_tween()
+  lt.set_parallel(true)
+  lt.tween_property(l, "position:y", l.position.y - 18.0, 0.8).set_ease(Tween.EASE_OUT)
+  lt.tween_property(l, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
+  lt.chain().tween_callback(l.queue_free)
 
 
 func _pop_label(lbl: Control) -> void:
