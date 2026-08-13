@@ -8,9 +8,30 @@ var _style: StyleBoxFlat
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# 내용이 슬롯보다 크면(슬롯 축소 시) 슬롯을 밀지 말고 잘라냄 → 보드/화면 높이 고정.
+	clip_contents = true
 	_style = UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12)
 	add_theme_stylebox_override("panel", _style)
 	_build_content()
+	_wrap_content()
+
+
+## _build_content가 붙인 내용을 '컨테이너가 아닌' Control 래퍼로 감싼다.
+## Control은 자식 min-size를 자기 min-size로 올리지 않으므로, 내용이 커도 카드→슬롯으로
+## 전파되지 않아 보드/화면이 늘어나지 않음. 카드는 슬롯을 EXPAND_FILL로 그대로 꽉 채움.
+## (내용은 래퍼를 앵커로 꽉 채우고, 슬롯이 작아지면 clip_contents로 잘림)
+func _wrap_content() -> void:
+	var built := get_children()   # _build_content가 self에 붙인 내용 노드들
+	if built.is_empty():
+		return
+	var wrap := Control.new()
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for ch in built:
+		remove_child(ch)
+		wrap.add_child(ch)
+		if ch is Control:
+			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(wrap)
 
 
 ## 서브클래스가 카드 내용을 구성. (_style도 여기서 조정 가능)
