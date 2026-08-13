@@ -82,10 +82,16 @@ func dismiss() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE   # 접수 후 추가 탭 차단
 
 
-## 인내심 타이머 정지/재개 — 시트 열림 동안 월드 정지용.
+## 인내심 타이머 정지/재개 — 시트 열림 동안 월드 정지용. 콩콩 트윈도 같이 멈춤.
 func set_paused(p: bool) -> void:
-	if not _done:
-		set_process(not p)
+	if _done:
+		return
+	set_process(not p)
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		if p:
+			_pulse_tw.pause()
+		else:
+			_pulse_tw.play()
 
 
 ## 등장 슬라이드 중단 — 큐 재정렬과 위치 충돌 방지.

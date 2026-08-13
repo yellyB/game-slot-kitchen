@@ -45,10 +45,15 @@ func is_idle() -> bool:
   return state == State.IDLE
 
 
-## 조리 타이머 정지/재개 — 시트 열림 동안 월드 정지용(조리 중일 때만).
+## 조리 타이머 정지/재개 — 시트 열림 동안 월드 정지용(조리 중일 때만). 발광 트윈도 같이 멈춤.
 func set_paused(p: bool) -> void:
   if state == State.COOKING:
     set_process(not p)
+    if _glow != null and _glow.is_valid():
+      if p:
+        _glow.pause()
+      else:
+        _glow.play()
 
 
 ## 완성(DONE) 상태의 완성품 카드(없으면 null).

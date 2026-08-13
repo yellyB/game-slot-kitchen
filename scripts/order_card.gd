@@ -154,10 +154,16 @@ func _reject() -> void:
 	rejected.emit(self)
 
 
-## 음식대기 인내심 타이머 정지/재개 — 시트 열림 동안 월드 정지용.
+## 음식대기 인내심 타이머 정지/재개 — 시트 열림 동안 월드 정지용. 서빙가능 콩콩도 같이 멈춤.
 func set_paused(p: bool) -> void:
-	if not _done:
-		set_process(not p)
+	if _done:
+		return
+	set_process(not p)
+	if _glow != null and _glow.is_valid():
+		if p:
+			_glow.pause()
+		else:
+			_glow.play()
 
 
 ## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
