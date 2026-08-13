@@ -82,32 +82,52 @@ func _entry(id: String) -> Button:
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 6)
 	row.offset_left = 12
 	row.offset_right = -12
 	entry.add_child(row)
 
-	# 필요재료(입력)
+	# 1) 메뉴(완성 요리)
+	var menu := CenterContainer.new()
+	menu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	menu.custom_minimum_size = Vector2(52, 0)
+	menu.add_child(Recipes.icon_node(id, 36))
+	row.add_child(menu)
+	row.add_child(_col_divider())
+
+	# 2) 재료(필요 입력) — 가운데 가변폭 칸
+	var ing := HBoxContainer.new()
+	ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ing.alignment = BoxContainer.ALIGNMENT_CENTER
+	ing.add_theme_constant_override("separation", 6)
 	for iid in def.get("ingredients", []):
-		row.add_child(Ingredients.icon_node(iid, 24))
+		ing.add_child(Ingredients.icon_node(iid, 24))
+	row.add_child(ing)
+	row.add_child(_col_divider())
 
-	# 입력 → 결과 구분 화살표
-	var arrow := UI.label("→", 20, Palette.COCOA_400, true)
-	arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(arrow)
-
-	# 완성 요리(결과) — 조금 크게 강조
-	row.add_child(Recipes.icon_node(id, 36))
-
-	var gap := Control.new()
-	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(gap)
-
-	row.add_child(UI.label("⏱️%d" % int(def.get("cook_time", 0)), 16, Palette.COCOA_600))
+	# 3) 걸리는 시간
+	var time := CenterContainer.new()
+	time.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	time.custom_minimum_size = Vector2(52, 0)
+	time.add_child(UI.label("⏱️%d" % int(def.get("cook_time", 0)), 16, Palette.COCOA_600))
+	row.add_child(time)
 
 	entry.pressed.connect(func(): _select(id))
 	return entry
+
+## 항목 내 세로 구분선 — 메뉴 | 재료 | 시간 구획.
+func _col_divider() -> Control:
+	var m := MarginContainer.new()
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	m.add_theme_constant_override("margin_top", 9)
+	m.add_theme_constant_override("margin_bottom", 9)
+	var line := ColorRect.new()
+	line.color = Palette.COCOA_200
+	line.custom_minimum_size = Vector2(1.5, 0)
+	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	m.add_child(line)
+	return m
 
 
 func _refresh() -> void:
