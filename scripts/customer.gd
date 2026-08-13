@@ -1,7 +1,8 @@
 class_name Customer
 extends PanelContainer
-## 대기열(큐)의 손님. 메뉴 비공개 — "뭔가 원함(💭)" + 주문확인 버튼(📋)만.
-## 주문 확인 → 슬롯에 주문 카드 생성, 손님은 큐에서 사라짐(주문 카드로 "이동").
+## 대기열(큐)의 손님. 메뉴 비공개 — 원하는 메뉴는 안 보여줌.
+## 카드 전체 탭 = 주문 접수(버튼 없음). 은은한 콩콩으로 "누를 수 있음"을 알림.
+## 접수 → 슬롯에 주문 카드 생성, 손님은 큐에서 사라짐(주문 카드로 "이동").
 ## 인내심(주문 대기)은 여기서만 닳음. 0이면 퇴장. 음식 대기는 OrderCard 담당. [[two-phase-patience]]
 
 signal confirm_pressed(customer: Customer)
@@ -18,6 +19,7 @@ var _warned := false   # 임박 재촉 1회만
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
 var _slide_tw: Tween   # 등장 슬라이드 — 즉시 접수(dismiss) 시 죽여야 페이드인이 안 덮음
+var _pulse_tw: Tween   # 은은한 콩콩(누를 수 있음 신호). 접수·이탈 시 정지.
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -75,6 +77,7 @@ func dismiss() -> void:
 	set_process(false)
 	if _slide_tw != null and _slide_tw.is_valid():
 		_slide_tw.kill()                          # 등장 페이드인 중단(안 그러면 a=0을 덮어씀)
+	_stop_pulse()
 	modulate.a = 0.0                              # 레이아웃 자리 유지(visible=false와 달리 공간 남김)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE   # 접수 후 추가 탭 차단
 
@@ -97,6 +100,7 @@ func force_expire() -> void:
 		return
 	_done = true
 	set_process(false)
+	_stop_pulse()
 	expired.emit(self)
 
 
@@ -113,6 +117,24 @@ func slide_in() -> void:
 	tw.set_parallel(true)
 	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+	_start_idle_pulse()
+
+
+## 은은한 콩콩 — "누를 수 있음" 신호. scale라 큐 레이아웃 위치와 충돌 없음.
+func _start_idle_pulse() -> void:
+	if _done or not is_inside_tree():
+		return
+	pivot_offset = size * 0.5
+	_pulse_tw = create_tween().set_loops()
+	_pulse_tw.tween_property(self, "scale", Vector2(1.05, 1.05), 0.55).set_trans(Tween.TRANS_SINE)
+	_pulse_tw.tween_property(self, "scale", Vector2.ONE, 0.55).set_trans(Tween.TRANS_SINE)
+
+
+func _stop_pulse() -> void:
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		_pulse_tw.kill()
+	_pulse_tw = null
+	scale = Vector2.ONE
 
 
 func _process(delta: float) -> void:
@@ -130,6 +152,7 @@ func _process(delta: float) -> void:
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
+		_stop_pulse()
 		expired.emit(self)
 
 
