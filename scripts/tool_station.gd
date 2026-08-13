@@ -11,7 +11,7 @@ var now_provider: Callable = func() -> float: return 0.0
 
 var _cook_left := 0.0
 var _cook_total := 0.0
-var _cook_bar: ProgressBar
+var _cook_timer: RadialTimer
 var _holder: MarginContainer
 var _style: StyleBoxFlat
 var _glow: Tween
@@ -90,16 +90,11 @@ func start_cooking(id: String, empty := 0) -> void:
   dish.modulate = Color(1, 1, 1, 0.6)
   v.add_child(dish)
 
-  _cook_bar = ProgressBar.new()
-  _cook_bar.min_value = 0
-  _cook_bar.max_value = _cook_total
-  _cook_bar.value = 0
-  _cook_bar.show_percentage = false
-  _cook_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  _cook_bar.custom_minimum_size = Vector2(0, 8)
-  _cook_bar.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-  _cook_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
-  v.add_child(_cook_bar)
+  _cook_timer = RadialTimer.new()
+  _cook_timer.frac = 1.0
+  _cook_timer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  _cook_timer.custom_minimum_size = Vector2(40, 40)
+  v.add_child(_cook_timer)
 
   set_process(true)
   _start_glow()
@@ -133,7 +128,7 @@ func _process(delta: float) -> void:
   if state != State.COOKING:
     return
   _cook_left -= delta
-  _cook_bar.value = _cook_total - _cook_left
+  _cook_timer.frac = _cook_left / maxf(0.001, _cook_total)
   if _cook_left <= 0.0:
     _finish_cooking()
 
