@@ -85,6 +85,12 @@ func set_paused(p: bool) -> void:
 		set_process(not p)
 
 
+## 등장 슬라이드 중단 — 큐 재정렬과 위치 충돌 방지.
+func stop_slide() -> void:
+	if _slide_tw != null and _slide_tw.is_valid():
+		_slide_tw.kill()
+
+
 ## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
 func force_expire() -> void:
 	if _done:

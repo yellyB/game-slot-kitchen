@@ -430,10 +430,14 @@ func _spawn_customer() -> void:
 ## 주문 확인 → 손님이 큐에서 사라지고 다음 빈 슬롯의 주문 카드로 "이동".
 ## 큐 재정렬 애니 — 접수/이탈 후 남은 손님이 새 자리로 부드럽게 슬라이드(즉시 점프 방지).
 func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
-  await get_tree().process_frame   # 제거 반영 → HBox 새 위치 확정
+  if customers.is_empty():
+    return
+  await _queue_row.sort_children   # HBox 재정렬 완료까지 확실히 대기(1프레임 레이스 제거)
   for c in customers:
     if not is_instance_valid(c):
       continue
+    if c.has_method("stop_slide"):
+      c.stop_slide()   # 등장 슬라이드 중이면 중단(위치 충돌 방지)
     var np: Vector2 = c.position
     var op: Vector2 = old_pos.get(c, np)
     if np == op:
