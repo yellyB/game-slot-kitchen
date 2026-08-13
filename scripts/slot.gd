@@ -4,7 +4,7 @@ extends PanelContainer
 ##   "new"(창고 신규) / "move"(슬롯↔슬롯) / "dish"(완성품).
 ## (도구석은 Slot이 아니라 ToolStation)
 
-const PAD := 2   ## holder 내부 여백(카드와 슬롯 경계). card_rect()도 이 값을 참조.
+const PAD := 4   ## holder 내부 여백(카드와 슬롯 경계). card_rect()도 이 값을 참조.
 
 var _holder: MarginContainer
 
