@@ -1204,34 +1204,32 @@ func _show_settlement(summary: Dictionary) -> void:
   var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
   # 실제 차감 여부: 통과 + 미납통과(skip) 아님 + 잔액 충분.
-  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
-  var cash_after: int = (cash_before - rent) if will_pay else cash_before
-
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
   var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
   var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
   var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
-  var stamp := _settle_label(Loc.t("passed") if passed else Loc.t("failed"), \
-    Palette.SUCCESS if passed else Palette.DANGER, 20, true)
+  var stamp := _settle_label("", Palette.SUCCESS, 20, true)   # 결과 도장 — 지불 클릭 후 채움
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
-  # 버튼을 처음부터 추가(팝업 크기 고정) → 투명·비활성으로 숨겼다가 연출 끝에 페이드인.
-  # (마지막에 add하면 레이아웃이 커져서 팝업 높이가 튀는 문제 방지)
-  if passed:
-    m.button(Loc.t("to_shop"), func():
-      _session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
-      _open_shop())
-  else:
-    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
-  var btn: BaseButton = m._body.get_child(m._body.get_child_count() - 1)
-  btn.modulate.a = 0.0
-  btn.disabled = true
-  var reveal_button := func():
-    btn.disabled = false
-    var bt := create_tween()
-    bt.tween_property(btn, "modulate:a", 1.0, 0.2)
 
-  # 순차 페이드인: 보유금 → 오늘 매출 → 가게세(차감·카운트다운) → 결과 도장.
+  # 가게세 지불 버튼(커스텀) — 처음엔 숨김, 연출 끝에 등장. 눌러서 직접 지불.
+  var pay_btn := Button.new()
+  pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
+  pay_btn.custom_minimum_size = Vector2(0, 48)
+  pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  pay_btn.add_theme_font_size_override("font_size", 18)
+  pay_btn.add_theme_color_override("font_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  pay_btn.modulate.a = 0.0
+  pay_btn.disabled = true
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, held, stamp))
+  m.add_row(pay_btn)
+
+  # 순차 페이드인: 보유금 → 매출 → 가게세 → [가게세 지불] 등장 (차감·도장은 클릭 후)
   var tw := create_tween()
   tw.tween_interval(0.15)
   tw.tween_property(held, "modulate:a", 1.0, 0.25)
@@ -1239,17 +1237,54 @@ func _show_settlement(summary: Dictionary) -> void:
   tw.tween_property(earned, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
   tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
-  tw.tween_callback(func(): if will_pay: _session.pay_rent())   # 이 타이밍에 실제 차감
-  if will_pay:   # 보유금이 가게세만큼 촤르륵 줄어듦
-    var upd_held := func(v: float): held.text = Loc.t("held") % UI.money(int(round(v)))
-    tw.parallel().tween_method(upd_held, float(cash_before), float(cash_after), 0.4) \
-      .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   tw.tween_interval(0.2)
-  tw.tween_callback(func(): stamp.pivot_offset = stamp.size * 0.5)
-  tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
-  tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
-  tw.tween_callback(reveal_button)   # 정산 내용 다 뜬 뒤 버튼 등장
+  tw.tween_callback(func():
+    pay_btn.disabled = false
+    create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
+
+
+## 가게세 지불 버튼 클릭 — 충분하면 차감+통과, 부족하면 게임오버.
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label, stamp: Label) -> void:
+  var passed: bool = summary["passed"]
+  var cash_before: int = summary["cash"]
+  var rent: int = summary["rent"]
+  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+  pay_btn.disabled = true
+  for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
+    pay_btn.pressed.disconnect(c["callable"])
+  if passed:
+    if will_pay:                                 # 보유금 촤르륵 차감
+      _session.pay_rent()
+      var upd := func(v: float):
+        if is_instance_valid(held):
+          held.text = Loc.t("held") % UI.money(int(round(v)))
+      create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
+        .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    stamp.text = Loc.t("passed")
+    stamp.add_theme_color_override("font_color", Palette.SUCCESS)
+    _pop_settle_stamp(stamp)
+    pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
+    pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+    pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+    pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+    pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+    pay_btn.disabled = false
+  else:
+    stamp.text = Loc.t("insufficient")          # 돈이 부족합니다 → 게임오버
+    stamp.add_theme_color_override("font_color", Palette.DANGER)
+    _pop_settle_stamp(stamp)
+    pay_btn.text = Loc.t("to_title")
+    pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
+    pay_btn.disabled = false
+
+
+## 정산 결과 도장 팝(투명→불룩→제자리).
+func _pop_settle_stamp(stamp: Label) -> void:
+  stamp.pivot_offset = stamp.size * 0.5
+  var t := create_tween()
+  t.tween_property(stamp, "modulate:a", 1.0, 0.12)
+  t.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  t.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
 
 ## 정산 팝업 행 라벨 — 가운데 정렬 + 처음엔 투명(순차 페이드인용).
