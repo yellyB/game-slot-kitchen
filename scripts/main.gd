@@ -1024,6 +1024,12 @@ func _pop_clear_slots() -> void:
 
 
 func _on_day_ended(summary: Dictionary) -> void:
+	# 창고/조리 시트가 열린 채 마감되면 내려서 상점에 안 남게 (트립 비용 없이).
+	if _warehouse.visible:
+		_warehouse.slide_close()
+	if _cooking.visible:
+		_cooking.slide_close()
+	_backdrop.visible = false
 	if summary["won"]:
 		_clear_play_field()   # 마감 즉시 필드 비움
 		Modal.open(self) \
