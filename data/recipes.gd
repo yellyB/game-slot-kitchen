@@ -27,24 +27,27 @@ static func random_id() -> String:
 
 
 static var _tex_cache := {}
+static var _tex_cache_sm := {}   # 초소형(주문서·조리목록) 48px 캐시
 
 ## 완성품 손그림 텍스처(assets/art/recipes/<id>.png). 없으면 null → 이모지 폴백.
-static func tex(id: String) -> Texture2D:
-	if not _tex_cache.has(id):
-		var path := "res://assets/art/recipes/%s.png" % id
-		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
-	return _tex_cache[id]
+static func tex(id: String, small := false) -> Texture2D:
+	var cache: Dictionary = _tex_cache_sm if small else _tex_cache
+	if not cache.has(id):
+		var dir := "recipes_48" if small else "recipes_128"   # 작은 표시=48px, 그 외=128px
+		var path := "res://assets/art/%s/%s.png" % [dir, id]
+		cache[id] = load(path) if ResourceLoader.exists(path) else null
+	return cache[id]
 
 ## 메뉴/완성품 아이콘 노드 — 텍스처 있으면 TextureRect(px×px), 없으면 이모지 라벨(font=px).
 static func icon_node(id: String, px: int) -> Control:
-	var t := tex(id)
+	var t := tex(id, px <= 30)   # 30px 이하(주문서·조리목록)는 48px 초소형 소스
 	if t != null:
 		var tr := TextureRect.new()
 		tr.texture = t
 		tr.custom_minimum_size = Vector2(px, px)
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS   # 작게 축소 시 깨짐 방지
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR   # 밉맵 OFF — 선명 우선(리사이즈 소스)
 		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return tr
 	var lbl := UI.label(str(get_def(id).get("icon", "?")), px)

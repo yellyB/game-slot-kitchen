@@ -27,17 +27,20 @@ static func get_def(id: String) -> Dictionary:
 
 
 static var _tex_cache := {}
+static var _tex_cache_sm := {}   # 초소형(주문서·조리목록) 48px 캐시
 
 ## 재료 손그림 텍스처(assets/art/ingredients/<id>.png). 없으면 null → 이모지 폴백.
-static func tex(id: String) -> Texture2D:
-	if not _tex_cache.has(id):
-		var path := "res://assets/art/ingredients_128/%s.png" % id   # 128px 축소본(카드 선명도 테스트)
-		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
-	return _tex_cache[id]
+static func tex(id: String, small := false) -> Texture2D:
+	var cache: Dictionary = _tex_cache_sm if small else _tex_cache
+	if not cache.has(id):
+		var dir := "ingredients_48" if small else "ingredients_128"   # 작은 표시=48px, 카드=128px
+		var path := "res://assets/art/%s/%s.png" % [dir, id]
+		cache[id] = load(path) if ResourceLoader.exists(path) else null
+	return cache[id]
 
 ## 재료 아이콘 노드 — 텍스처 있으면 TextureRect(px×px, 비율유지 중앙), 없으면 이모지 라벨(font=px).
 static func icon_node(id: String, px: int) -> Control:
-	var t := tex(id)
+	var t := tex(id, px <= 30)   # 30px 이하(주문서·조리목록)는 48px 초소형 소스
 	if t != null:
 		var tr := TextureRect.new()
 		tr.texture = t
