@@ -7,6 +7,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	clip_contents = true
 	_style = UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12)
+	_style.shadow_size = 0
 	add_theme_stylebox_override("panel", _style)
 	_build_content()
 	_wrap_content()
