@@ -157,6 +157,7 @@ func _start_game() -> void:
 
 
 func _show_title() -> void:
+  _clear_blackout()
   _title.show()
 
 
