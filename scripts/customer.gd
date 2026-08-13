@@ -17,7 +17,6 @@ var _done := false
 var _warned := false   # 임박 재촉 1회만
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
-var _confirm: Button
 var _slide_tw: Tween   # 등장 슬라이드 — 즉시 접수(dismiss) 시 죽여야 페이드인이 안 덮음
 
 func setup(id: String) -> void:
@@ -26,15 +25,19 @@ func setup(id: String) -> void:
 func _ready() -> void:
 	_max = Stats.order_patience()
 	_time_left = _max
-	custom_minimum_size = Vector2(66, 92)
+	# 확인 버튼 없이 카드 전체 탭으로 접수 → 버튼 높이만큼 카드도 낮아짐(얼굴+게이지).
+	custom_minimum_size = Vector2(66, 66)
+	mouse_filter = Control.MOUSE_FILTER_STOP   # 카드 전체가 탭 받음
 	add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12))
 
 	var pad := MarginContainer.new()
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE   # 탭이 카드(self)로 내려가게
 	for side in ["left", "right", "top", "bottom"]:
 		pad.add_theme_constant_override("margin_" + side, 5)
 	add_child(pad)
 
 	var v := VBoxContainer.new()
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", 3)
 	pad.add_child(v)
@@ -50,20 +53,19 @@ func _ready() -> void:
 	_gauge.value = _max
 	_gauge.show_percentage = false
 	_gauge.custom_minimum_size = Vector2(0, 8)
+	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE   # 탭이 게이지에 안 막히게
 	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
 	v.add_child(_gauge)
 
-	# 주문 확인 버튼 (아이콘)
-	var confirm := Button.new()
-	_confirm = confirm
-	confirm.text = "📋"
-	confirm.add_theme_font_size_override("font_size", 15)
-	confirm.add_theme_stylebox_override("normal", UI.chip(Palette.ACCENT))
-	confirm.add_theme_stylebox_override("hover", UI.chip(Palette.ACCENT.lightened(0.12)))
-	confirm.add_theme_stylebox_override("pressed", UI.chip(Palette.ACCENT.darkened(0.1)))
-	confirm.pressed.connect(func(): confirm_pressed.emit(self))
-	v.add_child(confirm)
+
+## 카드 전체 탭 = 주문 접수(창고 재료 탭처럼 첫 빈 슬롯으로 자동). main이 _on_confirm_order 처리.
+func _gui_input(event: InputEvent) -> void:
+	if _done:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		confirm_pressed.emit(self)
+		accept_event()
 
 
 ## 주문 접수됨 — 자리는 유지하되 사라진 척(투명·입력차단). 뒤 손님이 즉시 안 밀리게.
@@ -74,9 +76,7 @@ func dismiss() -> void:
 	if _slide_tw != null and _slide_tw.is_valid():
 		_slide_tw.kill()                          # 등장 페이드인 중단(안 그러면 a=0을 덮어씀)
 	modulate.a = 0.0                              # 레이아웃 자리 유지(visible=false와 달리 공간 남김)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if _confirm != null:
-		_confirm.disabled = true
+	mouse_filter = Control.MOUSE_FILTER_IGNORE   # 접수 후 추가 탭 차단
 
 
 ## 인내심 타이머 정지/재개 — 시트 열림 동안 월드 정지용.

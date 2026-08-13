@@ -114,7 +114,15 @@ func _ready() -> void:
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
 
-
+  if "--shotdone" in OS.get_cmdline_user_args():
+    _start_game()
+    for _i in 6:
+      await get_tree().process_frame
+    _board.tools[0].produce_instant(Stats.random_recipe())
+    for _i in 6:
+      await get_tree().process_frame
+    get_viewport().get_texture().get_image().save_png("/tmp/done.png")
+    get_tree().quit()
 
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
   if "--sim" in OS.get_cmdline_user_args():
@@ -291,9 +299,9 @@ func _debug_btn(text: String, cb: Callable) -> Button:
 func _build_customer_queue() -> Control:
   var panel := PanelContainer.new()
   panel.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
-  # 손님 유무·종류와 무관하게 높이 고정 — 꽉 찬 기준(카드 92 + 여백 20 + 테두리 2).
+  # 손님 유무·종류와 무관하게 높이 고정 — 꽉 찬 기준(카드 67 + 여백 20 + 테두리 2).
   # 최소높이가 이보다 작으면 손님 등장 시 패널이 늘어나 화면이 흔들림.
-  panel.custom_minimum_size = Vector2(0, 114)
+  panel.custom_minimum_size = Vector2(0, 89)
 
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
