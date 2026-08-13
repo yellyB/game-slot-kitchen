@@ -4,7 +4,9 @@ extends Sheet
 signal cooked
 signal close_requested
 
-const ENTRY_H := 68
+const ICON := 44
+const ING := 32
+const ENTRY_H := 64
 const ROW_SEP := 8
 const SHEET_CHROME := 84
 
@@ -82,36 +84,53 @@ func _entry(id: String) -> Button:
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.add_theme_constant_override("separation", 6)
-	row.offset_left = 12
-	row.offset_right = -12
+	row.offset_left = 14
+	row.offset_right = -14
+	row.add_theme_constant_override("separation", 10)
 	entry.add_child(row)
-
-	var menu := CenterContainer.new()
-	menu.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	menu.custom_minimum_size = Vector2(52, 0)
-	menu.add_child(Recipes.icon_node(id, 36))
-	row.add_child(menu)
+	var menu_node := Recipes.icon_node(id, ICON)
+	row.add_child(menu_node)
 	row.add_child(_col_divider())
 
 	var ing := HBoxContainer.new()
 	ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ing.alignment = BoxContainer.ALIGNMENT_CENTER
-	ing.add_theme_constant_override("separation", 6)
+	ing.add_theme_constant_override("separation", 4)
+	var ing_nodes: Array = []
 	for iid in def.get("ingredients", []):
-		ing.add_child(Ingredients.icon_node(iid, 24))
+		var node := Ingredients.icon_node(iid, ING)
+		ing.add_child(node)
+		ing_nodes.append({"node": node, "iid": iid})
+	entry.set_meta("ings", ing_nodes)
 	row.add_child(ing)
-	row.add_child(_col_divider())
 
-	var time := CenterContainer.new()
-	time.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	time.custom_minimum_size = Vector2(52, 0)
-	time.add_child(UI.label("⏱️%d" % int(def.get("cook_time", 0)), 16, Palette.COCOA_600))
-	row.add_child(time)
+	var gap := Control.new()
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(gap)
+	var coin_node := _coin(int(def.get("price", 0)))
+	row.add_child(coin_node)
+	var time_node := UI.label("⏱️%d" % int(def.get("cook_time", 0)), 20, Palette.COCOA_600)
+	row.add_child(time_node)
+
+	entry.set_meta("offer", [menu_node, coin_node, time_node])
 
 	entry.pressed.connect(func(): _select(id))
 	return entry
+
+
+func _coin(amount: int) -> Control:
+	var box := HBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", 4)
+	var dot := ColorRect.new()
+	dot.color = Palette.ACCENT
+	dot.custom_minimum_size = Vector2(12, 12)
+	var wrap := CenterContainer.new()
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.add_child(dot)
+	box.add_child(wrap)
+	box.add_child(UI.label(UI.money(amount), 18, Palette.COCOA_800, true))
+	return box
 
 func _col_divider() -> Control:
 	var m := MarginContainer.new()
@@ -127,11 +146,18 @@ func _col_divider() -> Control:
 
 
 func _refresh() -> void:
+	var have := board.ingredient_counts()
 	for entry in _entries:
 		var id: String = entry.get_meta("recipe_id")
 		var ok := board.has_ingredients(id)
 		entry.disabled = not ok
-		entry.modulate = Color.WHITE if ok else Color(1, 1, 1, 0.45)
+		entry.modulate = Color.WHITE
+		var offer_a := 1.0 if ok else 0.35
+		for n in entry.get_meta("offer", []):
+			n.modulate = Color(1, 1, 1, offer_a)
+		for it in entry.get_meta("ings", []):
+			var present: bool = have.get(it["iid"], 0) > 0
+			it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
 
 
 func _select(id: String) -> void:
