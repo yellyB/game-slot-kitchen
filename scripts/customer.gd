@@ -74,8 +74,14 @@ func dismiss() -> void:
 
 
 func set_paused(p: bool) -> void:
-	if not _done:
-		set_process(not p)
+	if _done:
+		return
+	set_process(not p)
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		if p:
+			_pulse_tw.pause()
+		else:
+			_pulse_tw.play()
 
 
 func stop_slide() -> void:

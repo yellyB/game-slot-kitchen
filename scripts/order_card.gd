@@ -137,8 +137,14 @@ func _reject() -> void:
 
 
 func set_paused(p: bool) -> void:
-	if not _done:
-		set_process(not p)
+	if _done:
+		return
+	set_process(not p)
+	if _glow != null and _glow.is_valid():
+		if p:
+			_glow.pause()
+		else:
+			_glow.play()
 
 
 func force_expire() -> void:

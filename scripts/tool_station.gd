@@ -42,6 +42,11 @@ func is_idle() -> bool:
 func set_paused(p: bool) -> void:
   if state == State.COOKING:
     set_process(not p)
+    if _glow != null and _glow.is_valid():
+      if p:
+        _glow.pause()
+      else:
+        _glow.play()
 
 
 func get_dish() -> DishCard:
