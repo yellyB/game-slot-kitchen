@@ -18,7 +18,7 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	offset_top = -400   # 메뉴 6개 목록 (넘치면 스크롤)
+	offset_top = -480   # 메뉴 6개가 스크롤 없이 다 보이는 높이
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -49,15 +49,11 @@ func _ready() -> void:
 	Audio.attach_click(close)   # X 닫기 클릭음
 	header.add_child(close)
 
-	# 레시피 목록 (많으면 스크롤)
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	v.add_child(scroll)
+	# 레시피 목록 — 스크롤 없이 전부 표시(시트 높이로 수용)
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 8)
-	scroll.add_child(list)
+	v.add_child(list)
 
 	for id in Recipes.all_ids():
 		var entry := _entry(id)
