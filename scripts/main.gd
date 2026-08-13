@@ -1159,14 +1159,21 @@ func _show_settlement(summary: Dictionary) -> void:
     Palette.SUCCESS if passed else Palette.DANGER, 20, true)
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
-  # 버튼은 모든 정산 내용이 다 뜬 뒤(연출 끝)에 등장 — 아래 tw 마지막 콜백에서 추가.
+  # 버튼을 처음부터 추가(팝업 크기 고정) → 투명·비활성으로 숨겼다가 연출 끝에 페이드인.
+  # (마지막에 add하면 레이아웃이 커져서 팝업 높이가 튀는 문제 방지)
+  if passed:
+    m.button(Loc.t("to_shop"), func():
+      _session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
+      _open_shop())
+  else:
+    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+  var btn: BaseButton = m._body.get_child(m._body.get_child_count() - 1)
+  btn.modulate.a = 0.0
+  btn.disabled = true
   var reveal_button := func():
-    if passed:
-      m.button(Loc.t("to_shop"), func():
-        _session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
-        _open_shop())
-    else:
-      m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+    btn.disabled = false
+    var bt := create_tween()
+    bt.tween_property(btn, "modulate:a", 1.0, 0.2)
 
   # 순차 페이드인: 보유금 → 오늘 매출 → 가게세(차감·카운트다운) → 결과 도장.
   var tw := create_tween()
