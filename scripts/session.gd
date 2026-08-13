@@ -18,8 +18,10 @@ var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장 + 구조 버�
 
 var _elapsed := 0.0
 var _running := false
+var _paused := false   # 시트(창고·조리) 열림 동안 시계 정지
 var _day_length := Config.DAY_LENGTH
 var _rent_skip_used := false
+var _rent_paid := false   # 오늘 가게세 이미 차감했는지(멱등 — 정산 연출/버튼 이중호출 방지)
 var _spawn_times: Array[float] = []
 var _next_idx := 0
 
@@ -29,6 +31,7 @@ func start_run() -> void:
 	day = 1
 	slots = Config.START_SLOTS
 	_rent_skip_used = false
+	_paused = false
 	Buffs.clear()
 	cash_changed.emit(cash)
 	start_day()
@@ -63,6 +66,7 @@ func advance_day() -> void:
 func start_day() -> void:
 	# 슬롯 = 기본(상점확장 포함) + 구조 버프(12)
 	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
+	_rent_paid = false
 	day_revenue = 0
 	_elapsed = 0.0
 	_next_idx = 0
@@ -126,13 +130,28 @@ func earn(amount: int) -> void:
 	cash_changed.emit(cash)
 
 
+## 가게세 차감 — main이 정산 연출에서 가게세 라인이 뜨는 타이밍에 호출. 하루 1회(멱등).
+## 미납 통과(rent_skip)·잔액 부족이면 차감하지 않음.
+func pay_rent() -> void:
+	if _rent_paid or rent <= 0 or cash < rent:
+		return
+	_rent_paid = true
+	cash -= rent
+	cash_changed.emit(cash)
+
+
 func _process(delta: float) -> void:
 	tick(delta)
 
 
 ## 하루 진행 1스텝. 실게임은 _process(delta)로, 시뮬은 원하는 dt로 수동 호출.
+## 시계 정지/재개 — 시트 열림 동안 하루 진행을 멈춤(트립 비용은 별도로 spend_time에서 유지).
+func set_paused(p: bool) -> void:
+	_paused = p
+
+
 func tick(delta: float) -> void:
-	if not _running:
+	if not _running or _paused:
 		return
 	_elapsed += delta
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
@@ -158,13 +177,13 @@ func _end_day() -> void:
 		"passed": passed,
 		"won": false,
 		"skipped": _rent_skip_used and cash < rent,
+		"cash": cash,   # 가게세 차감 전 보유금(정산 팝업 첫 줄)
 	}
-	if passed and cash >= rent:
-		cash -= rent
-		cash_changed.emit(cash)
+	# 가게세 차감은 여기서 하지 않고 main이 정산 연출(가게세 라인 등장 타이밍)에서 pay_rent()로 수행.
+	# 실패(미납·잔액부족)면 차감하지 않음.
 	if passed:
 		summary["won"] = day >= Levels.count()
-	summary["cash_after"] = cash
+	summary["cash_after"] = (cash - rent) if (passed and cash >= rent) else cash
 	day_ended.emit(summary)
 
 

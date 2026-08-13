@@ -114,6 +114,21 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+	# [임시] 정산 팝업 스크린샷: godot4 ... -- --shotsettle / --shotfail
+	if "--shotsettle" in OS.get_cmdline_user_args():
+		_start_game()
+		_session.earn(80000)
+		_session.debug_end_soon(0.2)
+		await get_tree().create_timer(6.0).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/settle.png")
+		get_tree().quit()
+	if "--shotfail" in OS.get_cmdline_user_args():
+		_start_game()
+		_session.add_cash(-_session.cash)   # 잔액 0 → 가게세 미납(실패)
+		_session.debug_end_soon(0.2)
+		await get_tree().create_timer(9.0).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/settle_fail.png")
+		get_tree().quit()
 
 	# 헤드리스 시뮬레이션: godot4 ... -- --sim
 	if "--sim" in OS.get_cmdline_user_args():
@@ -334,6 +349,7 @@ func _toggle_warehouse() -> void:
 func _open_warehouse() -> void:
 	_cooking.visible = false
 	_backdrop.visible = true
+	_set_world_paused(true)   # 재료 고르는 동안 시계 정지
 	_warehouse.slide_open()   # 아래서 슬라이드 업
 	Audio.play("door_open")   # 창고 들어감(문 열림)
 	_refresh_warehouse()
@@ -342,11 +358,27 @@ func _open_warehouse() -> void:
 func _on_tool_tapped(tool: ToolStation) -> void:
 	_warehouse.visible = false
 	_backdrop.visible = true
+	_set_world_paused(true)   # 레시피 고르는 동안 시계 정지
 	_cooking.open_for(tool)
 
 
+## 월드 정지/재개 — 시계·손님 인내심·조리 타이머 전부. 시트 열림 동안 시간 멈춤.
+func _set_world_paused(p: bool) -> void:
+	_session.set_paused(p)
+	for c in _queue_row.get_children():
+		if c is Customer:
+			(c as Customer).set_paused(p)
+	for s in _board.slots:
+		var card := s.get_card()
+		if card is OrderCard:
+			(card as OrderCard).set_paused(p)
+	for t in _board.tools:
+		t.set_paused(p)
+
+
 func _close_sheets() -> void:
-	# 창고 퇴장 = 트립 비용(영업시간 3초 소모). 세션 진행 중일 때만(spend_time가 가드).
+	_set_world_paused(false)   # 시계 재개(트립 비용은 아래 spend_time으로 별도 소모)
+	# 창고 퇴장 = 트립 비용(영업시간 소모).
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
 		Audio.play("door_close")   # 창고 나옴(문 닫힘)
@@ -430,7 +462,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	var from_pos := customer.global_position + customer.size * 0.5
 	customer.dismiss()
 	_fly_order_to_slot(order, slot, from_pos)
-	get_tree().create_timer(0.36).timeout.connect(func():
+	get_tree().create_timer(6.0).timeout.connect(func():
 		if is_instance_valid(customer):
 			customer.queue_free())   # 착지 후 제거 → 그때 큐가 좁혀짐
 	_accepted_today += 1
@@ -1045,7 +1077,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
 			.button(Loc.t("to_title"), _show_title)
 		_spawn_confetti()   # 축포 한 번
-		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
+		get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
 	else:
 		# 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
 		await _dayend_sequence()
@@ -1063,6 +1095,7 @@ func _show_settlement(summary: Dictionary) -> void:
 	var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
 	var cash_after: int = (cash_before - rent) if will_pay else cash_before
 
+	print("[SETTLE] open day=", summary["day"], " passed=", passed)
 	var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 	var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
 	var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
@@ -1073,6 +1106,7 @@ func _show_settlement(summary: Dictionary) -> void:
 	m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
 	if passed:
 		m.button(Loc.t("to_shop"), func():
+			print("[SETTLE] to_shop pressed")
 			_session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
 			_open_shop())
 	else:
