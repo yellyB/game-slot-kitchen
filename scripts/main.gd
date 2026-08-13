@@ -35,6 +35,10 @@ func _ready() -> void:
   var bg := ColorRect.new()
   bg.color = Palette.COCOA_50
   bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  bg.offset_left = -40
+  bg.offset_top = -40
+  bg.offset_right = 40
+  bg.offset_bottom = 40
   bg.gui_input.connect(_on_background_input)
   add_child(bg)
 
@@ -799,6 +803,40 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
+func _show_dayend_banner(day: int) -> void:
+  var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
+  l.add_theme_constant_override("outline_size", 8)
+  l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  l.z_index = 200
+  l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(l)
+  await get_tree().process_frame
+  if not is_instance_valid(l):
+    return
+  var vp := get_viewport_rect().size
+  l.pivot_offset = l.size * 0.5
+  l.position = (vp - l.size) * 0.5
+  l.scale = Vector2(0.5, 0.5)
+  l.modulate.a = 0.0
+  var tw := create_tween()
+  tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
+  tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+  tw.tween_interval(0.8)
+  tw.tween_property(l, "modulate:a", 0.0, 0.4)
+  tw.tween_callback(l.queue_free)
+
+
+func _screen_shake(strength := 13.0, dur := 0.45) -> void:
+  var steps := 7
+  var tw := create_tween()
+  for i in steps:
+    var damp := strength * (1.0 - float(i) / float(steps))
+    var off := Vector2(randf_range(-damp, damp), randf_range(-damp, damp))
+    tw.tween_property(self, "position", off, dur / float(steps + 1)).set_trans(Tween.TRANS_SINE)
+  tw.tween_property(self, "position", Vector2.ZERO, dur / float(steps + 1)).set_trans(Tween.TRANS_SINE)
+
+
 func _spawn_loss(amount: int) -> void:
   if amount <= 0:
     return
@@ -1050,6 +1088,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _spawn_confetti()
     get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))
   else:
+    _show_dayend_banner(summary["day"])
+    _screen_shake()
     await _dayend_sequence()
     _show_settlement(summary)
 
