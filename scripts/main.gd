@@ -423,6 +423,21 @@ func _spawn_customer() -> void:
 
 
 ## 주문 확인 → 손님이 큐에서 사라지고 다음 빈 슬롯의 주문 카드로 "이동".
+## 큐 재정렬 애니 — 접수/이탈 후 남은 손님이 새 자리로 부드럽게 슬라이드(즉시 점프 방지).
+func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
+  await get_tree().process_frame   # 제거 반영 → HBox 새 위치 확정
+  for c in customers:
+    if not is_instance_valid(c):
+      continue
+    var np: Vector2 = c.position
+    var op: Vector2 = old_pos.get(c, np)
+    if np == op:
+      continue
+    c.position = op
+    var tw := create_tween()
+    tw.tween_property(c, "position", np, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
 func _on_confirm_order(customer: Customer) -> void:
   # 주문 상한 — 나머지 슬롯은 재료/완성품(조리 공간)용으로 남김.
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
@@ -444,11 +459,17 @@ func _on_confirm_order(customer: Customer) -> void:
   # 주문서가 클릭한 손님 자리에서 슬롯으로 날아가 안착.
   # 자리는 착지까지 유지(dismiss=투명 홀드) → 뒤 손님이 즉시 안 밀려 "그 손님 주문서"로 읽힘.
   var from_pos := customer.global_position + customer.size * 0.5
-  customer.dismiss()
+  # 접수 손님 즉시 제거(빈칸 없이 큐 좁혀짐 → 새 손님이 앞자리) + 남은 손님 부드럽게 슬라이드.
+  var others: Array = []
+  var oldp := {}
+  for c in _queue_row.get_children():
+    if c is Customer and c != customer:
+      others.append(c)
+      oldp[c] = c.position
+  _queue_row.remove_child(customer)
+  customer.queue_free()
   _fly_order_to_slot(order, slot, from_pos)
-  get_tree().create_timer(6.0).timeout.connect(func():
-    if is_instance_valid(customer):
-      customer.queue_free())   # 착지 후 제거 → 그때 큐가 좁혀짐
+  _reflow_queue(others, oldp)   # 남은 손님이 새 자리로 슬라이드(즉시 점프 방지)
   _accepted_today += 1
   # 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략).
   if Buffs.consume_instant_order():
