@@ -82,9 +82,14 @@ func _entry(id: String) -> Button:
 	row.offset_right = -12
 	entry.add_child(row)
 
-	row.add_child(Recipes.icon_node(id, 28))
 	for iid in def.get("ingredients", []):
-		row.add_child(Ingredients.icon_node(iid, 26))
+		row.add_child(Ingredients.icon_node(iid, 24))
+
+	var arrow := UI.label("→", 20, Palette.COCOA_400, true)
+	arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(arrow)
+
+	row.add_child(Recipes.icon_node(id, 36))
 
 	var gap := Control.new()
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
