@@ -40,6 +40,8 @@ const S := {
 	"go_home": "홈으로",
 	"cancel": "취소",
 	"to_shop": "상점으로",
+	"pay_rent": "가게세 지불  %s",
+	"insufficient": "돈이 부족합니다",
 
 	"shop_slot": "슬롯 +1",
 	"shop_buffpack": "버프 팩",

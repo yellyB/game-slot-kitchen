@@ -40,6 +40,8 @@ const S := {
 	"go_home": "ホームへ",
 	"cancel": "キャンセル",
 	"to_shop": "ショップへ",
+	"pay_rent": "家賃を支払う  %s",
+	"insufficient": "お金が足りません",
 
 	"shop_slot": "スロット +1",
 	"shop_buffpack": "バフパック",

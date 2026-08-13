@@ -1101,30 +1101,29 @@ func _show_settlement(summary: Dictionary) -> void:
   var cash_before: int = summary["cash"]
   var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
-  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
-  var cash_after: int = (cash_before - rent) if will_pay else cash_before
-
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
   var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
   var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
   var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
-  var stamp := _settle_label(Loc.t("passed") if passed else Loc.t("failed"), \
-    Palette.SUCCESS if passed else Palette.DANGER, 20, true)
+  var stamp := _settle_label("", Palette.SUCCESS, 20, true)
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
-  if passed:
-    m.button(Loc.t("to_shop"), func():
-      _session.pay_rent()
-      _open_shop())
-  else:
-    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
-  var btn: BaseButton = m._body.get_child(m._body.get_child_count() - 1)
-  btn.modulate.a = 0.0
-  btn.disabled = true
-  var reveal_button := func():
-    btn.disabled = false
-    var bt := create_tween()
-    bt.tween_property(btn, "modulate:a", 1.0, 0.2)
+
+  var pay_btn := Button.new()
+  pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
+  pay_btn.custom_minimum_size = Vector2(0, 48)
+  pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  pay_btn.add_theme_font_size_override("font_size", 18)
+  pay_btn.add_theme_color_override("font_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  pay_btn.modulate.a = 0.0
+  pay_btn.disabled = true
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, held, stamp))
+  m.add_row(pay_btn)
 
   var tw := create_tween()
   tw.tween_interval(0.15)
@@ -1133,17 +1132,52 @@ func _show_settlement(summary: Dictionary) -> void:
   tw.tween_property(earned, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
   tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
-  tw.tween_callback(func(): if will_pay: _session.pay_rent())
-  if will_pay:
-    var upd_held := func(v: float): held.text = Loc.t("held") % UI.money(int(round(v)))
-    tw.parallel().tween_method(upd_held, float(cash_before), float(cash_after), 0.4) \
-      .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   tw.tween_interval(0.2)
-  tw.tween_callback(func(): stamp.pivot_offset = stamp.size * 0.5)
-  tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
-  tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
-  tw.tween_callback(reveal_button)
+  tw.tween_callback(func():
+    pay_btn.disabled = false
+    create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
+
+
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label, stamp: Label) -> void:
+  var passed: bool = summary["passed"]
+  var cash_before: int = summary["cash"]
+  var rent: int = summary["rent"]
+  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+  pay_btn.disabled = true
+  for c in pay_btn.pressed.get_connections():
+    pay_btn.pressed.disconnect(c["callable"])
+  if passed:
+    if will_pay:
+      _session.pay_rent()
+      var upd := func(v: float):
+        if is_instance_valid(held):
+          held.text = Loc.t("held") % UI.money(int(round(v)))
+      create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
+        .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    stamp.text = Loc.t("passed")
+    stamp.add_theme_color_override("font_color", Palette.SUCCESS)
+    _pop_settle_stamp(stamp)
+    pay_btn.text = Loc.t("to_shop")
+    pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+    pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+    pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+    pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+    pay_btn.disabled = false
+  else:
+    stamp.text = Loc.t("insufficient")
+    stamp.add_theme_color_override("font_color", Palette.DANGER)
+    _pop_settle_stamp(stamp)
+    pay_btn.text = Loc.t("to_title")
+    pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
+    pay_btn.disabled = false
+
+
+func _pop_settle_stamp(stamp: Label) -> void:
+  stamp.pivot_offset = stamp.size * 0.5
+  var t := create_tween()
+  t.tween_property(stamp, "modulate:a", 1.0, 0.12)
+  t.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  t.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
 
 func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
