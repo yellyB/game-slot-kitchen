@@ -115,6 +115,7 @@ func _ready() -> void:
     await TestHarness.new().run(self)
 
 
+
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
@@ -897,19 +898,27 @@ func _show_trip_cost(cost: float, before_v: float, after_v: float) -> void:
   var st := create_tween()
   st.tween_property(seg, "modulate:a", 0.0, 0.55).set_ease(Tween.EASE_IN)
   st.chain().tween_callback(seg.queue_free)
-  # "⏱ -N초" 플로터 (바 위, 소모 지점 근처에서 떠오름)
-  var l := UI.label("⏱ -%.1f초" % cost, 16, Palette.DANGER, true)
-  l.add_theme_constant_override("outline_size", 4)
+  # "⏱ -N초" — 화면 중앙에 크게 팝(시선 유도)
+  var l := UI.label("⏱ -%.1f초" % cost, 40, Palette.DANGER, true)
+  l.add_theme_constant_override("outline_size", 6)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
-  l.z_index = 121
+  l.z_index = 200
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
   add_child(l)
-  l.position = Vector2(bx.x + bw * 0.5 - 30.0, bx.y - 24.0)   # 바 중앙 위(겹침 방지)
+  await get_tree().process_frame   # 크기 확보 → 중앙 정렬·피벗
+  if not is_instance_valid(l):
+    return
+  var vp := get_viewport_rect().size
+  l.pivot_offset = l.size * 0.5
+  l.position = (vp - l.size) * 0.5 - Vector2(0, vp.y * 0.05)
+  l.scale = Vector2(1.5, 1.5)
+  l.modulate.a = 0.0
   var lt := create_tween()
-  lt.set_parallel(true)
-  lt.tween_property(l, "position:y", l.position.y - 18.0, 0.8).set_ease(Tween.EASE_OUT)
-  lt.tween_property(l, "modulate:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
-  lt.chain().tween_callback(l.queue_free)
+  lt.tween_property(l, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  lt.parallel().tween_property(l, "modulate:a", 1.0, 0.12)
+  lt.tween_interval(0.35)
+  lt.tween_property(l, "modulate:a", 0.0, 0.4)
+  lt.tween_callback(l.queue_free)
 
 
 ## 라벨 강조 팝 — 살짝 커졌다 원래대로(BACK). 돈 라벨 합류 시 등.
