@@ -1062,13 +1062,19 @@ func _show_settlement(summary: Dictionary) -> void:
     Palette.SUCCESS if passed else Palette.DANGER, 20, true)
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
+  if passed:
+    m.button(Loc.t("to_shop"), func():
+      _session.pay_rent()
+      _open_shop())
+  else:
+    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+  var btn: BaseButton = m._body.get_child(m._body.get_child_count() - 1)
+  btn.modulate.a = 0.0
+  btn.disabled = true
   var reveal_button := func():
-    if passed:
-      m.button(Loc.t("to_shop"), func():
-        _session.pay_rent()
-        _open_shop())
-    else:
-      m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+    btn.disabled = false
+    var bt := create_tween()
+    bt.tween_property(btn, "modulate:a", 1.0, 0.2)
 
   var tw := create_tween()
   tw.tween_interval(0.15)
