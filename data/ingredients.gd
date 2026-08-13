@@ -24,15 +24,18 @@ static func get_def(id: String) -> Dictionary:
 
 
 static var _tex_cache := {}
+static var _tex_cache_sm := {}
 
-static func tex(id: String) -> Texture2D:
-	if not _tex_cache.has(id):
-		var path := "res://assets/art/ingredients_128/%s.png" % id
-		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
-	return _tex_cache[id]
+static func tex(id: String, small := false) -> Texture2D:
+	var cache: Dictionary = _tex_cache_sm if small else _tex_cache
+	if not cache.has(id):
+		var dir := "ingredients_48" if small else "ingredients_128"
+		var path := "res://assets/art/%s/%s.png" % [dir, id]
+		cache[id] = load(path) if ResourceLoader.exists(path) else null
+	return cache[id]
 
 static func icon_node(id: String, px: int) -> Control:
-	var t := tex(id)
+	var t := tex(id, px <= 30)
 	if t != null:
 		var tr := TextureRect.new()
 		tr.texture = t
