@@ -53,15 +53,28 @@ func _build_content() -> void:
 	v.add_theme_constant_override("separation", 1)
 	add_child(v)
 
-	# 손님 얼굴 — 큐에서 이어받은 동물(없으면 랜덤)
+	# 윗줄: [말풍선+메뉴](왼쪽) | [손님](오른쪽) — 손님이 원하는 메뉴를 생각
 	if animal == "":
 		animal = Customers.random_id()
-	v.add_child(Customers.icon_node(animal, 26))
+	var top := HBoxContainer.new()
+	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top.alignment = BoxContainer.ALIGNMENT_CENTER
+	top.add_theme_constant_override("separation", 2)
+	v.add_child(top)
 
-	# 주문 메뉴: 요리 아이콘
-	v.add_child(Recipes.icon_node(recipe_id, 30))
+	# 말풍선(임시 이모지 💭) 위에 메뉴 아이콘 — 추후 손님쪽 향한 말풍선 이미지로 교체
+	var bubble := CenterContainer.new()
+	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var think := UI.label("💭", 32)
+	think.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bubble.add_child(think)                          # 말풍선(뒤)
+	bubble.add_child(Recipes.icon_node(recipe_id, 20))   # 메뉴(앞, 위에 얹힘)
+	top.add_child(bubble)
 
-	# 필요재료 아이콘들
+	# 손님 이미지 (오른쪽)
+	top.add_child(Customers.icon_node(animal, 30))
+
+	# 아랫줄: 메뉴 만들 재료
 	var reqs := HBoxContainer.new()
 	reqs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	reqs.alignment = BoxContainer.ALIGNMENT_CENTER
