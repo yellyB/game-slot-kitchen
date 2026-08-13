@@ -72,6 +72,11 @@ func dismiss() -> void:
 		_confirm.disabled = true
 
 
+func set_paused(p: bool) -> void:
+	if not _done:
+		set_process(not p)
+
+
 func force_expire() -> void:
 	if _done:
 		return

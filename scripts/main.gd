@@ -100,6 +100,20 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+	if "--shotsettle" in OS.get_cmdline_user_args():
+		_start_game()
+		_session.earn(80000)
+		_session.debug_end_soon(0.2)
+		await get_tree().create_timer(6.0).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/settle.png")
+		get_tree().quit()
+	if "--shotfail" in OS.get_cmdline_user_args():
+		_start_game()
+		_session.add_cash(-_session.cash)
+		_session.debug_end_soon(0.2)
+		await get_tree().create_timer(9.0).timeout
+		get_viewport().get_texture().get_image().save_png("/tmp/settle_fail.png")
+		get_tree().quit()
 
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
@@ -307,6 +321,7 @@ func _toggle_warehouse() -> void:
 func _open_warehouse() -> void:
 	_cooking.visible = false
 	_backdrop.visible = true
+	_set_world_paused(true)
 	_warehouse.slide_open()
 	Audio.play("door_open")
 	_refresh_warehouse()
@@ -315,10 +330,25 @@ func _open_warehouse() -> void:
 func _on_tool_tapped(tool: ToolStation) -> void:
 	_warehouse.visible = false
 	_backdrop.visible = true
+	_set_world_paused(true)
 	_cooking.open_for(tool)
 
 
+func _set_world_paused(p: bool) -> void:
+	_session.set_paused(p)
+	for c in _queue_row.get_children():
+		if c is Customer:
+			(c as Customer).set_paused(p)
+	for s in _board.slots:
+		var card := s.get_card()
+		if card is OrderCard:
+			(card as OrderCard).set_paused(p)
+	for t in _board.tools:
+		t.set_paused(p)
+
+
 func _close_sheets() -> void:
+	_set_world_paused(false)
 	if _warehouse.visible:
 		_session.spend_time(Stats.warehouse_cost())
 		Audio.play("door_close")
@@ -395,7 +425,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	var from_pos := customer.global_position + customer.size * 0.5
 	customer.dismiss()
 	_fly_order_to_slot(order, slot, from_pos)
-	get_tree().create_timer(0.36).timeout.connect(func():
+	get_tree().create_timer(6.0).timeout.connect(func():
 		if is_instance_valid(customer):
 			customer.queue_free())
 	_accepted_today += 1
@@ -958,7 +988,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
 			.button(Loc.t("to_title"), _show_title)
 		_spawn_confetti()
-		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))
+		get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))
 	else:
 		await _dayend_sequence()
 		_show_settlement(summary)
@@ -972,6 +1002,7 @@ func _show_settlement(summary: Dictionary) -> void:
 	var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
 	var cash_after: int = (cash_before - rent) if will_pay else cash_before
 
+	print("[SETTLE] open day=", summary["day"], " passed=", passed)
 	var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 	var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
 	var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
@@ -982,6 +1013,7 @@ func _show_settlement(summary: Dictionary) -> void:
 	m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
 	if passed:
 		m.button(Loc.t("to_shop"), func():
+			print("[SETTLE] to_shop pressed")
 			_session.pay_rent()
 			_open_shop())
 	else:

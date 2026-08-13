@@ -16,8 +16,10 @@ var slots := Config.START_SLOTS
 
 var _elapsed := 0.0
 var _running := false
+var _paused := false
 var _day_length := Config.DAY_LENGTH
 var _rent_skip_used := false
+var _rent_paid := false
 var _spawn_times: Array[float] = []
 var _next_idx := 0
 
@@ -27,6 +29,7 @@ func start_run() -> void:
 	day = 1
 	slots = Config.START_SLOTS
 	_rent_skip_used = false
+	_paused = false
 	Buffs.clear()
 	cash_changed.emit(cash)
 	start_day()
@@ -58,6 +61,7 @@ func advance_day() -> void:
 
 func start_day() -> void:
 	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
+	_rent_paid = false
 	day_revenue = 0
 	_elapsed = 0.0
 	_next_idx = 0
@@ -115,12 +119,24 @@ func earn(amount: int) -> void:
 	cash_changed.emit(cash)
 
 
+func pay_rent() -> void:
+	if _rent_paid or rent <= 0 or cash < rent:
+		return
+	_rent_paid = true
+	cash -= rent
+	cash_changed.emit(cash)
+
+
 func _process(delta: float) -> void:
 	tick(delta)
 
 
+func set_paused(p: bool) -> void:
+	_paused = p
+
+
 func tick(delta: float) -> void:
-	if not _running:
+	if not _running or _paused:
 		return
 	_elapsed += delta
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
@@ -146,13 +162,11 @@ func _end_day() -> void:
 		"passed": passed,
 		"won": false,
 		"skipped": _rent_skip_used and cash < rent,
+		"cash": cash,
 	}
-	if passed and cash >= rent:
-		cash -= rent
-		cash_changed.emit(cash)
 	if passed:
 		summary["won"] = day >= Levels.count()
-	summary["cash_after"] = cash
+	summary["cash_after"] = (cash - rent) if (passed and cash >= rent) else cash
 	day_ended.emit(summary)
 
 
