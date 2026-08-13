@@ -133,7 +133,11 @@ func _toggle(key: String) -> Control:
 	hit.pressed.connect(func():
 		settings[key] = not settings[key]
 		refresh.call()
-		Audio.play("switch"))
+		Audio.play("switch")
+		if key == "bgm":
+			Audio.set_bgm(settings["bgm"])
+		elif key == "vibrate" and settings["vibrate"]:
+			Audio.vibrate())
 	refresh.call()
 	return pill
 

@@ -42,7 +42,21 @@ func _ready() -> void:
 	_bgm.volume_db = BGM_VOLUME_DB
 	_bgm.finished.connect(_bgm.play)
 	add_child(_bgm)
-	_bgm.play()
+	if SettingsPanel.settings.get("bgm", true):
+		_bgm.play()
+
+
+func set_bgm(on: bool) -> void:
+	if on:
+		if not _bgm.playing:
+			_bgm.play()
+	else:
+		_bgm.stop()
+
+
+func vibrate(ms := 30) -> void:
+	if SettingsPanel.settings.get("vibrate", true):
+		Input.vibrate_handheld(ms)
 
 
 func attach_click(btn: BaseButton) -> void:
@@ -55,6 +69,8 @@ func _play_click() -> void:
 
 
 func play(id: String) -> void:
+	if not SettingsPanel.settings.get("sfx", true):
+		return
 	var stream: AudioStream = SFX.get(id)
 	if stream == null:
 		push_warning("Audio.play: 없는 효과음 id '%s'" % id)

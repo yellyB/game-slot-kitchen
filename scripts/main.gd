@@ -443,10 +443,12 @@ func _on_order_expired(order: OrderCard) -> void:
 
 func _on_order_rejected(order: OrderCard) -> void:
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
+	Audio.vibrate(30)
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
 	Audio.play("serve")
+	Audio.vibrate(20)
 	var rid := order.recipe_id
 	var ctx := _sale_ctx(order, dish)
 	var res := Buffs.sale_amount(rid, ctx)
