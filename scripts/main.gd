@@ -36,10 +36,14 @@ const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
 
 
 func _ready() -> void:
-  # 배경 크림 — 빈 곳 클릭 시 선택 해제 캐처
+  # 배경 크림 — 빈 곳 클릭 시 선택 해제 캐처. 화면 흔들림 때 가장자리 빈틈 안 보이게 여유 확장.
   var bg := ColorRect.new()
   bg.color = Palette.COCOA_50
   bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  bg.offset_left = -40
+  bg.offset_top = -40
+  bg.offset_right = 40
+  bg.offset_bottom = 40
   bg.gui_input.connect(_on_background_input)
   add_child(bg)
 
@@ -872,6 +876,42 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
+## 하루 마감 순간 — 큰 날짜 카운트를 화면 정중앙에 팝(시작 배너보다 크게).
+func _show_dayend_banner(day: int) -> void:
+  var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
+  l.add_theme_constant_override("outline_size", 8)
+  l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  l.z_index = 200
+  l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(l)
+  await get_tree().process_frame   # 크기 확보 → 중앙 정렬·피벗
+  if not is_instance_valid(l):
+    return
+  var vp := get_viewport_rect().size
+  l.pivot_offset = l.size * 0.5
+  l.position = (vp - l.size) * 0.5   # 정중앙
+  l.scale = Vector2(0.5, 0.5)
+  l.modulate.a = 0.0
+  var tw := create_tween()
+  tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
+  tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+  tw.tween_interval(0.8)
+  tw.tween_property(l, "modulate:a", 0.0, 0.4)
+  tw.tween_callback(l.queue_free)
+
+
+## 화면 전체 흔들림 — 루트(self) 위치를 감쇠 랜덤으로 흔들고 0으로 복귀. 마감 임팩트용.
+func _screen_shake(strength := 13.0, dur := 0.45) -> void:
+  var steps := 7
+  var tw := create_tween()
+  for i in steps:
+    var damp := strength * (1.0 - float(i) / float(steps))
+    var off := Vector2(randf_range(-damp, damp), randf_range(-damp, damp))
+    tw.tween_property(self, "position", off, dur / float(steps + 1)).set_trans(Tween.TRANS_SINE)
+  tw.tween_property(self, "position", Vector2.ZERO, dur / float(steps + 1)).set_trans(Tween.TRANS_SINE)
+
+
 ## 손실 연출 — 보유금액 바로 아래에서 빨간 "-금액"이 아래로 이동하며 페이드아웃.
 func _spawn_loss(amount: int) -> void:
   if amount <= 0:
@@ -1145,6 +1185,9 @@ func _on_day_ended(summary: Dictionary) -> void:
     _spawn_confetti()   # 축포 한 번
     get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
   else:
+    # 마감 임팩트: 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
+    _show_dayend_banner(summary["day"])
+    _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
     await _dayend_sequence()
     _show_settlement(summary)
