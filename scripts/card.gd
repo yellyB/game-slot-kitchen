@@ -11,6 +11,9 @@ func _ready() -> void:
 	# 내용이 슬롯보다 크면(슬롯 축소 시) 슬롯을 밀지 말고 잘라냄 → 보드/화면 높이 고정.
 	clip_contents = true
 	_style = UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12)
+	# 슬롯이 이미 프레임/그림자를 주므로 카드 자체 그림자는 끔.
+	# (그림자가 아래로 밀려 둥근 모서리 밖으로 회색 뾰족이 삐져나오는 현상 제거)
+	_style.shadow_size = 0
 	add_theme_stylebox_override("panel", _style)
 	_build_content()
 	_wrap_content()
