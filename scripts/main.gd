@@ -390,6 +390,20 @@ func _spawn_customer() -> void:
   _visited_today += 1
 
 
+func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
+  await get_tree().process_frame
+  for c in customers:
+    if not is_instance_valid(c):
+      continue
+    var np: Vector2 = c.position
+    var op: Vector2 = old_pos.get(c, np)
+    if np == op:
+      continue
+    c.position = op
+    var tw := create_tween()
+    tw.tween_property(c, "position", np, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
 func _on_confirm_order(customer: Customer) -> void:
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
     Toast.show_msg(self, Loc.t("orders_full"))
@@ -408,11 +422,16 @@ func _on_confirm_order(customer: Customer) -> void:
   order.rejected.connect(_on_order_rejected)
   order.urged.connect(_on_urged)
   var from_pos := customer.global_position + customer.size * 0.5
-  customer.dismiss()
+  var others: Array = []
+  var oldp := {}
+  for c in _queue_row.get_children():
+    if c is Customer and c != customer:
+      others.append(c)
+      oldp[c] = c.position
+  _queue_row.remove_child(customer)
+  customer.queue_free()
   _fly_order_to_slot(order, slot, from_pos)
-  get_tree().create_timer(6.0).timeout.connect(func():
-    if is_instance_valid(customer):
-      customer.queue_free())
+  _reflow_queue(others, oldp)
   _accepted_today += 1
   if Buffs.consume_instant_order():
     _produce_dish(rid)
