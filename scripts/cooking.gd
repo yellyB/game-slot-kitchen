@@ -4,6 +4,10 @@ extends Sheet
 signal cooked
 signal close_requested
 
+const ENTRY_H := 68
+const ROW_SEP := 8
+const SHEET_CHROME := 84
+
 var board: Board
 var _entries: Array[Button] = []
 var _active_tool: ToolStation
@@ -16,7 +20,8 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	offset_top = -480
+	var n := Recipes.all_ids().size()
+	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -49,7 +54,7 @@ func _ready() -> void:
 
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 8)
+	list.add_theme_constant_override("separation", ROW_SEP)
 	v.add_child(list)
 
 	for id in Recipes.all_ids():
@@ -67,7 +72,7 @@ func open_for(tool: ToolStation) -> void:
 func _entry(id: String) -> Button:
 	var def := Recipes.get_def(id)
 	var entry := Button.new()
-	entry.custom_minimum_size = Vector2(0, 68)
+	entry.custom_minimum_size = Vector2(0, ENTRY_H)
 	entry.add_theme_stylebox_override("normal", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	entry.add_theme_stylebox_override("hover", UI.card(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
 	entry.add_theme_stylebox_override("pressed", UI.card(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
