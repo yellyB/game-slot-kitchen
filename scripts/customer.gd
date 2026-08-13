@@ -92,6 +92,7 @@ func set_paused(p: bool) -> void:
 func stop_slide() -> void:
 	if _slide_tw != null and _slide_tw.is_valid():
 		_slide_tw.kill()
+	modulate.a = 1.0   # 페이드인 도중이었으면 즉시 완전 불투명(회색 잔상 방지)
 
 
 ## 강제 이탈(디버그 버튼 등) — 자연 인내심 만료와 동일하게 expired 방출.
