@@ -5,9 +5,25 @@ var _style: StyleBoxFlat
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	clip_contents = true
 	_style = UI.card(Palette.WHITE, Palette.COCOA_200, 1, 12)
 	add_theme_stylebox_override("panel", _style)
 	_build_content()
+	_wrap_content()
+
+
+func _wrap_content() -> void:
+	var built := get_children()
+	if built.is_empty():
+		return
+	var wrap := Control.new()
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for ch in built:
+		remove_child(ch)
+		wrap.add_child(ch)
+		if ch is Control:
+			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(wrap)
 
 
 func _build_content() -> void:
