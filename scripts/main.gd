@@ -628,6 +628,7 @@ func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 	# 손님 자리→슬롯으로 날아가는 고스트(실물과 동일 외형).
 	var ghost := OrderCard.new()
 	ghost.setup(card.recipe_id)
+	ghost.animal = card.animal            # 실물과 같은 손님(동물)로 — 날아갈 때 안 바뀌게
 	add_child(ghost)
 	ghost.set_process(false)              # 인내심 타이머 등 로직 정지
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
