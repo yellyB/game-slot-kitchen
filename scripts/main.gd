@@ -100,6 +100,7 @@ func _ready() -> void:
 	if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
 		await TestHarness.new().run(self)
 
+
 	if "--sim" in OS.get_cmdline_user_args():
 		var batch := SimBatch.new()
 		var n := 200
@@ -434,7 +435,7 @@ func _on_order_expired(order: OrderCard) -> void:
 		_expect_fly = true
 		_session.earn(gain)
 		_expect_fly = false
-		_fly_gain(gain, order.global_position + order.size * 0.5, Palette.SUB)
+		_show_gain_breakdown([{"src": "buff", "amount": gain}])
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
 	_detach_and_fade(order)
@@ -444,6 +445,48 @@ func _on_order_expired(order: OrderCard) -> void:
 func _on_order_rejected(order: OrderCard) -> void:
 	_spawn_pop("😠", order.global_position + order.size * 0.5)
 	Audio.vibrate(30)
+
+
+const GAIN_BASE_COLOR := Palette.SUCCESS
+const GAIN_BUFF_COLOR := Palette.MAIN
+
+func _show_gain_breakdown(breakdown: Array) -> void:
+	var i := 0
+	for entry in breakdown:
+		var amt := int(entry.get("amount", 0))
+		if amt == 0:
+			continue
+		var is_base: bool = entry.get("src", "") == "base"
+		var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
+		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i))
+		i += 1
+	get_tree().create_timer(i * 0.15 + 0.05).timeout.connect(func():
+		if is_inside_tree():
+			_pop_label(_money_label)
+			Audio.play("coins"))
+
+
+func _spawn_center_gain(amount: int, color: Color, idx: int) -> void:
+	if not is_inside_tree():
+		return
+	var l := UI.label("+" + UI.money(amount), 32, color, true)
+	l.z_index = 110
+	l.add_theme_constant_override("outline_size", 4)
+	l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	add_child(l)
+	await get_tree().process_frame
+	if not is_instance_valid(l):
+		return
+	l.pivot_offset = l.size * 0.5
+	l.position = size * 0.5 - l.size * 0.5 + Vector2(0, -idx * 8.0)
+	l.scale = Vector2(0.4, 0.4)
+	var tw := create_tween()
+	tw.tween_property(l, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "scale", Vector2.ONE, 0.08)
+	tw.tween_interval(0.2)
+	tw.tween_property(l, "position:y", l.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(l.queue_free)
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
@@ -468,7 +511,7 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
 	_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
 
 	var serve_pos := order.global_position + order.size * 0.5
-	_fly_gain(amount, serve_pos)
+	_show_gain_breakdown(res.get("breakdown", [{"src": "base", "amount": amount}]))
 	_spawn_pop("😊", serve_pos + Vector2(0, -18))
 
 	var holder := order.get_parent()
