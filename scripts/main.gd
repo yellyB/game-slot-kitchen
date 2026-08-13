@@ -291,7 +291,9 @@ func _debug_btn(text: String, cb: Callable) -> Button:
 func _build_customer_queue() -> Control:
   var panel := PanelContainer.new()
   panel.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
-  panel.custom_minimum_size = Vector2(0, 96)
+  # 손님 유무·종류와 무관하게 높이 고정 — 꽉 찬 기준(카드 92 + 여백 20 + 테두리 2).
+  # 최소높이가 이보다 작으면 손님 등장 시 패널이 늘어나 화면이 흔들림.
+  panel.custom_minimum_size = Vector2(0, 114)
 
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
