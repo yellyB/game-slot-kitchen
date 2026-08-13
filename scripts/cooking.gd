@@ -6,6 +6,10 @@ extends Sheet
 signal cooked          ## 조리 시작(재료 소비)됨 → 보드 상태 갱신용
 signal close_requested ## ✕ 닫기
 
+const ENTRY_H := 68        # 레시피 항목 높이
+const ROW_SEP := 8         # 항목 간격
+const SHEET_CHROME := 84   # 헤더 + 상하 패딩 여유(시트 높이 계산용)
+
 var board: Board  # main이 주입
 var _entries: Array[Button] = []
 var _active_tool: ToolStation
@@ -18,7 +22,9 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	offset_top = -480   # 메뉴 6개가 스크롤 없이 다 보이는 높이
+	# 시트 높이 = 레시피 전부 스크롤 없이 수용(위로 늘어남). 개수 늘어도 자동 대응.
+	var n := Recipes.all_ids().size()
+	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -52,7 +58,7 @@ func _ready() -> void:
 	# 레시피 목록 — 스크롤 없이 전부 표시(시트 높이로 수용)
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 8)
+	list.add_theme_constant_override("separation", ROW_SEP)
 	v.add_child(list)
 
 	for id in Recipes.all_ids():
@@ -72,7 +78,7 @@ func open_for(tool: ToolStation) -> void:
 func _entry(id: String) -> Button:
 	var def := Recipes.get_def(id)
 	var entry := Button.new()
-	entry.custom_minimum_size = Vector2(0, 68)
+	entry.custom_minimum_size = Vector2(0, ENTRY_H)
 	entry.add_theme_stylebox_override("normal", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	entry.add_theme_stylebox_override("hover", UI.card(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
 	entry.add_theme_stylebox_override("pressed", UI.card(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
