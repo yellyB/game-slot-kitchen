@@ -122,7 +122,7 @@ func _finish_cooking() -> void:
   state = State.DONE
   set_process(false)
   _stop_glow()
-  _style.border_color = Palette.SUCCESS
+  _style.border_color = Palette.SUB
   _clear_holder()
   var dish := DishCard.new()
   dish.setup(recipe_id)
