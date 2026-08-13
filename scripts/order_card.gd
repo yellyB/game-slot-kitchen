@@ -36,6 +36,10 @@ func pat_frac() -> float:
 func _preview_text() -> String:
 	return str(Recipes.get_def(recipe_id).get("icon", "?"))
 
+## 드래그 프리뷰도 손그림 메뉴(레시피)로 — 있으면 텍스처, 없으면 이모지 폴백.
+func _preview_icon() -> Control:
+	return Recipes.icon_node(recipe_id, 44)
+
 func _build_content() -> void:
 	# 주문 카드 느낌: 크림빛 배경 + 액센트 테두리
 	_style.bg_color = Palette.TICKET
