@@ -385,6 +385,7 @@ func _on_confirm_order(customer: Customer) -> void:
 	var rid := customer.recipe_id
 	var order := OrderCard.new()
 	order.setup(rid)
+	order.animal = customer.animal
 	order.born = _session.now()
 	order.expired.connect(_on_order_expired)
 	order.served.connect(_on_served)

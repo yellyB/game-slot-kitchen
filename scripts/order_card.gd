@@ -7,6 +7,7 @@ signal rejected(card: OrderCard)
 signal urged(card: OrderCard)
 
 var recipe_id: String
+var animal := ""
 var born := 0.0
 
 var _max := Config.PATIENCE_DISH
@@ -42,12 +43,9 @@ func _build_content() -> void:
 	v.add_theme_constant_override("separation", 1)
 	add_child(v)
 
-	var face := Label.new()
-	face.text = "🙋"
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.add_theme_font_size_override("font_size", 16)
-	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(face)
+	if animal == "":
+		animal = Customers.random_id()
+	v.add_child(Customers.icon_node(animal, 26))
 
 	v.add_child(Recipes.icon_node(recipe_id, 30))
 

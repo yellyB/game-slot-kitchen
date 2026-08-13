@@ -6,6 +6,7 @@ signal expired(customer: Customer)
 signal urged(customer: Customer)
 
 var recipe_id: String
+var animal := ""
 
 var _max := Config.PATIENCE_ORDER
 var _time_left := 0.0
@@ -35,9 +36,9 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 3)
 	pad.add_child(v)
 
-	var face := UI.label("🙋💭", 20)
-	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(face)
+	if animal == "":
+		animal = Customers.random_id()
+	v.add_child(Customers.icon_node(animal, 44))
 
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
