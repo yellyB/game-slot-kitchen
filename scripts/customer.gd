@@ -15,6 +15,7 @@ var _warned := false
 var _fill := Palette.SUCCESS
 var _gauge: ProgressBar
 var _slide_tw: Tween
+var _pulse_tw: Tween
 
 func setup(id: String) -> void:
 	recipe_id = id
@@ -67,6 +68,7 @@ func dismiss() -> void:
 	set_process(false)
 	if _slide_tw != null and _slide_tw.is_valid():
 		_slide_tw.kill()
+	_stop_pulse()
 	modulate.a = 0.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -86,6 +88,7 @@ func force_expire() -> void:
 		return
 	_done = true
 	set_process(false)
+	_stop_pulse()
 	expired.emit(self)
 
 
@@ -101,6 +104,23 @@ func slide_in() -> void:
 	tw.set_parallel(true)
 	tw.tween_property(self, "position", target, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+	_start_idle_pulse()
+
+
+func _start_idle_pulse() -> void:
+	if _done or not is_inside_tree():
+		return
+	pivot_offset = size * 0.5
+	_pulse_tw = create_tween().set_loops()
+	_pulse_tw.tween_property(self, "scale", Vector2(1.05, 1.05), 0.55).set_trans(Tween.TRANS_SINE)
+	_pulse_tw.tween_property(self, "scale", Vector2.ONE, 0.55).set_trans(Tween.TRANS_SINE)
+
+
+func _stop_pulse() -> void:
+	if _pulse_tw != null and _pulse_tw.is_valid():
+		_pulse_tw.kill()
+	_pulse_tw = null
+	scale = Vector2.ONE
 
 
 func _process(delta: float) -> void:
@@ -118,6 +138,7 @@ func _process(delta: float) -> void:
 	if _time_left <= 0.0:
 		_done = true
 		set_process(false)
+		_stop_pulse()
 		expired.emit(self)
 
 
