@@ -27,7 +27,7 @@ static var _tex_cache := {}
 
 static func tex(id: String) -> Texture2D:
 	if not _tex_cache.has(id):
-		var path := "res://assets/art/ingredients/%s.png" % id
+		var path := "res://assets/art/ingredients_128/%s.png" % id
 		_tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
 	return _tex_cache[id]
 
