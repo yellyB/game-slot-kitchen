@@ -1,7 +1,7 @@
 class_name Slot
 extends PanelContainer
 
-const PAD := 2
+const PAD := 4
 
 var _holder: MarginContainer
 
