@@ -143,68 +143,92 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var accum_pct := 0.0    # 45 이번 판매 적립율
 	var penalty := 0
 	var discard := ""
+	var breakdown: Array = [{"src": "base", "amount": mp}]   # 기본가 먼저(순차 표시용)
 
 	for id in _owned:
 		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
 		if s.is_empty():
 			continue
+		var dpct := 0.0
+		var dflat := 0
 		match s.get("type", ""):
 			"flat":
-				pct += float(s["pct"])
+				dpct = float(s["pct"])
 			"tier":
 				if tier in s.get("tiers", []):
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"count":
-				pct += float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx))
+				dpct = float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx))
 			"full":
 				if int(ctx.get("empty", -1)) == 0:
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"prob_double":
 				if randf() < float(s.get("chance", 0.0)):
 					do_double = true
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"cash":
-				flat += int(round(float(ctx.get("cash", 0)) * float(s["pct"])))
+				dflat = int(round(float(ctx.get("cash", 0)) * float(s["pct"])))
 			"risk":
-				pct += float(s["pct"])
+				dpct = float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
 					discard = id
 					penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
 			"fresh":
 				if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"fast_order":
 				if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"late":
 				if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"consumed":
-				pct += float(s["pct"]) * (1.0 - float(ctx.get("pat_frac", 1.0)))
+				dpct = float(s["pct"]) * (1.0 - float(ctx.get("pat_frac", 1.0)))
 			"critical":
 				if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
-					pct += float(s["pct"])
+					dpct = float(s["pct"])
 			"addon":
 				addon_pct += float(s["pct"])
 			"accum":
-				accum_pct += float(s["pct"])         # 지급/누적은 말미에서(복리 차단)
+				accum_pct += float(s["pct"])
+		# 이 버프의 기여금 — 누적 %로 증분 반올림(합이 총 보너스와 정확히 일치)
+		var contrib := 0
+		if dpct != 0.0:
+			var new_pct := pct + dpct
+			contrib += int(round(float(mp) * new_pct)) - int(round(float(mp) * pct))
+			pct = new_pct
+		if dflat != 0:
+			contrib += dflat
+			flat += dflat
+		if contrib != 0:
+			breakdown.append({"src": id, "amount": contrib})
 
 	var bonus := int(round(float(mp) * pct)) + flat
 	if addon_pct > 0.0:
-		bonus += int(round(float(bonus) * addon_pct))   # 57: 추가금 재증폭
+		var add := int(round(float(bonus) * addon_pct))   # 57: 추가금 재증폭
+		bonus += add
+		if add != 0:
+			breakdown.append({"src": "addon", "amount": add})
 	var amount := mp + bonus
+	var mult := 1
 	if do_double:
-		amount *= 2
+		mult *= 2
 	if _double_next:                                     # 72
-		amount *= 2
+		mult *= 2
 		_double_next = false
-	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금(적립 제외)의 %만 누적 → 복리 차단
+	if mult > 1:
+		var before := amount
+		amount *= mult
+		breakdown.append({"src": "double", "amount": amount - before})
+	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금의 %만 누적(복리 차단)
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
 		amount += payout
-	return {"amount": amount, "penalty": penalty, "discard": discard}
+		if payout != 0:
+			breakdown.append({"src": "accum", "amount": payout})
+	return {"amount": amount, "penalty": penalty, "discard": discard, "breakdown": breakdown}
 
 
 func _ctx_count(per: String, ctx: Dictionary) -> int:
