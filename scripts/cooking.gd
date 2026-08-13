@@ -72,7 +72,7 @@ func open_for(tool: ToolStation) -> void:
 func _entry(id: String) -> Button:
 	var def := Recipes.get_def(id)
 	var entry := Button.new()
-	entry.custom_minimum_size = Vector2(0, 52)
+	entry.custom_minimum_size = Vector2(0, 68)
 	entry.add_theme_stylebox_override("normal", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	entry.add_theme_stylebox_override("hover", UI.card(Palette.ACCENT.lightened(0.35), Palette.ACCENT))
 	entry.add_theme_stylebox_override("pressed", UI.card(Palette.ACCENT.lightened(0.2), Palette.ACCENT))
