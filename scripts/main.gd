@@ -475,7 +475,7 @@ func _on_order_expired(order: OrderCard) -> void:
 		_expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
 		_session.earn(gain)
 		_expect_fly = false
-		_show_gain_breakdown([{"src": "buff", "amount": gain}])   # 버프 획득 → 중앙 버프색 +n
+		_show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])   # 버프 획득 → 중앙 버프색 +n
 	_order_lost_today += 1
 	_spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
 	_detach_and_fade(order)   # 슬롯에서 떼어내며 페이드아웃(슬롯 즉시 회복)
@@ -492,8 +492,8 @@ func _on_order_rejected(order: OrderCard) -> void:
 const GAIN_BASE_COLOR := Palette.SUCCESS   # 기본 판매금 색
 const GAIN_BUFF_COLOR := Palette.MAIN      # 버프 추가분 색(판매/비판매 공통)
 
-## 획득 내역을 화면 중앙에 순차 표시 — 기본가(기본색) → 각 버프 추가분(버프색), 곧바로 이어서.
-## breakdown: [{src:"base"/버프id/"addon"/"double"/"accum", amount:int}, ...]
+## 획득 내역을 화면 중앙에 순차 표시 — 기본가(메뉴 아이콘·기본색) → 버프별 추가분(버프 이모지·버프색).
+## breakdown: [{src, amount, icon}, ...]
 func _show_gain_breakdown(breakdown: Array) -> void:
 	var i := 0
 	for entry in breakdown:
@@ -502,7 +502,8 @@ func _show_gain_breakdown(breakdown: Array) -> void:
 			continue
 		var is_base: bool = entry.get("src", "") == "base"
 		var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
-		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i))
+		var icon: String = str(entry.get("icon", ""))
+		get_tree().create_timer(i * 0.15).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
 		i += 1
 	# 마지막 항목 뒤 보유금액 라벨 통통 + 코인음
 	get_tree().create_timer(i * 0.15 + 0.05).timeout.connect(func():
@@ -511,28 +512,34 @@ func _show_gain_breakdown(breakdown: Array) -> void:
 			Audio.play("coins"))
 
 
-## 화면 중앙 "+금액" 팝 — 살짝 튀어올랐다 위로 떠오르며 사라짐. idx로 순차 항목이 위로 쌓임.
-func _spawn_center_gain(amount: int, color: Color, idx: int) -> void:
+## 화면 중앙 "[아이콘] +금액" 팝 — 살짝 튀어올랐다 위로 떠오르며 사라짐. idx로 순차 항목이 위로 쌓임.
+func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> void:
 	if not is_inside_tree():
 		return
-	var l := UI.label("+" + UI.money(amount), 32, color, true)
-	l.z_index = 110
-	l.add_theme_constant_override("outline_size", 4)
-	l.add_theme_color_override("font_outline_color", Palette.WHITE)
-	add_child(l)
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.z_index = 110
+	if icon != "":
+		box.add_child(UI.label(icon, 30))   # 원인: 메뉴 아이콘 / 버프 이모지
+	var amt_l := UI.label("+" + UI.money(amount), 32, color, true)
+	amt_l.add_theme_constant_override("outline_size", 4)
+	amt_l.add_theme_color_override("font_outline_color", Palette.WHITE)
+	box.add_child(amt_l)
+	add_child(box)
 	await get_tree().process_frame
-	if not is_instance_valid(l):
+	if not is_instance_valid(box):
 		return
-	l.pivot_offset = l.size * 0.5
-	l.position = size * 0.5 - l.size * 0.5 + Vector2(0, -idx * 8.0)
-	l.scale = Vector2(0.4, 0.4)
+	box.pivot_offset = box.size * 0.5
+	box.position = size * 0.5 - box.size * 0.5 + Vector2(0, -idx * 8.0)
+	box.scale = Vector2(0.4, 0.4)
 	var tw := create_tween()
-	tw.tween_property(l, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(l, "scale", Vector2.ONE, 0.08)
+	tw.tween_property(box, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(box, "scale", Vector2.ONE, 0.08)
 	tw.tween_interval(0.2)
-	tw.tween_property(l, "position:y", l.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.3)
-	tw.tween_callback(l.queue_free)
+	tw.tween_property(box, "position:y", box.position.y - 28.0, 0.3).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(box, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(box.queue_free)
 
 
 func _on_served(order: OrderCard, dish: DishCard) -> void:
@@ -1031,6 +1038,7 @@ func _on_day_ended(summary: Dictionary) -> void:
 		_cooking.slide_close()
 	_backdrop.visible = false
 	if summary["won"]:
+		_session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)
 		_clear_play_field()   # 마감 즉시 필드 비움
 		Modal.open(self) \
 			.title(Loc.t("win_title")) \
@@ -1038,25 +1046,64 @@ func _on_day_ended(summary: Dictionary) -> void:
 			.button(Loc.t("to_title"), _show_title)
 		_spawn_confetti()   # 축포 한 번
 		get_tree().create_timer(0.5).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
-	elif summary["passed"]:
-		# 카운트다운 종료 → 1초 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 모달.
-		await _dayend_sequence()
-		Modal.open(self) \
-			.title(Loc.t("day_closed") % summary["day"]) \
-			.count_row(Loc.t("revenue"), summary["revenue"]) \
-			.count_row(Loc.t("rent"), summary["rent"], Palette.DANGER) \
-			.sep() \
-			.count_row(Loc.t("remaining"), summary["cash_after"], Palette.COCOA_800) \
-			.stamp_row(Loc.t("passed"), Palette.SUCCESS) \
-			.button(Loc.t("to_shop"), _open_shop)
 	else:
-		_clear_play_field()   # 마감 즉시 필드 비움
-		_fade_to_black(func():   # 폐업 암전 후 게임오버 모달
-			Modal.open(self) \
-				.title(Loc.t("gameover_title")) \
-				.row(Loc.t("gameover_day") % summary["day"]) \
-				.row(Loc.t("gameover_reason") % [UI.money(summary["revenue"]), UI.money(summary["rent"])], Palette.DANGER) \
-				.button(Loc.t("to_title"), _show_title))
+		# 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
+		await _dayend_sequence()
+		_show_settlement(summary)
+
+
+## 하루 정산 팝업 — 보유금 → 오늘 매출 → 가게세 순서로 페이드인.
+## 가게세 라인이 뜨는 타이밍에 실제 차감(pay_rent) + 보유금 카운트다운. 실패면 미차감 + 실패 도장.
+func _show_settlement(summary: Dictionary) -> void:
+	var passed: bool = summary["passed"]
+	var cash_before: int = summary["cash"]
+	var rev: int = summary["revenue"]
+	var rent: int = summary["rent"]
+	# 실제 차감 여부: 통과 + 미납통과(skip) 아님 + 잔액 충분.
+	var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+	var cash_after: int = (cash_before - rent) if will_pay else cash_before
+
+	var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+	var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
+	var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
+	var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
+	var stamp := _settle_label(Loc.t("passed") if passed else Loc.t("failed"), \
+		Palette.SUCCESS if passed else Palette.DANGER, 20, true)
+	stamp.scale = Vector2(0.5, 0.5)
+	m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
+	if passed:
+		m.button(Loc.t("to_shop"), func():
+			_session.pay_rent()   # 연출 스킵 대비 — 멱등이라 이중차감 안 됨
+			_open_shop())
+	else:
+		m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+
+	# 순차 페이드인: 보유금 → 오늘 매출 → 가게세(차감·카운트다운) → 결과 도장.
+	var tw := create_tween()
+	tw.tween_interval(0.15)
+	tw.tween_property(held, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(0.35)
+	tw.tween_property(earned, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(0.35)
+	tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
+	tw.tween_callback(func(): if will_pay: _session.pay_rent())   # 이 타이밍에 실제 차감
+	if will_pay:   # 보유금이 가게세만큼 촤르륵 줄어듦
+		tw.parallel().tween_method(func(v: float): held.text = Loc.t("held") % UI.money(int(round(v))), \
+			float(cash_before), float(cash_after), 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(0.2)
+	tw.tween_callback(func(): stamp.pivot_offset = stamp.size * 0.5)
+	tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
+	tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
+
+## 정산 팝업 행 라벨 — 가운데 정렬 + 처음엔 투명(순차 페이드인용).
+func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
+	var l := UI.label(text, font, color, bold)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.modulate.a = 0.0
+	return l
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.

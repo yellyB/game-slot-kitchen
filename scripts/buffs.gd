@@ -133,6 +133,13 @@ func menu_price(recipe_id: String) -> int:
 # ── 판매 금액 계산(판매금/추가금 전 카드) ─────────────────
 ## ctx: {filled,empty,orders,dishes,buffs,now,dish_age,order_age,pat_frac,cash,day_revenue}
 ## 반환: {amount:int, penalty:int, discard:String}  (penalty·discard는 sim이 처리)
+## 버프 아이콘(이모지) — 이미지 없으니 이모지 사용. 빈 id면 ✨.
+static func _buff_icon(id: String) -> String:
+	if id == "":
+		return "✨"
+	return str(BuffDefs.get_def(id).get("icon", "✨"))
+
+
 func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var mp := menu_price(recipe_id)
 	var tier := int(Recipes.get_def(recipe_id).get("tier", 0))
@@ -143,7 +150,10 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var accum_pct := 0.0    # 45 이번 판매 적립율
 	var penalty := 0
 	var discard := ""
-	var breakdown: Array = [{"src": "base", "amount": mp}]   # 기본가 먼저(순차 표시용)
+	var addon_id := ""
+	var accum_id := ""
+	var double_id := ""
+	var breakdown: Array = [{"src": "base", "amount": mp, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]   # 기본가(메뉴 아이콘) 먼저
 
 	for id in _owned:
 		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
@@ -165,6 +175,7 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"prob_double":
 				if randf() < float(s.get("chance", 0.0)):
 					do_double = true
+					double_id = id
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
 					dpct = float(s["pct"])
@@ -191,8 +202,10 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 					dpct = float(s["pct"])
 			"addon":
 				addon_pct += float(s["pct"])
+				addon_id = id
 			"accum":
 				accum_pct += float(s["pct"])
+				accum_id = id
 		# 이 버프의 기여금 — 누적 %로 증분 반올림(합이 총 보너스와 정확히 일치)
 		var contrib := 0
 		if dpct != 0.0:
@@ -203,14 +216,14 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			contrib += dflat
 			flat += dflat
 		if contrib != 0:
-			breakdown.append({"src": id, "amount": contrib})
+			breakdown.append({"src": id, "amount": contrib, "icon": _buff_icon(id)})
 
 	var bonus := int(round(float(mp) * pct)) + flat
 	if addon_pct > 0.0:
 		var add := int(round(float(bonus) * addon_pct))   # 57: 추가금 재증폭
 		bonus += add
 		if add != 0:
-			breakdown.append({"src": "addon", "amount": add})
+			breakdown.append({"src": "addon", "amount": add, "icon": _buff_icon(addon_id)})
 	var amount := mp + bonus
 	var mult := 1
 	if do_double:
@@ -221,13 +234,13 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	if mult > 1:
 		var before := amount
 		amount *= mult
-		breakdown.append({"src": "double", "amount": amount - before})
+		breakdown.append({"src": "double", "amount": amount - before, "icon": _buff_icon(double_id)})
 	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금의 %만 누적(복리 차단)
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
 		amount += payout
 		if payout != 0:
-			breakdown.append({"src": "accum", "amount": payout})
+			breakdown.append({"src": "accum", "amount": payout, "icon": _buff_icon(accum_id)})
 	return {"amount": amount, "penalty": penalty, "discard": discard, "breakdown": breakdown}
 
 
