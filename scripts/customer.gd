@@ -77,6 +77,11 @@ func set_paused(p: bool) -> void:
 		set_process(not p)
 
 
+func stop_slide() -> void:
+	if _slide_tw != null and _slide_tw.is_valid():
+		_slide_tw.kill()
+
+
 func force_expire() -> void:
 	if _done:
 		return

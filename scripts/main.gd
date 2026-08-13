@@ -396,10 +396,14 @@ func _spawn_customer() -> void:
 
 
 func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
-  await get_tree().process_frame
+  if customers.is_empty():
+    return
+  await _queue_row.sort_children
   for c in customers:
     if not is_instance_valid(c):
       continue
+    if c.has_method("stop_slide"):
+      c.stop_slide()
     var np: Vector2 = c.position
     var op: Vector2 = old_pos.get(c, np)
     if np == op:
