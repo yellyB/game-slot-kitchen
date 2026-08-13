@@ -1104,8 +1104,9 @@ func _show_settlement(summary: Dictionary) -> void:
   tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
   tw.tween_callback(func(): if will_pay: _session.pay_rent())   # 이 타이밍에 실제 차감
   if will_pay:   # 보유금이 가게세만큼 촤르륵 줄어듦
-    tw.parallel().tween_method(func(v: float): held.text = Loc.t("held") % UI.money(int(round(v))), \
-      float(cash_before), float(cash_after), 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    var upd_held := func(v: float): held.text = Loc.t("held") % UI.money(int(round(v)))
+    tw.parallel().tween_method(upd_held, float(cash_before), float(cash_after), 0.4) \
+      .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   tw.tween_interval(0.2)
   tw.tween_callback(func(): stamp.pivot_offset = stamp.size * 0.5)
   tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
