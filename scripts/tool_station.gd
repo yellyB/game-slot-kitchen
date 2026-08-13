@@ -27,12 +27,18 @@ func _ready() -> void:
 
   _holder = MarginContainer.new()
   _holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  for side in ["left", "right", "top", "bottom"]:
-    _holder.add_theme_constant_override("margin_" + side, 6)
+  _set_holder_pad(6)
   add_child(_holder)
 
   set_process(false)
   _show_idle()
+
+
+## holder 여백(카드와 도구석 테두리 사이 간격). 완성 시엔 4로 좁혀 완성품 카드 초록과
+## 도구석 초록 테두리가 붙어 보이게. 그 외엔 6(플레임·타이머 여백).
+func _set_holder_pad(px: int) -> void:
+  for side in ["left", "right", "top", "bottom"]:
+    _holder.add_theme_constant_override("margin_" + side, px)
 
 
 func is_idle() -> bool:
@@ -64,6 +70,7 @@ func _show_idle() -> void:
   state = State.IDLE
   recipe_id = ""
   _clear_holder()
+  _set_holder_pad(6)   # 완성 상태에서 좁혔던 여백 복원(플레임 여백)
   _style.border_color = Palette.SUB
   # 화구(불꽃) 손그림 있으면 텍스처, 없으면 🔥 이모지 폴백. [[재료 아트 로딩과 동일 패턴]]
   var path := "res://assets/art/tools/burner.png"
@@ -134,7 +141,8 @@ func _finish_cooking() -> void:
   state = State.DONE
   set_process(false)
   _stop_glow()
-  _style.border_color = Palette.SUB   # 도구석 테두리는 기본색 유지 — 완성 표시는 완성품 카드의 2px 초록 테두리로(이중 초록 방지)
+  _style.border_color = Palette.SUCCESS
+  _set_holder_pad(4)   # 완성품 카드 초록과 도구석 초록 테두리 간격 6→4 (붙여서 한 프레임처럼)
   _clear_holder()
   var dish := DishCard.new()
   dish.setup(recipe_id)
