@@ -70,6 +70,11 @@ func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
 	return self
 
 
+func add_row(ctrl: Control) -> Modal:
+	_body.add_child(ctrl)
+	return self
+
+
 func sep() -> Modal:
 	var line := ColorRect.new()
 	line.color = Palette.COCOA_200
