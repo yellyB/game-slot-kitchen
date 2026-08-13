@@ -100,6 +100,7 @@ func _ready() -> void:
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
 
+
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
     var n := 200
@@ -1014,12 +1015,13 @@ func _show_settlement(summary: Dictionary) -> void:
     Palette.SUCCESS if passed else Palette.DANGER, 20, true)
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
-  if passed:
-    m.button(Loc.t("to_shop"), func():
-      _session.pay_rent()
-      _open_shop())
-  else:
-    m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
+  var reveal_button := func():
+    if passed:
+      m.button(Loc.t("to_shop"), func():
+        _session.pay_rent()
+        _open_shop())
+    else:
+      m.button(Loc.t("to_title"), func(): _fade_to_black(_show_title))
 
   var tw := create_tween()
   tw.tween_interval(0.15)
@@ -1038,6 +1040,7 @@ func _show_settlement(summary: Dictionary) -> void:
   tw.tween_property(stamp, "modulate:a", 1.0, 0.12)
   tw.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+  tw.tween_callback(reveal_button)
 
 
 func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
