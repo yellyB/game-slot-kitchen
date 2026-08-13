@@ -938,6 +938,11 @@ func _pop_clear_slots() -> void:
 
 
 func _on_day_ended(summary: Dictionary) -> void:
+	if _warehouse.visible:
+		_warehouse.slide_close()
+	if _cooking.visible:
+		_cooking.slide_close()
+	_backdrop.visible = false
 	if summary["won"]:
 		_clear_play_field()
 		Modal.open(self) \
