@@ -50,7 +50,7 @@ const ALL := {
 	"dmd_cream":  {"card": 20, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.7}},
 
 	# ── 메뉴가격 등급별 인상 ──
-	"mp_t12":     {"card": 21, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.25}},
+	"mp_t12":     {"card": 21, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.15}},
 	"mp_t34":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 0.15}},
 	"mp_t56":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.15}},
 
@@ -81,7 +81,7 @@ const ALL := {
 	"rt_every7":  {"card": 43, "icon": "📈", "trigger": {"kind": "every7", "value": 0.20}},
 	"rt_fast3":   {"card": 44, "icon": "📈", "trigger": {"kind": "fast3", "value": 0.12, "window": 3.0}},
 	"accum_sale": {"card": 45, "icon": "🪙", "sale": {"type": "accum", "pct": 0.03}},
-	"sale_flat3": {"card": 46, "icon": "💰", "sale": {"type": "flat", "pct": 0.09}},
+	"sale_flat3": {"card": 46, "icon": "💰", "sale": {"type": "flat", "pct": 0.03}},
 	"prob_bonus": {"card": 47, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 0.30}},
 	"sale_risk":  {"card": 48, "icon": "💥", "sale": {"type": "risk", "pct": 0.20, "chance": 0.10, "penalty_pct": 0.30}},
 	"no_buy":     {"card": 49, "icon": "🚫", "blocked": true},
