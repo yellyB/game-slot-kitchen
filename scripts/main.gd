@@ -299,8 +299,19 @@ func _build_bottom_buttons() -> Control:
   row.add_theme_constant_override("separation", 10)
 
   _warehouse_btn = _make_bottom_button(Palette.MAIN)
-  _warehouse_btn.text = "🏬"
   _warehouse_btn.pressed.connect(_toggle_warehouse)
+  var wh_cc := CenterContainer.new()
+  wh_cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  wh_cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var wh_icon := TextureRect.new()
+  wh_icon.texture = load("res://assets/art/ui/warehouse.png")
+  wh_icon.custom_minimum_size = Vector2(40, 40)
+  wh_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+  wh_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+  wh_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+  wh_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  wh_cc.add_child(wh_icon)
+  _warehouse_btn.add_child(wh_cc)
   row.add_child(_warehouse_btn)
 
   _trash_btn = TrashButton.new()
