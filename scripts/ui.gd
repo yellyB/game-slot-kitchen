@@ -45,6 +45,25 @@ static func money(n: int) -> String:
 	var body := _abbr(a) if a >= Config.MONEY_ABBR_AT else _comma(a)
 	return "-" + body if n < 0 else body
 
+
+static func ui_icon(name: String, px: int) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.texture = load("res://assets/art/ui/%s.png" % name)
+	tr.custom_minimum_size = Vector2(px, px)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return tr
+
+
+static func ui_btn_icon(name: String, px: int) -> Control:
+	var cc := CenterContainer.new()
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cc.add_child(ui_icon(name, px))
+	return cc
+
 static func _comma(a: int) -> String:
 	var s := str(a)
 	var out := ""

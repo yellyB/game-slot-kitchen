@@ -188,9 +188,8 @@ func _build_top_bar() -> Control:
   box.add_child(row)
 
   var home := Button.new()
-  home.text = "🏠"
-  home.add_theme_font_size_override("font_size", 16)
   home.custom_minimum_size = Vector2(34, 34)
+  home.add_child(UI.ui_btn_icon("house", 22))
   home.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
   home.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
   home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
@@ -207,14 +206,14 @@ func _build_top_bar() -> Control:
 
   var coin := HBoxContainer.new()
   coin.add_theme_constant_override("separation", 4)
-  coin.add_child(_dot(Palette.ACCENT))
+  coin.add_child(UI.ui_icon("coin", 20))
   _money_label = UI.label("0", 18, Palette.COCOA_800, true)
   coin.add_child(_money_label)
   row.add_child(coin)
 
   var rentbox := HBoxContainer.new()
   rentbox.add_theme_constant_override("separation", 4)
-  rentbox.add_child(_dot(Palette.DANGER))
+  rentbox.add_child(UI.ui_icon("bill", 20))
   _rent_label = UI.label("0", 18, Palette.COCOA_800, true)
   rentbox.add_child(_rent_label)
   row.add_child(rentbox)
@@ -223,7 +222,7 @@ func _build_top_bar() -> Control:
   hours.add_theme_constant_override("separation", 8)
   box.add_child(hours)
 
-  hours.add_child(UI.label("☀️", 14, Palette.COCOA_400))
+  hours.add_child(UI.ui_icon("sun", 18))
 
   _hours_bar = ProgressBar.new()
   _hours_bar.min_value = 0
@@ -236,7 +235,7 @@ func _build_top_bar() -> Control:
   _hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
   hours.add_child(_hours_bar)
 
-  hours.add_child(UI.label("🌙", 14, Palette.COCOA_400))
+  hours.add_child(UI.ui_icon("moon", 18))
 
   return panel
 

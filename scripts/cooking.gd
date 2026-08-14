@@ -109,7 +109,11 @@ func _entry(id: String) -> Button:
 	row.add_child(gap)
 	var coin_node := _coin(int(def.get("price", 0)))
 	row.add_child(coin_node)
-	var time_node := UI.label("⏱️%d" % int(def.get("cook_time", 0)), 20, Palette.COCOA_600)
+	var time_node := HBoxContainer.new()
+	time_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	time_node.add_theme_constant_override("separation", 2)
+	time_node.add_child(UI.ui_icon("timer", 20))
+	time_node.add_child(UI.label(str(int(def.get("cook_time", 0))), 20, Palette.COCOA_600))
 	row.add_child(time_node)
 
 	entry.set_meta("offer", [menu_node, coin_node, time_node])
@@ -122,13 +126,7 @@ func _coin(amount: int) -> Control:
 	var box := HBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 4)
-	var dot := ColorRect.new()
-	dot.color = Palette.ACCENT
-	dot.custom_minimum_size = Vector2(12, 12)
-	var wrap := CenterContainer.new()
-	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	wrap.add_child(dot)
-	box.add_child(wrap)
+	box.add_child(UI.ui_icon("coin", 18))
 	box.add_child(UI.label(UI.money(amount), 18, Palette.COCOA_800, true))
 	return box
 
