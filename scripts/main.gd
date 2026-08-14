@@ -320,21 +320,24 @@ func _build_customer_queue() -> Control:
   return panel
 
 
-# ── 하단 버튼: 창고 · 휴지통 ───────────────────────────────
+# ── 하단 버튼: 휴지통(좌 30%) · 창고(우 70%) ───────────────
+# 자주 쓰는 창고를 오른손 엄지존(우측)에 크게, 가끔 쓰는 휴지통은 좌측에 좁게.
 func _build_bottom_buttons() -> Control:
   var row := HBoxContainer.new()
   row.mouse_filter = Control.MOUSE_FILTER_IGNORE
   row.add_theme_constant_override("separation", 10)
 
-  _warehouse_btn = _make_bottom_button(Palette.MAIN)
-  _warehouse_btn.pressed.connect(_toggle_warehouse)
-  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))   # 창고 손그림(이모지 대신)
-  row.add_child(_warehouse_btn)
-
   _trash_btn = TrashButton.new()
   _style_bottom_button(_trash_btn, Palette.SUB)
-  _trash_btn.text = "🗑️"
+  _trash_btn.size_flags_stretch_ratio = 0.3   # 좌측 30%
+  _trash_btn.add_child(UI.ui_btn_icon("trash", 40))   # 휴지통 손그림(이모지 대신)
   row.add_child(_trash_btn)
+
+  _warehouse_btn = _make_bottom_button(Palette.MAIN)
+  _warehouse_btn.pressed.connect(_toggle_warehouse)
+  _warehouse_btn.size_flags_stretch_ratio = 0.7   # 우측 70%
+  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))   # 창고 손그림(이모지 대신)
+  row.add_child(_warehouse_btn)
 
   return row
 
