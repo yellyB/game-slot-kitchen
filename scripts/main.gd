@@ -328,24 +328,12 @@ func _build_bottom_buttons() -> Control:
 
   _warehouse_btn = _make_bottom_button(Palette.MAIN)
   _warehouse_btn.pressed.connect(_toggle_warehouse)
-  # 아이콘: 창고 손그림(이모지 대신) — 버튼 중앙에 비율유지, LINEAR로 선명.
-  var wh_cc := CenterContainer.new()
-  wh_cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  wh_cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  var wh_icon := TextureRect.new()
-  wh_icon.texture = load("res://assets/art/ui/warehouse.png")
-  wh_icon.custom_minimum_size = Vector2(40, 40)
-  wh_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-  wh_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-  wh_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-  wh_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  wh_cc.add_child(wh_icon)
-  _warehouse_btn.add_child(wh_cc)
+  _warehouse_btn.add_child(UI.ui_btn_icon("box", 40))   # 재료 상자 손그림(이모지 대신)
   row.add_child(_warehouse_btn)
 
   _trash_btn = TrashButton.new()
-  _trash_btn.text = "🗑️"
   _style_bottom_button(_trash_btn, Palette.SUB)
+  _trash_btn.text = "🗑️"
   row.add_child(_trash_btn)
 
   return row
