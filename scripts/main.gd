@@ -300,7 +300,7 @@ func _build_bottom_buttons() -> Control:
 
   _warehouse_btn = _make_bottom_button(Palette.MAIN)
   _warehouse_btn.pressed.connect(_toggle_warehouse)
-  _warehouse_btn.add_child(UI.ui_btn_icon("box", 40))
+  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))
   row.add_child(_warehouse_btn)
 
   _trash_btn = TrashButton.new()
