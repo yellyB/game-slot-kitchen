@@ -298,15 +298,17 @@ func _build_bottom_buttons() -> Control:
   row.mouse_filter = Control.MOUSE_FILTER_IGNORE
   row.add_theme_constant_override("separation", 10)
 
-  _warehouse_btn = _make_bottom_button(Palette.MAIN)
-  _warehouse_btn.pressed.connect(_toggle_warehouse)
-  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))
-  row.add_child(_warehouse_btn)
-
   _trash_btn = TrashButton.new()
   _style_bottom_button(_trash_btn, Palette.SUB)
-  _trash_btn.text = "🗑️"
+  _trash_btn.size_flags_stretch_ratio = 0.3
+  _trash_btn.add_child(UI.ui_btn_icon("trash", 40))
   row.add_child(_trash_btn)
+
+  _warehouse_btn = _make_bottom_button(Palette.MAIN)
+  _warehouse_btn.pressed.connect(_toggle_warehouse)
+  _warehouse_btn.size_flags_stretch_ratio = 0.7
+  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))
+  row.add_child(_warehouse_btn)
 
   return row
 
