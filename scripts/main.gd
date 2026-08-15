@@ -72,6 +72,7 @@ func _ready() -> void:
   col.add_child(_board)
 
   col.add_child(_build_bottom_buttons())
+  add_child(_build_warehouse_handle())   # 창고 열림 핸들(화면 우하단 앵커, 서랍보다 아래 z)
 
   # 시트 백드롭 — 시트 열리면 뒤쪽(보드·큐·버튼) 입력 차단, 바깥 탭 = 닫기
   _backdrop = ColorRect.new()
@@ -334,30 +335,52 @@ func _build_bottom_buttons() -> Control:
   _trash_btn.add_child(UI.ui_btn_icon("trash", 30))
   row.add_child(_trash_btn)
 
-  # 가운데 여백
+  # 창고 열림 핸들은 하단바가 아니라 화면에 직접 앵커(우하단 50~90%) — _build_warehouse_handle.
   var gap := Control.new()
   gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(gap)
 
-  # 창고 — 우하단 "‹ 🧺" 핸들. 탭하면 오른쪽에서 서랍이 열림.
-  _warehouse_btn = _make_bottom_button(Palette.MAIN)
-  _warehouse_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
-  _warehouse_btn.custom_minimum_size = Vector2(104, 56)
-  _warehouse_btn.pressed.connect(_toggle_warehouse)
+  return row
+
+
+## 창고 열림 핸들 — 화면 우하단 50~90% 영역에 붙은 탭. 위쪽 꺽쇠(⌃) + 창고 이미지. 탭 = 열기.
+## (열리면 서랍이 위로 덮어 가려지고, 서랍 상단 튀어나온 탭(⌄)이 닫기 역할)
+func _build_warehouse_handle() -> Control:
+  var b := Button.new()
+  _warehouse_btn = b
+  b.anchor_left = 0.5
+  b.anchor_right = 0.9
+  b.anchor_top = 1.0
+  b.anchor_bottom = 1.0
+  b.offset_top = -76
+  b.offset_bottom = -8
+  b.add_theme_stylebox_override("normal", _handle_style(Palette.MAIN))
+  b.add_theme_stylebox_override("hover", _handle_style(Palette.MAIN.lightened(0.08)))
+  b.add_theme_stylebox_override("pressed", _handle_style(Palette.MAIN.darkened(0.1)))
+  b.pressed.connect(_toggle_warehouse)
+  Audio.attach_click(b)
   var cc := CenterContainer.new()
   cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  var wc := HBoxContainer.new()
-  wc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  wc.add_theme_constant_override("separation", 6)
-  wc.add_child(UI.label("‹", 26, Palette.WHITE, true))   # 서랍 방향(오른쪽→왼쪽)
-  wc.add_child(UI.ui_icon("warehouse", 34))
-  cc.add_child(wc)
-  _warehouse_btn.add_child(cc)
-  row.add_child(_warehouse_btn)
+  var v := VBoxContainer.new()
+  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  v.alignment = BoxContainer.ALIGNMENT_CENTER
+  v.add_theme_constant_override("separation", 0)
+  v.add_child(UI.label("⌃", 20, Palette.WHITE, true))   # 위쪽 꺽쇠(열기 방향)
+  v.add_child(UI.ui_icon("warehouse", 30))
+  cc.add_child(v)
+  b.add_child(cc)
+  return b
 
-  return row
+
+## 위쪽만 둥근 핸들 스타일.
+func _handle_style(c: Color) -> StyleBoxFlat:
+  var s := StyleBoxFlat.new()
+  s.bg_color = c
+  s.corner_radius_top_left = 18
+  s.corner_radius_top_right = 18
+  return s
 
 
 # ── 상호작용 ──────────────────────────────────────────────
