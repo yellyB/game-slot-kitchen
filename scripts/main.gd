@@ -1307,6 +1307,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
           held.text = Loc.t("held") % UI.money(int(round(v)))
       create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
         .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    Audio.play("day_pass")   # 하루 통과(정산 성공)음
     stamp.text = Loc.t("passed")
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)

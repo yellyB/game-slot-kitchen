@@ -20,6 +20,7 @@ const SFX := {
 	"reject": preload("res://assets/audio/sfx/reject.ogg"),        # 다른 메뉴 서빙(반려·땡)
 	"cook_done": preload("res://assets/audio/sfx/cook_done.mp3"),  # 조리 완료(완성품 나옴)
 	"fail": preload("res://assets/audio/sfx/fail.wav"),          # 런 실패/폐업(재즈 스팅)
+	"day_pass": preload("res://assets/audio/sfx/day_pass.mp3"),   # 하루 통과(정산 성공)
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),  # 손님 방문(큐 등장)
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),   # 창고 들어갈 때(문 열림)
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"), # 창고 나올 때(문 닫힘)
