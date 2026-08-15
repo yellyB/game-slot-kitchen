@@ -1246,6 +1246,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
     await _dayend_sequence()
+    if _title.visible:
+      return   # 마감 연출 중 홈으로 나갔으면 정산 팝업 생략(타이틀 위에 안 뜨게)
     _show_settlement(summary)
 
 
