@@ -1234,7 +1234,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _spawn_confetti()   # 축포 한 번
     get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
   else:
-    # 마감 임팩트: 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
+    # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
+    Audio.play("day_close")   # 영업 종료 딩동(+흔들림과 함께 임팩트)
     _show_dayend_banner(summary["day"])
     _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
