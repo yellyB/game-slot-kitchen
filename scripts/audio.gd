@@ -20,6 +20,7 @@ const SFX := {
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"),
+	"countdown": preload("res://assets/audio/sfx/countdown.wav"),
 }
 
 const POOL_SIZE := 8
@@ -69,7 +70,7 @@ func _play_click() -> void:
 	play("click")
 
 
-func play(id: String) -> void:
+func play(id: String, pitch := 1.0) -> void:
 	if not SettingsPanel.settings.get("sfx", true):
 		return
 	var stream: AudioStream = SFX.get(id)
@@ -79,4 +80,5 @@ func play(id: String) -> void:
 	var p := _players[_next]
 	_next = (_next + 1) % POOL_SIZE
 	p.stream = stream
+	p.pitch_scale = pitch
 	p.play()

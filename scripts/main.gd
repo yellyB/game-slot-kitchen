@@ -985,6 +985,7 @@ func _on_progress(t01: float) -> void:
 
 func _countdown_pop(sec: int) -> void:
   _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
+  Audio.play("countdown", 1.0 + float(COUNTDOWN_FROM - sec) * 0.08)
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
