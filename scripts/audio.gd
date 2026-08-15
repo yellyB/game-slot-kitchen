@@ -23,6 +23,7 @@ const SFX := {
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),  # 손님 방문(큐 등장)
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),   # 창고 들어갈 때(문 열림)
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"), # 창고 나올 때(문 닫힘)
+	"countdown": preload("res://assets/audio/sfx/countdown.wav"),   # 막판 카운트다운 틱(나무 똑딱)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
@@ -78,7 +79,7 @@ func _play_click() -> void:
 
 
 ## 효과음 재생. id는 SFX 키. 풀에서 라운드로빈으로 빈 플레이어 사용. (효과음 꺼져 있으면 무음)
-func play(id: String) -> void:
+func play(id: String, pitch := 1.0) -> void:
 	if not SettingsPanel.settings.get("sfx", true):
 		return
 	var stream: AudioStream = SFX.get(id)
@@ -88,4 +89,5 @@ func play(id: String) -> void:
 	var p := _players[_next]
 	_next = (_next + 1) % POOL_SIZE
 	p.stream = stream
+	p.pitch_scale = pitch   # 카운트다운 등 긴박감 고조용(기본 1.0)
 	p.play()
