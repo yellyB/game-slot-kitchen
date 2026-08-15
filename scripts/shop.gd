@@ -125,6 +125,7 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 
 func _on_buy_slot() -> void:
 	if session.buy_slot():
+		Audio.play("coins")   # 슬롯 구매(동전)
 		_refresh()
 
 
@@ -239,6 +240,7 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
 		return   # 중복 선택 방지
 	overlay.set_meta("picked", true)
 	Buffs.add(id)
+	Audio.play("card_place")   # 버프 선택 확정(탁)
 	for c in choices:
 		if not is_instance_valid(c):
 			continue
