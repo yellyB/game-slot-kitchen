@@ -326,16 +326,35 @@ func _build_bottom_buttons() -> Control:
   row.mouse_filter = Control.MOUSE_FILTER_IGNORE
   row.add_theme_constant_override("separation", 10)
 
+  # 휴지통 — 작은 정사각(좌하단). 자주 안 쓰니 작게.
   _trash_btn = TrashButton.new()
   _style_bottom_button(_trash_btn, Palette.SUB)
-  _trash_btn.size_flags_stretch_ratio = 0.3   # 좌측 30%
-  _trash_btn.add_child(UI.ui_btn_icon("trash", 40))   # 휴지통 손그림(이모지 대신)
+  _trash_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN   # 확장 X
+  _trash_btn.custom_minimum_size = Vector2(56, 56)
+  _trash_btn.add_child(UI.ui_btn_icon("trash", 30))
   row.add_child(_trash_btn)
 
+  # 가운데 여백
+  var gap := Control.new()
+  gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+
+  # 창고 — 우하단 "‹ 🧺" 핸들. 탭하면 오른쪽에서 서랍이 열림.
   _warehouse_btn = _make_bottom_button(Palette.MAIN)
+  _warehouse_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+  _warehouse_btn.custom_minimum_size = Vector2(104, 56)
   _warehouse_btn.pressed.connect(_toggle_warehouse)
-  _warehouse_btn.size_flags_stretch_ratio = 0.7   # 우측 70%
-  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))   # 창고 손그림(이모지 대신)
+  var cc := CenterContainer.new()
+  cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var wc := HBoxContainer.new()
+  wc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  wc.add_theme_constant_override("separation", 6)
+  wc.add_child(UI.label("‹", 26, Palette.WHITE, true))   # 서랍 방향(오른쪽→왼쪽)
+  wc.add_child(UI.ui_icon("warehouse", 34))
+  cc.add_child(wc)
+  _warehouse_btn.add_child(cc)
   row.add_child(_warehouse_btn)
 
   return row

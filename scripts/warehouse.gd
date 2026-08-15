@@ -9,6 +9,7 @@ var _tiles: Array[IngredientTile] = []
 
 func _ready() -> void:
 	visible = false
+	# 하단 가로 바(기존 크기) — 단, 슬라이드는 오른쪽→왼쪽(서랍). 크기/위치는 예전 그대로.
 	anchor_left = 0.0
 	anchor_right = 1.0
 	anchor_top = 1.0
@@ -57,6 +58,14 @@ func _ready() -> void:
 		tile.setup(id)
 		_tiles.append(tile)
 		grid.add_child(tile)
+
+
+## 창고는 세로 시트가 아니라 우측 서랍 → 기본 슬라이드를 가로 슬라이드로 대체.
+func slide_open() -> void:
+	slide_open_side()
+
+func slide_close() -> void:
+	slide_close_side()
 
 
 ## 보드 꽉 차면 타일 비활성(회색).

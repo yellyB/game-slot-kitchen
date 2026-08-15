@@ -33,3 +33,34 @@ func slide_close() -> void:
 		visible = false
 		offset_top = rt
 		offset_bottom = rb)
+
+
+## 오른쪽 화면 밖 → 왼쪽으로 슬라이드 인(서랍). 우측 앵커 시트용.
+func slide_open_side() -> void:
+	visible = true
+	var rl := offset_left
+	var rr := offset_right
+	var d := get_viewport_rect().size.x   # 화면 밖(오른쪽)까지 이동 거리
+	offset_left = rl + d
+	offset_right = rr + d
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_left", rl, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "offset_right", rr, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+## 오른쪽으로 슬라이드 아웃 후 숨김(서랍 닫기).
+func slide_close_side() -> void:
+	if not visible:
+		return
+	var rl := offset_left
+	var rr := offset_right
+	var d := get_viewport_rect().size.x
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "offset_left", rl + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "offset_right", rr + d, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(func():
+		visible = false
+		offset_left = rl
+		offset_right = rr)
