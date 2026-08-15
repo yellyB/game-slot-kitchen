@@ -464,15 +464,14 @@ func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
 func _on_confirm_order(customer: Customer) -> void:
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
     Toast.show_msg(self, Loc.t("orders_full"))
-    Audio.play("reject")
+    Audio.play("disabled")
     return
   var slot := _board.first_empty_slot()
   if slot == null:
     Toast.show_msg(self, Loc.t("no_empty_slot"))
-    Audio.play("reject")
+    Audio.play("disabled")
     return
   var rid := customer.recipe_id
-  Audio.play("order_take")
   var order := OrderCard.new()
   order.setup(rid)
   order.animal = customer.animal

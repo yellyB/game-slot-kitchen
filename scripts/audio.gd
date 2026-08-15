@@ -25,6 +25,7 @@ const SFX := {
 	"day_close": preload("res://assets/audio/sfx/day_close.mp3"),
 	"customer_leave": preload("res://assets/audio/sfx/customer_leave.mp3"),
 	"order_take": preload("res://assets/audio/sfx/order_take.wav"),
+	"disabled": preload("res://assets/audio/sfx/disabled.wav"),
 }
 
 const POOL_SIZE := 8
