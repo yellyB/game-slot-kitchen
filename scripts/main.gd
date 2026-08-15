@@ -855,6 +855,7 @@ func _on_cash_changed(cash: int) -> void:
 
 ## 폐업 암전 — 화면을 서서히 어둡게(COCOA_900) 덮은 뒤 콜백(게임오버 모달) 실행.
 func _fade_to_black(cb: Callable) -> void:
+  Audio.play("fail")   # 폐업(런 실패) 재즈 스팅
   _clear_blackout()
   _blackout = ColorRect.new()
   _blackout.color = Palette.COCOA_900
