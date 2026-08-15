@@ -24,7 +24,7 @@ const SFX := {
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),  # 손님 방문(큐 등장)
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),   # 창고 들어갈 때(문 열림)
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"), # 창고 나올 때(문 닫힘)
-	"countdown": preload("res://assets/audio/sfx/countdown.mp3"),   # 막판 카운트다운 틱(새 시계소리)
+	"countdown": preload("res://assets/audio/sfx/countdown.wav"),   # 막판 카운트다운 틱(나무 똑딱)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
