@@ -511,6 +511,7 @@ func _on_confirm_order(customer: Customer) -> void:
     Toast.show_msg(self, Loc.t("no_empty_slot"))
     return
   var rid := customer.recipe_id
+  Audio.play("order_take")   # 주문 받음(영수증 찢기)
   var order := OrderCard.new()
   order.setup(rid)
   order.animal = customer.animal   # 같은 손님(동물)이 주문서로 이어짐
