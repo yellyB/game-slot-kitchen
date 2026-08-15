@@ -27,7 +27,7 @@ const SFX := {
 	"countdown": preload("res://assets/audio/sfx/countdown.wav"),   # 막판 카운트다운 틱(나무 똑딱)
 	"day_close": preload("res://assets/audio/sfx/day_close.mp3"),   # 영업 종료(마감 종·딩동)
 	"customer_leave": preload("res://assets/audio/sfx/customer_leave.mp3"),  # 손님 성나서 떠남(왈왈)
-	"order_take": preload("res://assets/audio/sfx/order_take.mp3"),  # 주문 받음(영수증 찢기)
+	"order_take": preload("res://assets/audio/sfx/order_take.wav"),  # 주문 받음(영수증 찢기, 앞무음 제거)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수

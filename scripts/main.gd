@@ -507,10 +507,12 @@ func _on_confirm_order(customer: Customer) -> void:
   # 주문 상한 — 나머지 슬롯은 재료/완성품(조리 공간)용으로 남김.
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
     Toast.show_msg(self, Loc.t("orders_full"))
+    Audio.play("reject")   # 더 못 받음(disabled) — TODO: 전용 disabled 사운드로 교체
     return
   var slot := _board.first_empty_slot()
   if slot == null:
     Toast.show_msg(self, Loc.t("no_empty_slot"))
+    Audio.play("reject")   # 더 못 받음(disabled) — TODO: 전용 disabled 사운드로 교체
     return
   var rid := customer.recipe_id
   Audio.play("order_take")   # 주문 받음(영수증 찢기)
