@@ -735,7 +735,13 @@ func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 
 
 func _spawn_pop(text: String, at_pos: Vector2) -> void:
-  var l := UI.label(text, 30)
+  var mood := {"😊": "mood_happy", "💢": "mood_impatient", "😠": "mood_angry"}
+  var l: Control
+  if mood.has(text):
+    l = UI.ui_icon(mood[text], 30)
+    l.size = Vector2(30, 30)
+  else:
+    l = UI.label(text, 30)
   l.z_index = 101
   l.pivot_offset = Vector2(15, 15)
   add_child(l)
