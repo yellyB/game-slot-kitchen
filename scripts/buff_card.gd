@@ -12,6 +12,10 @@ func setup(id: String) -> void:
 func is_trashable() -> bool:
 	return false
 
+## 드래그 프리뷰도 버프 카테고리 손그림으로 — 기본 "?" 라벨 대신.
+func _preview_icon() -> Control:
+	return BuffDefs.icon_node(buff_id, 44)
+
 # 선택 하이라이트: 버프 정체성(MAIN 테두리) 유지하며 두께만
 func set_selected(sel: bool) -> void:
 	_style.set_border_width_all(3 if sel else 2)
