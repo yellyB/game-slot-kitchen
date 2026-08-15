@@ -56,8 +56,8 @@ func _build_content() -> void:
 
 	var bubble := CenterContainer.new()
 	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bubble.add_child(UI.ui_icon("bubble", 38))
-	bubble.add_child(Recipes.icon_node(recipe_id, 20))
+	bubble.add_child(UI.ui_icon("bubble", 50))
+	bubble.add_child(Recipes.icon_node(recipe_id, 28))
 	top.add_child(bubble)
 
 	top.add_child(Customers.icon_node(animal, 30))
