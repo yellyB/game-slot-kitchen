@@ -777,7 +777,6 @@ func _on_cash_changed(cash: int) -> void:
 
 
 func _fade_to_black(cb: Callable) -> void:
-  Audio.play("fail")
   _clear_blackout()
   _blackout = ColorRect.new()
   _blackout.color = Palette.COCOA_900
@@ -1205,6 +1204,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
     pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
     pay_btn.disabled = false
   else:
+    Audio.play("fail")
     stamp.text = Loc.t("insufficient")
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)
