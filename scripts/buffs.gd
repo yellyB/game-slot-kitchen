@@ -36,6 +36,20 @@ func add(id: String) -> void:
 	_owned.append(id)
 
 
+func remove(id: String) -> bool:
+	var idx := _owned.find(id)
+	if idx < 0:
+		return false
+	_owned.remove_at(idx)
+	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
+	if not r.is_empty():
+		var tier := int(r.get("tier", 0))
+		for rid in Recipes.ALL:
+			if int(Recipes.ALL[rid].get("tier", -1)) == tier:
+				_ramp_bonus.erase(rid)
+	return true
+
+
 func is_full() -> bool:
 	return _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus()
 

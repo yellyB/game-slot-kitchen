@@ -24,6 +24,7 @@ const BUFF_PACK_PRICE := 200
 const SHOP_PRICE_GROWTH := 1.65
 const SLOT_PRICE_STEP := 2.0
 const MAX_BUFFS := 5
+const BUFF_SELL_RATIO := 0.3
 const MONEY_ABBR_AT := 100000
 
 const DAY_LENGTH := 90.0
