@@ -1139,6 +1139,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _show_dayend_banner(summary["day"])
     _screen_shake()
     await _dayend_sequence()
+    if _title.visible:
+      return
     _show_settlement(summary)
 
 
