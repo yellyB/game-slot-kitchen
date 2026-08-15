@@ -118,6 +118,7 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 
 func _on_buy_slot() -> void:
 	if session.buy_slot():
+		Audio.play("coins")
 		_refresh()
 
 
@@ -228,6 +229,7 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
 		return
 	overlay.set_meta("picked", true)
 	Buffs.add(id)
+	Audio.play("card_place")
 	for c in choices:
 		if not is_instance_valid(c):
 			continue
