@@ -8,7 +8,7 @@ extends RefCounted
 const BOARD_COLS := 3
 const START_SLOTS := 9   # 시작 슬롯 수(도구석 제외). 버프도 슬롯 점유(온보드).
 const TOOL_COUNT := 2    # 도구석(🔥) 개수 — 그리드 마지막 칸들에 배치
-const MAX_SLOTS := 12    # 슬롯 확장 상한 (구매마다 가격 급증 → 실질 1~2회. 도달 시 SOLD OUT)
+const MAX_SLOTS := 21    # 슬롯 확장 상한 (구매마다 가격 급증 → 실질 1~2회. 도달 시 SOLD OUT)
 
 # ── 손님 큐 / 스포너 ──────────────────────────────────────
 const MAX_QUEUE := 4          # 큐 최대 인원
@@ -31,7 +31,7 @@ const START_MONEY := 0     # 시작 소지금
 const SLOT_PRICE := 500       # 슬롯 +1 확장 1일차 기본가(상점) — 일수 따라 SHOP_PRICE_GROWTH로 상승
 const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
 const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
-const SLOT_PRICE_STEP := 4.0     # 슬롯 확장 1개 살 때마다 가격 배수(기하급수 → 한 방문에 실질 1~2회)
+const SLOT_PRICE_STEP := 2.0     # 슬롯 확장 1개 살 때마다 가격 배수(기하급수). ×2 = 실질 15~17칸까지 확장
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 # (가게세는 하루별 → data/levels.gd)
