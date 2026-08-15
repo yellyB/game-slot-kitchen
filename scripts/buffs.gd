@@ -41,6 +41,22 @@ func add(id: String) -> void:
 	_owned.append(id)
 
 
+## 보유 버프 1개 제거(상점 판매/버리기). 슬롯 1칸 회복. 성공 시 true.
+## 램프 버프면 그 등급 메뉴의 누적 가격도 리셋 — 안 그러면 팔아도 인상분이 남음.
+func remove(id: String) -> bool:
+	var idx := _owned.find(id)
+	if idx < 0:
+		return false
+	_owned.remove_at(idx)
+	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
+	if not r.is_empty():
+		var tier := int(r.get("tier", 0))
+		for rid in Recipes.ALL:
+			if int(Recipes.ALL[rid].get("tier", -1)) == tier:
+				_ramp_bonus.erase(rid)
+	return true
+
+
 func is_full() -> bool:
 	return _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus()
 

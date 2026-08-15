@@ -9,7 +9,7 @@ var session: Session  # main이 add_child 전에 주입
 var _cash_label: Label
 var _buy_slot_btn: Button
 var _draw_btn: Button
-var _owned_row: HBoxContainer
+var _owned_row: HFlowContainer   # 보유 버프 칩 — 많아지면 다음 줄로 감쌈(가로 넘침 방지)
 var _drew := false   # 이번 상점 방문에서 이미 뽑았는지(방문당 1회). 다음날 재진입 시 새 인스턴스로 리셋.
 var _slot_price_label: Label   # 슬롯 가격 표시(구매마다 갱신)
 var _last_price_label: Label   # _product가 방금 만든 가격 라벨(호출 직후 회수용)
@@ -62,7 +62,7 @@ func _ready() -> void:
 
 	# 보유 버프
 	v.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
-	_owned_row = HBoxContainer.new()
+	_owned_row = HFlowContainer.new()
 	_owned_row.add_theme_constant_override("separation", 6)
 	_owned_row.custom_minimum_size = Vector2(0, 30)
 	v.add_child(_owned_row)
@@ -295,20 +295,46 @@ func _refresh() -> void:
 func _owned_chip(id: String) -> Control:
 	var chip := PanelContainer.new()
 	chip.add_theme_stylebox_override("panel", UI.chip(Palette.MAIN.lightened(0.82), Palette.MAIN))
+	chip.mouse_filter = Control.MOUSE_FILTER_STOP   # 칩 탭 = 판매(확인 후)
+	chip.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			_confirm_sell(id))
 	var pad := MarginContainer.new()
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pad.add_theme_constant_override("margin_left", 8)
 	pad.add_theme_constant_override("margin_right", 8)
 	pad.add_theme_constant_override("margin_top", 3)
 	pad.add_theme_constant_override("margin_bottom", 3)
 	chip.add_child(pad)
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 4)
 	pad.add_child(row)
 	row.add_child(BuffDefs.icon_node(id, 18))   # 카테고리 아이콘(손그림)
-	var lbl := UI.label(BuffDefs.display_label(id), 13, Palette.COCOA_800)
+	var lbl := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)   # 짧은 이름(관리용)
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(lbl)
+	row.add_child(UI.ui_icon("coin", 14))   # 판매 가능(코인) 힌트 — 탭하면 팔림
 	return chip
+
+
+## 보유 버프 판매 확인 — 버프명 + 환급액(그날 팩값의 30%). [+환급][취소].
+func _confirm_sell(id: String) -> void:
+	var refund := int(round(Config.shop_price(Config.BUFF_PACK_PRICE, session.day) * Config.BUFF_SELL_RATIO))
+	Modal.open(self) \
+		.title(BuffDefs.display_name(id)) \
+		.button("+" + UI.money(refund), func(): _sell(id, refund)) \
+		.button(Loc.t("cancel"), func(): pass)
+
+
+## 판매 확정 — 버프 제거(슬롯 회복) + 환급, 표시 갱신.
+func _sell(id: String, refund: int) -> void:
+	if not Buffs.remove(id):
+		return
+	session.add_cash(refund)
+	Audio.play("coins")   # 환급(동전)
+	_refresh()
 
 
 func _dot(color: Color) -> Control:

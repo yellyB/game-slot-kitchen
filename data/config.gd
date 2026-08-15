@@ -33,6 +33,7 @@ const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 1일차 기본가 — 일�
 const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
 const SLOT_PRICE_STEP := 2.0     # 슬롯 확장 1개 살 때마다 가격 배수(기하급수). ×2 = 실질 15~17칸까지 확장
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
+const BUFF_SELL_RATIO := 0.3  # 상점에서 보유 버프 판매 시 환급률 (그날 버프팩 가격의 30%)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 # (가게세는 하루별 → data/levels.gd)
 
