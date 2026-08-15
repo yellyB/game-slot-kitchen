@@ -2,11 +2,11 @@ class_name Levels
 extends RefCounted
 
 const DAYS := [
-	{"rent": 1700,  "per_wave": 11},
-	{"rent": 8500,  "per_wave": 12},
-	{"rent": 27000, "per_wave": 13},
-	{"rent": 51000, "per_wave": 13},
-	{"rent": 92000, "per_wave": 14},
+	{"rent": 1800,  "per_wave": 11},
+	{"rent": 9000,  "per_wave": 12},
+	{"rent": 28000, "per_wave": 13},
+	{"rent": 54000, "per_wave": 13},
+	{"rent": 97000, "per_wave": 14},
 ]
 
 static func count() -> int:

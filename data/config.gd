@@ -4,7 +4,7 @@ extends RefCounted
 const BOARD_COLS := 3
 const START_SLOTS := 9
 const TOOL_COUNT := 2
-const MAX_SLOTS := 12
+const MAX_SLOTS := 21
 
 const MAX_QUEUE := 4
 const MAX_ORDERS := 6
@@ -22,7 +22,7 @@ const START_MONEY := 0
 const SLOT_PRICE := 500
 const BUFF_PACK_PRICE := 200
 const SHOP_PRICE_GROWTH := 1.65
-const SLOT_PRICE_STEP := 4.0
+const SLOT_PRICE_STEP := 2.0
 const MAX_BUFFS := 5
 const MONEY_ABBR_AT := 100000
 
