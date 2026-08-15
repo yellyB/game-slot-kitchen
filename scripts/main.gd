@@ -855,7 +855,6 @@ func _on_cash_changed(cash: int) -> void:
 
 ## 폐업 암전 — 화면을 서서히 어둡게(COCOA_900) 덮은 뒤 콜백(게임오버 모달) 실행.
 func _fade_to_black(cb: Callable) -> void:
-  Audio.play("fail")   # 폐업(런 실패) 재즈 스팅
   _clear_blackout()
   _blackout = ColorRect.new()
   _blackout.color = Palette.COCOA_900
@@ -1318,6 +1317,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
     pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
     pay_btn.disabled = false
   else:
+    Audio.play("fail")                          # 돈 부족 순간 실패음(폐업 스팅)
     stamp.text = Loc.t("insufficient")          # 돈이 부족합니다 → 게임오버
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)
