@@ -330,13 +330,7 @@ func _build_warehouse_handle() -> Control:
   var cc := CenterContainer.new()
   cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  var v := VBoxContainer.new()
-  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  v.alignment = BoxContainer.ALIGNMENT_CENTER
-  v.add_theme_constant_override("separation", 0)
-  v.add_child(UI.label("⌃", 20, Palette.WHITE, true))
-  v.add_child(UI.ui_icon("warehouse", 30))
-  cc.add_child(v)
+  cc.add_child(UI.ui_icon("warehouse", 38))
   b.add_child(cc)
   return b
 
