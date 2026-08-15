@@ -23,32 +23,11 @@ func _ready() -> void:
 		pad.add_theme_constant_override("margin_" + side, 14)
 	add_child(pad)
 
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 12)
-	pad.add_child(v)
-
-	var header := HBoxContainer.new()
-	v.add_child(header)
-	header.add_child(UI.label("🏬", 20, Palette.COCOA_800, true))
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(gap)
-	var close := Button.new()
-	close.text = "✕"
-	close.add_theme_font_size_override("font_size", 16)
-	close.add_theme_color_override("font_color", Palette.COCOA_600)
-	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	close.pressed.connect(func(): close_requested.emit())
-	Audio.attach_click(close)
-	header.add_child(close)
-
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
-	v.add_child(grid)
+	pad.add_child(grid)
 
 	for id in Ingredients.unlocked_ids():
 		var tile := IngredientTile.new()
@@ -56,12 +35,32 @@ func _ready() -> void:
 		_tiles.append(tile)
 		grid.add_child(tile)
 
+	var tab := Button.new()
+	tab.anchor_left = 0.5
+	tab.anchor_right = 0.9
+	tab.anchor_top = 0.0
+	tab.anchor_bottom = 0.0
+	tab.offset_top = -26
+	tab.offset_bottom = 10
+	tab.text = "⌄"
+	tab.add_theme_font_size_override("font_size", 22)
+	tab.add_theme_color_override("font_color", Palette.WHITE)
+	tab.add_theme_color_override("font_hover_color", Palette.WHITE)
+	tab.add_theme_color_override("font_pressed_color", Palette.WHITE)
+	tab.add_theme_stylebox_override("normal", _tab_style(Palette.MAIN))
+	tab.add_theme_stylebox_override("hover", _tab_style(Palette.MAIN.lightened(0.08)))
+	tab.add_theme_stylebox_override("pressed", _tab_style(Palette.MAIN.darkened(0.1)))
+	tab.pressed.connect(func(): close_requested.emit())
+	Audio.attach_click(tab)
+	add_child(tab)
 
-func slide_open() -> void:
-	slide_open_side()
 
-func slide_close() -> void:
-	slide_close_side()
+func _tab_style(c: Color) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = c
+	s.corner_radius_top_left = 16
+	s.corner_radius_top_right = 16
+	return s
 
 
 func refresh(full: bool) -> void:

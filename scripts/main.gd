@@ -65,6 +65,7 @@ func _ready() -> void:
   col.add_child(_board)
 
   col.add_child(_build_bottom_buttons())
+  add_child(_build_warehouse_handle())
 
   _backdrop = ColorRect.new()
   _backdrop.color = Color(0.164, 0.129, 0.106, 0.28)
@@ -309,23 +310,43 @@ func _build_bottom_buttons() -> Control:
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(gap)
 
-  _warehouse_btn = _make_bottom_button(Palette.MAIN)
-  _warehouse_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
-  _warehouse_btn.custom_minimum_size = Vector2(104, 56)
-  _warehouse_btn.pressed.connect(_toggle_warehouse)
+  return row
+
+
+func _build_warehouse_handle() -> Control:
+  var b := Button.new()
+  _warehouse_btn = b
+  b.anchor_left = 0.5
+  b.anchor_right = 0.9
+  b.anchor_top = 1.0
+  b.anchor_bottom = 1.0
+  b.offset_top = -76
+  b.offset_bottom = -8
+  b.add_theme_stylebox_override("normal", _handle_style(Palette.MAIN))
+  b.add_theme_stylebox_override("hover", _handle_style(Palette.MAIN.lightened(0.08)))
+  b.add_theme_stylebox_override("pressed", _handle_style(Palette.MAIN.darkened(0.1)))
+  b.pressed.connect(_toggle_warehouse)
+  Audio.attach_click(b)
   var cc := CenterContainer.new()
   cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  var wc := HBoxContainer.new()
-  wc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  wc.add_theme_constant_override("separation", 6)
-  wc.add_child(UI.label("‹", 26, Palette.WHITE, true))
-  wc.add_child(UI.ui_icon("warehouse", 34))
-  cc.add_child(wc)
-  _warehouse_btn.add_child(cc)
-  row.add_child(_warehouse_btn)
+  var v := VBoxContainer.new()
+  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  v.alignment = BoxContainer.ALIGNMENT_CENTER
+  v.add_theme_constant_override("separation", 0)
+  v.add_child(UI.label("⌃", 20, Palette.WHITE, true))
+  v.add_child(UI.ui_icon("warehouse", 30))
+  cc.add_child(v)
+  b.add_child(cc)
+  return b
 
-  return row
+
+func _handle_style(c: Color) -> StyleBoxFlat:
+  var s := StyleBoxFlat.new()
+  s.bg_color = c
+  s.corner_radius_top_left = 18
+  s.corner_radius_top_right = 18
+  return s
 
 
 func _toggle_warehouse() -> void:
