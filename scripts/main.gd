@@ -515,6 +515,7 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
+  Audio.play("customer_leave")
   _detach_and_fade(customer)
 
 
@@ -527,6 +528,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])
   _order_lost_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)
+  Audio.play("customer_leave")
   _detach_and_fade(order)
   _refresh_warehouse()
 
