@@ -21,7 +21,7 @@ const SFX := {
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"),
-	"countdown": preload("res://assets/audio/sfx/countdown.wav"),
+	"countdown": preload("res://assets/audio/sfx/countdown.mp3"),
 }
 
 const POOL_SIZE := 8
