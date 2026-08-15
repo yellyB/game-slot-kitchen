@@ -17,6 +17,7 @@ const SFX := {
 	"reject": preload("res://assets/audio/sfx/reject.ogg"),
 	"cook_done": preload("res://assets/audio/sfx/cook_done.mp3"),
 	"fail": preload("res://assets/audio/sfx/fail.wav"),
+	"day_pass": preload("res://assets/audio/sfx/day_pass.mp3"),
 	"customer_in": preload("res://assets/audio/sfx/customer_in.mp3"),
 	"door_open": preload("res://assets/audio/sfx/door_open.mp3"),
 	"door_close": preload("res://assets/audio/sfx/door_close.mp3"),
