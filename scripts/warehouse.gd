@@ -57,6 +57,13 @@ func _ready() -> void:
 		grid.add_child(tile)
 
 
+func slide_open() -> void:
+	slide_open_side()
+
+func slide_close() -> void:
+	slide_close_side()
+
+
 func refresh(full: bool) -> void:
 	for tile in _tiles:
 		tile.disabled = full

@@ -299,14 +299,30 @@ func _build_bottom_buttons() -> Control:
 
   _trash_btn = TrashButton.new()
   _style_bottom_button(_trash_btn, Palette.SUB)
-  _trash_btn.size_flags_stretch_ratio = 0.3
-  _trash_btn.add_child(UI.ui_btn_icon("trash", 40))
+  _trash_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+  _trash_btn.custom_minimum_size = Vector2(56, 56)
+  _trash_btn.add_child(UI.ui_btn_icon("trash", 30))
   row.add_child(_trash_btn)
 
+  var gap := Control.new()
+  gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+
   _warehouse_btn = _make_bottom_button(Palette.MAIN)
+  _warehouse_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+  _warehouse_btn.custom_minimum_size = Vector2(104, 56)
   _warehouse_btn.pressed.connect(_toggle_warehouse)
-  _warehouse_btn.size_flags_stretch_ratio = 0.7
-  _warehouse_btn.add_child(UI.ui_btn_icon("warehouse", 40))
+  var cc := CenterContainer.new()
+  cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var wc := HBoxContainer.new()
+  wc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  wc.add_theme_constant_override("separation", 6)
+  wc.add_child(UI.label("‹", 26, Palette.WHITE, true))
+  wc.add_child(UI.ui_icon("warehouse", 34))
+  cc.add_child(wc)
+  _warehouse_btn.add_child(cc)
   row.add_child(_warehouse_btn)
 
   return row
