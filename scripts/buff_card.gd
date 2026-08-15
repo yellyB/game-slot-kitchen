@@ -9,6 +9,9 @@ func setup(id: String) -> void:
 func is_trashable() -> bool:
 	return false
 
+func _preview_icon() -> Control:
+	return BuffDefs.icon_node(buff_id, 44)
+
 func set_selected(sel: bool) -> void:
 	_style.set_border_width_all(3 if sel else 2)
 
