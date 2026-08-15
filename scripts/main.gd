@@ -344,8 +344,8 @@ func _build_bottom_buttons() -> Control:
   return row
 
 
-## 창고 열림 핸들 — 화면 우하단 50~90% 영역에 붙은 탭. 위쪽 꺽쇠(⌃) + 창고 이미지. 탭 = 열기.
-## (열리면 서랍이 위로 덮어 가려지고, 서랍 상단 튀어나온 탭(⌄)이 닫기 역할)
+## 창고 열림 핸들 — 화면 우하단 50~90% 영역에 붙은 탭(창고 이미지만). 탭 = 열기.
+## (열리면 서랍이 위로 덮어 가려짐. 닫기는 서랍 우상단 ✕ 또는 dim 탭)
 func _build_warehouse_handle() -> Control:
   var b := Button.new()
   _warehouse_btn = b
@@ -363,13 +363,7 @@ func _build_warehouse_handle() -> Control:
   var cc := CenterContainer.new()
   cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  var v := VBoxContainer.new()
-  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  v.alignment = BoxContainer.ALIGNMENT_CENTER
-  v.add_theme_constant_override("separation", 0)
-  v.add_child(UI.label("⌃", 20, Palette.WHITE, true))   # 위쪽 꺽쇠(열기 방향)
-  v.add_child(UI.ui_icon("warehouse", 30))
-  cc.add_child(v)
+  cc.add_child(UI.ui_icon("warehouse", 38))   # 꺽쇠 없이 창고 이미지만
   b.add_child(cc)
   return b
 
