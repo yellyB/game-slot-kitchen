@@ -62,12 +62,10 @@ func _build_content() -> void:
 	top.add_theme_constant_override("separation", 2)
 	v.add_child(top)
 
-	# 말풍선(임시 이모지 💭) 위에 메뉴 아이콘 — 추후 손님쪽 향한 말풍선 이미지로 교체
+	# 말풍선(손그림) 위에 메뉴 아이콘 — 손님이 원하는 메뉴를 떠올리는 느낌. 꼬리는 오른쪽(→얼굴).
 	var bubble := CenterContainer.new()
 	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var think := UI.label("💭", 32)
-	think.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bubble.add_child(think)                          # 말풍선(뒤)
+	bubble.add_child(UI.ui_icon("bubble", 38))       # 말풍선(뒤, 손그림)
 	bubble.add_child(Recipes.icon_node(recipe_id, 20))   # 메뉴(앞, 위에 얹힘)
 	top.add_child(bubble)
 

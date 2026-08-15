@@ -809,7 +809,14 @@ func _fly_order_to_slot(card: OrderCard, slot: Slot, from_pos: Vector2) -> void:
 
 ## 팝 버스트 — 작게 나타나 크게 튀며(스케일) 살짝 떠오르다 사라짐. 서빙 성공 😊 등.
 func _spawn_pop(text: String, at_pos: Vector2) -> void:
-  var l := UI.label(text, 30)
+  # 감정 이모지는 손그림 아이콘으로(😊 만족 / 💢 조급 / 😠 화남). 그 외는 이모지 라벨.
+  var mood := {"😊": "mood_happy", "💢": "mood_impatient", "😠": "mood_angry"}
+  var l: Control
+  if mood.has(text):
+    l = UI.ui_icon(mood[text], 30)
+    l.size = Vector2(30, 30)
+  else:
+    l = UI.label(text, 30)
   l.z_index = 101
   l.pivot_offset = Vector2(15, 15)
   add_child(l)
