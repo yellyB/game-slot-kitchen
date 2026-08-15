@@ -65,8 +65,8 @@ func _build_content() -> void:
 	# 말풍선(손그림) 위에 메뉴 아이콘 (왼쪽) — 꼬리는 오른쪽(→얼굴), 원하는 메뉴를 떠올리는 느낌.
 	var bubble := CenterContainer.new()
 	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bubble.add_child(UI.ui_icon("bubble", 38))       # 말풍선(뒤, 손그림)
-	bubble.add_child(Recipes.icon_node(recipe_id, 20))   # 메뉴(앞, 위에 얹힘)
+	bubble.add_child(UI.ui_icon("bubble", 50))       # 말풍선(뒤, 손그림) — 크게
+	bubble.add_child(Recipes.icon_node(recipe_id, 28))   # 메뉴(앞) — 재료(22)보다 크게
 	top.add_child(bubble)
 
 	# 손님 이미지 (오른쪽)
