@@ -1129,6 +1129,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     _spawn_confetti()
     get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))
   else:
+    Audio.play("day_close")
     _show_dayend_banner(summary["day"])
     _screen_shake()
     await _dayend_sequence()
