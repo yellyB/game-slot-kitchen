@@ -28,6 +28,7 @@ const SFX := {
 	"day_close": preload("res://assets/audio/sfx/day_close.mp3"),   # 영업 종료(마감 종·딩동)
 	"customer_leave": preload("res://assets/audio/sfx/customer_leave.mp3"),  # 손님 성나서 떠남(왈왈)
 	"order_take": preload("res://assets/audio/sfx/order_take.wav"),  # 주문 받음(영수증 찢기, 앞무음 제거)
+	"disabled": preload("res://assets/audio/sfx/disabled.wav"),     # 더 못 받음/불가(순한 거절음)
 }
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
