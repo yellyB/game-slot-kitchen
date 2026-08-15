@@ -777,6 +777,7 @@ func _on_cash_changed(cash: int) -> void:
 
 
 func _fade_to_black(cb: Callable) -> void:
+  Audio.play("fail")
   _clear_blackout()
   _blackout = ColorRect.new()
   _blackout.color = Palette.COCOA_900
