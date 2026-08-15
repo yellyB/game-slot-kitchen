@@ -564,6 +564,7 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
+  Audio.play("customer_leave")   # 손님 떠남(왈왈)
   _detach_and_fade(customer)
 
 
@@ -578,6 +579,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
+  Audio.play("customer_leave")   # 손님 떠남(왈왈)
   _detach_and_fade(order)   # 슬롯에서 떼어내며 페이드아웃(슬롯 즉시 회복)
   _refresh_warehouse()
 
