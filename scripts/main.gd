@@ -468,6 +468,7 @@ func _on_confirm_order(customer: Customer) -> void:
     Toast.show_msg(self, Loc.t("no_empty_slot"))
     return
   var rid := customer.recipe_id
+  Audio.play("order_take")
   var order := OrderCard.new()
   order.setup(rid)
   order.animal = customer.animal
