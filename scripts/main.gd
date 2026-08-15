@@ -153,6 +153,8 @@ func _go_home() -> void:
 
 
 func _start_game() -> void:
+  _last_cash = 0
+  _money_label.text = UI.money(0)
   _title.hide()
   _session.start_run()
 
