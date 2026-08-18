@@ -1269,16 +1269,17 @@ func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   # 실제 차감 여부: 통과 + 미납통과(skip) 아님 + 잔액 충분.
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  # 라벨 글자 없이 아이콘+숫자로: 보유금=코인, 매출=코인(+초록), 가게세=영수증(-빨강)
-  var held := UI.label(UI.money(cash_before), 18, Palette.COCOA_800, true)
+  # 어제까지 보유금 → 오늘 매출 → 최종 합계(가장 크게). 가게세는 아래 버튼에 표시(별도 줄 없음).
+  var yesterday := cash_before - rev            # 어제까지 보유금(오늘 매출 빼기 전)
+  var y_label := UI.label(UI.money(yesterday), 16, Palette.COCOA_800)
   var earned := UI.label("+" + UI.money(rev), 16, Palette.SUCCESS)
-  var rentl := UI.label("-" + UI.money(rent), 16, Palette.DANGER)
-  var held_row := _settle_icon_row("coin", held)
-  var earned_row := _settle_icon_row("coin", earned)
-  var rent_row := _settle_icon_row("bill", rentl)
+  var total := UI.label(UI.money(cash_before), 22, Palette.COCOA_800, true)   # 최종 = 어제+오늘, 가장 큼
+  var y_row := _settle_icon_row("coin", y_label, 20)
+  var earned_row := _settle_icon_row("coin", earned, 20)
+  var total_row := _settle_icon_row("coin", total, 28)
   var stamp := _settle_label("", Palette.SUCCESS, 40, true)   # 결과 도장(큰 기호) — 지불 클릭 후 채움
   stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(held_row).add_row(earned_row).add_row(rent_row).sep().add_row(stamp)
+  m.add_row(y_row).add_row(earned_row).sep().add_row(total_row).sep().add_row(stamp)
 
   # 가게세 지불 버튼(커스텀) — 처음엔 숨김, 연출 끝에 등장. 눌러서 직접 지불.
   var pay_btn := Button.new()
@@ -1294,17 +1295,17 @@ func _show_settlement(summary: Dictionary) -> void:
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
   pay_btn.modulate.a = 0.0
   pay_btn.disabled = true
-  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, held, stamp))
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, total, stamp))
   m.add_row(pay_btn)
 
-  # 순차 페이드인: 보유금 → 매출 → 가게세 → [가게세 지불] 등장 (차감·도장은 클릭 후)
+  # 순차 페이드인: 어제 보유금 → 오늘 매출 → 최종 합계 → [가게세 지불] 등장 (차감·도장은 클릭 후)
   var tw := create_tween()
   tw.tween_interval(0.15)
-  tw.tween_property(held_row, "modulate:a", 1.0, 0.25)
+  tw.tween_property(y_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
   tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
-  tw.tween_property(rent_row, "modulate:a", 1.0, 0.25)
+  tw.tween_property(total_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.2)
   tw.tween_callback(func():
     pay_btn.disabled = false
@@ -1367,12 +1368,12 @@ func _settle_label(text: String, color: Color, font := 16, bold := false) -> Lab
 
 
 ## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.
-func _settle_icon_row(icon: String, value: Label) -> HBoxContainer:
+func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
   var row := HBoxContainer.new()
   row.alignment = BoxContainer.ALIGNMENT_CENTER
   row.add_theme_constant_override("separation", 6)
   row.modulate.a = 0.0
-  row.add_child(UI.ui_icon(icon, 22))
+  row.add_child(UI.ui_icon(icon, px))
   row.add_child(value)
   return row
 
