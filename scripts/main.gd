@@ -146,11 +146,16 @@ func _ready() -> void:
 
 ## 홈 버튼 — 확인창(진행 중인 판이 사라짐).
 func _on_home_pressed() -> void:
-  Modal.open(self) \
+  _set_world_paused(true)   # 확인창 동안 게임 일시정지(창고 열림과 동일)
+  var m := Modal.open(self) \
     .title(Loc.t("home_title")) \
     .row(Loc.t("home_warn"), Palette.COCOA_600) \
     .button(Loc.t("go_home"), _go_home) \
     .button(Loc.t("cancel"), func(): pass)
+  # 모달 닫히면 재개 — 단 '홈으로'로 나가면(타이틀 표시) 유지.
+  m.tree_exited.connect(func():
+    if is_instance_valid(self) and not _title.visible:
+      _set_world_paused(false))
 
 
 ## 진행 중인 판을 접고 타이틀로. 다음 [시작] 때 start_run이 전부 리셋.
