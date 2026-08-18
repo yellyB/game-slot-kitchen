@@ -180,22 +180,24 @@ func _round_style(c: Color) -> StyleBoxFlat:
   return s
 
 
-## 다음날 버튼 위 >> 겹화살표(글자 대신). 흰색 두 꺽쇠를 버튼 중앙에 그림.
+## 다음날 버튼 위 >> 겹화살표(글자 아님 — 직접 그림). 흰색 두 꺽쇠, 굵은 선 + 둥근 끝.
 func _draw_chevrons(btn: Button) -> void:
   var sz := btn.size
   var cx := sz.x * 0.5
   var cy := sz.y * 0.5
-  var w := 10.0     # 꺽쇠 깊이
-  var h := 12.0     # 꺽쇠 반높이
-  var th := 5.0     # 선 두께
-  var spacing := 12.0
+  var w := 12.0     # 꺽쇠 깊이(가로)
+  var h := 15.0     # 꺽쇠 반높이(세로)
+  var th := 6.0     # 선 두께
+  var spacing := 16.0
+  var cap := th * 0.5
   for tip_x in [cx - spacing * 0.5, cx + spacing * 0.5]:
-    var pts := PackedVector2Array([
-      Vector2(tip_x - w, cy - h),
-      Vector2(tip_x, cy),
-      Vector2(tip_x - w, cy + h),
-    ])
-    btn.draw_polyline(pts, Palette.WHITE, th, true)
+    var top := Vector2(tip_x - w, cy - h)
+    var tip := Vector2(tip_x, cy)
+    var bot := Vector2(tip_x - w, cy + h)
+    btn.draw_polyline(PackedVector2Array([top, tip, bot]), Palette.WHITE, th, true)
+    # 세 꼭짓점에 원을 찍어 끝·꺾임을 둥글게(깔끔한 마감)
+    for p in [top, tip, bot]:
+      btn.draw_circle(p, cap, Palette.WHITE)
 
 
 func _on_buy_slot() -> void:
