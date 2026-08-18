@@ -75,9 +75,9 @@ func _ready() -> void:
   scroll.add_child(body)
 
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  _buy_slot_btn = _product(body, _art_icon("res://assets/art/buffs_128/buff_struct.png", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
   _slot_price_label = _last_price_label
-  _draw_btn = _product(body, UI.ui_icon("box", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  _draw_btn = _product(body, UI.ui_icon("card_pack", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
   body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
   _owned_row = HFlowContainer.new()
@@ -90,8 +90,8 @@ func _ready() -> void:
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
-  start.offset_left = -150
-  start.offset_right = -16
+  start.offset_left = -92
+  start.offset_right = -8
   start.offset_top = -76
   start.offset_bottom = -8
   start.add_theme_stylebox_override("normal", _round_style(Palette.MAIN))
