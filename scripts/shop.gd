@@ -99,13 +99,15 @@ func _ready() -> void:
   # [다음날 시작] — 글자 대신 >> 겹화살표. 위치는 플레이 화면 창고 버튼과 동일(우하단),
   # 단 아래 모서리도 위처럼 radius(전 모서리 둥근). v(마진 프레임)가 아니라 self에 직접 앵커.
   var start := Button.new()
-  start.anchor_left = 0.6   # 왼쪽 시작을 10% 오른쪽으로(더 우측 배치)
+  # 우하단 고정(오른쪽 가장자리 앵커 + 픽셀 오프셋) — 앵커% 대신 명시 오프셋으로 정확 배치.
+  start.anchor_left = 1.0
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
+  start.offset_left = -150   # 버튼 폭 ≈ 134
+  start.offset_right = -16   # 우측 여백 16
   start.offset_top = -76
   start.offset_bottom = -8
-  start.offset_right = -20   # 상점 우측 패딩(20)만 남기고 최대한 오른쪽까지
   start.add_theme_stylebox_override("normal", _round_style(Palette.MAIN))
   start.add_theme_stylebox_override("hover", _round_style(Palette.MAIN.lightened(0.08)))
   start.add_theme_stylebox_override("pressed", _round_style(Palette.MAIN.darkened(0.1)))

@@ -360,13 +360,15 @@ func _build_bottom_buttons() -> Control:
 func _build_warehouse_handle() -> Control:
   var b := Button.new()
   _warehouse_btn = b
-  b.anchor_left = 0.6   # 왼쪽 시작을 10% 오른쪽으로(더 우측 배치)
+  # 우하단 고정(오른쪽 가장자리 앵커 + 픽셀 오프셋) — 상점 다음날 버튼과 동일 좌표.
+  b.anchor_left = 1.0
   b.anchor_right = 1.0
   b.anchor_top = 1.0
   b.anchor_bottom = 1.0
+  b.offset_left = -150   # 버튼 폭 ≈ 134
+  b.offset_right = -16   # 우측 여백 16
   b.offset_top = -76
   b.offset_bottom = -8
-  b.offset_right = -12   # 화면 우측 패딩(12)만 남기고 최대한 오른쪽까지
   b.add_theme_stylebox_override("normal", _handle_style(Palette.MAIN))
   b.add_theme_stylebox_override("hover", _handle_style(Palette.MAIN.lightened(0.08)))
   b.add_theme_stylebox_override("pressed", _handle_style(Palette.MAIN.darkened(0.1)))
