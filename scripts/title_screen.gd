@@ -4,6 +4,8 @@ extends Control
 signal start_pressed
 signal tutorial_pressed
 
+const TITLE_TEXT := "Slot Kitchen"
+
 var _start_btn: Button
 var _tut_btn: Button
 
@@ -39,7 +41,7 @@ func _ready() -> void:
 	v.add_child(logo_wrap)
 	_bob(logo)
 
-	var title := _make_title("슬롯 키친")
+	var title := _make_title(TITLE_TEXT)
 	v.add_child(title)
 	_pulse(title)
 
@@ -94,30 +96,44 @@ func _ready() -> void:
 
 
 const _TITLE_COLORS := [Palette.MAIN, Palette.ACCENT, Palette.MAIN, Palette.ACCENT]
+const _TITLE_MAX_W := 330.0
+const _TITLE_BASE := 58
 
 func _make_title(text: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 1)
+	var size := _fit_size(text)
 	var idx := 0
 	for ch in text:
 		if ch == " ":
 			var gap := Control.new()
-			gap.custom_minimum_size = Vector2(18, 0)
+			gap.custom_minimum_size = Vector2(size * 0.32, 0)
 			row.add_child(gap)
 			continue
-		row.add_child(_glyph(ch, _TITLE_COLORS[idx % _TITLE_COLORS.size()], idx))
+		row.add_child(_glyph(ch, _TITLE_COLORS[idx % _TITLE_COLORS.size()], idx, size))
 		idx += 1
 	return row
 
-func _glyph(ch: String, color: Color, idx: int) -> Label:
-	var l := UI.label(ch, 58, color, true)
-	l.add_theme_constant_override("outline_size", 14)
+func _fit_size(text: String) -> int:
+	var visible := text.replace(" ", "").length()
+	var f := ThemeDB.fallback_font
+	var w := f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, _TITLE_BASE).x
+	w += visible * (_TITLE_BASE * 0.18)
+	var size := _TITLE_BASE
+	if w > _TITLE_MAX_W:
+		size = int(_TITLE_MAX_W / w * _TITLE_BASE)
+	return clampi(size, 26, _TITLE_BASE)
+
+func _glyph(ch: String, color: Color, idx: int, size: int) -> Label:
+	var l := UI.label(ch, size, color, true)
+	var outline := maxi(6, int(size * 0.24))
+	l.add_theme_constant_override("outline_size", outline)
 	l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
 	l.add_theme_color_override("font_shadow_color", Color(0.164, 0.129, 0.106, 0.28))
 	l.add_theme_constant_override("shadow_offset_x", 0)
-	l.add_theme_constant_override("shadow_offset_y", 5)
-	l.add_theme_constant_override("shadow_outline_size", 14)
+	l.add_theme_constant_override("shadow_offset_y", maxi(3, int(size * 0.09)))
+	l.add_theme_constant_override("shadow_outline_size", outline)
 	l.rotation_degrees = -5.0 if idx % 2 == 0 else 5.0
 	l.resized.connect(func(): l.pivot_offset = l.size * 0.5)
 	return l
