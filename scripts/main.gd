@@ -130,11 +130,15 @@ func _ready() -> void:
 
 
 func _on_home_pressed() -> void:
-  Modal.open(self) \
+  _set_world_paused(true)
+  var m := Modal.open(self) \
     .title(Loc.t("home_title")) \
     .row(Loc.t("home_warn"), Palette.COCOA_600) \
     .button(Loc.t("go_home"), _go_home) \
     .button(Loc.t("cancel"), func(): pass)
+  m.tree_exited.connect(func():
+    if is_instance_valid(self) and not _title.visible:
+      _set_world_paused(false))
 
 
 func _go_home() -> void:
