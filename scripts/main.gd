@@ -205,11 +205,11 @@ func _build_top_bar() -> Control:
   home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
   home.pressed.connect(_on_home_pressed)
   Audio.attach_click(home)
-  row.add_child(home)
 
   var day_badge := UI.day_badge(32)
   _day_num = day_badge.get_meta("num") as Label
   row.add_child(day_badge)
+  row.add_child(home)
 
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
