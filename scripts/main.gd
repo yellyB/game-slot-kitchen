@@ -520,11 +520,13 @@ func _on_confirm_order(customer: Customer) -> void:
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
     _board.shake_slots()     # 주문 꽉 참 — 슬롯 좌우 흔들림(토스트 대체)
     Audio.play("disabled")   # 더 못 받음(불가)
+    Audio.vibrate(30)        # 접수 불가 — 짧은 에러 진동
     return
   var slot := _board.first_empty_slot()
   if slot == null:
     _board.shake_slots()     # 빈 칸 없음 — 슬롯 좌우 흔들림(토스트 대체)
     Audio.play("disabled")   # 더 못 받음(불가)
+    Audio.vibrate(30)        # 접수 불가 — 짧은 에러 진동
     return
   var rid := customer.recipe_id
   var order := OrderCard.new()
@@ -581,6 +583,7 @@ func _on_urged(card: Control) -> void:
 func _on_customer_expired(customer: Customer) -> void:
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
+  Audio.vibrate(40)   # 손님 놓침 — 에러 진동
   _detach_and_fade(customer)
 
 
@@ -596,6 +599,7 @@ func _on_order_expired(order: OrderCard) -> void:
   _order_lost_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
+  Audio.vibrate(40)   # 손님 놓침 — 에러 진동
   _detach_and_fade(order)   # 슬롯에서 떼어내며 페이드아웃(슬롯 즉시 회복)
   _refresh_warehouse()
 
@@ -1094,6 +1098,7 @@ func _countdown_pop(sec: int) -> void:
   # 카운트다운마다 화면 흔들림 + 나무 똑딱 틱(0초에 가까울수록 피치↑=긴박감). dur<1s라 겹침 없음.
   _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
   Audio.play("countdown", 1.0 + float(COUNTDOWN_FROM - sec) * 0.08)   # 5:1.0 → 1:1.32
+  Audio.vibrate(15)   # 마지막 5초 — 매 초 톡(긴장)
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -1254,6 +1259,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   else:
     # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
     Audio.play("day_close")   # 영업 종료 딩동(+흔들림과 함께 임팩트)
+    Audio.vibrate(40)   # 하루 마감 임팩트 — 묵직한 진동(화면 흔들림과 함께)
     _show_dayend_banner(summary["day"])
     _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
@@ -1332,6 +1338,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
       create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
         .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")   # 하루 통과(정산 성공)음
+    Audio.vibrate(30)   # 정산 통과 — 성공 진동
     stamp.text = "✅"
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)
@@ -1343,6 +1350,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
     pay_btn.disabled = false
   else:
     Audio.play("fail")   # 돈 부족 → 폐업 스팅
+    Audio.vibrate(60)   # 폐업 — 강한(긴) 에러 진동
     stamp.text = "❌"
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)

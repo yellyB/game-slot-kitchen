@@ -158,6 +158,7 @@ func _finish_cooking() -> void:
   _holder.add_child(dish)
   dish.pop_in()   # 조리 완료 팝 (배치 팝과 동일 연출)
   Audio.play("cook_done")   # 조리 완료음
+  Audio.vibrate(20)   # 조리 완료 — 짧은 확정 진동
 
 
 func _process(delta: float) -> void:

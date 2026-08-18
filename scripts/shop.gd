@@ -226,6 +226,7 @@ func _on_draw() -> void:
 ## 버프 팩 개봉 — 3개 중 1개 택(드래프트), 나머지 버림.
 func _show_pack(pack: Array) -> void:
   Audio.play("pack_open")   # 카드팩 개봉 순간
+  Audio.vibrate(30)   # 카드팩 개봉 — 만족감 진동
   var overlay := Control.new()
   overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   overlay.mouse_filter = Control.MOUSE_FILTER_STOP
