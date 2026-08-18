@@ -105,6 +105,16 @@ func _ready() -> void:
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
 
+  if "--shotshop2" in OS.get_cmdline_user_args():
+    _start_game()
+    for _i in 10:
+      await get_tree().process_frame
+    _open_shop()
+    for _i in 20:
+      await get_tree().process_frame
+    get_viewport().get_texture().get_image().save_png("res://_titleshot.png")
+    get_tree().quit()
+
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
 
@@ -208,7 +218,7 @@ func _build_top_bar() -> Control:
   row.add_child(home)
 
   var day_badge := UI.day_badge(32)
-  _day_num = day_badge.get_meta("num")
+  _day_num = day_badge.get_meta("num") as Label
   row.add_child(day_badge)
 
   var gap := Control.new()
@@ -471,12 +481,12 @@ func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
 
 func _on_confirm_order(customer: Customer) -> void:
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
-    _board.shake_slots()
+    Toast.show_msg(self, Loc.t("orders_full"))
     Audio.play("disabled")
     return
   var slot := _board.first_empty_slot()
   if slot == null:
-    _board.shake_slots()
+    Toast.show_msg(self, Loc.t("no_empty_slot"))
     Audio.play("disabled")
     return
   var rid := customer.recipe_id
@@ -1158,16 +1168,13 @@ func _show_settlement(summary: Dictionary) -> void:
   var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var yesterday := cash_before - rev
-  var y_label := UI.label(UI.money(yesterday), 16, Palette.COCOA_800)
   var earned := UI.label("+" + UI.money(rev), 16, Palette.SUCCESS)
   var total := UI.label(UI.money(cash_before), 22, Palette.COCOA_800, true)
-  var y_row := _settle_icon_row("coin", y_label, 20)
   var earned_row := _settle_icon_row("coin", earned, 20)
   var total_row := _settle_icon_row("coin", total, 28)
   var stamp := _settle_label("", Palette.SUCCESS, 40, true)
   stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(y_row).add_row(earned_row).sep().add_row(total_row).sep().add_row(stamp)
+  m.add_row(earned_row).sep().add_row(total_row).sep().add_row(stamp)
 
   var pay_btn := Button.new()
   pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
@@ -1187,8 +1194,6 @@ func _show_settlement(summary: Dictionary) -> void:
 
   var tw := create_tween()
   tw.tween_interval(0.15)
-  tw.tween_property(y_row, "modulate:a", 1.0, 0.25)
-  tw.tween_interval(0.35)
   tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
   tw.tween_property(total_row, "modulate:a", 1.0, 0.25)
