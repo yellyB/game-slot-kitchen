@@ -19,60 +19,76 @@ func _ready() -> void:
 	z_index = 300
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var dim := ColorRect.new()
-	dim.color = Palette.DIM
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(dim)
+	# 페이지 배경 — 크림 바탕. 상점 손그림(assets/art/bg/shop.png) 있으면 그 위에 덮음.
+	# (팝업이 아니라 화면을 꽉 채우는 별도 페이즈 화면) [[화구 아트 로딩과 동일 폴백 패턴]]
+	var bg := ColorRect.new()
+	bg.color = Palette.COCOA_50
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+	var bg_path := "res://assets/art/bg/shop.png"
+	if ResourceLoader.exists(bg_path):
+		var bgi := TextureRect.new()
+		bgi.texture = load(bg_path)
+		bgi.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		bgi.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED   # 비율 바뀌어도 중앙 유지 크롭
+		bgi.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(bgi)
 
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(300, 0)
-	panel.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200))
-	center.add_child(panel)
-
+	# 전체 여백 프레임(화면 가장자리 패딩)
 	var pad := MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
+	pad.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right"]:
 		pad.add_theme_constant_override("margin_" + side, 20)
-	panel.add_child(pad)
+	pad.add_theme_constant_override("margin_top", 24)
+	pad.add_theme_constant_override("margin_bottom", 20)
+	add_child(pad)
 
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 12)
+	v.add_theme_constant_override("separation", 16)
 	pad.add_child(v)
 
-	# 헤더: 🏪 + 보유 돈
+	# 헤더(상단 바): 🏪 + 보유 돈
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 8)
 	v.add_child(header)
-	header.add_child(UI.label("🏪", 22, Palette.COCOA_800, true))
+	header.add_child(UI.label("🏪", 28, Palette.COCOA_800, true))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
-	header.add_child(_dot(Palette.ACCENT))
-	_cash_label = UI.label("0", 18, Palette.COCOA_800, true)
+	header.add_child(UI.ui_icon("coin", 22))   # 동전 손그림
+	_cash_label = UI.label("0", 22, Palette.COCOA_800, true)
 	header.add_child(_cash_label)
+
+	# 본문(스크롤) — 상품·보유버프. 콘텐츠 늘어나도 스크롤로 흡수(상점은 날짜마다 성장).
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+
+	var body := VBoxContainer.new()
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 12)
+	scroll.add_child(body)
 
 	# 상품: 슬롯 확장 / 버프 팩
 	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-	_buy_slot_btn = _product(v, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(slot_price), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	_buy_slot_btn = _product(body, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(slot_price), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
 	_slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
-	_draw_btn = _product(v, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+	_draw_btn = _product(body, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	# 보유 버프
-	v.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
+	body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
 	_owned_row = HFlowContainer.new()
 	_owned_row.add_theme_constant_override("separation", 6)
 	_owned_row.custom_minimum_size = Vector2(0, 30)
-	v.add_child(_owned_row)
+	body.add_child(_owned_row)
 
-	# [영업 시작]
+	# [영업 시작] — 하단 고정, 엄지존에 크게
 	var start := Button.new()
 	start.text = Loc.t("shop_start")
-	start.custom_minimum_size = Vector2(0, 48)
+	start.custom_minimum_size = Vector2(0, 56)
 	start.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	start.add_theme_font_size_override("font_size", 18)
+	start.add_theme_font_size_override("font_size", 20)
 	start.add_theme_color_override("font_color", Palette.WHITE)
 	start.add_theme_color_override("font_hover_color", Palette.WHITE)
 	start.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
@@ -337,12 +353,3 @@ func _sell(id: String, refund: int) -> void:
 	session.add_cash(refund)
 	Audio.play("coins")   # 환급(동전)
 	_refresh()
-
-
-func _dot(color: Color) -> Control:
-	var dot := ColorRect.new()
-	dot.color = color
-	dot.custom_minimum_size = Vector2(14, 14)
-	var wrap := CenterContainer.new()
-	wrap.add_child(dot)
-	return wrap
