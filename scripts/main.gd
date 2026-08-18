@@ -1275,12 +1275,12 @@ func _show_settlement(summary: Dictionary) -> void:
   var total := UI.label(UI.money(cash_before), 16, Palette.COCOA_800, true)
   var total_row := _settle_icon_row("coin", total, 20)
   total_row.modulate.a = 1.0   # 헤더라 처음부터 보임(항목처럼 페이드인 안 함)
-  m.add_row(total_row).sep()
+  m.add_row(total_row)
 
   # 오늘 매출 항목(발라트로 Cash Out식) — 등장. 가게세는 아래 '지불' 버튼에서 직접 냄.
   var earned := UI.label("+" + UI.money(rev), 18, Palette.SUCCESS)
   var earned_row := _settle_icon_row("coin", earned, 24)
-  m.add_row(earned_row).sep()
+  m.add_row(earned_row)
 
   var stamp := _settle_label("", Palette.SUCCESS, 40, true)   # 결과 도장 — 연출 끝에 채움
   stamp.scale = Vector2(0.5, 0.5)
