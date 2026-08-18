@@ -55,9 +55,22 @@ func _ready() -> void:
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
-	header.add_child(UI.ui_icon("coin", 22))   # 동전 손그림
+	# 보유금 — 배경과 안 겹치게 흰 상자(칩) 안에 표시(대비 확보).
+	var cash_box := PanelContainer.new()
+	cash_box.add_theme_stylebox_override("panel", UI.chip(Palette.WHITE, Palette.COCOA_200))
+	var cbpad := MarginContainer.new()
+	cbpad.add_theme_constant_override("margin_left", 12)
+	cbpad.add_theme_constant_override("margin_right", 12)
+	cbpad.add_theme_constant_override("margin_top", 4)
+	cbpad.add_theme_constant_override("margin_bottom", 4)
+	cash_box.add_child(cbpad)
+	var cbrow := HBoxContainer.new()
+	cbrow.add_theme_constant_override("separation", 5)
+	cbpad.add_child(cbrow)
+	cbrow.add_child(UI.ui_icon("coin", 22))   # 동전 손그림
 	_cash_label = UI.label("0", 22, Palette.COCOA_800, true)
-	header.add_child(_cash_label)
+	cbrow.add_child(_cash_label)
+	header.add_child(cash_box)
 
 	# 본문(스크롤) — 상품·보유버프. 콘텐츠 늘어나도 스크롤로 흡수(상점은 날짜마다 성장).
 	var scroll := ScrollContainer.new()
