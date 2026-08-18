@@ -26,7 +26,7 @@ func _ready() -> void:
     var bgi := TextureRect.new()
     bgi.texture = load(bg_path)
     bgi.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-    bgi.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+    bgi.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
     bgi.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(bgi)
 
