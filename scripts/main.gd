@@ -36,14 +36,17 @@ const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
 
 
 func _ready() -> void:
-  # 배경 크림 — 빈 곳 클릭 시 선택 해제 캐처. 화면 흔들림 때 가장자리 빈틈 안 보이게 여유 확장.
-  var bg := ColorRect.new()
-  bg.color = Palette.COCOA_50
+  # 배경(빵 패턴) — 빈 곳 클릭 시 선택 해제 캐처. 화면 흔들림 때 가장자리 빈틈 안 보이게 여유 확장.
+  var bg := TextureRect.new()
+  bg.texture = load("res://assets/art/bg/play_bg.jpg")
   bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   bg.offset_left = -40
   bg.offset_top = -40
   bg.offset_right = 40
   bg.offset_bottom = 40
+  bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+  bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+  bg.mouse_filter = Control.MOUSE_FILTER_STOP   # 빈 곳 클릭 캐처 유지
   bg.gui_input.connect(_on_background_input)
   add_child(bg)
 

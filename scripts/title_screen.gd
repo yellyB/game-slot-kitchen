@@ -14,9 +14,12 @@ func _ready() -> void:
 	z_index = 400
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var bg := ColorRect.new()
-	bg.color = Palette.COCOA_50
+	var bg := TextureRect.new()
+	bg.texture = load("res://assets/art/bg/title_bg.jpg")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
 	var center := CenterContainer.new()
