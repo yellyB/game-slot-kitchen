@@ -33,17 +33,6 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 18)
 	center.add_child(v)
 
-	# 로고(도넛) — 통통 위아래로 튀는 아이들 모션(플레인 Control로 감싸 VBox 레이아웃과 분리)
-	var logo_wrap := Control.new()
-	logo_wrap.custom_minimum_size = Vector2(0, 96)
-	var logo := UI.label("🍩", 80)
-	logo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	logo_wrap.add_child(logo)
-	v.add_child(logo_wrap)
-	_bob(logo)
-
 	# 게임 타이틀 — 글자별 브랜드 컬러 + 진한 코코아 외곽선 + 그림자로 로고화(영어 고정)
 	var title := _make_title(TITLE_TEXT)
 	v.add_child(title)
@@ -149,12 +138,6 @@ func _glyph(ch: String, color: Color, idx: int, size: int) -> Label:
 	l.rotation_degrees = -5.0 if idx % 2 == 0 else 5.0
 	l.resized.connect(func(): l.pivot_offset = l.size * 0.5)   # 제자리 회전 위해 중앙 피벗
 	return l
-
-## 도넛 로고 — 위아래로 통통(무한 루프).
-func _bob(node: Control) -> void:
-	var t := create_tween().set_loops()
-	t.tween_property(node, "position:y", -7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_property(node, "position:y", 7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 ## 타이틀 — 은은한 숨쉬기 스케일(무한 루프).
 func _pulse(node: Control) -> void:
