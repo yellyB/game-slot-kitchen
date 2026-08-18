@@ -167,17 +167,18 @@ func _draw_chevrons(btn: Button) -> void:
   var sz := btn.size
   var cx := sz.x * 0.5
   var cy := sz.y * 0.5
-  var w := 10.0
-  var h := 12.0
-  var th := 5.0
-  var spacing := 12.0
+  var w := 12.0
+  var h := 15.0
+  var th := 6.0
+  var spacing := 16.0
+  var cap := th * 0.5
   for tip_x in [cx - spacing * 0.5, cx + spacing * 0.5]:
-    var pts := PackedVector2Array([
-      Vector2(tip_x - w, cy - h),
-      Vector2(tip_x, cy),
-      Vector2(tip_x - w, cy + h),
-    ])
-    btn.draw_polyline(pts, Palette.WHITE, th, true)
+    var top := Vector2(tip_x - w, cy - h)
+    var tip := Vector2(tip_x, cy)
+    var bot := Vector2(tip_x - w, cy + h)
+    btn.draw_polyline(PackedVector2Array([top, tip, bot]), Palette.WHITE, th, true)
+    for p in [top, tip, bot]:
+      btn.draw_circle(p, cap, Palette.WHITE)
 
 
 func _on_buy_slot() -> void:
