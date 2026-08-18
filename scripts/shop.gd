@@ -189,7 +189,7 @@ func _round_style(c: Color) -> StyleBoxFlat:
 ## 다음날 버튼 위 >> 겹화살표(글자 아님 — 직접 그림). 흰색 두 꺽쇠, 굵은 선 + 둥근 끝.
 func _draw_chevrons(btn: Button) -> void:
   var sz := btn.size
-  var cx := sz.x * 0.5
+  var cx := sz.x - 30.0   # 버튼 중앙이 아니라 오른쪽에 붙여 그림
   var cy := sz.y * 0.5
   var w := 12.0     # 꺽쇠 깊이(가로)
   var h := 15.0     # 꺽쇠 반높이(세로)
