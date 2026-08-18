@@ -43,16 +43,13 @@ func _ready() -> void:
 	v.add_child(spacer)
 
 	var start := Button.new()
-	start.text = Loc.t("start")
+	# 텍스트 대신 오른쪽으로 향한 채워진 삼각형(▶ 재생 아이콘)을 직접 그림
 	_start_btn = start
 	start.custom_minimum_size = Vector2(180, 56)
-	start.add_theme_font_size_override("font_size", 22)
-	start.add_theme_color_override("font_color", Palette.WHITE)
-	start.add_theme_color_override("font_hover_color", Palette.WHITE)
-	start.add_theme_color_override("font_pressed_color", Palette.WHITE)
 	start.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	start.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	start.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+	start.draw.connect(_draw_play_triangle.bind(start))
 	start.pressed.connect(func(): start_pressed.emit())
 	Audio.attach_click(start)   # 시작 버튼 클릭음
 	v.add_child(start)
@@ -153,8 +150,22 @@ func _open_settings() -> void:
 	add_child(panel)
 
 
+## 시작 버튼 위에 오른쪽으로 뾰족한 채워진 삼각형(재생 아이콘)을 그린다.
+func _draw_play_triangle(btn: Button) -> void:
+	var s := btn.size
+	var w := 22.0   # 삼각형 가로
+	var h := 24.0   # 삼각형 세로
+	var cx := s.x * 0.5 + w / 6.0   # 무게중심 보정(시각적 중앙 맞춤)
+	var cy := s.y * 0.5
+	var pts := PackedVector2Array([
+		Vector2(cx - w * 0.5, cy - h * 0.5),
+		Vector2(cx - w * 0.5, cy + h * 0.5),
+		Vector2(cx + w * 0.5, cy),
+	])
+	btn.draw_colored_polygon(pts, Palette.WHITE)
+
+
 func _refresh_texts() -> void:
-	if is_instance_valid(_start_btn):
-		_start_btn.text = Loc.t("start")
+	# 시작 버튼은 아이콘(삼각형)이라 언어 무관 — 튜토리얼 텍스트만 갱신
 	if is_instance_valid(_tut_btn):
 		_tut_btn.text = Loc.t("tutorial")
