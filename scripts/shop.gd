@@ -49,9 +49,21 @@ func _ready() -> void:
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
-	header.add_child(UI.ui_icon("coin", 22))
+	var cash_box := PanelContainer.new()
+	cash_box.add_theme_stylebox_override("panel", UI.chip(Palette.WHITE, Palette.COCOA_200))
+	var cbpad := MarginContainer.new()
+	cbpad.add_theme_constant_override("margin_left", 12)
+	cbpad.add_theme_constant_override("margin_right", 12)
+	cbpad.add_theme_constant_override("margin_top", 4)
+	cbpad.add_theme_constant_override("margin_bottom", 4)
+	cash_box.add_child(cbpad)
+	var cbrow := HBoxContainer.new()
+	cbrow.add_theme_constant_override("separation", 5)
+	cbpad.add_child(cbrow)
+	cbrow.add_child(UI.ui_icon("coin", 22))
 	_cash_label = UI.label("0", 22, Palette.COCOA_800, true)
-	header.add_child(_cash_label)
+	cbrow.add_child(_cash_label)
+	header.add_child(cash_box)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
