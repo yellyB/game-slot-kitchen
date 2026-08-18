@@ -1163,11 +1163,11 @@ func _show_settlement(summary: Dictionary) -> void:
   var total := UI.label(UI.money(cash_before), 16, Palette.COCOA_800, true)
   var total_row := _settle_icon_row("coin", total, 20)
   total_row.modulate.a = 1.0
-  m.add_row(total_row).sep()
+  m.add_row(total_row)
 
   var earned := UI.label("+" + UI.money(rev), 18, Palette.SUCCESS)
   var earned_row := _settle_icon_row("coin", earned, 24)
-  m.add_row(earned_row).sep()
+  m.add_row(earned_row)
 
   var stamp := _settle_label("", Palette.SUCCESS, 40, true)
   stamp.scale = Vector2(0.5, 0.5)
