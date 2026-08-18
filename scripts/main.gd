@@ -1268,12 +1268,16 @@ func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   # 실제 차감 여부: 통과 + 미납통과(skip) 아님 + 잔액 충분.
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
-  var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
-  var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
-  var stamp := _settle_label("", Palette.SUCCESS, 20, true)   # 결과 도장 — 지불 클릭 후 채움
+  # 라벨 글자 없이 아이콘+숫자로: 보유금=코인, 매출=코인(+초록), 가게세=영수증(-빨강)
+  var held := UI.label(UI.money(cash_before), 18, Palette.COCOA_800, true)
+  var earned := UI.label("+" + UI.money(rev), 16, Palette.SUCCESS)
+  var rentl := UI.label("-" + UI.money(rent), 16, Palette.DANGER)
+  var held_row := _settle_icon_row("coin", held)
+  var earned_row := _settle_icon_row("coin", earned)
+  var rent_row := _settle_icon_row("bill", rentl)
+  var stamp := _settle_label("", Palette.SUCCESS, 40, true)   # 결과 도장(큰 기호) — 지불 클릭 후 채움
   stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
+  m.add_row(held_row).add_row(earned_row).add_row(rent_row).sep().add_row(stamp)
 
   # 가게세 지불 버튼(커스텀) — 처음엔 숨김, 연출 끝에 등장. 눌러서 직접 지불.
   var pay_btn := Button.new()
@@ -1295,11 +1299,11 @@ func _show_settlement(summary: Dictionary) -> void:
   # 순차 페이드인: 보유금 → 매출 → 가게세 → [가게세 지불] 등장 (차감·도장은 클릭 후)
   var tw := create_tween()
   tw.tween_interval(0.15)
-  tw.tween_property(held, "modulate:a", 1.0, 0.25)
+  tw.tween_property(held_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
-  tw.tween_property(earned, "modulate:a", 1.0, 0.25)
+  tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
-  tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
+  tw.tween_property(rent_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.2)
   tw.tween_callback(func():
     pay_btn.disabled = false
@@ -1320,11 +1324,11 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
       _session.pay_rent()
       var upd := func(v: float):
         if is_instance_valid(held):
-          held.text = Loc.t("held") % UI.money(int(round(v)))
+          held.text = UI.money(int(round(v)))
       create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
         .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")   # 하루 통과(정산 성공)음
-    stamp.text = Loc.t("passed")
+    stamp.text = "✅"   # 통과 도장(기호만)
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
@@ -1335,7 +1339,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
     pay_btn.disabled = false
   else:
     Audio.play("fail")                          # 돈 부족 순간 실패음(폐업 스팅)
-    stamp.text = Loc.t("insufficient")          # 돈이 부족합니다 → 게임오버
+    stamp.text = "❌"                            # 실패 도장(기호만) → 게임오버
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_title")
@@ -1359,6 +1363,17 @@ func _settle_label(text: String, color: Color, font := 16, bold := false) -> Lab
   l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   l.modulate.a = 0.0
   return l
+
+
+## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.
+func _settle_icon_row(icon: String, value: Label) -> HBoxContainer:
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  row.add_theme_constant_override("separation", 6)
+  row.modulate.a = 0.0
+  row.add_child(UI.ui_icon(icon, 22))
+  row.add_child(value)
+  return row
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
