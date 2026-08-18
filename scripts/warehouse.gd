@@ -29,12 +29,9 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 10)
 	pad.add_child(v)
 
-	# 헤더 — 우상단 ✕ 닫기(원래대로). 창고 이모지/이미지는 없음.
-	var header := HBoxContainer.new()
+	# 헤더 — 상단 가운데 ✕ 닫기(바텀시트 핸들 자리). 창고 이모지/이미지는 없음.
+	var header := CenterContainer.new()
 	v.add_child(header)
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(gap)
 	var close := Button.new()
 	close.text = "✕"
 	close.add_theme_font_size_override("font_size", 16)

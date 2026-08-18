@@ -40,12 +40,16 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 10)
 	pad.add_child(v)
 
+	# 헤더 — 상단 가운데 ✕ 닫기(바텀시트 핸들 자리). 🔥는 좌측, 우측 대칭 여백으로 ✕ 가운데 정렬.
 	var header := HBoxContainer.new()
 	v.add_child(header)
 	header.add_child(UI.label("🔥", 20, Palette.COCOA_800, true))
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(gap)
+	var center := CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(center)
+	var rbal := Control.new()   # 🔥와 대칭 여백 → ✕ 실제 가운데
+	rbal.custom_minimum_size = Vector2(24, 0)
+	header.add_child(rbal)
 	var close := Button.new()
 	close.text = "✕"
 	close.add_theme_font_size_override("font_size", 16)
@@ -55,7 +59,7 @@ func _ready() -> void:
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
 	close.pressed.connect(func(): close_requested.emit())
 	Audio.attach_click(close)   # X 닫기 클릭음
-	header.add_child(close)
+	center.add_child(close)
 
 	# 레시피 목록 — 스크롤 없이 전부 표시(시트 높이로 수용)
 	var list := VBoxContainer.new()
