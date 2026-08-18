@@ -75,9 +75,9 @@ func _ready() -> void:
   scroll.add_child(body)
 
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 72), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
   _slot_price_label = _last_price_label
-  _draw_btn = _product(body, UI.ui_icon("card_pack", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
   body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
   _owned_row = HFlowContainer.new()
@@ -90,8 +90,8 @@ func _ready() -> void:
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
-  start.offset_left = -92
-  start.offset_right = -8
+  start.offset_left = -150
+  start.offset_right = -16
   start.offset_top = -76
   start.offset_bottom = -8
   start.add_theme_stylebox_override("normal", _round_style(Palette.MAIN))
@@ -109,6 +109,7 @@ func _ready() -> void:
 
 func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_color: Color, cb: Callable) -> Button:
   var card := PanelContainer.new()
+  card.custom_minimum_size = Vector2(0, 128)
   card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
@@ -118,6 +119,7 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
   row.add_theme_constant_override("separation", 10)
   row.alignment = BoxContainer.ALIGNMENT_CENTER
   pad.add_child(row)
+  icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   row.add_child(icon)
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -127,10 +129,12 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
   price_row.add_child(UI.ui_icon("coin", 18))
   _last_price_label = UI.label(UI.money(price), 15, Palette.COCOA_800, true)
   price_row.add_child(_last_price_label)
+  price_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   row.add_child(price_row)
   var btn := Button.new()
   btn.text = btn_text
   btn.custom_minimum_size = Vector2(72, 40)
+  btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   btn.add_theme_font_size_override("font_size", 15)
   btn.add_theme_color_override("font_color", Palette.WHITE)
   btn.add_theme_color_override("font_hover_color", Palette.WHITE)
