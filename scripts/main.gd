@@ -365,8 +365,8 @@ func _build_warehouse_handle() -> Control:
   b.anchor_right = 1.0
   b.anchor_top = 1.0
   b.anchor_bottom = 1.0
-  b.offset_left = -150   # 버튼 폭 ≈ 134
-  b.offset_right = -16   # 우측 여백 16
+  b.offset_left = -92    # 버튼 폭 ≈ 84 (상점 다음날 버튼과 동일)
+  b.offset_right = -8    # 우측 여백 8
   b.offset_top = -76
   b.offset_bottom = -8
   b.add_theme_stylebox_override("normal", _handle_style(Palette.MAIN))
