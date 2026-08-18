@@ -170,7 +170,7 @@ func _round_style(c: Color) -> StyleBoxFlat:
 
 func _draw_chevrons(btn: Button) -> void:
   var sz := btn.size
-  var cx := sz.x * 0.5
+  var cx := sz.x - 30.0
   var cy := sz.y * 0.5
   var w := 12.0
   var h := 15.0
