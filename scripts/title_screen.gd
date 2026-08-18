@@ -31,13 +31,21 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 18)
 	center.add_child(v)
 
-	var logo := UI.label("🍩", 72)
+	# 로고(도넛) — 통통 위아래로 튀는 아이들 모션(플레인 Control로 감싸 VBox 레이아웃과 분리)
+	var logo_wrap := Control.new()
+	logo_wrap.custom_minimum_size = Vector2(0, 96)
+	var logo := UI.label("🍩", 80)
+	logo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(logo)
+	logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	logo_wrap.add_child(logo)
+	v.add_child(logo_wrap)
+	_bob(logo)
 
-	var title := UI.label("슬롯 키친", 34, Palette.COCOA_800, true)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# 게임 타이틀 — 글자별 브랜드 컬러 + 진한 코코아 외곽선 + 부드러운 그림자로 로고화
+	var title := _make_title("슬롯 키친")
 	v.add_child(title)
+	_pulse(title)
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 12)
@@ -89,6 +97,52 @@ func _ready() -> void:
 	gear.pressed.connect(_open_settings)
 	Audio.attach_click(gear)   # 설정 버튼 클릭음
 	add_child(gear)
+
+
+# 글자별 색 — 딸기핑크·크림옐로 교차(따뜻한 도넛 카페 톤). 공백은 건너뜀.
+const _TITLE_COLORS := [Palette.MAIN, Palette.ACCENT, Palette.MAIN, Palette.ACCENT]
+
+## 타이틀을 글자 단위 라벨로 쪼개 컬러/외곽선/그림자/기울기를 개별 부여 → 로고 느낌.
+func _make_title(text: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 1)
+	var idx := 0
+	for ch in text:
+		if ch == " ":
+			var gap := Control.new()
+			gap.custom_minimum_size = Vector2(18, 0)
+			row.add_child(gap)
+			continue
+		row.add_child(_glyph(ch, _TITLE_COLORS[idx % _TITLE_COLORS.size()], idx))
+		idx += 1
+	return row
+
+## 한 글자 라벨 — 굵게 + 진한 코코아 외곽선 + 아래 그림자 + 좌우로 살짝 기울임.
+func _glyph(ch: String, color: Color, idx: int) -> Label:
+	var l := UI.label(ch, 58, color, true)
+	l.add_theme_constant_override("outline_size", 14)
+	l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+	l.add_theme_color_override("font_shadow_color", Color(0.164, 0.129, 0.106, 0.28))
+	l.add_theme_constant_override("shadow_offset_x", 0)
+	l.add_theme_constant_override("shadow_offset_y", 5)
+	l.add_theme_constant_override("shadow_outline_size", 14)
+	l.rotation_degrees = -5.0 if idx % 2 == 0 else 5.0
+	l.resized.connect(func(): l.pivot_offset = l.size * 0.5)   # 제자리 회전 위해 중앙 피벗
+	return l
+
+## 도넛 로고 — 위아래로 통통(무한 루프).
+func _bob(node: Control) -> void:
+	var t := create_tween().set_loops()
+	t.tween_property(node, "position:y", -7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(node, "position:y", 7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+## 타이틀 — 은은한 숨쉬기 스케일(무한 루프).
+func _pulse(node: Control) -> void:
+	node.resized.connect(func(): node.pivot_offset = node.size * 0.5)
+	var t := create_tween().set_loops()
+	t.tween_property(node, "scale", Vector2(1.04, 1.04), 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(node, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _open_settings() -> void:
