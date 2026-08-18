@@ -27,11 +27,8 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 10)
 	pad.add_child(v)
 
-	var header := HBoxContainer.new()
+	var header := CenterContainer.new()
 	v.add_child(header)
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(gap)
 	var close := Button.new()
 	close.text = "✕"
 	close.add_theme_font_size_override("font_size", 16)
