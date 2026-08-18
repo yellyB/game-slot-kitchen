@@ -18,7 +18,7 @@ var _served_today := 0
 var _order_lost_today := 0
 var _served_by_menu := {}
 
-var _day_label: Label
+var _day_num: Label
 var _money_label: Label
 var _rent_label: Label
 var _last_cash := 0
@@ -207,8 +207,9 @@ func _build_top_bar() -> Control:
   Audio.attach_click(home)
   row.add_child(home)
 
-  _day_label = UI.label(Loc.t("day_n") % 1, 20, Palette.COCOA_800, true)
-  row.add_child(_day_label)
+  var day_badge := UI.day_badge(40)
+  _day_num = day_badge.get_meta("num")
+  row.add_child(day_badge)
 
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1030,7 +1031,7 @@ func _reset_hours_bar() -> void:
 
 
 func _on_day_started(day: int, rent: int) -> void:
-  _day_label.text = Loc.t("day_n") % day
+  _day_num.text = str(day)
   _session.set_process(false)
   get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
     if not is_inside_tree() or _title.visible:

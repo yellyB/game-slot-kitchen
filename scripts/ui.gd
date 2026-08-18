@@ -57,6 +57,24 @@ static func ui_icon(name: String, px: int) -> TextureRect:
 	return tr
 
 
+static func day_badge(px: int) -> Control:
+	var badge := Control.new()
+	badge.custom_minimum_size = Vector2(px, px)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cal := ui_icon("day_calendar", px)
+	cal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cal.custom_minimum_size = Vector2.ZERO
+	badge.add_child(cal)
+	var num := label("1", int(px * 0.36), Palette.COCOA_800, true)
+	num.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	num.offset_top = px * 0.16
+	badge.add_child(num)
+	badge.set_meta("num", num)
+	return badge
+
+
 static func ui_btn_icon(name: String, px: int) -> Control:
 	var cc := CenterContainer.new()
 	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
