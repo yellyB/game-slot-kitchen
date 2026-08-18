@@ -78,7 +78,7 @@ static func day_badge(px: int) -> Control:
 	num.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	num.offset_top = px * 0.16   # 핑크 헤더 아래(크림 본체 중앙)로 내림
+	num.offset_top = px * 0.30   # 상단 철사·핑크 헤더 피해 크림 본체 중앙-하단으로 내림
 	badge.add_child(num)
 	badge.set_meta("num", num)
 	return badge

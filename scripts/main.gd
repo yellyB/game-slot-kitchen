@@ -228,7 +228,7 @@ func _build_top_bar() -> Control:
   Audio.attach_click(home)
   row.add_child(home)
 
-  var day_badge := UI.day_badge(40)   # 일력 이미지 + 위에 날짜 숫자
+  var day_badge := UI.day_badge(32)   # 일력 이미지 + 위에 날짜 숫자(40→32, 20%↓)
   _day_num = day_badge.get_meta("num")
   row.add_child(day_badge)
 
