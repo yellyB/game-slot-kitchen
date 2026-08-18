@@ -69,10 +69,9 @@ func _ready() -> void:
 	Audio.attach_click(tut)   # 튜토리얼 버튼 클릭음
 	v.add_child(tut)
 
-	# 우상단 설정 버튼(⚙️) → 설정 오버레이
+	# 우상단 설정 버튼(톱니 손그림) → 설정 오버레이
 	var gear := Button.new()
-	gear.text = "⚙️"
-	gear.add_theme_font_size_override("font_size", 22)
+	gear.add_child(UI.ui_btn_icon("settings", 30))   # ⚙️ 이모지 대신 손그림 아이콘
 	gear.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
 	gear.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	gear.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
