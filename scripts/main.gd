@@ -1157,12 +1157,15 @@ func _show_settlement(summary: Dictionary) -> void:
   var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var held := _settle_label(Loc.t("held") % UI.money(cash_before), Palette.COCOA_800, 18, true)
-  var earned := _settle_label(Loc.t("revenue") % ("+" + UI.money(rev)), Palette.SUCCESS)
-  var rentl := _settle_label(Loc.t("rent") % ("-" + UI.money(rent)), Palette.DANGER)
-  var stamp := _settle_label("", Palette.SUCCESS, 20, true)
+  var held := UI.label(UI.money(cash_before), 18, Palette.COCOA_800, true)
+  var earned := UI.label("+" + UI.money(rev), 16, Palette.SUCCESS)
+  var rentl := UI.label("-" + UI.money(rent), 16, Palette.DANGER)
+  var held_row := _settle_icon_row("coin", held)
+  var earned_row := _settle_icon_row("coin", earned)
+  var rent_row := _settle_icon_row("bill", rentl)
+  var stamp := _settle_label("", Palette.SUCCESS, 40, true)
   stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(held).add_row(earned).add_row(rentl).sep().add_row(stamp)
+  m.add_row(held_row).add_row(earned_row).add_row(rent_row).sep().add_row(stamp)
 
   var pay_btn := Button.new()
   pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
@@ -1182,11 +1185,11 @@ func _show_settlement(summary: Dictionary) -> void:
 
   var tw := create_tween()
   tw.tween_interval(0.15)
-  tw.tween_property(held, "modulate:a", 1.0, 0.25)
+  tw.tween_property(held_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
-  tw.tween_property(earned, "modulate:a", 1.0, 0.25)
+  tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.35)
-  tw.tween_property(rentl, "modulate:a", 1.0, 0.25)
+  tw.tween_property(rent_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.2)
   tw.tween_callback(func():
     pay_btn.disabled = false
@@ -1206,11 +1209,11 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
       _session.pay_rent()
       var upd := func(v: float):
         if is_instance_valid(held):
-          held.text = Loc.t("held") % UI.money(int(round(v)))
+          held.text = UI.money(int(round(v)))
       create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
         .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")
-    stamp.text = Loc.t("passed")
+    stamp.text = "✅"
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_shop")
@@ -1221,7 +1224,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, held: Label,
     pay_btn.disabled = false
   else:
     Audio.play("fail")
-    stamp.text = Loc.t("insufficient")
+    stamp.text = "❌"
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_title")
@@ -1243,6 +1246,16 @@ func _settle_label(text: String, color: Color, font := 16, bold := false) -> Lab
   l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   l.modulate.a = 0.0
   return l
+
+
+func _settle_icon_row(icon: String, value: Label) -> HBoxContainer:
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  row.add_theme_constant_override("separation", 6)
+  row.modulate.a = 0.0
+  row.add_child(UI.ui_icon(icon, 22))
+  row.add_child(value)
+  return row
 
 
 func _open_shop() -> void:
