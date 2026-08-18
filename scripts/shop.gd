@@ -84,10 +84,10 @@ func _ready() -> void:
 
   # 상품: 슬롯 확장 / 버프 팩
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  # 슬롯 확장 = 격자+ 아이콘(struct 카테고리 손그림), 버프 팩 = 상자(box)
-  _buy_slot_btn = _product(body, _art_icon("res://assets/art/buffs_128/buff_struct.png", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+  # 슬롯 확장 = 슬롯+ 손그림, 버프 팩(카드깡) = 카드팩 손그림
+  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
   _slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
-  _draw_btn = _product(body, UI.ui_icon("box", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  _draw_btn = _product(body, UI.ui_icon("card_pack", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
   # 보유 버프
   body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
@@ -104,8 +104,8 @@ func _ready() -> void:
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
-  start.offset_left = -150   # 버튼 폭 ≈ 134
-  start.offset_right = -16   # 우측 여백 16
+  start.offset_left = -92    # 버튼 폭 ≈ 84 (좁혀서 >>를 오른쪽 코너로)
+  start.offset_right = -8    # 우측 여백 8 (가장자리에 바짝)
   start.offset_top = -76
   start.offset_bottom = -8
   start.add_theme_stylebox_override("normal", _round_style(Palette.MAIN))
