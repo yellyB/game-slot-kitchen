@@ -65,8 +65,7 @@ func _ready() -> void:
 	v.add_child(tut)
 
 	var gear := Button.new()
-	gear.text = "⚙️"
-	gear.add_theme_font_size_override("font_size", 22)
+	gear.add_child(UI.ui_btn_icon("settings", 30))
 	gear.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
 	gear.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	gear.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
