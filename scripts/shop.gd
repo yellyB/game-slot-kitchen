@@ -86,7 +86,7 @@ func _ready() -> void:
   body.add_child(_owned_row)
 
   var start := Button.new()
-  start.anchor_left = 0.5
+  start.anchor_left = 0.6
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
