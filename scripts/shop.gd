@@ -45,7 +45,6 @@ func _ready() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 8)
 	v.add_child(header)
-	header.add_child(UI.label("🏪", 28, Palette.COCOA_800, true))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(gap)
