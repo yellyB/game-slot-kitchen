@@ -86,13 +86,14 @@ func _ready() -> void:
   body.add_child(_owned_row)
 
   var start := Button.new()
-  start.anchor_left = 0.6
+  start.anchor_left = 1.0
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
+  start.offset_left = -150
+  start.offset_right = -16
   start.offset_top = -76
   start.offset_bottom = -8
-  start.offset_right = -20
   start.add_theme_stylebox_override("normal", _round_style(Palette.MAIN))
   start.add_theme_stylebox_override("hover", _round_style(Palette.MAIN.lightened(0.08)))
   start.add_theme_stylebox_override("pressed", _round_style(Palette.MAIN.darkened(0.1)))

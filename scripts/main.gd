@@ -326,13 +326,14 @@ func _build_bottom_buttons() -> Control:
 func _build_warehouse_handle() -> Control:
   var b := Button.new()
   _warehouse_btn = b
-  b.anchor_left = 0.6
+  b.anchor_left = 1.0
   b.anchor_right = 1.0
   b.anchor_top = 1.0
   b.anchor_bottom = 1.0
+  b.offset_left = -150
+  b.offset_right = -16
   b.offset_top = -76
   b.offset_bottom = -8
-  b.offset_right = -12
   b.add_theme_stylebox_override("normal", _handle_style(Palette.MAIN))
   b.add_theme_stylebox_override("hover", _handle_style(Palette.MAIN.lightened(0.08)))
   b.add_theme_stylebox_override("pressed", _handle_style(Palette.MAIN.darkened(0.1)))
