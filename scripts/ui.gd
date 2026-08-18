@@ -64,6 +64,26 @@ static func ui_icon(name: String, px: int) -> TextureRect:
 	return tr
 
 
+## 일력(달력) 뱃지 — day_calendar.png 위에 날짜 숫자를 크림 본체 영역에 얹음.
+## 반환 Control의 meta "num"에 숫자 Label을 담아 호출측이 텍스트 갱신.
+static func day_badge(px: int) -> Control:
+	var badge := Control.new()
+	badge.custom_minimum_size = Vector2(px, px)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cal := ui_icon("day_calendar", px)
+	cal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cal.custom_minimum_size = Vector2.ZERO   # 부모(badge) 크기에 맞춤
+	badge.add_child(cal)
+	var num := label("1", int(px * 0.36), Palette.COCOA_800, true)
+	num.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	num.offset_top = px * 0.16   # 핑크 헤더 아래(크림 본체 중앙)로 내림
+	badge.add_child(num)
+	badge.set_meta("num", num)
+	return badge
+
+
 ## 버튼 중앙에 얹는 아이콘(FULL_RECT CenterContainer 래핑) — 텍스트 대신.
 static func ui_btn_icon(name: String, px: int) -> Control:
 	var cc := CenterContainer.new()

@@ -22,7 +22,7 @@ var _served_today := 0      # 서빙 완료 수
 var _order_lost_today := 0  # 주문 낸 손님이 못 받고 떠난 수(음식대기 만료)
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 
-var _day_label: Label
+var _day_num: Label   # 일력 뱃지 위 날짜 숫자
 var _money_label: Label
 var _rent_label: Label
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
@@ -228,8 +228,9 @@ func _build_top_bar() -> Control:
   Audio.attach_click(home)
   row.add_child(home)
 
-  _day_label = UI.label(Loc.t("day_n") % 1, 20, Palette.COCOA_800, true)
-  row.add_child(_day_label)
+  var day_badge := UI.day_badge(40)   # 일력 이미지 + 위에 날짜 숫자
+  _day_num = day_badge.get_meta("num")
+  row.add_child(day_badge)
 
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1123,7 +1124,7 @@ func _reset_hours_bar() -> void:
 
 
 func _on_day_started(day: int, rent: int) -> void:
-  _day_label.text = Loc.t("day_n") % day
+  _day_num.text = str(day)
   # 하루 시작 홀드 — 플레이 화면만 먼저 보이고, 게임플레이(시계·스폰)는 잠깐 멈춤.
   # DAY_INTRO_DELAY 뒤에 재개 + "N일차" 배너 + 시작음(그때 재생).
   _session.set_process(false)
