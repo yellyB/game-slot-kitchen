@@ -207,7 +207,7 @@ func _build_top_bar() -> Control:
   Audio.attach_click(home)
   row.add_child(home)
 
-  var day_badge := UI.day_badge(40)
+  var day_badge := UI.day_badge(32)
   _day_num = day_badge.get_meta("num")
   row.add_child(day_badge)
 

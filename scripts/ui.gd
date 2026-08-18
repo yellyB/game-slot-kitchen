@@ -69,7 +69,7 @@ static func day_badge(px: int) -> Control:
 	num.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	num.offset_top = px * 0.16
+	num.offset_top = px * 0.30
 	badge.add_child(num)
 	badge.set_meta("num", num)
 	return badge
