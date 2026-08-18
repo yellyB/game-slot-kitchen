@@ -118,17 +118,6 @@ func _ready() -> void:
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
 
-  if "--shotshopx" in OS.get_cmdline_user_args():
-    _start_game()
-    for _i in 10:
-      await get_tree().process_frame
-    _open_shop()
-    for _i in 20:
-      await get_tree().process_frame
-    var img := get_viewport().get_texture().get_image()
-    img.save_png("res://_titleshot.png")
-    get_tree().quit()
-
   # 개발용 테스트 하니스 (릴리스엔 영향 없음): godot4 ... -- --test
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
@@ -371,7 +360,7 @@ func _build_bottom_buttons() -> Control:
 func _build_warehouse_handle() -> Control:
   var b := Button.new()
   _warehouse_btn = b
-  b.anchor_left = 0.5
+  b.anchor_left = 0.6   # 왼쪽 시작을 10% 오른쪽으로(더 우측 배치)
   b.anchor_right = 1.0
   b.anchor_top = 1.0
   b.anchor_bottom = 1.0

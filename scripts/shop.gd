@@ -99,7 +99,7 @@ func _ready() -> void:
   # [다음날 시작] — 글자 대신 >> 겹화살표. 위치는 플레이 화면 창고 버튼과 동일(우하단),
   # 단 아래 모서리도 위처럼 radius(전 모서리 둥근). v(마진 프레임)가 아니라 self에 직접 앵커.
   var start := Button.new()
-  start.anchor_left = 0.5
+  start.anchor_left = 0.6   # 왼쪽 시작을 10% 오른쪽으로(더 우측 배치)
   start.anchor_right = 1.0
   start.anchor_top = 1.0
   start.anchor_bottom = 1.0
