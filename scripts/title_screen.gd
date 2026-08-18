@@ -40,16 +40,12 @@ func _ready() -> void:
 	v.add_child(spacer)
 
 	var start := Button.new()
-	start.text = Loc.t("start")
 	_start_btn = start
 	start.custom_minimum_size = Vector2(180, 56)
-	start.add_theme_font_size_override("font_size", 22)
-	start.add_theme_color_override("font_color", Palette.WHITE)
-	start.add_theme_color_override("font_hover_color", Palette.WHITE)
-	start.add_theme_color_override("font_pressed_color", Palette.WHITE)
 	start.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	start.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	start.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+	start.draw.connect(_draw_play_triangle.bind(start))
 	start.pressed.connect(func(): start_pressed.emit())
 	Audio.attach_click(start)
 	v.add_child(start)
@@ -141,8 +137,20 @@ func _open_settings() -> void:
 	add_child(panel)
 
 
+func _draw_play_triangle(btn: Button) -> void:
+	var s := btn.size
+	var w := 22.0
+	var h := 24.0
+	var cx := s.x * 0.5 + w / 6.0
+	var cy := s.y * 0.5
+	var pts := PackedVector2Array([
+		Vector2(cx - w * 0.5, cy - h * 0.5),
+		Vector2(cx - w * 0.5, cy + h * 0.5),
+		Vector2(cx + w * 0.5, cy),
+	])
+	btn.draw_colored_polygon(pts, Palette.WHITE)
+
+
 func _refresh_texts() -> void:
-	if is_instance_valid(_start_btn):
-		_start_btn.text = Loc.t("start")
 	if is_instance_valid(_tut_btn):
 		_tut_btn.text = Loc.t("tutorial")
