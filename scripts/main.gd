@@ -475,11 +475,13 @@ func _on_confirm_order(customer: Customer) -> void:
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
     _board.shake_slots()
     Audio.play("disabled")
+    Audio.vibrate(30)
     return
   var slot := _board.first_empty_slot()
   if slot == null:
     _board.shake_slots()
     Audio.play("disabled")
+    Audio.vibrate(30)
     return
   var rid := customer.recipe_id
   var order := OrderCard.new()
@@ -530,6 +532,7 @@ func _on_urged(card: Control) -> void:
 func _on_customer_expired(customer: Customer) -> void:
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
   Audio.play("customer_leave")
+  Audio.vibrate(40)
   _detach_and_fade(customer)
 
 
@@ -543,6 +546,7 @@ func _on_order_expired(order: OrderCard) -> void:
   _order_lost_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)
   Audio.play("customer_leave")
+  Audio.vibrate(40)
   _detach_and_fade(order)
   _refresh_warehouse()
 
@@ -1001,6 +1005,7 @@ func _on_progress(t01: float) -> void:
 func _countdown_pop(sec: int) -> void:
   _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
   Audio.play("countdown", 1.0 + float(COUNTDOWN_FROM - sec) * 0.08)
+  Audio.vibrate(15)
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -1146,6 +1151,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))
   else:
     Audio.play("day_close")
+    Audio.vibrate(40)
     _show_dayend_banner(summary["day"])
     _screen_shake()
     await _dayend_sequence()
@@ -1216,6 +1222,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
       create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
         .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")
+    Audio.vibrate(30)
     stamp.text = "✅"
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)
@@ -1227,6 +1234,7 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
     pay_btn.disabled = false
   else:
     Audio.play("fail")
+    Audio.vibrate(60)
     stamp.text = "❌"
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)

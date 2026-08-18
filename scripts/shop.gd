@@ -205,6 +205,7 @@ func _on_draw() -> void:
 
 func _show_pack(pack: Array) -> void:
   Audio.play("pack_open")
+  Audio.vibrate(30)
   var overlay := Control.new()
   overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   overlay.mouse_filter = Control.MOUSE_FILTER_STOP

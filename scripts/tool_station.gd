@@ -144,6 +144,7 @@ func _finish_cooking() -> void:
   _holder.add_child(dish)
   dish.pop_in()
   Audio.play("cook_done")
+  Audio.vibrate(20)
 
 
 func _process(delta: float) -> void:
