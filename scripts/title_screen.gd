@@ -31,16 +31,6 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 18)
 	center.add_child(v)
 
-	var logo_wrap := Control.new()
-	logo_wrap.custom_minimum_size = Vector2(0, 96)
-	var logo := UI.label("🍩", 80)
-	logo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	logo_wrap.add_child(logo)
-	v.add_child(logo_wrap)
-	_bob(logo)
-
 	var title := _make_title(TITLE_TEXT)
 	v.add_child(title)
 	_pulse(title)
@@ -137,11 +127,6 @@ func _glyph(ch: String, color: Color, idx: int, size: int) -> Label:
 	l.rotation_degrees = -5.0 if idx % 2 == 0 else 5.0
 	l.resized.connect(func(): l.pivot_offset = l.size * 0.5)
 	return l
-
-func _bob(node: Control) -> void:
-	var t := create_tween().set_loops()
-	t.tween_property(node, "position:y", -7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_property(node, "position:y", 7.0, 0.75).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _pulse(node: Control) -> void:
 	node.resized.connect(func(): node.pivot_offset = node.size * 0.5)
