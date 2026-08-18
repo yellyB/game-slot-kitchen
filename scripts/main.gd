@@ -945,7 +945,8 @@ func _show_day_banner(day: int) -> void:
 
 
 ## 하루 마감 순간 — 큰 날짜 카운트를 화면 정중앙에 팝(시작 배너보다 크게).
-func _show_dayend_banner(day: int) -> void:
+## 마감 배너 — 큰 중앙 "N일차 마감" 팝. 자동 페이드 안 함(탭 대기 동안 유지). 라벨 반환.
+func _show_dayend_banner(day: int) -> Label:
   var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
   l.add_theme_constant_override("outline_size", 8)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -954,7 +955,7 @@ func _show_dayend_banner(day: int) -> void:
   add_child(l)
   await get_tree().process_frame   # 크기 확보 → 중앙 정렬·피벗
   if not is_instance_valid(l):
-    return
+    return null
   var vp := get_viewport_rect().size
   l.pivot_offset = l.size * 0.5
   l.position = (vp - l.size) * 0.5   # 정중앙
@@ -964,9 +965,26 @@ func _show_dayend_banner(day: int) -> void:
   tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
   tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
-  tw.tween_interval(0.8)
-  tw.tween_property(l, "modulate:a", 0.0, 0.4)
-  tw.tween_callback(l.queue_free)
+  return l
+
+
+## 마감 후 탭 대기 — 전체화면 캐처 + 배너 은은한 펄스(탭 유도). 탭하면 반환.
+func _tap_to_continue(banner: Label = null) -> void:
+  var catcher := Button.new()
+  catcher.flat = true
+  catcher.focus_mode = Control.FOCUS_NONE
+  catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  catcher.z_index = 350
+  add_child(catcher)
+  var pulse: Tween = null
+  if is_instance_valid(banner):
+    pulse = create_tween().set_loops()
+    pulse.tween_property(banner, "scale", Vector2(1.06, 1.06), 0.6).set_trans(Tween.TRANS_SINE)
+    pulse.tween_property(banner, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_SINE)
+  await catcher.pressed
+  if pulse != null and pulse.is_valid():
+    pulse.kill()
+  catcher.queue_free()
 
 
 ## 화면 전체 흔들림 — 루트(self) 위치를 감쇠 랜덤으로 흔들고 0으로 복귀. 마감 임팩트용.
@@ -1260,12 +1278,19 @@ func _on_day_ended(summary: Dictionary) -> void:
     # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
     Audio.play("day_close")   # 영업 종료 딩동(+흔들림과 함께 임팩트)
     Audio.vibrate(40)   # 하루 마감 임팩트 — 묵직한 진동(화면 흔들림과 함께)
-    _show_dayend_banner(summary["day"])
+    var banner: Label = await _show_dayend_banner(summary["day"])   # 배너 유지(자동 페이드 X)
     _screen_shake()
-    # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸 → 그 뒤 정산 팝업(성공/실패 공용).
+    # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸.
     await _dayend_sequence()
     if _title.visible:
+      if is_instance_valid(banner): banner.queue_free()
       return   # 마감 연출 중 홈으로 나갔으면 정산 팝업 생략(타이틀 위에 안 뜨게)
+    # 자동으로 정산 안 감 — 배너 유지한 채 유저 탭 대기, 탭하면 정산 팝업.
+    await _tap_to_continue(banner)
+    if is_instance_valid(banner):
+      var bt := create_tween()
+      bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+      bt.tween_callback(banner.queue_free)
     _show_settlement(summary)
 
 
