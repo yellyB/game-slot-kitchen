@@ -226,11 +226,11 @@ func _build_top_bar() -> Control:
   home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
   home.pressed.connect(_on_home_pressed)
   Audio.attach_click(home)
-  row.add_child(home)
 
   var day_badge := UI.day_badge(32)   # 일력 이미지 + 위에 날짜 숫자(40→32, 20%↓)
   _day_num = day_badge.get_meta("num") as Label
-  row.add_child(day_badge)
+  row.add_child(day_badge)   # 날짜 먼저(왼쪽)
+  row.add_child(home)        # 집 다음(오른쪽)
 
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
