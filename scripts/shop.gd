@@ -30,7 +30,7 @@ func _ready() -> void:
     var bgi := TextureRect.new()
     bgi.texture = load(bg_path)
     bgi.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-    bgi.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED   # 비율 바뀌어도 중앙 유지 크롭
+    bgi.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED   # 가로(좌우) 맞춤, 위아래는 비율대로(크롭 없음)
     bgi.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(bgi)
 
