@@ -515,12 +515,12 @@ func _reflow_queue(customers: Array, old_pos: Dictionary) -> void:
 func _on_confirm_order(customer: Customer) -> void:
   # 주문 상한 — 나머지 슬롯은 재료/완성품(조리 공간)용으로 남김.
   if _board.slot_counts()["orders"] >= Config.MAX_ORDERS:
-    Toast.show_msg(self, Loc.t("orders_full"))
+    _board.shake_slots()     # 주문 꽉 참 — 슬롯 좌우 흔들림(토스트 대체)
     Audio.play("disabled")   # 더 못 받음(불가)
     return
   var slot := _board.first_empty_slot()
   if slot == null:
-    Toast.show_msg(self, Loc.t("no_empty_slot"))
+    _board.shake_slots()     # 빈 칸 없음 — 슬롯 좌우 흔들림(토스트 대체)
     Audio.play("disabled")   # 더 못 받음(불가)
     return
   var rid := customer.recipe_id

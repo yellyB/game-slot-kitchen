@@ -75,6 +75,22 @@ func _relayout() -> void:
 		(ch as Control).custom_minimum_size = s
 
 
+## 거부 피드백 — 슬롯들이 좌우로 2회 왕복하며 흔들림(자리 없음/주문 꽉 참 시).
+func shake_slots() -> void:
+	for s in slots:
+		_shake(s)
+
+func _shake(n: Control) -> void:
+	var base := n.position.x
+	var a := 5.0   # 흔들림 진폭(px)
+	var t := n.create_tween()
+	t.tween_property(n, "position:x", base - a, 0.05).set_trans(Tween.TRANS_SINE)
+	t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
+	t.tween_property(n, "position:x", base - a, 0.07).set_trans(Tween.TRANS_SINE)
+	t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
+	t.tween_property(n, "position:x", base, 0.05).set_trans(Tween.TRANS_SINE)
+
+
 func first_empty_slot() -> Slot:
 	for s in slots:
 		if s.is_empty():
