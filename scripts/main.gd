@@ -862,7 +862,7 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
-func _show_dayend_banner(day: int) -> void:
+func _show_dayend_banner(day: int) -> Label:
   var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
   l.add_theme_constant_override("outline_size", 8)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -871,7 +871,7 @@ func _show_dayend_banner(day: int) -> void:
   add_child(l)
   await get_tree().process_frame
   if not is_instance_valid(l):
-    return
+    return null
   var vp := get_viewport_rect().size
   l.pivot_offset = l.size * 0.5
   l.position = (vp - l.size) * 0.5
@@ -881,9 +881,25 @@ func _show_dayend_banner(day: int) -> void:
   tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
   tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
-  tw.tween_interval(0.8)
-  tw.tween_property(l, "modulate:a", 0.0, 0.4)
-  tw.tween_callback(l.queue_free)
+  return l
+
+
+func _tap_to_continue(banner: Label = null) -> void:
+  var catcher := Button.new()
+  catcher.flat = true
+  catcher.focus_mode = Control.FOCUS_NONE
+  catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  catcher.z_index = 350
+  add_child(catcher)
+  var pulse: Tween = null
+  if is_instance_valid(banner):
+    pulse = create_tween().set_loops()
+    pulse.tween_property(banner, "scale", Vector2(1.06, 1.06), 0.6).set_trans(Tween.TRANS_SINE)
+    pulse.tween_property(banner, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_SINE)
+  await catcher.pressed
+  if pulse != null and pulse.is_valid():
+    pulse.kill()
+  catcher.queue_free()
 
 
 func _screen_shake(strength := 13.0, dur := 0.45) -> void:
@@ -1152,11 +1168,17 @@ func _on_day_ended(summary: Dictionary) -> void:
   else:
     Audio.play("day_close")
     Audio.vibrate(40)
-    _show_dayend_banner(summary["day"])
+    var banner: Label = await _show_dayend_banner(summary["day"])
     _screen_shake()
     await _dayend_sequence()
     if _title.visible:
+      if is_instance_valid(banner): banner.queue_free()
       return
+    await _tap_to_continue(banner)
+    if is_instance_valid(banner):
+      var bt := create_tween()
+      bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+      bt.tween_callback(banner.queue_free)
     _show_settlement(summary)
 
 
