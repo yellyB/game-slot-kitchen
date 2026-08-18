@@ -84,9 +84,10 @@ func _ready() -> void:
 
 	# 상품: 슬롯 확장 / 버프 팩
 	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-	_buy_slot_btn = _product(body, Loc.t("shop_slot"), Loc.t("shop_price") % UI.money(slot_price), Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
+	# 슬롯 확장 = 격자+ 아이콘(struct 카테고리 손그림), 버프 팩 = 상자(box)
+	_buy_slot_btn = _product(body, _art_icon("res://assets/art/buffs_128/buff_struct.png", 40), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
 	_slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
-	_draw_btn = _product(body, Loc.t("shop_buffpack"), Loc.t("shop_price") % UI.money(Config.shop_price(Config.BUFF_PACK_PRICE, session.day)), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+	_draw_btn = _product(body, UI.ui_icon("box", 40), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 	# 보유 버프
 	body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
@@ -116,7 +117,7 @@ func _ready() -> void:
 
 
 ## 상품 카드 (이름/가격/버튼). 버튼 반환.
-func _product(parent: Node, title: String, price: String, btn_text: String, btn_color: Color, cb: Callable) -> Button:
+func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_color: Color, cb: Callable) -> Button:
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
 	var pad := MarginContainer.new()
@@ -125,14 +126,19 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 	card.add_child(pad)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	pad.add_child(row)
-	var info := VBoxContainer.new()
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info.add_theme_constant_override("separation", 2)
-	row.add_child(info)
-	info.add_child(UI.label(title, 18, Palette.COCOA_800, true))
-	_last_price_label = UI.label(price, 14, Palette.COCOA_600)
-	info.add_child(_last_price_label)
+	row.add_child(icon)   # 상품 아이콘(글자 제목 대체)
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(gap)
+	# 가격 — '가격' 글자 없이 코인 아이콘 + 숫자
+	var price_row := HBoxContainer.new()
+	price_row.add_theme_constant_override("separation", 5)
+	price_row.add_child(UI.ui_icon("coin", 18))
+	_last_price_label = UI.label(UI.money(price), 15, Palette.COCOA_800, true)
+	price_row.add_child(_last_price_label)
+	row.add_child(price_row)
 	var btn := Button.new()
 	btn.text = btn_text
 	btn.custom_minimum_size = Vector2(72, 40)
@@ -149,6 +155,18 @@ func _product(parent: Node, title: String, price: String, btn_text: String, btn_
 	row.add_child(btn)
 	parent.add_child(card)
 	return btn
+
+
+## 임의 경로 손그림 아이콘 → TextureRect(px×px, 비율유지 중앙). ui/ 밖 자산용(예: buffs_128).
+func _art_icon(path: String, px: int) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.texture = load(path)
+	tr.custom_minimum_size = Vector2(px, px)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return tr
 
 
 func _on_buy_slot() -> void:
@@ -294,7 +312,7 @@ func _refresh() -> void:
 	# 슬롯 확장 — 구매마다 가격 급증. 갱신 후 표시. MAX 도달 시 SOLD OUT.
 	var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
 	if _slot_price_label != null:
-		_slot_price_label.text = Loc.t("shop_price") % UI.money(slot_price)
+		_slot_price_label.text = UI.money(slot_price)
 	if session.slots >= Config.MAX_SLOTS:
 		_buy_slot_btn.text = Loc.t("sold_out")
 		_buy_slot_btn.disabled = true
