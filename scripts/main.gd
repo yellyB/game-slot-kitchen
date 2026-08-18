@@ -1275,45 +1275,52 @@ func _show_settlement(summary: Dictionary) -> void:
   total_row.modulate.a = 1.0   # 헤더라 처음부터 보임(항목처럼 페이드인 안 함)
   m.add_row(total_row).sep()
 
-  # 항목(발라트로 Cash Out식): 오늘 매출(+) → 가게세(-). 하나씩 등장.
+  # 오늘 매출 항목(발라트로 Cash Out식) — 등장. 가게세는 아래 '지불' 버튼에서 직접 냄.
   var earned := UI.label("+" + UI.money(rev), 18, Palette.SUCCESS)
   var earned_row := _settle_icon_row("coin", earned, 24)
-  var rentl := UI.label("-" + UI.money(rent), 18, Palette.DANGER)
-  var rent_row := _settle_icon_row("bill", rentl, 24)
-  m.add_row(earned_row).add_row(rent_row).sep()
+  m.add_row(earned_row).sep()
 
   var stamp := _settle_label("", Palette.SUCCESS, 40, true)   # 결과 도장 — 연출 끝에 채움
   stamp.scale = Vector2(0.5, 0.5)
   m.add_row(stamp)
 
-  # Cash Out 버튼(상점으로/처음으로) — 처음 숨김, 연출 끝에 등장.
-  var cash_btn := Button.new()
-  cash_btn.custom_minimum_size = Vector2(0, 48)
-  cash_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  cash_btn.add_theme_font_size_override("font_size", 18)
-  cash_btn.add_theme_color_override("font_color", Palette.WHITE)
-  cash_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
-  cash_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
-  cash_btn.modulate.a = 0.0
-  cash_btn.disabled = true
-  m.add_row(cash_btn)
+  # 가게세 '직접 지불' 버튼(핵심 액션) — 처음 숨김, 매출 등장 후 활성. 눌러서 직접 냄.
+  var pay_btn := Button.new()
+  pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
+  pay_btn.custom_minimum_size = Vector2(0, 48)
+  pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  pay_btn.add_theme_font_size_override("font_size", 18)
+  pay_btn.add_theme_color_override("font_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  pay_btn.modulate.a = 0.0
+  pay_btn.disabled = true
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, total, stamp))
+  Audio.attach_click(pay_btn)
+  m.add_row(pay_btn)
 
-  # 연출: 오늘 매출 → 가게세 등장 → (자동)지불·총액 카운트다운·도장 → 버튼 등장
+  # 연출: 오늘 매출 등장 → [가게세 지불] 버튼 등장(직접 지불 대기)
   var tw := create_tween()
   tw.tween_interval(0.15)
   tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
-  tw.tween_interval(0.3)
-  tw.tween_property(rent_row, "modulate:a", 1.0, 0.25)
   tw.tween_interval(0.2)
-  tw.tween_callback(func(): _settle_finish(summary, m, total, stamp, cash_btn))
+  tw.tween_callback(func():
+    pay_btn.disabled = false
+    create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
 
 
-## 정산 마무리 — 통과 시 지불(총액 촤르륵 차감)·결과 도장·Cash Out 버튼 등장.
-func _settle_finish(summary: Dictionary, m: Modal, total: Label, stamp: Label, cash_btn: Button) -> void:
+## 가게세 직접 지불 클릭 — 통과 시 총 보유금 촤르륵 차감·도장·[상점으로], 실패 시 [처음으로].
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label, stamp: Label) -> void:
   var passed: bool = summary["passed"]
   var cash_before: int = summary["cash"]
   var rent: int = summary["rent"]
   var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+  pay_btn.disabled = true
+  for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
+    pay_btn.pressed.disconnect(c["callable"])
   if passed:
     if will_pay:                                 # 총 보유금 촤르륵 차감
       _session.pay_rent()
@@ -1326,24 +1333,20 @@ func _settle_finish(summary: Dictionary, m: Modal, total: Label, stamp: Label, c
     stamp.text = "✅"
     stamp.add_theme_color_override("font_color", Palette.SUCCESS)
     _pop_settle_stamp(stamp)
-    cash_btn.text = Loc.t("to_shop")
-    cash_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-    cash_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-    cash_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-    cash_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+    pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
+    pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+    pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+    pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+    pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+    pay_btn.disabled = false
   else:
     Audio.play("fail")   # 돈 부족 → 폐업 스팅
     stamp.text = "❌"
     stamp.add_theme_color_override("font_color", Palette.DANGER)
     _pop_settle_stamp(stamp)
-    cash_btn.text = Loc.t("to_title")
-    cash_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
-    cash_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
-    cash_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
-    cash_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
-  cash_btn.disabled = false
-  Audio.attach_click(cash_btn)
-  create_tween().tween_property(cash_btn, "modulate:a", 1.0, 0.2)
+    pay_btn.text = Loc.t("to_title")
+    pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
+    pay_btn.disabled = false
 
 
 ## 정산 결과 도장 팝(투명→불룩→제자리).
