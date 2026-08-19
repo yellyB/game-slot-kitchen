@@ -108,7 +108,7 @@ const S := {
 	"b.rt_every7.name": "럭키세븐", "b.rt_every7.label": "서빙 7번째마다 그 메뉴 가격 영구 +20%",
 	"b.rt_fast3.name": "빠른처리", "b.rt_fast3.label": "3초 안에 3개 팔면 마지막 메뉴 가격 영구 +12%",
 	"b.accum_sale.name": "적립", "b.accum_sale.label": "서빙마다 판매금의 3% 적립 → 다음 서빙 때 지급",
-	"b.sale_flat3.name": "판매 강화", "b.sale_flat3.label": "모든 판매금 +3%",
+	"b.sale_flat3.name": "기초체력", "b.sale_flat3.label": "모든 판매금 +3%",
 	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "20% 확률로 판매금 +30%",
 	"b.sale_risk.name": "도박", "b.sale_risk.label": "판매금 +20%, 단 10% 확률로 완성품 폐기+그날 수익 -30%",
 	"b.no_buy.name": "절약", "b.no_buy.label": "그날 상점서 안 사면 다음날 판매금 +5% (준비중)",

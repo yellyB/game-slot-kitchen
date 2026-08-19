@@ -108,7 +108,7 @@ const S := {
 	"b.rt_every7.name": "Every 7th Growth", "b.rt_every7.label": "Every 7th serve: that menu's price +20% (permanent)",
 	"b.rt_fast3.name": "Blitz Growth", "b.rt_fast3.label": "Sell 3 within 3s: last menu's price +12% (permanent)",
 	"b.accum_sale.name": "Savings", "b.accum_sale.label": "Bank 3% of each sale → paid out on next serve",
-	"b.sale_flat3.name": "Sale Boost", "b.sale_flat3.label": "All sales +3%",
+	"b.sale_flat3.name": "Bread & Butter", "b.sale_flat3.label": "All sales +3%",
 	"b.prob_bonus.name": "Lucky", "b.prob_bonus.label": "20% chance sale +30%",
 	"b.sale_risk.name": "Gamble", "b.sale_risk.label": "Sale +20%, but 10% chance to scrap the dish + day profit -30%",
 	"b.no_buy.name": "Thrift", "b.no_buy.label": "If you buy nothing that day, next day sales +5% (WIP)",
