@@ -1019,7 +1019,7 @@ func _tap_to_continue() -> void:
 
 func _start_day_intro() -> void:
   Audio.play("day_start")
-  var banner: Control = await _make_bigbanner("sun", "OPEN", 0.0)
+  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
@@ -1298,7 +1298,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   else:
     Audio.play("day_close")
     Audio.vibrate(40)
-    var banner: Control = await _make_bigbanner("moon", "CLOSE")
+    var banner: Control = await _make_bigbanner("moon_big", "CLOSE")
     _screen_shake()
     await _dayend_sequence()
     if _title.visible:
