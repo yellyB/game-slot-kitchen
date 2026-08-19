@@ -2,6 +2,9 @@ class_name Modal
 extends Control
 
 var _body: VBoxContainer
+var _panel: PanelContainer
+var _center: CenterContainer
+var _pinned := false
 
 static func open(parent: Node) -> Modal:
 	var m := Modal.new()
@@ -21,11 +24,13 @@ func _ready() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
+	_center = center
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(260, 0)
 	panel.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200))
 	center.add_child(panel)
+	_panel = panel
 
 	var pad := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -73,6 +78,16 @@ func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
 func add_row(ctrl: Control) -> Modal:
 	_body.add_child(ctrl)
 	return self
+
+
+func pin_top() -> void:
+	if _pinned or _panel == null or not is_instance_valid(_panel):
+		return
+	_pinned = true
+	var gpos := _panel.global_position
+	_center.remove_child(_panel)
+	add_child(_panel)
+	_panel.global_position = gpos
 
 
 func sep() -> Modal:

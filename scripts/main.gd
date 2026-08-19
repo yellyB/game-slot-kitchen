@@ -1444,17 +1444,26 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   if not summary["passed"]:
     Audio.play("disabled")
     Audio.vibrate(30)
-    var flash := create_tween()
-    flash.tween_property(icon_box, "modulate", Palette.DANGER, 0.08)
-    flash.tween_property(icon_box, "modulate", Color.WHITE, 0.25)
     if not pay_btn.get_meta("bk_shown", false):
       pay_btn.set_meta("bk_shown", true)
+      m.pin_top()
       var bk := _bankrupt_button()
-      pay_btn.set_meta("bk_btn", bk)
       bk.pressed.connect(func(): _settle_finish(false, summary, m, pay_btn, icon_box, amount_row))
-      m.add_row(bk)
-      bk.modulate.a = 0.0
-      create_tween().tween_property(bk, "modulate:a", 1.0, 0.2)
+      var wrap := Control.new()
+      wrap.clip_contents = true
+      wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+      wrap.custom_minimum_size = Vector2(0, 0)
+      wrap.modulate.a = 0.0
+      bk.anchor_right = 1.0
+      bk.offset_right = 0
+      bk.offset_top = 0
+      bk.offset_bottom = 44
+      wrap.add_child(bk)
+      pay_btn.set_meta("bk_btn", wrap)
+      m.add_row(wrap)
+      var gt := create_tween().set_parallel(true)
+      gt.tween_property(wrap, "custom_minimum_size:y", 44.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+      gt.tween_property(wrap, "modulate:a", 1.0, 0.28)
     return
   _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
 
