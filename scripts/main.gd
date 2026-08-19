@@ -994,7 +994,7 @@ func _show_day_banner(day: int) -> void:
 
 ## 큰 중앙 배너 화면 — 딤(어두운 배경) + 이미지(달/해) 크게 + 텍스트(CLOSE/OPEN) + 하단 "click ▸" 힌트.
 ## 자동 페이드 안 함(탭 대기 동안 유지). 딤·내용·힌트를 담은 루트 Control 반환(탭 시 통째로 페이드).
-func _make_bigbanner(icon_name: String, text: String) -> Control:
+func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Control:
   var root := Control.new()
   root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   root.z_index = 200
@@ -1034,7 +1034,7 @@ func _make_bigbanner(icon_name: String, text: String) -> Control:
 
   # 등장 순서: 딤 → 해/달이 서서히(약 0.9초) 떠오름 → 다 보이면 글자 팝 → 힌트.
   # 해/달이 완전히 뜬 뒤에야 반환 → 그 후에만 탭(다음)이 가능(호출측이 반환 대기).
-  dim.modulate.a = 0.0
+  dim.modulate.a = 0.0 if dim_fade > 0.0 else 1.0   # 즉시 딤이면 처음부터 꽉(첫 프레임부터 어두움)
   img.modulate.a = 0.0
   img.scale = Vector2(0.5, 0.5)
   l.modulate.a = 0.0
@@ -1048,7 +1048,8 @@ func _make_bigbanner(icon_name: String, text: String) -> Control:
   l.pivot_offset = l.size * 0.5
   hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72)   # 하단 중앙
 
-  create_tween().tween_property(dim, "modulate:a", 1.0, 0.3)   # 배경 어두워짐
+  if dim_fade > 0.0:
+    create_tween().tween_property(dim, "modulate:a", 1.0, dim_fade)   # 배경 서서히 어두워짐
 
   var it := create_tween().set_parallel(true)   # 해/달 서서히 떠오름(페이드+확대)
   it.tween_property(img, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -1086,7 +1087,7 @@ func _tap_to_continue() -> void:
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
 func _start_day_intro() -> void:
   Audio.play("day_start")
-  var banner: Control = await _make_bigbanner("sun", "OPEN")   # 해 + OPEN + 딤 (유지)
+  var banner: Control = await _make_bigbanner("sun", "OPEN", 0.0)   # 해 + OPEN + 딤(즉시, 진입 순간부터 어두움)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
@@ -1263,12 +1264,9 @@ func _reset_hours_bar() -> void:
 
 func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
-  # 하루 시작 홀드 — 플레이 화면만 먼저 보이고, 게임플레이(시계·스폰)는 정지.
-  # DAY_INTRO_DELAY 뒤 해+OPEN 배너 → 유저 탭해야 게임 시작(_start_day_intro).
+  # 하루 시작 홀드 — 게임플레이(시계·스폰) 정지. 인트로(딤+OPEN 배너)는 함수 끝에서 즉시 표시.
+  # (예전엔 DAY_INTRO_DELAY 뒤에 떠서 그 사이 딤 없는 빈 화면이 보였음 → 진입 즉시 딤으로 변경)
   _session.set_process(false)
-  get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
-    if is_inside_tree() and not _title.visible:
-      _start_day_intro())
   _rent_label.text = UI.money(rent)
   _hours_bar.value = 0
   _reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
@@ -1302,6 +1300,9 @@ func _on_day_started(day: int, rent: int) -> void:
     c.queue_free()
   _refresh_warehouse()
   _refresh_buff_btn()   # 이 판의 보유 버프 유무로 [버프] 버튼 활성화
+  # 게임 화면 진입 즉시 딤+OPEN 배너(지연·페이드 없이 바로 어두워짐).
+  if is_inside_tree() and not _title.visible:
+    _start_day_intro()
 
 
 ## 하루 종료 시 필드 정리 — 재료·주문·완성품·큐 제거(타이머 즉시 정지). 버프 카드는 유지.
