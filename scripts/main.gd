@@ -70,7 +70,8 @@ func _ready() -> void:
   col.add_child(_build_top_bar())
   if OS.is_debug_build():   # 운영(릴리스) 빌드에선 디버그 바 자체가 없음
     _debug_bar = _build_debug()
-    _debug_bar.visible = false   # 숨김 → 보유금 5연속 클릭으로 토글
+    # 로컬 개발(에디터 실행)=항상 표시, 익스포트 빌드=숨김 → 보유금 5연속 클릭으로 토글
+    _debug_bar.visible = OS.has_feature("editor")
     col.add_child(_debug_bar)
   col.add_child(_build_customer_queue())
 
