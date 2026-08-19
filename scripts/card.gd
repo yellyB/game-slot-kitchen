@@ -41,17 +41,23 @@ func _setup_fit() -> void:
 	_fit_wrap()
 
 
+const _FIT_MARGIN := 0.9
+
 func _fit_wrap() -> void:
 	if _wrap == null or not is_instance_valid(_wrap):
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	var s := 1.0
+	var avail := _wrap.size
+	var raw := INF
 	if _content_min.x > 0.0:
-		s = minf(s, size.x / _content_min.x)
+		raw = minf(raw, avail.x / _content_min.x)
 	if _content_min.y > 0.0:
-		s = minf(s, size.y / _content_min.y)
-	_wrap.pivot_offset = size * 0.5
+		raw = minf(raw, avail.y / _content_min.y)
+	if raw == INF:
+		return
+	var s := minf(1.0, raw * _FIT_MARGIN)
+	_wrap.pivot_offset = avail * 0.5
 	_wrap.scale = Vector2(s, s)
 
 
