@@ -66,7 +66,7 @@ const S := {
 	"b.patience.name": "기다려!", "b.patience.label": "손님 인내심 +10%",
 	"b.day_len.name": "연장영업", "b.day_len.label": "영업시간 +7%",
 	"b.wh_chance.name": "순간이동", "b.wh_chance.label": "창고 나갈때 50%확률로 시간이 소요되지 않음",
-	"b.wh_fast.name": "빠른 발걸음", "b.wh_fast.label": "창고 왕복 시간 -66%",
+	"b.wh_fast.name": "빠른 발걸음", "b.wh_fast.label": "창고 나갈 때 시간 소모 -66%",
 	"b.rent_down.name": "가게세 할인", "b.rent_down.label": "가게세 -10%",
 	"b.shop_disc.name": "바겐세일", "b.shop_disc.label": "상점 할인 -10%",
 	"b.pack_more.name": "후보확장", "b.pack_more.label": "카드팩 오픈 시 나오는 카드 개수 +1개",
