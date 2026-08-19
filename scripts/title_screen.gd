@@ -10,6 +10,7 @@ const TITLE_TEXT := "Slot Kitchen"   # 타이틀은 언어 무관 영어 로고�
 
 var _start_btn: Button
 var _tut_btn: Button
+var _codex_btn: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -68,6 +69,21 @@ func _ready() -> void:
 	tut.pressed.connect(func(): tutorial_pressed.emit())
 	Audio.attach_click(tut)   # 튜토리얼 버튼 클릭음
 	v.add_child(tut)
+
+	# 도감 — 발견(획득)한 버프 카드 모아보기
+	var codex := Button.new()
+	codex.text = Loc.t("codex")
+	_codex_btn = codex
+	codex.custom_minimum_size = Vector2(180, 48)
+	codex.add_theme_font_size_override("font_size", 18)
+	codex.add_theme_color_override("font_color", Palette.COCOA_800)
+	codex.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+	codex.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	codex.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	codex.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	codex.pressed.connect(_open_codex)
+	Audio.attach_click(codex)   # 도감 버튼 클릭음
+	v.add_child(codex)
 
 	# 우상단 설정 버튼(톱니 손그림) → 설정 오버레이
 	var gear := Button.new()
@@ -143,6 +159,10 @@ func _pulse(node: Control) -> void:
 	t.tween_property(node, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
+func _open_codex() -> void:
+	add_child(CodexScreen.new())
+
+
 func _open_settings() -> void:
 	var panel := SettingsPanel.new()
 	panel.tree_exited.connect(_refresh_texts)   # 설정 닫히면 언어 반영
@@ -165,6 +185,8 @@ func _draw_play_triangle(btn: Button) -> void:
 
 
 func _refresh_texts() -> void:
-	# 시작 버튼은 아이콘(삼각형)이라 언어 무관 — 튜토리얼 텍스트만 갱신
+	# 시작 버튼은 아이콘(삼각형)이라 언어 무관 — 튜토리얼·도감 텍스트만 갱신
 	if is_instance_valid(_tut_btn):
 		_tut_btn.text = Loc.t("tutorial")
+	if is_instance_valid(_codex_btn):
+		_codex_btn.text = Loc.t("codex")

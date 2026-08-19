@@ -39,6 +39,7 @@ func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return
 	_owned.append(id)
+	Codex.discover(id)   # 획득 시 도감 발견 기록(영구 저장)
 
 
 ## 보유 버프 1개 제거(상점 판매/버리기). 슬롯 1칸 회복. 성공 시 true.

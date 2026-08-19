@@ -6,6 +6,7 @@ const S := {
 	# 타이틀 / 설정
 	"start": "시작",
 	"tutorial": "튜토리얼",
+	"codex": "도감",
 	"tut_accept": "손님의 {order} 를 눌러 주문을 접수하세요",
 	"tut_warehouse": "{warehouse} 창고를 열어 재료를 꺼내요",
 	"tut_ingredients": "원두 {bean} 와 물 {water} 을 슬롯에 놓으세요",
