@@ -133,7 +133,7 @@ const S := {
 	"b.sale_burn.name": "소진 보상", "b.sale_burn.label": "메뉴가격의 +40%원 × 손님이 소모한 인내심 %",
 	"b.sale_crit.name": "벼랑끝", "b.sale_crit.label": "인내심 임박 구간에 서빙하면 해당 메뉴가격 +20%원",
 	"b.pat_down.name": "박대", "b.pat_down.label": "손님 인내심 -30%",
-	"b.onlost_pay.name": "위약금", "b.onlost_pay.label": "주문서를 시간안에 처리못하면 메뉴금액의 +34%원",
+	"b.onlost_pay.name": "위약금", "b.onlost_pay.label": "주문서를 시간안에 처리못하면 메뉴가격의 34% 획득",
 	"b.onlost_x2.name": "보복", "b.onlost_x2.label": "주문서를 시간안에 처리못하면 다음번 획득 금액이 두배",
 	"b.settle_leave.name": "손절", "b.settle_leave.label": "마감시 그날 받은 주문서의 30% 미만으로 처리했다면 장사 종료 시 보유금액의 15%원",
 }
