@@ -1092,6 +1092,7 @@ func _start_day_intro() -> void:
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
     return
+  Audio.play("door_open")
   if is_instance_valid(banner):
     var bt := create_tween()
     bt.tween_property(banner, "modulate:a", 0.0, 0.22)
