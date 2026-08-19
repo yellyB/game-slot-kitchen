@@ -1390,7 +1390,7 @@ func _show_settlement(summary: Dictionary) -> void:
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
   pay_btn.modulate.a = 0.0
   pay_btn.disabled = true
-  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, icon_box))
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, icon_box, amount_row))
   Audio.attach_click(pay_btn)
   m.add_row(pay_btn)
 
@@ -1403,7 +1403,7 @@ func _show_settlement(summary: Dictionary) -> void:
 
 
 ## 가게세 지불 클릭 — 빌지 이미지를 결과(✅/❌)로 교체 + 통과 시 차감·[상점으로], 실패 시 [처음으로].
-func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control) -> void:
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
   var passed: bool = summary["passed"]
   var cash_before: int = summary["cash"]
   var rent: int = summary["rent"]
@@ -1411,6 +1411,11 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
     pay_btn.pressed.disconnect(c["callable"])
+
+  # 지불 완료 → 가게세 금액 라인 사라짐(페이드아웃 후 접힘)
+  var at := create_tween()
+  at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
+  at.tween_callback(func(): amount_row.visible = false)
 
   # 빌지 이미지 → 같은 크기의 결과 표시(✅/❌)로 교체(팝 연출). 홀더 크기 고정이라 안 흔들림.
   var px: float = icon_box.custom_minimum_size.y
