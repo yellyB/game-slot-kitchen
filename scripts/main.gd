@@ -1092,6 +1092,7 @@ func _start_day_intro() -> void:
     if is_instance_valid(banner): banner.queue_free()
     return
   Audio.play("door_open")
+  Audio.play("day_start")
   if is_instance_valid(banner):
     var bt := create_tween()
     bt.tween_property(banner, "modulate:a", 0.0, 0.22)
