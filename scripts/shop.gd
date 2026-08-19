@@ -305,40 +305,41 @@ func _reveal_choice(card: Control, idx: int) -> void:
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   var def := BuffDefs.get_def(id)
   var card := PanelContainer.new()
-  card.custom_minimum_size = Vector2(330, 0)
+  card.custom_minimum_size = Vector2(330, 150)
   card.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2))
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
-    pad.add_theme_constant_override("margin_" + side, 10)
+    pad.add_theme_constant_override("margin_" + side, 14)
   card.add_child(pad)
   var h := HBoxContainer.new()
   h.alignment = BoxContainer.ALIGNMENT_CENTER
-  h.add_theme_constant_override("separation", 10)
+  h.add_theme_constant_override("separation", 14)
   pad.add_child(h)
-  var icon := BuffDefs.icon_node(id, 44)
+  var icon := BuffDefs.icon_node(id, 56)
   icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   h.add_child(icon)
   var texts := VBoxContainer.new()
   texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   texts.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-  texts.add_theme_constant_override("separation", 2)
+  texts.add_theme_constant_override("separation", 4)
   h.add_child(texts)
-  var nm := UI.label(BuffDefs.display_name(id), 14, Palette.COCOA_800, true)
+  var nm := UI.label(BuffDefs.display_name(id), 16, Palette.COCOA_800, true)
   nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   nm.custom_minimum_size = Vector2.ZERO
   texts.add_child(nm)
-  var lb := UI.label(BuffDefs.display_label(id), 12, Palette.MAIN)
+  var lb := UI.label(BuffDefs.display_label(id), 13, Palette.MAIN)
   lb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   lb.custom_minimum_size = Vector2.ZERO
   texts.add_child(lb)
   var pick := Button.new()
   pick.text = Loc.t("shop_pick")
-  pick.add_theme_font_size_override("font_size", 13)
+  pick.add_theme_font_size_override("font_size", 17)
   pick.add_theme_color_override("font_color", Palette.WHITE)
   pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  pick.custom_minimum_size = Vector2(84, 100)
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
   Audio.attach_click(pick)
