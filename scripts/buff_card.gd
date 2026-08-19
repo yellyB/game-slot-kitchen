@@ -28,7 +28,7 @@ func _build_content() -> void:
 
 	v.add_child(BuffDefs.icon_node(buff_id, 36))
 
-	var lbl := UI.label(BuffDefs.display_label(buff_id), 12, Palette.MAIN)
+	var lbl := UI.label(BuffDefs.display_name(buff_id), 13, Palette.MAIN, true)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
