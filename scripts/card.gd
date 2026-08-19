@@ -5,9 +5,9 @@ extends PanelContainer
 ## 서브클래스는 _build_content()로 내용을, is_trashable()/_preview_text()를 오버라이드.
 
 var _style: StyleBoxFlat
-var _wrap: Control   # 내용 래퍼 — 슬롯이 좁아지면(4열 등) 통째로 축소해 잘림 방지
-var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 걸기 전 캡처) — fit 축소 기준
-var _pad := Vector2(4, 4)   # 카드 콘텐츠 여백(size - 내용영역). 측정 후 갱신, self.size 기준 fit용
+var _wrap: Control     # 카드 내용영역을 꽉 채우는 래퍼(full-rect)
+var _holder: Control   # 내용을 담는 안쪽 홀더 — 자연 크기로 중앙 배치 후 통째 축소(균등 여백)
+var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 전 측정) — fit 기준
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -30,13 +30,19 @@ func _wrap_content() -> void:
 	var built := get_children()   # _build_content가 self에 붙인 내용 노드들
 	if built.is_empty():
 		return
+	# _wrap: 카드 내용영역을 꽉 채움. _holder: 그 안에서 내용을 담아 중앙배치+축소.
 	var wrap := Control.new()
 	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.add_child(holder)
 	for ch in built:
 		remove_child(ch)
-		wrap.add_child(ch)
+		holder.add_child(ch)
 	add_child(wrap)
 	_wrap = wrap
+	_holder = holder
 	# 슬롯 크기 바뀌면 재계산 — resized 시점엔 size가 아직 정착 전일 수 있어 deferred로.
 	resized.connect(func(): _fit_wrap.call_deferred())
 	_setup_fit()   # 자연 크기 측정 → 앵커 → 초기 fit (레이아웃 후)
@@ -44,54 +50,44 @@ func _wrap_content() -> void:
 
 ## 내용 자연 크기를 측정한 뒤 FULL_RECT 앵커를 건다.
 ## (앵커를 먼저 걸면 컨테이너 min-size가 0으로 보고돼 축소 기준을 못 잡음. 또 _ready 시점엔
-##  레이아웃 전이라 min-size가 0 → 한 프레임 기다렸다 측정.)
+##  레이아웃 전이라 min-size가 0 → 여러 프레임 누적 최댓값으로 측정.)
 func _setup_fit() -> void:
-	# 8프레임 동안 내용 자연 크기를 '누적 최댓값'으로 측정.
-	# (아이콘/컨테이너 min-size가 프레임마다 늦게 잡힐 수 있어, 한 프레임 값만 쓰면
-	#  윗줄(말풍선+얼굴)을 놓쳐 축소가 부족→얼굴 잘림. 전 프레임 최댓값으로 방지.)
 	for _i in 8:
 		await get_tree().process_frame
-		if _wrap == null or not is_instance_valid(_wrap):
+		if _holder == null or not is_instance_valid(_holder):
 			return
-		for ch in _wrap.get_children():
+		for ch in _holder.get_children():
 			if ch is Control:
 				_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return   # 끝내 측정 실패(내용 없음 등) — 원본 그대로
-	for ch in _wrap.get_children():
+	for ch in _holder.get_children():
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# 콘텐츠 여백 확정(카드 size - 내용영역). 이후 fit은 항상 최신인 self.size 기준으로.
-	if _wrap.size.x > 0.0 and _wrap.size.y > 0.0:
-		_pad = (size - _wrap.size).max(Vector2.ZERO)
 	_fit_wrap()
 
 
-## 내용(고정 px)이 카드보다 크면 래퍼를 통째로 축소해 잘림 방지(4열 등 슬롯 축소 시).
-## 내용이 다 들어가면 scale=1(원래대로). 가로/세로 중 더 빡빡한 비율로 균일 축소.
+## 내용을 자연 크기(_content_min)로 홀더에 담아 카드 중앙에 놓고, 카드보다 크면 통째로 축소.
+## 홀더를 '자연 크기 이상'으로 잡아 좌우 대칭이 되게 → 축소해도 중앙 정렬(오른쪽 쏠림 방지).
+## 내용이 다 들어가면 scale=1(완성품 아이콘 등은 홀더가 내용영역을 꽉 채워 그대로 큼).
 const _FIT_MARGIN := 0.9   # 내용이 카드 가장자리에 닿지 않게 여백(균등한 안쪽 패딩)
 
 func _fit_wrap() -> void:
-	if _wrap == null or not is_instance_valid(_wrap):
+	if _wrap == null or not is_instance_valid(_wrap) or _holder == null:
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	# 항상 최신인 카드 self.size에서 콘텐츠 여백(_pad)을 뺀 실제 내용 영역 기준.
-	# (_wrap.size는 resized 시점에 아직 갱신 안 돼 옛 값일 수 있어 축소 부족→잘림.)
-	var avail := size - _pad
+	var avail := _wrap.size   # 카드 내용영역(full-rect). deferred라 갱신 완료 상태.
 	if avail.x <= 0.0 or avail.y <= 0.0:
-		return   # 아직 레이아웃 전(크기 0) — scale 0 되는 것 방지
-	var raw := INF   # 내용이 딱 들어가는 배율(1=꽉참, <1=넘침)
-	if _content_min.x > 0.0:
-		raw = minf(raw, avail.x / _content_min.x)
-	if _content_min.y > 0.0:
-		raw = minf(raw, avail.y / _content_min.y)
-	if raw == INF:
 		return
-	# 여백 곱한 뒤 1로 상한 — 넉넉하면 원래 크기(1), 빠듯/넘치면 여백 두고 축소.
-	var s := minf(1.0, raw * _FIT_MARGIN)
-	_wrap.pivot_offset = avail * 0.5   # 내용 영역 중앙 기준 → 상하좌우 균등
-	_wrap.scale = Vector2(s, s)
+	# 홀더 크기 = max(자연 크기, 내용영역) — 넘칠 땐 자연 크기(대칭), 넉넉할 땐 내용영역(꽉 참).
+	var target := Vector2(maxf(_content_min.x, avail.x), maxf(_content_min.y, avail.y))
+	_holder.size = target
+	_holder.position = (avail - target) * 0.5   # 내용영역 중앙(넘치면 좌우로 대칭 오버플로)
+	_holder.pivot_offset = target * 0.5
+	var raw := minf(avail.x / _content_min.x, avail.y / _content_min.y)
+	var s := minf(1.0, raw * _FIT_MARGIN)   # 넉넉하면 1(그대로), 빠듯/넘치면 여백 두고 축소
+	_holder.scale = Vector2(s, s)
 
 
 ## 서브클래스가 카드 내용을 구성. (_style도 여기서 조정 가능)
