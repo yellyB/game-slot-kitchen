@@ -3,7 +3,7 @@ extends RefCounted
 
 static var locale := "ko"
 
-const LOCALES := ["ko", "en", "ja"]
+const LOCALES := ["ko", "en"]
 
 static func _table() -> Dictionary:
 	match locale:

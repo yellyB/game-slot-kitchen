@@ -40,7 +40,7 @@ const S := {
 	"go_home": "Home",
 	"cancel": "Cancel",
 	"to_shop": "To shop",
-	"pay_rent": "Pay Rent  %s",
+	"pay_rent": "Pay Rent",
 	"insufficient": "Not enough money",
 
 	"shop_slot": "Slot +1",
