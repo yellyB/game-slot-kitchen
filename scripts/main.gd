@@ -22,6 +22,9 @@ var _served_by_menu := {}
 
 var _day_num: Label
 var _money_label: Label
+var _debug_bar: Control
+var _cash_clicks := 0
+var _last_cash_click := 0
 var _rent_label: Label
 var _last_cash := 0
 var _expect_fly := false
@@ -61,7 +64,9 @@ func _ready() -> void:
 
   col.add_child(_build_top_bar())
   if OS.is_debug_build():
-    col.add_child(_build_debug())
+    _debug_bar = _build_debug()
+    _debug_bar.visible = false
+    col.add_child(_debug_bar)
   col.add_child(_build_customer_queue())
 
   _board = Board.new()
@@ -223,6 +228,8 @@ func _build_top_bar() -> Control:
 
   var coin := HBoxContainer.new()
   coin.add_theme_constant_override("separation", 4)
+  coin.mouse_filter = Control.MOUSE_FILTER_STOP
+  coin.gui_input.connect(_on_cash_clicked)
   coin.add_child(UI.ui_icon("coin", 20))
   _money_label = UI.label("0", 18, Palette.COCOA_800, true)
   coin.add_child(_money_label)
@@ -255,6 +262,21 @@ func _build_top_bar() -> Control:
   hours.add_child(UI.ui_icon("moon", 18))
 
   return panel
+
+
+func _on_cash_clicked(event: InputEvent) -> void:
+  if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+    return
+  if _debug_bar == null:
+    return
+  var now := Time.get_ticks_msec()
+  if now - _last_cash_click > 1500:
+    _cash_clicks = 0
+  _last_cash_click = now
+  _cash_clicks += 1
+  if _cash_clicks >= 5:
+    _cash_clicks = 0
+    _debug_bar.visible = not _debug_bar.visible
 
 
 func _build_debug() -> Control:
