@@ -1388,11 +1388,11 @@ func _on_day_ended(summary: Dictionary) -> void:
     Audio.play("day_close")
     Audio.vibrate(40)
     var banner: Control = await _make_bigbanner("moon_big", "CLOSE")
-    await _dayend_sequence()
-    if _title.visible:
+    _dayend_sequence()
+    await _tap_to_continue()
+    if not is_inside_tree() or _title.visible:
       if is_instance_valid(banner): banner.queue_free()
       return
-    await _tap_to_continue()
     if is_instance_valid(banner):
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
