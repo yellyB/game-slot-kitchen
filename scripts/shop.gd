@@ -260,6 +260,9 @@ func _show_pack(pack: Array) -> void:
     _buff_btn.z_index = 11
     _buff_backdrop.z_index = 12
     _buff_sheet.z_index = 13
+    _buff_btn.move_to_front()
+    _buff_backdrop.move_to_front()
+    _buff_sheet.move_to_front()
     overlay.tree_exited.connect(func():
       _buff_btn.z_index = 0
       _buff_backdrop.z_index = 0
