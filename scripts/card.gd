@@ -5,6 +5,7 @@ extends PanelContainer
 ## 서브클래스는 _build_content()로 내용을, is_trashable()/_preview_text()를 오버라이드.
 
 var _style: StyleBoxFlat
+var _wrap: Control   # 내용 래퍼 — 슬롯이 좁아지면(4열 등) 통째로 축소해 잘림 방지
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -35,6 +36,29 @@ func _wrap_content() -> void:
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(wrap)
+	_wrap = wrap
+	resized.connect(_fit_wrap)   # 슬롯 크기 바뀌면 내용 축소 재계산
+	_fit_wrap.call_deferred()    # 초기 배치 후 1회
+
+
+## 내용(고정 px)이 카드보다 크면 래퍼를 통째로 축소해 잘림 방지(4열 등 슬롯 축소 시).
+## 내용이 다 들어가면 scale=1(원래대로). 가로/세로 중 더 빡빡한 비율로 균일 축소.
+func _fit_wrap() -> void:
+	if _wrap == null or not is_instance_valid(_wrap):
+		return
+	var need := Vector2.ZERO
+	for ch in _wrap.get_children():
+		if ch is Control:
+			need = need.max((ch as Control).get_combined_minimum_size())
+	if need.x <= 0.0 and need.y <= 0.0:
+		return
+	var s := 1.0
+	if need.x > 0.0:
+		s = minf(s, size.x / need.x)
+	if need.y > 0.0:
+		s = minf(s, size.y / need.y)
+	_wrap.pivot_offset = size * 0.5   # 중앙 기준 축소
+	_wrap.scale = Vector2(s, s)
 
 
 ## 서브클래스가 카드 내용을 구성. (_style도 여기서 조정 가능)
