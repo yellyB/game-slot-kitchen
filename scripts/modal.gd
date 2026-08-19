@@ -4,6 +4,9 @@ extends Control
 ## 대강 구현(기능 위주) — 디자인 확정 후 정리.
 
 var _body: VBoxContainer
+var _panel: PanelContainer
+var _center: CenterContainer
+var _pinned := false
 
 static func open(parent: Node) -> Modal:
 	var m := Modal.new()
@@ -23,11 +26,13 @@ func _ready() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
+	_center = center
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(260, 0)
 	panel.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200))
 	center.add_child(panel)
+	_panel = panel
 
 	var pad := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
@@ -78,6 +83,18 @@ func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
 func add_row(ctrl: Control) -> Modal:
 	_body.add_child(ctrl)
 	return self
+
+
+## 패널을 지금 위치에 고정 — 이후 add_row는 중앙 재정렬 없이 아래로만 높이가 늘어남.
+## (CenterContainer에서 빼내 self 자식으로 옮기고 현재 좌표에 앵커. 폭은 그대로라 가로 중앙 유지.)
+func pin_top() -> void:
+	if _pinned or _panel == null or not is_instance_valid(_panel):
+		return
+	_pinned = true
+	var gpos := _panel.global_position
+	_center.remove_child(_panel)
+	add_child(_panel)
+	_panel.global_position = gpos
 
 
 func sep() -> Modal:

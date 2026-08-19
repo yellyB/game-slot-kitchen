@@ -1583,17 +1583,27 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   if not summary["passed"]:
     Audio.play("disabled")   # 지불 실패 피드백음
     Audio.vibrate(30)
-    var flash := create_tween()   # 영수증 빨강 플래시(부족 표시)
-    flash.tween_property(icon_box, "modulate", Palette.DANGER, 0.08)
-    flash.tween_property(icon_box, "modulate", Color.WHITE, 0.25)
     if not pay_btn.get_meta("bk_shown", false):   # 파산 버튼은 1회만 추가
       pay_btn.set_meta("bk_shown", true)
+      m.pin_top()   # 팝업 위치 고정 → 아래로만 높이가 늘어남(중앙 재정렬 안 함)
       var bk := _bankrupt_button()
-      pay_btn.set_meta("bk_btn", bk)
       bk.pressed.connect(func(): _settle_finish(false, summary, m, pay_btn, icon_box, amount_row))
-      m.add_row(bk)
-      bk.modulate.a = 0.0
-      create_tween().tween_property(bk, "modulate:a", 1.0, 0.2)
+      # 높이 0→44로 서서히 아래로 펼쳐지는 래퍼(위에서부터 드러남) + 페이드인
+      var wrap := Control.new()
+      wrap.clip_contents = true
+      wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+      wrap.custom_minimum_size = Vector2(0, 0)
+      wrap.modulate.a = 0.0
+      bk.anchor_right = 1.0
+      bk.offset_right = 0
+      bk.offset_top = 0
+      bk.offset_bottom = 44
+      wrap.add_child(bk)
+      pay_btn.set_meta("bk_btn", wrap)
+      m.add_row(wrap)
+      var gt := create_tween().set_parallel(true)
+      gt.tween_property(wrap, "custom_minimum_size:y", 44.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+      gt.tween_property(wrap, "modulate:a", 1.0, 0.28)
     return
   _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
 
