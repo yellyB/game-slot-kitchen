@@ -69,6 +69,7 @@ func place_card(card: Card, play_sfx := true, pop := true) -> void:
     card.pop_in()   # 배치 팝 애니
   if play_sfx:
     Audio.play("card_place")   # 슬롯에 카드 생김(탁)
+    Audio.vibrate(10)          # 카드 안착 — 약한 톡 진동
 
 
 ## 다른 슬롯/도구석에서 카드를 옮겨오기.
@@ -81,6 +82,7 @@ func take_card(card: Card) -> void:
   _holder.add_child(card)
   card.pop_in()   # 이동 팝 애니
   Audio.play("card_place")   # 슬롯에 카드 생김(탁)
+  Audio.vibrate(10)          # 카드 안착 — 약한 톡 진동
   # 완성품을 도구석에서 가져온 경우 → 그 도구석 회복
   var dc := card as DishCard
   if dc != null and dc.tool != null:
