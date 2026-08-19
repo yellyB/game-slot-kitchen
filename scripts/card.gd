@@ -6,6 +6,7 @@ extends PanelContainer
 
 var _style: StyleBoxFlat
 var _wrap: Control   # 내용 래퍼 — 슬롯이 좁아지면(4열 등) 통째로 축소해 잘림 방지
+var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 걸기 전 캡처) — fit 축소 기준
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -33,12 +34,24 @@ func _wrap_content() -> void:
 	for ch in built:
 		remove_child(ch)
 		wrap.add_child(ch)
-		if ch is Control:
-			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(wrap)
 	_wrap = wrap
 	resized.connect(_fit_wrap)   # 슬롯 크기 바뀌면 내용 축소 재계산
-	_fit_wrap.call_deferred()    # 초기 배치 후 1회
+	_setup_fit()   # 자연 크기 측정 → 앵커 → 초기 fit (레이아웃 후)
+
+
+## 내용 자연 크기를 측정한 뒤 FULL_RECT 앵커를 건다.
+## (앵커를 먼저 걸면 컨테이너 min-size가 0으로 보고돼 축소 기준을 못 잡음. 또 _ready 시점엔
+##  레이아웃 전이라 min-size가 0 → 한 프레임 기다렸다 측정.)
+func _setup_fit() -> void:
+	await get_tree().process_frame
+	if _wrap == null or not is_instance_valid(_wrap):
+		return
+	for ch in _wrap.get_children():
+		if ch is Control:
+			_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
+			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_fit_wrap()
 
 
 ## 내용(고정 px)이 카드보다 크면 래퍼를 통째로 축소해 잘림 방지(4열 등 슬롯 축소 시).
@@ -46,18 +59,14 @@ func _wrap_content() -> void:
 func _fit_wrap() -> void:
 	if _wrap == null or not is_instance_valid(_wrap):
 		return
-	var need := Vector2.ZERO
-	for ch in _wrap.get_children():
-		if ch is Control:
-			need = need.max((ch as Control).get_combined_minimum_size())
-	if need.x <= 0.0 and need.y <= 0.0:
+	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
 	var s := 1.0
-	if need.x > 0.0:
-		s = minf(s, size.x / need.x)
-	if need.y > 0.0:
-		s = minf(s, size.y / need.y)
-	_wrap.pivot_offset = size * 0.5   # 중앙 기준 축소
+	if _content_min.x > 0.0:
+		s = minf(s, size.x / _content_min.x)
+	if _content_min.y > 0.0:
+		s = minf(s, size.y / _content_min.y)
+	_wrap.pivot_offset = size * 0.5   # 중앙 기준 축소(가로·세로 모두 중앙 → 균등)
 	_wrap.scale = Vector2(s, s)
 
 
