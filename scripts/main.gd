@@ -26,6 +26,9 @@ var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·s
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
 var _money_label: Label
+var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클릭으로 토글
+var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
+var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
 var _rent_label: Label
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
@@ -65,8 +68,10 @@ func _ready() -> void:
   margin.add_child(col)
 
   col.add_child(_build_top_bar())
-  if OS.is_debug_build():   # 운영(릴리스) 빌드에선 디버그 바 숨김
-    col.add_child(_build_debug())
+  if OS.is_debug_build():   # 운영(릴리스) 빌드에선 디버그 바 자체가 없음
+    _debug_bar = _build_debug()
+    _debug_bar.visible = false   # 숨김 → 보유금 5연속 클릭으로 토글
+    col.add_child(_debug_bar)
   col.add_child(_build_customer_queue())
 
   _board = Board.new()
@@ -242,9 +247,11 @@ func _build_top_bar() -> Control:
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(gap)
 
-  # 돈 (소지금) — 동전 손그림
+  # 돈 (소지금) — 동전 손그림. 5연속 클릭 = 디버그 바 토글(개발용, 디버그 빌드만).
   var coin := HBoxContainer.new()
   coin.add_theme_constant_override("separation", 4)
+  coin.mouse_filter = Control.MOUSE_FILTER_STOP   # 클릭 감지(자식 아이콘/라벨은 IGNORE)
+  coin.gui_input.connect(_on_cash_clicked)
   coin.add_child(UI.ui_icon("coin", 20))
   _money_label = UI.label("0", 18, Palette.COCOA_800, true)
   coin.add_child(_money_label)
@@ -281,6 +288,22 @@ func _build_top_bar() -> Control:
 
 
 # ── 디버그 바 (개발용) ────────────────────────────────────
+## 보유금 5연속 클릭 → 디버그 바 토글. 간격 1.5초 넘으면 카운트 리셋(진짜 '연속'만 인정).
+func _on_cash_clicked(event: InputEvent) -> void:
+  if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+    return
+  if _debug_bar == null:   # 릴리스 빌드 = 디버그 바 없음
+    return
+  var now := Time.get_ticks_msec()
+  if now - _last_cash_click > 1500:
+    _cash_clicks = 0
+  _last_cash_click = now
+  _cash_clicks += 1
+  if _cash_clicks >= 5:
+    _cash_clicks = 0
+    _debug_bar.visible = not _debug_bar.visible
+
+
 func _build_debug() -> Control:
   var row := HBoxContainer.new()
   row.add_theme_constant_override("separation", 6)
