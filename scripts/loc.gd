@@ -8,7 +8,7 @@ extends RefCounted
 
 static var locale := "ko"
 
-const LOCALES := ["ko", "en", "ja"]
+const LOCALES := ["ko", "en"]   # ja는 당분간 비활성(번역 보류) — LocaleJa/_table 정의는 유지
 
 ## 현재 언어의 문자열 테이블.
 static func _table() -> Dictionary:

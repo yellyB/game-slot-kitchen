@@ -44,7 +44,7 @@ const S := {
 	"go_home": "홈으로",
 	"cancel": "취소",
 	"to_shop": "상점으로",
-	"pay_rent": "가게세 지불  %s",
+	"pay_rent": "가게세 지불",
 	"insufficient": "돈이 부족합니다",
 
 	# 상점
