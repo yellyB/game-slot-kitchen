@@ -9,6 +9,8 @@ var _title: TitleScreen
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
+var _buff_sheet: BuffSheet
+var _buff_btn: Button
 
 var _queue_row: HBoxContainer
 
@@ -85,6 +87,9 @@ func _ready() -> void:
   _cooking.close_requested.connect(_close_sheets)
   _cooking.cooked.connect(_on_cooked)
   add_child(_cooking)
+  _buff_sheet = BuffSheet.new()
+  _buff_sheet.close_requested.connect(_close_sheets)
+  add_child(_buff_sheet)
 
   Move.performed.connect(_refresh_warehouse)
   Move.default_target = func(_payload): return _board.first_empty_slot()
@@ -145,6 +150,7 @@ func _go_home() -> void:
   _session.set_process(false)
   _warehouse.visible = false
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = false
   _clear_blackout()
   for s in _board.slots:
@@ -315,6 +321,19 @@ func _build_bottom_buttons() -> Control:
   _trash_btn.add_child(UI.ui_btn_icon("trash", 30))
   row.add_child(_trash_btn)
 
+  _buff_btn = Button.new()
+  _style_bottom_button(_buff_btn, Palette.MAIN)
+  _buff_btn.text = Loc.t("buffs_btn")
+  _buff_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+  _buff_btn.custom_minimum_size = Vector2(64, 56)
+  _buff_btn.add_theme_font_size_override("font_size", 18)
+  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
+  _buff_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
+  _buff_btn.pressed.connect(_toggle_buffs)
+  Audio.attach_click(_buff_btn)
+  row.add_child(_buff_btn)
+  _refresh_buff_btn()
+
   var gap := Control.new()
   gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -364,6 +383,7 @@ func _toggle_warehouse() -> void:
 
 func _open_warehouse() -> void:
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = true
   _set_world_paused(true)
   _warehouse.slide_open()
@@ -373,9 +393,32 @@ func _open_warehouse() -> void:
 
 func _on_tool_tapped(tool: ToolStation) -> void:
   _warehouse.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = true
   _set_world_paused(true)
   _cooking.open_for(tool)
+
+
+func _toggle_buffs() -> void:
+  if Buffs.owned().is_empty():
+    return
+  if _buff_sheet.visible:
+    _close_sheets()
+  else:
+    _open_buff_sheet()
+
+
+func _open_buff_sheet() -> void:
+  _warehouse.visible = false
+  _cooking.visible = false
+  _backdrop.visible = true
+  _set_world_paused(true)
+  _buff_sheet.open()
+
+
+func _refresh_buff_btn() -> void:
+  if _buff_btn != null:
+    _buff_btn.disabled = Buffs.owned().is_empty()
 
 
 func _set_world_paused(p: bool) -> void:
@@ -403,6 +446,8 @@ func _close_sheets() -> void:
     _show_trip_cost(cost, before_v, after_v)
   if _cooking.visible:
     _cooking.slide_close()
+  if _buff_sheet.visible:
+    _buff_sheet.slide_close()
   _backdrop.visible = false
 
 
@@ -1127,6 +1172,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _clear_blackout()
   _warehouse.visible = false
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = false
   _visited_today = 0
   _accepted_today = 0
@@ -1145,6 +1191,7 @@ func _on_day_started(day: int, rent: int) -> void:
   for c in _queue_row.get_children():
     c.queue_free()
   _refresh_warehouse()
+  _refresh_buff_btn()
 
 
 func _clear_play_field() -> void:
@@ -1213,6 +1260,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _warehouse.slide_close()
   if _cooking.visible:
     _cooking.slide_close()
+  if _buff_sheet.visible:
+    _buff_sheet.slide_close()
   _backdrop.visible = false
   if summary["won"]:
     _session.pay_rent()

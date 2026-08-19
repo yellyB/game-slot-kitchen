@@ -7,7 +7,9 @@ var session: Session
 var _cash_label: Label
 var _buy_slot_btn: Button
 var _draw_btn: Button
-var _owned_row: HFlowContainer
+var _buff_btn: Button
+var _buff_sheet: BuffSheet
+var _buff_backdrop: ColorRect
 var _drew := false
 var _slot_price_label: Label
 var _last_price_label: Label
@@ -79,11 +81,6 @@ func _ready() -> void:
   _slot_price_label = _last_price_label
   _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
-  body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
-  _owned_row = HFlowContainer.new()
-  _owned_row.add_theme_constant_override("separation", 6)
-  _owned_row.custom_minimum_size = Vector2(0, 30)
-  body.add_child(_owned_row)
 
   var start := Button.new()
   start.anchor_left = 1.0
@@ -103,6 +100,42 @@ func _ready() -> void:
     start_business.emit())
   Audio.attach_click(start)
   add_child(start)
+
+  _buff_btn = Button.new()
+  _buff_btn.text = Loc.t("buffs_btn")
+  _buff_btn.anchor_left = 1.0
+  _buff_btn.anchor_right = 1.0
+  _buff_btn.anchor_top = 1.0
+  _buff_btn.anchor_bottom = 1.0
+  _buff_btn.offset_left = -252
+  _buff_btn.offset_right = -162
+  _buff_btn.offset_top = -76
+  _buff_btn.offset_bottom = -8
+  _buff_btn.add_theme_font_size_override("font_size", 16)
+  _buff_btn.add_theme_color_override("font_color", Palette.WHITE)
+  _buff_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
+  _buff_btn.add_theme_stylebox_override("normal", _round_style(Palette.SUB))
+  _buff_btn.add_theme_stylebox_override("hover", _round_style(Palette.SUB.lightened(0.08)))
+  _buff_btn.add_theme_stylebox_override("pressed", _round_style(Palette.SUB.darkened(0.1)))
+  _buff_btn.add_theme_stylebox_override("disabled", _round_style(Palette.COCOA_200))
+  _buff_btn.pressed.connect(_toggle_buffs)
+  Audio.attach_click(_buff_btn)
+  add_child(_buff_btn)
+
+  _buff_backdrop = ColorRect.new()
+  _buff_backdrop.color = Palette.DIM
+  _buff_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _buff_backdrop.visible = false
+  _buff_backdrop.gui_input.connect(func(event: InputEvent):
+    if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+      _close_buffs())
+  add_child(_buff_backdrop)
+
+  _buff_sheet = BuffSheet.new()
+  _buff_sheet.on_sell = _confirm_sell
+  _buff_sheet.close_requested.connect(_close_buffs)
+  add_child(_buff_sheet)
 
   _refresh()
 
@@ -184,6 +217,21 @@ func _draw_chevrons(btn: Button) -> void:
     btn.draw_polyline(PackedVector2Array([top, tip, bot]), Palette.WHITE, th, true)
     for p in [top, tip, bot]:
       btn.draw_circle(p, cap, Palette.WHITE)
+
+
+func _toggle_buffs() -> void:
+  if Buffs.owned().is_empty():
+    return
+  if _buff_sheet.visible:
+    _close_buffs()
+  else:
+    _buff_backdrop.visible = true
+    _buff_sheet.open()
+
+
+func _close_buffs() -> void:
+  _buff_backdrop.visible = false
+  _buff_sheet.slide_close()
 
 
 func _on_buy_slot() -> void:
@@ -346,37 +394,8 @@ func _refresh() -> void:
     _draw_btn.disabled = not can_draw
     _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
-  for c in _owned_row.get_children():
-    c.queue_free()
-  for id in Buffs.owned():
-    _owned_row.add_child(_owned_chip(id))
-
-
-func _owned_chip(id: String) -> Control:
-  var chip := PanelContainer.new()
-  chip.add_theme_stylebox_override("panel", UI.chip(Palette.MAIN.lightened(0.82), Palette.MAIN))
-  chip.mouse_filter = Control.MOUSE_FILTER_STOP
-  chip.gui_input.connect(func(event: InputEvent):
-    if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-      _confirm_sell(id))
-  var pad := MarginContainer.new()
-  pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  pad.add_theme_constant_override("margin_left", 8)
-  pad.add_theme_constant_override("margin_right", 8)
-  pad.add_theme_constant_override("margin_top", 3)
-  pad.add_theme_constant_override("margin_bottom", 3)
-  chip.add_child(pad)
-  var row := HBoxContainer.new()
-  row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  row.add_theme_constant_override("separation", 4)
-  pad.add_child(row)
-  row.add_child(BuffDefs.icon_node(id, 18))
-  var lbl := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)
-  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  row.add_child(lbl)
-  row.add_child(UI.ui_icon("coin", 14))
-  return chip
+  if _buff_btn != null:
+    _buff_btn.disabled = Buffs.owned().is_empty()
 
 
 func _confirm_sell(id: String) -> void:
@@ -393,3 +412,8 @@ func _sell(id: String, refund: int) -> void:
   session.add_cash(refund)
   Audio.play("coins")
   _refresh()
+  if _buff_sheet.visible:
+    if Buffs.owned().is_empty():
+      _close_buffs()
+    else:
+      _buff_sheet.rebuild()
