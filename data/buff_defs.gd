@@ -188,11 +188,15 @@ static func icon_node(id: String, px: int) -> Control:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return lbl
 
-## 팩: 서로 다른 버프 n개 랜덤(차단 카드 제외).
+## 팩: 서로 다른 버프 n개 랜덤(차단 카드·이미 보유한 버프 제외 — 중복 방지).
 static func random_pack(n := 3) -> Array:
+	var owned := Buffs.owned()
 	var pool := []
 	for id in ALL.keys():
-		if not ALL[id].get("blocked", false):
-			pool.append(id)
+		if ALL[id].get("blocked", false):
+			continue
+		if id in owned:
+			continue   # 이미 보유한 버프는 후보에서 제외
+		pool.append(id)
 	pool.shuffle()
 	return pool.slice(0, mini(n, pool.size()))
