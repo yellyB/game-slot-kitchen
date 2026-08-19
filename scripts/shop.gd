@@ -280,6 +280,17 @@ func _show_pack(pack: Array) -> void:
   overlay.z_index = 10
   add_child(overlay)
 
+  # 개봉 중에도 [버프] 버튼/서랍으로 보유 버프를 확인 가능하게 오버레이(z10) 위로 올림.
+  # (버프 아이콘이 겹쳐 이름·설명 확인이 필요 → 기존 서랍 재사용) 오버레이가 닫힐 때 z 원복.
+  if not Buffs.owned().is_empty():
+    _buff_btn.z_index = 11
+    _buff_backdrop.z_index = 12
+    _buff_sheet.z_index = 13
+    overlay.tree_exited.connect(func():
+      _buff_btn.z_index = 0
+      _buff_backdrop.z_index = 0
+      _buff_sheet.z_index = 0)
+
   var od := ColorRect.new()
   od.color = Palette.DIM
   od.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
