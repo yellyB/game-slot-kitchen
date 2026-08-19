@@ -1114,7 +1114,7 @@ func _tap_to_continue() -> void:
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
 func _start_day_intro() -> void:
   Audio.play("day_start")
-  var banner: Control = await _make_bigbanner("sun", "OPEN", 0.0)   # 해 + OPEN + 딤(즉시, 진입 순간부터 어두움)
+  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)   # 해(고해상도) + OPEN + 딤(즉시)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
@@ -1419,7 +1419,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
     Audio.play("day_close")   # 영업 종료 딩동(+흔들림과 함께 임팩트)
     Audio.vibrate(40)   # 하루 마감 임팩트 — 묵직한 진동(화면 흔들림과 함께)
-    var banner: Control = await _make_bigbanner("moon", "CLOSE")   # 달 + CLOSE + 딤 (유지)
+    var banner: Control = await _make_bigbanner("moon_big", "CLOSE")   # 달(고해상도) + CLOSE + 딤 (유지)
     _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸.
     await _dayend_sequence()
