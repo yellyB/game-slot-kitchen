@@ -70,7 +70,7 @@ const S := {
 	"b.rent_down.name": "Rent", "b.rent_down.label": "Rent -10%",
 	"b.shop_disc.name": "Shop Discount", "b.shop_disc.label": "Shop prices -10% (WIP)",
 	"b.pack_more.name": "Extra Card", "b.pack_more.label": "Buff pack +1 choice (WIP)",
-	"b.rent_skip.name": "Rent Skip", "b.rent_skip.label": "Skip rent once for free (even if short on cash)",
+	"b.rent_skip.name": "Get Out of Jail", "b.rent_skip.label": "Skip rent once for free (even if short on cash)",
 	"b.reveal.name": "Reveal Menu", "b.reveal.label": "Reveal waiting customers' desired menu (WIP)",
 	"b.buff_slot.name": "Buff Slot +1", "b.buff_slot.label": "Buff slot +1",
 	"b.tool_slot.name": "Tool +1", "b.tool_slot.label": "Tool +1 (slot +1 too)",
