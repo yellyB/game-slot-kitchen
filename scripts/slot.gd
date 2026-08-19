@@ -58,6 +58,7 @@ func place_card(card: Card, play_sfx := true, pop := true) -> void:
     card.pop_in()
   if play_sfx:
     Audio.play("card_place")
+    Audio.vibrate(10)
 
 
 func take_card(card: Card) -> void:
@@ -69,6 +70,7 @@ func take_card(card: Card) -> void:
   _holder.add_child(card)
   card.pop_in()
   Audio.play("card_place")
+  Audio.vibrate(10)
   var dc := card as DishCard
   if dc != null and dc.tool != null:
     var t := dc.tool
