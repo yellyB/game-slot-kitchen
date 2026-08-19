@@ -369,30 +369,64 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   return card
 
 
-## 버프 선택 — 고른 카드 팡(크게) + 나머지 쪼그라들며 사라짐, 그 후 오버레이 닫기.
+## 버프 선택 — 나머지 쪼그라들며 사라짐 + 고른 카드는 [버프] 버튼으로 날아가 흡수(수집 피드백).
 func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control) -> void:
   if overlay.get_meta("picked", false):
     return   # 중복 선택 방지
   overlay.set_meta("picked", true)
   Buffs.add(id)
   Audio.play("card_place")   # 버프 선택 확정(탁)
+  # 나머지 후보 — 쪼그라들며 사라짐
   for c in choices:
-    if not is_instance_valid(c):
+    if not is_instance_valid(c) or c == chosen:
       continue
     c.pivot_offset = c.size * 0.5
-    if c == chosen:
-      var tw := create_tween()
-      tw.tween_property(c, "scale", Vector2(1.4, 1.4), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-      tw.tween_property(c, "modulate:a", 0.0, 0.24).set_delay(0.12)
-    else:
-      var tw2 := create_tween()
-      tw2.set_parallel(true)
-      tw2.tween_property(c, "scale", Vector2(0.5, 0.5), 0.25).set_ease(Tween.EASE_IN)
-      tw2.tween_property(c, "modulate:a", 0.0, 0.25)
-  await get_tree().create_timer(0.42).timeout
+    var tw2 := create_tween()
+    tw2.set_parallel(true)
+    tw2.tween_property(c, "scale", Vector2(0.5, 0.5), 0.25).set_ease(Tween.EASE_IN)
+    tw2.tween_property(c, "modulate:a", 0.0, 0.25)
+  # 고른 카드 — [버프] 버튼으로 날아가 흡수
+  _fly_card_to_buff_btn(chosen)
+  # 딤/힌트 오버레이는 카드 날아가는 동안 페이드아웃 → 버튼이 드러나며 흡수 보임
   if is_instance_valid(overlay):
-    overlay.queue_free()
+    var ot := create_tween()
+    ot.tween_property(overlay, "modulate:a", 0.0, 0.28).set_delay(0.2)
+    ot.tween_callback(overlay.queue_free)
+  await get_tree().create_timer(0.6).timeout
   _refresh()
+
+
+## 고른 버프 카드가 [버프] 버튼으로 날아가 축소·페이드(수집 연출) + 착지 시 버튼 톡 팝.
+func _fly_card_to_buff_btn(card: Control) -> void:
+  var gpos := card.global_position
+  var sz := card.size
+  card.pivot_offset = sz * 0.5
+  add_child(card)             # 레이아웃 밖으로 옮겨 자유 이동
+  card.top_level = true
+  card.z_index = 60           # 딤 오버레이(z10) 위에서 보이게
+  card.global_position = gpos
+  var target := _buff_btn.global_position + _buff_btn.size * 0.5
+  var end_pos := target - sz * 0.5   # 피벗(중앙) 기준 카드 중심이 버튼 중심에 오도록
+  var tw := create_tween()
+  tw.tween_property(card, "scale", Vector2(1.2, 1.2), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.tween_callback(func(): Audio.play("card_slide"))   # 날아가기 시작
+  tw.tween_property(card, "global_position", end_pos, 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(card, "scale", Vector2(0.22, 0.22), 0.42).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(card, "modulate:a", 0.0, 0.42).set_delay(0.18)
+  tw.tween_callback(func():
+    _pop_buff_btn()
+    if is_instance_valid(card):
+      card.queue_free())
+
+
+## [버프] 버튼 톡 팝(카드 흡수 순간 피드백).
+func _pop_buff_btn() -> void:
+  if not is_instance_valid(_buff_btn):
+    return
+  _buff_btn.pivot_offset = _buff_btn.size * 0.5
+  var t := create_tween()
+  t.tween_property(_buff_btn, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  t.tween_property(_buff_btn, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK)
 
 
 func _refresh() -> void:
