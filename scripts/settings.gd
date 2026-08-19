@@ -64,14 +64,18 @@ func _build() -> void:
 
 	# 소리
 	_col.add_child(_section_title(Loc.t("sound")))
-	_col.add_child(_toggle_row("🎵", Loc.t("bgm"), "bgm"))
-	_col.add_child(_toggle_row("🔊", Loc.t("sfx"), "sfx"))
-	_col.add_child(_toggle_row("📳", Loc.t("vibrate"), "vibrate"))
+	_col.add_child(_toggle_row("bgm", Loc.t("bgm")))
+	_col.add_child(_toggle_row("sfx", Loc.t("sfx")))
+	_col.add_child(_toggle_row("vibrate", Loc.t("vibrate")))
 
 	_col.add_child(_divider())
 
 	# 언어
-	_col.add_child(_section_title(Loc.t("language")))
+	var lang_title := HBoxContainer.new()
+	lang_title.add_theme_constant_override("separation", 6)
+	lang_title.add_child(UI.ui_icon("language", 18))
+	lang_title.add_child(_section_title(Loc.t("language")))
+	_col.add_child(lang_title)
 	var langs := HBoxContainer.new()
 	langs.add_theme_constant_override("separation", 8)
 	for code in Loc.LOCALES:
@@ -107,21 +111,23 @@ func _close_button() -> Button:
 	return b
 
 
-func _toggle_row(icon: String, text: String, key: String) -> Control:
+func _toggle_row(key: String, text: String) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	row.custom_minimum_size = Vector2(0, 36)
-	row.add_child(UI.label(icon, 20))
+	# 켜짐/꺼짐에 따라 아이콘 자체가 바뀜(off는 슬래시 버전). 토글이 상태 갱신 시 교체.
+	var icon := UI.ui_icon("%s_%s" % [key, "on" if settings[key] else "off"], 24)
+	row.add_child(icon)
 	row.add_child(UI.label(text, 18, Palette.COCOA_800))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(gap)
-	row.add_child(_toggle(key))
+	row.add_child(_toggle(key, icon))
 	return row
 
 
 ## 켜짐(초록)/꺼짐(회색) 토글 스위치. 탭 → 상태 뒤집힘(사운드 연결은 아직).
-func _toggle(key: String) -> Control:
+func _toggle(key: String, icon: TextureRect = null) -> Control:
 	var pill := Panel.new()
 	pill.custom_minimum_size = Vector2(52, 30)
 
@@ -139,6 +145,8 @@ func _toggle(key: String) -> Control:
 		var on: bool = settings[key]
 		pill.add_theme_stylebox_override("panel", UI.chip(Palette.SUCCESS if on else Palette.COCOA_200))
 		knob.position = Vector2(25.0 if on else 3.0, 3.0)
+		if icon != null:
+			icon.texture = load("res://assets/art/ui/%s_%s.png" % [key, "on" if on else "off"])
 	hit.pressed.connect(func():
 		settings[key] = not settings[key]
 		refresh.call()
