@@ -39,6 +39,7 @@ func _ready() -> void:
 
 	var grid := GridContainer.new()
 	grid.columns = 4
+	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER   # 내용 폭만큼만 잡고 가운데 정렬(오른쪽 여백 제거)
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
 	v.add_child(grid)
