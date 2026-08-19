@@ -944,47 +944,111 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
-## 하루 마감 순간 — 큰 날짜 카운트를 화면 정중앙에 팝(시작 배너보다 크게).
-## 마감 배너 — 큰 중앙 "N일차 마감" 팝. 자동 페이드 안 함(탭 대기 동안 유지). 라벨 반환.
-func _show_dayend_banner(day: int) -> Label:
-  var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
+## 큰 중앙 배너 화면 — 딤(어두운 배경) + 이미지(달/해) 크게 + 텍스트(CLOSE/OPEN) + 하단 "click ▸" 힌트.
+## 자동 페이드 안 함(탭 대기 동안 유지). 딤·내용·힌트를 담은 루트 Control 반환(탭 시 통째로 페이드).
+func _make_bigbanner(icon_name: String, text: String) -> Control:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(root)
+
+  var dim := ColorRect.new()   # 어두운 배경(흐림 효과)
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(dim)
+
+  var center := CenterContainer.new()   # 이미지+텍스트 정중앙
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 8)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  var img := UI.ui_icon(icon_name, 100)   # 달/해 크게
+  img.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+  box.add_child(img)
+  var l := UI.label(text, 54, Palette.WHITE, true)   # 딤 위라 흰 글씨
   l.add_theme_constant_override("outline_size", 8)
-  l.add_theme_color_override("font_outline_color", Palette.WHITE)
-  l.z_index = 200
+  l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  add_child(l)
-  await get_tree().process_frame   # 크기 확보 → 중앙 정렬·피벗
-  if not is_instance_valid(l):
+  box.add_child(l)
+
+  var hint := UI.label("click ▸", 20, Palette.WHITE, true)   # 하단 탭 유도 힌트
+  hint.add_theme_constant_override("outline_size", 4)
+  hint.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(hint)
+
+  # 등장 순서: 딤 → 해/달이 서서히(약 0.9초) 떠오름 → 다 보이면 글자 팝 → 힌트.
+  # 해/달이 완전히 뜬 뒤에야 반환 → 그 후에만 탭(다음)이 가능(호출측이 반환 대기).
+  dim.modulate.a = 0.0
+  img.modulate.a = 0.0
+  img.scale = Vector2(0.5, 0.5)
+  l.modulate.a = 0.0
+  l.scale = Vector2(0.7, 0.7)
+  hint.modulate.a = 0.0
+  await get_tree().process_frame   # 크기 확보 → 피벗·힌트 배치
+  if not is_instance_valid(root):
     return null
   var vp := get_viewport_rect().size
+  img.pivot_offset = img.size * 0.5
   l.pivot_offset = l.size * 0.5
-  l.position = (vp - l.size) * 0.5   # 정중앙
-  l.scale = Vector2(0.5, 0.5)
-  l.modulate.a = 0.0
-  var tw := create_tween()
-  tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
-  tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
-  return l
+  hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72)   # 하단 중앙
+
+  create_tween().tween_property(dim, "modulate:a", 1.0, 0.3)   # 배경 어두워짐
+
+  var it := create_tween().set_parallel(true)   # 해/달 서서히 떠오름(페이드+확대)
+  it.tween_property(img, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+  it.tween_property(img, "scale", Vector2.ONE, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+  await it.finished
+  if not is_instance_valid(root):
+    return null
+
+  var lt := create_tween()   # 해/달 다 뜨면 글자 딱 팝
+  lt.tween_property(l, "modulate:a", 1.0, 0.14)
+  lt.parallel().tween_property(l, "scale", Vector2(1.12, 1.12), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  lt.tween_property(l, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_SINE)
+  await lt.finished
+
+  var hp := create_tween()   # 힌트 페이드인 후 깜빡 펄스(탭 유도)
+  hp.tween_property(hint, "modulate:a", 1.0, 0.3)
+  hp.set_loops()
+  hp.tween_property(hint, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
+  hp.tween_property(hint, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  return root
 
 
-## 마감 후 탭 대기 — 전체화면 캐처 + 배너 은은한 펄스(탭 유도). 탭하면 반환.
-func _tap_to_continue(banner: Label = null) -> void:
+## 탭 대기 — 전체화면 캐처(투명). 탭하면 반환. (배너는 별도로 유지·페이드)
+func _tap_to_continue() -> void:
   var catcher := Button.new()
   catcher.flat = true
   catcher.focus_mode = Control.FOCUS_NONE
   catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   catcher.z_index = 350
   add_child(catcher)
-  var pulse: Tween = null
-  if is_instance_valid(banner):
-    pulse = create_tween().set_loops()
-    pulse.tween_property(banner, "scale", Vector2(1.06, 1.06), 0.6).set_trans(Tween.TRANS_SINE)
-    pulse.tween_property(banner, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_SINE)
   await catcher.pressed
-  if pulse != null and pulse.is_valid():
-    pulse.kill()
   catcher.queue_free()
+
+
+## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
+func _start_day_intro() -> void:
+  Audio.play("day_start")
+  var banner: Control = await _make_bigbanner("sun", "OPEN")   # 해 + OPEN + 딤 (유지)
+  await _tap_to_continue()
+  if not is_inside_tree() or _title.visible:
+    if is_instance_valid(banner): banner.queue_free()
+    return
+  if is_instance_valid(banner):
+    var bt := create_tween()
+    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+    bt.tween_callback(banner.queue_free)
+  if is_instance_valid(_session):
+    _session.set_process(true)   # 탭 후 게임플레이(시계·손님 스폰) 시작
 
 
 ## 화면 전체 흔들림 — 루트(self) 위치를 감쇠 랜덤으로 흔들고 0으로 복귀. 마감 임팩트용.
@@ -1151,15 +1215,12 @@ func _reset_hours_bar() -> void:
 
 func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
-  # 하루 시작 홀드 — 플레이 화면만 먼저 보이고, 게임플레이(시계·스폰)는 잠깐 멈춤.
-  # DAY_INTRO_DELAY 뒤에 재개 + "N일차" 배너 + 시작음(그때 재생).
+  # 하루 시작 홀드 — 플레이 화면만 먼저 보이고, 게임플레이(시계·스폰)는 정지.
+  # DAY_INTRO_DELAY 뒤 해+OPEN 배너 → 유저 탭해야 게임 시작(_start_day_intro).
   _session.set_process(false)
   get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
-    if not is_inside_tree() or _title.visible:
-      return
-    _session.set_process(true)   # 시계·손님 스폰 시작
-    _show_day_banner(day)        # 화면 중앙 "N일차" 배너
-    Audio.play("day_start"))     # 하루 시작 효과음
+    if is_inside_tree() and not _title.visible:
+      _start_day_intro())
   _rent_label.text = UI.money(rent)
   _hours_bar.value = 0
   _reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
@@ -1278,7 +1339,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너 + 화면 흔들림 → 카운트다운 종료 여운.
     Audio.play("day_close")   # 영업 종료 딩동(+흔들림과 함께 임팩트)
     Audio.vibrate(40)   # 하루 마감 임팩트 — 묵직한 진동(화면 흔들림과 함께)
-    var banner: Label = await _show_dayend_banner(summary["day"])   # 배너 유지(자동 페이드 X)
+    var banner: Control = await _make_bigbanner("moon", "CLOSE")   # 달 + CLOSE + 딤 (유지)
     _screen_shake()
     # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸.
     await _dayend_sequence()
@@ -1286,7 +1347,7 @@ func _on_day_ended(summary: Dictionary) -> void:
       if is_instance_valid(banner): banner.queue_free()
       return   # 마감 연출 중 홈으로 나갔으면 정산 팝업 생략(타이틀 위에 안 뜨게)
     # 자동으로 정산 안 감 — 배너 유지한 채 유저 탭 대기, 탭하면 정산 팝업.
-    await _tap_to_continue(banner)
+    await _tap_to_continue()
     if is_instance_valid(banner):
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
@@ -1294,32 +1355,30 @@ func _on_day_ended(summary: Dictionary) -> void:
     _show_settlement(summary)
 
 
-## 하루 정산 팝업 — 보유금 → 오늘 매출 → 가게세 순서로 페이드인.
-## 가게세 라인이 뜨는 타이밍에 실제 차감(pay_rent) + 보유금 카운트다운. 실패면 미차감 + 실패 도장.
+## 하루 정산 팝업 — 영수증(빌지) 이미지 + 가게세 액수 → [가게세 지불] 버튼.
+## 지불 시 실제 차감(pay_rent) + 빌지 이미지를 같은 크기의 결과 표시(✅/❌)로 교체.
 func _show_settlement(summary: Dictionary) -> void:
-  var cash_before: int = summary["cash"]
-  var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 
-  # 상단: 총 보유금(작게, 러닝 총액) — 발라트로 구석 총액처럼. 가게세 지불 시 카운트다운.
-  var total := UI.label(UI.money(cash_before), 16, Palette.COCOA_800, true)
-  var total_row := _settle_icon_row("coin", total, 20)
-  total_row.modulate.a = 1.0   # 헤더라 처음부터 보임(항목처럼 페이드인 안 함)
-  m.add_row(total_row)
+  # 영수증(빌지) 이미지 — 고정 크기 홀더. 지불 후 같은 크기의 ✅/❌로 교체(레이아웃 안 흔들림).
+  # receipt.png 있으면 우선, 없으면 bill(청구서) 폴백. [[화구 아트 로딩과 동일 폴백 패턴]]
+  var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
+  var icon_box := CenterContainer.new()
+  icon_box.custom_minimum_size = Vector2(112, 112)
+  icon_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  icon_box.add_child(UI.ui_icon(receipt_name, 112))
+  m.add_row(icon_box)
 
-  # 오늘 매출 항목(발라트로 Cash Out식) — 등장. 가게세는 아래 '지불' 버튼에서 직접 냄.
-  var earned := UI.label("+" + UI.money(rev), 18, Palette.SUCCESS)
-  var earned_row := _settle_icon_row("coin", earned, 24)
-  m.add_row(earned_row)
+  # 가게세 지불 액수 — 코인 + 금액(빨강, 크게)
+  var amount := UI.label(UI.money(rent), 26, Palette.DANGER, true)
+  var amount_row := _settle_icon_row("coin", amount, 26)
+  amount_row.modulate.a = 1.0   # 처음부터 보임
+  m.add_row(amount_row)
 
-  var stamp := _settle_label("", Palette.SUCCESS, 40, true)   # 결과 도장 — 연출 끝에 채움
-  stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(stamp)
-
-  # 가게세 '직접 지불' 버튼(핵심 액션) — 처음 숨김, 매출 등장 후 활성. 눌러서 직접 냄.
+  # '가게세 지불' 버튼(핵심 액션) — 처음 숨김 → 잠깐 뒤 등장.
   var pay_btn := Button.new()
-  pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
+  pay_btn.text = Loc.t("pay_rent")
   pay_btn.custom_minimum_size = Vector2(0, 48)
   pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   pay_btn.add_theme_font_size_override("font_size", 18)
@@ -1331,22 +1390,20 @@ func _show_settlement(summary: Dictionary) -> void:
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
   pay_btn.modulate.a = 0.0
   pay_btn.disabled = true
-  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, total, stamp))
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, icon_box))
   Audio.attach_click(pay_btn)
   m.add_row(pay_btn)
 
-  # 연출: 오늘 매출 등장 → [가게세 지불] 버튼 등장(직접 지불 대기)
+  # 등장 연출: 잠깐 뒤 [가게세 지불] 버튼 페이드인
   var tw := create_tween()
-  tw.tween_interval(0.15)
-  tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
-  tw.tween_interval(0.2)
+  tw.tween_interval(0.25)
   tw.tween_callback(func():
     pay_btn.disabled = false
     create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
 
 
-## 가게세 직접 지불 클릭 — 통과 시 총 보유금 촤르륵 차감·도장·[상점으로], 실패 시 [처음으로].
-func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label, stamp: Label) -> void:
+## 가게세 지불 클릭 — 빌지 이미지를 결과(✅/❌)로 교체 + 통과 시 차감·[상점으로], 실패 시 [처음으로].
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control) -> void:
   var passed: bool = summary["passed"]
   var cash_before: int = summary["cash"]
   var rent: int = summary["rent"]
@@ -1354,19 +1411,30 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
     pay_btn.pressed.disconnect(c["callable"])
+
+  # 빌지 이미지 → 같은 크기의 결과 표시(✅/❌)로 교체(팝 연출). 홀더 크기 고정이라 안 흔들림.
+  var px: float = icon_box.custom_minimum_size.y
+  for ch in icon_box.get_children():
+    ch.visible = false
+    ch.queue_free()
+  var mark := UI.label("✅" if passed else "❌", int(px * 0.8), Palette.SUCCESS if passed else Palette.DANGER, true)
+  mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  mark.custom_minimum_size = Vector2(px, px)
+  mark.pivot_offset = Vector2(px, px) * 0.5
+  mark.modulate.a = 0.0
+  mark.scale = Vector2(0.5, 0.5)
+  icon_box.add_child(mark)
+  var pt := create_tween()
+  pt.tween_property(mark, "modulate:a", 1.0, 0.12)
+  pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
   if passed:
-    if will_pay:                                 # 총 보유금 촤르륵 차감
+    if will_pay:                                 # 실제 가게세 차감
       _session.pay_rent()
-      var upd := func(v: float):
-        if is_instance_valid(total):
-          total.text = UI.money(int(round(v)))
-      create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
-        .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")   # 하루 통과(정산 성공)음
     Audio.vibrate(30)   # 정산 통과 — 성공 진동
-    stamp.text = "✅"
-    stamp.add_theme_color_override("font_color", Palette.SUCCESS)
-    _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
     pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
     pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
@@ -1376,30 +1444,9 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
   else:
     Audio.play("fail")   # 돈 부족 → 폐업 스팅
     Audio.vibrate(60)   # 폐업 — 강한(긴) 에러 진동
-    stamp.text = "❌"
-    stamp.add_theme_color_override("font_color", Palette.DANGER)
-    _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_title")
     pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
     pay_btn.disabled = false
-
-
-## 정산 결과 도장 팝(투명→불룩→제자리).
-func _pop_settle_stamp(stamp: Label) -> void:
-  stamp.pivot_offset = stamp.size * 0.5
-  var t := create_tween()
-  t.tween_property(stamp, "modulate:a", 1.0, 0.12)
-  t.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  t.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
-
-
-## 정산 팝업 행 라벨 — 가운데 정렬 + 처음엔 투명(순차 페이드인용).
-func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
-  var l := UI.label(text, font, color, bold)
-  l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  l.modulate.a = 0.0
-  return l
 
 
 ## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.
