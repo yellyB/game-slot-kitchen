@@ -131,7 +131,7 @@ const S := {
 	"b.pat_extend.name": "Grace", "b.pat_extend.label": "Customer patience +3s (leaves later)",
 	"b.sale_late.name": "Patience Reward", "b.sale_late.label": "Serve 25s+ after order taken: sale +35%",
 	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Gain +40% of the patience% the customer used up",
-	"b.sale_crit.name": "Clutch Reward", "b.sale_crit.label": "Serve while patience is critical (red): sale +20%",
+	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): sale +20%",
 	"b.pat_down.name": "Neglect", "b.pat_down.label": "Customer patience -30%",
 	"b.onlost_pay.name": "Penalty Fee", "b.onlost_pay.label": "When an ordering customer leaves unserved: gain 34% of that menu's price",
 	"b.onlost_x2.name": "Revenge", "b.onlost_x2.label": "When an ordering customer leaves unserved: next sale ×2",
