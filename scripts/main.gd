@@ -504,6 +504,10 @@ func _close_sheets() -> void:
     var cost := Stats.warehouse_cost()
     var before_v := _hours_bar.value
     _session.spend_time(cost)   # → _on_progress가 바 값을 새 위치로
+    # 트립 비용으로 영업시간이 끝났으면(하루 마감) _on_day_ended가 이미 창고를 닫음.
+    # door_close 사운드·트립비용 팝업은 마감 연출(CLOSE 배너)과 겹치므로 생략하고 반환.
+    if not _session.is_running():
+      return
     var after_v := _hours_bar.value
     Audio.play("door_close")   # 창고 나옴(문 닫힘)
     _warehouse.slide_close()   # 아래로 슬라이드 다운
