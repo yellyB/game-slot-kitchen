@@ -297,14 +297,15 @@ func _show_pack(pack: Array) -> void:
   t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(t)
 
-  var row := HBoxContainer.new()
-  row.add_theme_constant_override("separation", 10)
-  box.add_child(row)
+  var col := VBoxContainer.new()   # 세로 배치 — 각 카드가 넓은 폭을 써서 설명 줄바꿈 최소화
+  col.add_theme_constant_override("separation", 10)
+  col.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_child(col)
   var choices: Array = []
   var i := 0
   for id in pack:
     var choice := _pack_choice(id, choices, overlay)
-    row.add_child(choice)
+    col.add_child(choice)
     choices.append(choice)
     _reveal_choice(choice, i)   # 하나씩 팝하며 개봉
     i += 1
@@ -330,38 +331,44 @@ func _reveal_choice(card: Control, idx: int) -> void:
 func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   var def := BuffDefs.get_def(id)
   var card := PanelContainer.new()
-  card.custom_minimum_size = Vector2(92, 0)   # 세 후보 동일 고정폭(라벨 autowrap과 함께 폭 안정화)
+  card.custom_minimum_size = Vector2(330, 0)   # 세로 배치 — 세 후보 동일 고정폭(화면 폭 거의 채움)
   card.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.MAIN, 2))
   var pad := MarginContainer.new()
   for side in ["left", "right", "top", "bottom"]:
     pad.add_theme_constant_override("margin_" + side, 10)
   card.add_child(pad)
-  var v := VBoxContainer.new()
-  v.alignment = BoxContainer.ALIGNMENT_CENTER
-  v.add_theme_constant_override("separation", 4)
-  pad.add_child(v)
-  v.add_child(BuffDefs.icon_node(id, 40))   # 카테고리 아이콘(손그림)
-  var nm := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)
-  nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  var h := HBoxContainer.new()   # 아이콘(좌) · 텍스트(중) · 선택버튼(우)
+  h.alignment = BoxContainer.ALIGNMENT_CENTER
+  h.add_theme_constant_override("separation", 10)
+  pad.add_child(h)
+  var icon := BuffDefs.icon_node(id, 44)   # 카테고리 아이콘(손그림)
+  icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  h.add_child(icon)
+  var texts := VBoxContainer.new()
+  texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  texts.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  texts.add_theme_constant_override("separation", 2)
+  h.add_child(texts)
+  var nm := UI.label(BuffDefs.display_name(id), 14, Palette.COCOA_800, true)
   nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   nm.custom_minimum_size = Vector2.ZERO
-  v.add_child(nm)
+  texts.add_child(nm)
   var lb := UI.label(BuffDefs.display_label(id), 12, Palette.MAIN)
-  lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   lb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   lb.custom_minimum_size = Vector2.ZERO
-  v.add_child(lb)
+  texts.add_child(lb)
   var pick := Button.new()
   pick.text = Loc.t("shop_pick")
   pick.add_theme_font_size_override("font_size", 13)
   pick.add_theme_color_override("font_color", Palette.WHITE)
   pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
   Audio.attach_click(pick)   # 뽑기 버튼 클릭음
-  v.add_child(pick)
+  h.add_child(pick)
   return card
 
 
