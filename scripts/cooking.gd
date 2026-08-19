@@ -39,13 +39,9 @@ func _ready() -> void:
 
 	var header := HBoxContainer.new()
 	v.add_child(header)
-	header.add_child(UI.label("🔥", 20, Palette.COCOA_800, true))
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(center)
-	var rbal := Control.new()
-	rbal.custom_minimum_size = Vector2(24, 0)
-	header.add_child(rbal)
 	var close := Button.new()
 	close.text = "✕"
 	close.add_theme_font_size_override("font_size", 16)
