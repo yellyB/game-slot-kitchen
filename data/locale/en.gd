@@ -55,6 +55,7 @@ const S := {
 	"shop_buy": "Buy",
 	"shop_start": "Open Shop",
 	"shop_owned": "Buffs",
+	"buffs_btn": "Buffs",
 	"shop_pick3": "Pick 1 of 3",
 	"shop_price": "Price %s",
 	"sold_out": "SOLD OUT",

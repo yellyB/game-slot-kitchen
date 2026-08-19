@@ -9,7 +9,9 @@ var session: Session  # main이 add_child 전에 주입
 var _cash_label: Label
 var _buy_slot_btn: Button
 var _draw_btn: Button
-var _owned_row: HFlowContainer   # 보유 버프 칩 — 많아지면 다음 줄로 감쌈(가로 넘침 방지)
+var _buff_btn: Button            # 보유 버프 서랍 여는 버튼(계속하기 왼쪽). 보유 0개면 비활성.
+var _buff_sheet: BuffSheet       # 보유 버프 리스트 서랍(바텀시트)
+var _buff_backdrop: ColorRect    # 서랍 열림 시 딤 + 바깥 탭 닫기
 var _drew := false   # 이번 상점 방문에서 이미 뽑았는지(방문당 1회). 다음날 재진입 시 새 인스턴스로 리셋.
 var _slot_price_label: Label   # 슬롯 가격 표시(구매마다 갱신)
 var _last_price_label: Label   # _product가 방금 만든 가격 라벨(호출 직후 회수용)
@@ -89,12 +91,7 @@ func _ready() -> void:
   _slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
   _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
-  # 보유 버프
-  body.add_child(UI.label(Loc.t("shop_owned"), 13, Palette.COCOA_600))
-  _owned_row = HFlowContainer.new()
-  _owned_row.add_theme_constant_override("separation", 6)
-  _owned_row.custom_minimum_size = Vector2(0, 30)
-  body.add_child(_owned_row)
+  # 보유 버프는 인라인 목록 대신 [버프] 버튼 → 서랍(BuffSheet)에서 확인/판매.
 
   # [다음날 시작] — 글자 대신 >> 겹화살표. 위치는 플레이 화면 창고 버튼과 동일(우하단),
   # 단 아래 모서리도 위처럼 radius(전 모서리 둥근). v(마진 프레임)가 아니라 self에 직접 앵커.
@@ -117,6 +114,44 @@ func _ready() -> void:
     start_business.emit())
   Audio.attach_click(start)   # 영업 시작 버튼 클릭음
   add_child(start)
+
+  # [버프] — 계속하기(>>) 버튼 왼쪽. 탭하면 보유 버프 서랍. 보유 0개면 비활성(안 열림).
+  _buff_btn = Button.new()
+  _buff_btn.text = Loc.t("buffs_btn")
+  _buff_btn.anchor_left = 1.0
+  _buff_btn.anchor_right = 1.0
+  _buff_btn.anchor_top = 1.0
+  _buff_btn.anchor_bottom = 1.0
+  _buff_btn.offset_left = -252   # 계속하기(좌 -150) 왼쪽에 폭≈90 배치
+  _buff_btn.offset_right = -162  # 계속하기와 12 간격
+  _buff_btn.offset_top = -76
+  _buff_btn.offset_bottom = -8
+  _buff_btn.add_theme_font_size_override("font_size", 16)
+  _buff_btn.add_theme_color_override("font_color", Palette.WHITE)
+  _buff_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
+  _buff_btn.add_theme_stylebox_override("normal", _round_style(Palette.SUB))
+  _buff_btn.add_theme_stylebox_override("hover", _round_style(Palette.SUB.lightened(0.08)))
+  _buff_btn.add_theme_stylebox_override("pressed", _round_style(Palette.SUB.darkened(0.1)))
+  _buff_btn.add_theme_stylebox_override("disabled", _round_style(Palette.COCOA_200))
+  _buff_btn.pressed.connect(_toggle_buffs)
+  Audio.attach_click(_buff_btn)
+  add_child(_buff_btn)
+
+  # 서랍 딤 배경(탭하면 닫기) → 그 위에 서랍. 딤은 버튼들 위에 덮여 서랍 중엔 상점 조작 차단.
+  _buff_backdrop = ColorRect.new()
+  _buff_backdrop.color = Palette.DIM
+  _buff_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _buff_backdrop.visible = false
+  _buff_backdrop.gui_input.connect(func(event: InputEvent):
+    if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+      _close_buffs())
+  add_child(_buff_backdrop)
+
+  _buff_sheet = BuffSheet.new()
+  _buff_sheet.on_sell = _confirm_sell   # 상점: 항목 탭 = 판매
+  _buff_sheet.close_requested.connect(_close_buffs)
+  add_child(_buff_sheet)
 
   _refresh()
 
@@ -204,6 +239,22 @@ func _draw_chevrons(btn: Button) -> void:
     # 세 꼭짓점에 원을 찍어 끝·꺾임을 둥글게(깔끔한 마감)
     for p in [top, tip, bot]:
       btn.draw_circle(p, cap, Palette.WHITE)
+
+
+## [버프] 토글 — 보유 0개면 무시(버튼도 disabled). 서랍 열림/닫힘.
+func _toggle_buffs() -> void:
+  if Buffs.owned().is_empty():
+    return
+  if _buff_sheet.visible:
+    _close_buffs()
+  else:
+    _buff_backdrop.visible = true
+    _buff_sheet.open()   # 현재 보유로 재구성 + 슬라이드 업
+
+
+func _close_buffs() -> void:
+  _buff_backdrop.visible = false
+  _buff_sheet.slide_close()
 
 
 func _on_buy_slot() -> void:
@@ -372,37 +423,9 @@ func _refresh() -> void:
     _draw_btn.disabled = not can_draw
     _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
-  for c in _owned_row.get_children():
-    c.queue_free()
-  for id in Buffs.owned():
-    _owned_row.add_child(_owned_chip(id))
-
-
-func _owned_chip(id: String) -> Control:
-  var chip := PanelContainer.new()
-  chip.add_theme_stylebox_override("panel", UI.chip(Palette.MAIN.lightened(0.82), Palette.MAIN))
-  chip.mouse_filter = Control.MOUSE_FILTER_STOP   # 칩 탭 = 판매(확인 후)
-  chip.gui_input.connect(func(event: InputEvent):
-    if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-      _confirm_sell(id))
-  var pad := MarginContainer.new()
-  pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  pad.add_theme_constant_override("margin_left", 8)
-  pad.add_theme_constant_override("margin_right", 8)
-  pad.add_theme_constant_override("margin_top", 3)
-  pad.add_theme_constant_override("margin_bottom", 3)
-  chip.add_child(pad)
-  var row := HBoxContainer.new()
-  row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  row.add_theme_constant_override("separation", 4)
-  pad.add_child(row)
-  row.add_child(BuffDefs.icon_node(id, 18))   # 카테고리 아이콘(손그림)
-  var lbl := UI.label(BuffDefs.display_name(id), 13, Palette.COCOA_800)   # 짧은 이름(관리용)
-  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  row.add_child(lbl)
-  row.add_child(UI.ui_icon("coin", 14))   # 판매 가능(코인) 힌트 — 탭하면 팔림
-  return chip
+  # [버프] 버튼 — 보유 0개면 비활성(서랍 안 열림).
+  if _buff_btn != null:
+    _buff_btn.disabled = Buffs.owned().is_empty()
 
 
 ## 보유 버프 판매 확인 — 버프명 + 환급액(그날 팩값의 30%). [+환급][취소].
@@ -421,3 +444,9 @@ func _sell(id: String, refund: int) -> void:
   session.add_cash(refund)
   Audio.play("coins")   # 환급(동전)
   _refresh()
+  # 서랍 갱신 — 다 팔았으면 닫고, 남았으면 목록 재구성.
+  if _buff_sheet.visible:
+    if Buffs.owned().is_empty():
+      _close_buffs()
+    else:
+      _buff_sheet.rebuild()

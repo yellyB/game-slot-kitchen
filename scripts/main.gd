@@ -12,6 +12,8 @@ var _title: TitleScreen
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
+var _buff_sheet: BuffSheet   # 보유 버프 리스트 서랍(플레이 중 보기 전용)
+var _buff_btn: Button        # 휴지통 옆 [버프] 버튼. 보유 0개면 비활성.
 
 var _queue_row: HBoxContainer
 
@@ -94,6 +96,9 @@ func _ready() -> void:
   _cooking.close_requested.connect(_close_sheets)
   _cooking.cooked.connect(_on_cooked)
   add_child(_cooking)
+  _buff_sheet = BuffSheet.new()   # 플레이 중 보유 버프 보기(판매 없음 — on_sell 미주입)
+  _buff_sheet.close_requested.connect(_close_sheets)
+  add_child(_buff_sheet)
 
   Move.performed.connect(_refresh_warehouse)
   # quick 동작(창고 클릭)의 기본 타깃 = 첫 빈 슬롯
@@ -163,6 +168,7 @@ func _go_home() -> void:
   _session.set_process(false)   # 세션 정지(시계·스폰)
   _warehouse.visible = false
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = false
   _clear_blackout()
   for s in _board.slots:        # 슬롯 전부 비움(버프 포함 — 새 런)
@@ -346,6 +352,20 @@ func _build_bottom_buttons() -> Control:
   _trash_btn.add_child(UI.ui_btn_icon("trash", 30))
   row.add_child(_trash_btn)
 
+  # [버프] — 휴지통 옆. 탭하면 보유 버프 서랍(보기 전용). 보유 0개면 비활성(안 열림).
+  _buff_btn = Button.new()
+  _style_bottom_button(_buff_btn, Palette.MAIN)
+  _buff_btn.text = Loc.t("buffs_btn")
+  _buff_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN   # 확장 X
+  _buff_btn.custom_minimum_size = Vector2(64, 56)
+  _buff_btn.add_theme_font_size_override("font_size", 18)
+  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
+  _buff_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
+  _buff_btn.pressed.connect(_toggle_buffs)
+  Audio.attach_click(_buff_btn)
+  row.add_child(_buff_btn)
+  _refresh_buff_btn()
+
   # 창고 열림 핸들은 하단바가 아니라 화면에 직접 앵커(우하단 50~90%) — _build_warehouse_handle.
   var gap := Control.new()
   gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -401,6 +421,7 @@ func _toggle_warehouse() -> void:
 
 func _open_warehouse() -> void:
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = true
   _set_world_paused(true)   # 재료 고르는 동안 시계 정지
   _warehouse.slide_open()   # 아래서 슬라이드 업
@@ -410,9 +431,34 @@ func _open_warehouse() -> void:
 
 func _on_tool_tapped(tool: ToolStation) -> void:
   _warehouse.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = true
   _set_world_paused(true)   # 레시피 고르는 동안 시계 정지
   _cooking.open_for(tool)
+
+
+## [버프] 토글 — 보유 0개면 무시(버튼도 disabled). 창고와 달리 트립 비용 없음(닫아도 시간 소모 X).
+func _toggle_buffs() -> void:
+  if Buffs.owned().is_empty():
+    return
+  if _buff_sheet.visible:
+    _close_sheets()
+  else:
+    _open_buff_sheet()
+
+
+func _open_buff_sheet() -> void:
+  _warehouse.visible = false
+  _cooking.visible = false
+  _backdrop.visible = true
+  _set_world_paused(true)   # 보는 동안 시계 정지
+  _buff_sheet.open()   # 현재 보유로 재구성 + 슬라이드 업
+
+
+## [버프] 버튼 활성화 — 보유 버프 있을 때만.
+func _refresh_buff_btn() -> void:
+  if _buff_btn != null:
+    _buff_btn.disabled = Buffs.owned().is_empty()
 
 
 ## 월드 정지/재개 — 시계·손님 인내심·조리 타이머 전부. 시트 열림 동안 시간 멈춤.
@@ -442,6 +488,8 @@ func _close_sheets() -> void:
     _show_trip_cost(cost, before_v, after_v)   # 시간 소모 시각 피드백
   if _cooking.visible:
     _cooking.slide_close()
+  if _buff_sheet.visible:
+    _buff_sheet.slide_close()   # 보기 전용 — 트립 비용 없음
   _backdrop.visible = false
 
 
@@ -1229,6 +1277,7 @@ func _on_day_started(day: int, rent: int) -> void:
   # 새 세션 시작 — 시트 강제 닫기(트립 비용 없음)
   _warehouse.visible = false
   _cooking.visible = false
+  _buff_sheet.visible = false
   _backdrop.visible = false
   # 하루 정산 카운터 리셋(sim_core._reset_day_consumables와 동치)
   _visited_today = 0
@@ -1252,6 +1301,7 @@ func _on_day_started(day: int, rent: int) -> void:
   for c in _queue_row.get_children():
     c.queue_free()
   _refresh_warehouse()
+  _refresh_buff_btn()   # 이 판의 보유 버프 유무로 [버프] 버튼 활성화
 
 
 ## 하루 종료 시 필드 정리 — 재료·주문·완성품·큐 제거(타이머 즉시 정지). 버프 카드는 유지.
@@ -1325,6 +1375,8 @@ func _on_day_ended(summary: Dictionary) -> void:
     _warehouse.slide_close()
   if _cooking.visible:
     _cooking.slide_close()
+  if _buff_sheet.visible:
+    _buff_sheet.slide_close()
   _backdrop.visible = false
   if summary["won"]:
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)

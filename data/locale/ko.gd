@@ -55,6 +55,7 @@ const S := {
 	"shop_buy": "구매",
 	"shop_start": "영업 시작",
 	"shop_owned": "보유 버프",
+	"buffs_btn": "버프",
 	"shop_pick3": "3개 중 1개 선택",
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
