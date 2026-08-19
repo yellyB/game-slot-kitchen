@@ -76,6 +76,7 @@ const S := {
 	"b.tool_slot.name": "도구+1", "b.tool_slot.label": "도구석 +1 (슬롯도 +1)",
 	"b.opt_egg.name": "계란 생략", "b.opt_egg.label": "계란 없어도 조리 가능",
 	"b.opt_flour.name": "밀가루 생략", "b.opt_flour.label": "밀가루 없어도 조리 가능",
+	"b.opt_bean.name": "원두 생략", "b.opt_bean.label": "원두 없어도 조리 가능",
 	"b.dmd_t12.name": "1·2등급 수요", "b.dmd_t12.label": "1·2등급 메뉴 원하는 손님 2배",
 	"b.dmd_t34.name": "3·4등급 수요", "b.dmd_t34.label": "3·4등급 메뉴 원하는 손님 2배",
 	"b.dmd_t56.name": "5·6등급 수요", "b.dmd_t56.label": "5·6등급 메뉴 원하는 손님 2배",

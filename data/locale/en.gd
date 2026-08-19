@@ -76,6 +76,7 @@ const S := {
 	"b.tool_slot.name": "Tool +1", "b.tool_slot.label": "Tool +1 (slot +1 too)",
 	"b.opt_egg.name": "Skip Egg", "b.opt_egg.label": "Cook without egg",
 	"b.opt_flour.name": "Skip Flour", "b.opt_flour.label": "Cook without flour",
+	"b.opt_bean.name": "Skip Beans", "b.opt_bean.label": "Cook without beans",
 	"b.dmd_t12.name": "T1·2 Demand", "b.dmd_t12.label": "2x customers wanting T1-2 menus",
 	"b.dmd_t34.name": "T3·4 Demand", "b.dmd_t34.label": "2x customers wanting T3-4 menus",
 	"b.dmd_t56.name": "T5·6 Demand", "b.dmd_t56.label": "2x customers wanting T5-6 menus",

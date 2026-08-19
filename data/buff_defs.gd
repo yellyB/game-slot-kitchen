@@ -5,16 +5,16 @@ extends RefCounted
 ##
 ## [효과 필드]
 ##  mult{stat,value}            : 패시브 곱연산(Buffs.mod). stat=cook_mult·patience_mult·day_mult·rent_mult
-##  cook_empty{step}            : 빈 슬롯 1개당 조리시간 -step (37)
-##  patience_flat               : 인내심 초 가산 (66)
-##  menu_price{tiers,pct}       : 메뉴가격(base) 배율 인상 (21~23)
-##  ramp{tier,value}            : 그 등급 판매 시 등급 기본가×value 메뉴가격 누적 (24~29)
-##  trigger{kind,value,window?} : 조건 발동 시 그 메뉴 기본가×value 누적 (42 streak3·43 every7·44 fast3)
+##  cook_empty{step}            : 빈 슬롯 1개당 조리시간 -step (38)
+##  patience_flat               : 인내심 초 가산 (67)
+##  menu_price{tiers,pct}       : 메뉴가격(base) 배율 인상 (22~24)
+##  ramp{tier,value}            : 그 등급 판매 시 등급 기본가×value 메뉴가격 누적 (25~30)
+##  trigger{kind,value,window?} : 조건 발동 시 그 메뉴 기본가×value 누적 (43 streak3·44 every7·45 fast3)
 ##  sale{type,...}              : 판매금(추가금) 보너스. Buffs.sale_amount 파이프라인이 처리.
-##  demand{tiers|ingredient,mult}: 손님 등장 가중 (15~20)
-##  economy{kind,pct}           : interest(개장) · rent_penalty(마감) (62,50)
-##  settle{kind,threshold,pct}  : 마감 정산 (63~65,73)
-##  onlost{money_pct?,double_next?}: 손님 이탈 시 (71,72)
+##  demand{tiers|ingredient,mult}: 손님 등장 가중 (16~21)
+##  economy{kind,pct}           : interest(개장) · rent_penalty(마감) (63,51)
+##  settle{kind,threshold,pct}  : 마감 정산 (64~66,74)
+##  onlost{money_pct?,double_next?}: 손님 이탈 시 (72,73)
 ##  structure{buff_slot?,tool?,slot?}: 슬롯/도구/버프칸 (11,12)
 ##  rent_skip                   : 가게세 1회 통과 (9)
 ##  blocked:true                : v1 시뮬 미지원(등록만, 무효과) — 사유는 버프.md '시뮬 미지원' 표
@@ -40,85 +40,86 @@ const ALL := {
 	# ── 재료(v1 미지원) ──
 	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg"},
 	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour"},
+	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean"},
 
 	# ── 등급/수요 ──
-	"dmd_t12":    {"card": 15, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 2.0}},
-	"dmd_t34":    {"card": 16, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 2.0}},
-	"dmd_t56":    {"card": 17, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 2.0}},
-	"dmd_bean":   {"card": 18, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
-	"dmd_choco":  {"card": 19, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.6}},
-	"dmd_cream":  {"card": 20, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.7}},
+	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 2.0}},
+	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 2.0}},
+	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 2.0}},
+	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
+	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.6}},
+	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.7}},
 
 	# ── 메뉴가격 등급별 인상 ──
-	"mp_t12":     {"card": 21, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.15}},
-	"mp_t34":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 0.15}},
-	"mp_t56":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.15}},
+	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 0.15}},
+	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 0.15}},
+	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.15}},
 
-	# ── 메뉴가격 성장(램프) 24~29 ──
-	"ramp_t1":    {"card": 24, "icon": "📈", "ramp": {"tier": 1, "value": 0.07}},
-	"ramp_t2":    {"card": 25, "icon": "📈", "ramp": {"tier": 2, "value": 0.07}},
-	"ramp_t3":    {"card": 26, "icon": "📈", "ramp": {"tier": 3, "value": 0.07}},
-	"ramp_t4":    {"card": 27, "icon": "📈", "ramp": {"tier": 4, "value": 0.07}},
-	"ramp_t5":    {"card": 28, "icon": "📈", "ramp": {"tier": 5, "value": 0.07}},
-	"ramp_t6":    {"card": 29, "icon": "📈", "ramp": {"tier": 6, "value": 0.07}},
+	# ── 메뉴가격 성장(램프) 25~30 ──
+	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.07}},
+	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.07}},
+	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.07}},
+	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.07}},
+	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 0.07}},
+	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 0.07}},
 
-	# ── 판매금: 슬롯/버프 공간 빌드(30~40) ──
-	"sc_buff_a":  {"card": 30, "icon": "🧮", "sale": {"type": "count", "per": "buff", "base": 0.0, "step": 0.07}},
-	"sc_buff_b":  {"card": 31, "icon": "🧮", "sale": {"type": "count", "per": "buff", "base": 0.10, "step": 0.03}},
-	"sc_fill_a":  {"card": 32, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 0.0, "step": 0.04}},
-	"sc_fill_b":  {"card": 33, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 0.10, "step": 0.01}},
-	"sc_empt_a":  {"card": 34, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.0, "step": 0.06}},
-	"sc_empt_b":  {"card": 35, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.10, "step": 0.02}},
-	"sale_full":  {"card": 36, "icon": "🈵", "sale": {"type": "full", "pct": 0.15}},
-	"cook_empty": {"card": 37, "icon": "💨", "cook_empty": {"step": 0.15}},
-	"sc_order":   {"card": 38, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.05}},
-	"sc_dish":    {"card": 39, "icon": "🍽️", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
-	"sc_ingr":    {"card": 40, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},
+	# ── 판매금: 슬롯/버프 공간 빌드(31~41) ──
+	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "count", "per": "buff", "base": 0.0, "step": 0.07}},
+	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "count", "per": "buff", "base": 0.10, "step": 0.03}},
+	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 0.0, "step": 0.04}},
+	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 0.10, "step": 0.01}},
+	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.0, "step": 0.06}},
+	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.10, "step": 0.02}},
+	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "full", "pct": 0.15}},
+	"cook_empty": {"card": 38, "icon": "💨", "cook_empty": {"step": 0.15}},
+	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.05}},
+	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
+	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},
 
-	# ── 판매금: 콤보/연속/확률(41~51) ──
-	"prob_x2":    {"card": 41, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.08}},
-	"rt_streak3": {"card": 42, "icon": "📈", "trigger": {"kind": "streak3", "value": 0.20}},
-	"rt_every7":  {"card": 43, "icon": "📈", "trigger": {"kind": "every7", "value": 0.20}},
-	"rt_fast3":   {"card": 44, "icon": "📈", "trigger": {"kind": "fast3", "value": 0.12, "window": 3.0}},
-	"accum_sale": {"card": 45, "icon": "🪙", "sale": {"type": "accum", "pct": 0.03}},
-	"sale_flat3": {"card": 46, "icon": "💰", "sale": {"type": "flat", "pct": 0.03}},
-	"prob_bonus": {"card": 47, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 0.30}},
-	"sale_risk":  {"card": 48, "icon": "💥", "sale": {"type": "risk", "pct": 0.20, "chance": 0.10, "penalty_pct": 0.30}},
-	"no_buy":     {"card": 49, "icon": "🚫", "blocked": true},
-	"sale_cash":  {"card": 50, "icon": "🏦", "sale": {"type": "cash", "pct": 0.006}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
-	"sale_pat":   {"card": 51, "icon": "⚖️", "sale": {"type": "flat", "pct": 0.25}, "mult": {"stat": "patience_mult", "value": 0.80}},
+	# ── 판매금: 콤보/연속/확률(42~52) ──
+	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.08}},
+	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 0.20}},
+	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 0.20}},
+	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 0.12, "window": 3.0}},
+	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.03}},
+	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 0.03}},
+	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 0.30}},
+	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 0.20, "chance": 0.10, "penalty_pct": 0.30}},
+	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
+	"sale_cash":  {"card": 51, "icon": "🏦", "sale": {"type": "cash", "pct": 0.006}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
+	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 0.25}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
-	# ── 판매금: 조건부/앰프(52~57) ──
-	"sale_t12":   {"card": 52, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 0.10}},
-	"sale_t34":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 0.10}},
-	"sale_t56":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 0.10}},
-	"sale_fresh": {"card": 55, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 0.20}},
-	"sale_fast":  {"card": 56, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 0.20}},
-	"sale_addon": {"card": 57, "icon": "🔊", "sale": {"type": "addon", "pct": 0.30}},
+	# ── 판매금: 조건부/앰프(53~58) ──
+	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 0.10}},
+	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 0.10}},
+	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 0.10}},
+	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 0.20}},
+	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 0.20}},
+	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.30}},
 
-	# ── 자동화(58~61) ──
-	"auto_serve": {"card": 58, "icon": "🤖", "blocked": true},
-	"auto_cook":  {"card": 59, "icon": "🤖", "blocked": true},
-	"inst_order": {"card": 60, "icon": "⏭️", "instant": {"kind": "order", "n": 8}},
-	"inst_cook":  {"card": 61, "icon": "⏩", "instant": {"kind": "cook", "n": 4}},
+	# ── 자동화(59~62) ──
+	"auto_serve": {"card": 59, "icon": "🤖", "blocked": true},
+	"auto_cook":  {"card": 60, "icon": "🤖", "blocked": true},
+	"inst_order": {"card": 61, "icon": "⏭️", "instant": {"kind": "order", "n": 8}},
+	"inst_cook":  {"card": 62, "icon": "⏩", "instant": {"kind": "cook", "n": 4}},
 
-	# ── 경제/정산(62~65) ──
-	"interest":   {"card": 62, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.04}},
-	"settle_100": {"card": 63, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.28}},
-	"settle_90":  {"card": 64, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.15}},
-	"settle_same":{"card": 65, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.17}},
+	# ── 경제/정산(63~66) ──
+	"interest":   {"card": 63, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.04}},
+	"settle_100": {"card": 64, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.28}},
+	"settle_90":  {"card": 65, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.15}},
+	"settle_same":{"card": 66, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.17}},
 
-	# ── 벼랑끝(66~69) ──
-	"pat_extend": {"card": 66, "icon": "🧘", "patience_flat": 3.0},
-	"sale_late":  {"card": 67, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 0.35}},
-	"sale_burn":  {"card": 68, "icon": "🔥", "sale": {"type": "consumed", "pct": 0.40}},
-	"sale_crit":  {"card": 69, "icon": "🚨", "sale": {"type": "critical", "pct": 0.20}},
+	# ── 벼랑끝(67~70) ──
+	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 3.0},
+	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 0.35}},
+	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 0.40}},
+	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 0.20}},
 
-	# ── 방치(70~73) ──
-	"pat_down":   {"card": 70, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
-	"onlost_pay": {"card": 71, "icon": "💸", "onlost": {"money_pct": 0.34}},
-	"onlost_x2":  {"card": 72, "icon": "😈", "onlost": {"double_next": true}},
-	"settle_leave":{"card": 73, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "pct": 0.15}},
+	# ── 방치(71~74) ──
+	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
+	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"money_pct": 0.34}},
+	"onlost_x2":  {"card": 73, "icon": "😈", "onlost": {"double_next": true}},
+	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "pct": 0.15}},
 }
 
 static func ids() -> Array:
@@ -144,7 +145,7 @@ const _CAT_OVERRIDE := {
 	"no_buy": "money", "sale_cash": "money", "onlost_pay": "money", "settle_leave": "money",
 	"settle_100": "money", "settle_90": "money", "settle_same": "money",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
-	"opt_egg": "struct", "opt_flour": "struct",
+	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth",
 	"prob_x2": "luck", "prob_bonus": "luck", "sale_risk": "luck", "onlost_x2": "luck",
 }
