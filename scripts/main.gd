@@ -1517,13 +1517,14 @@ func _on_day_ended(summary: Dictionary) -> void:
     Audio.play("day_close")   # 영업 종료 딩동(마감 임팩트)
     Audio.vibrate(40)   # 하루 마감 임팩트 — 묵직한 진동
     var banner: Control = await _make_bigbanner("moon_big", "CLOSE")   # 달(고해상도) + CLOSE + 딤 (유지)
-    # 카운트다운 종료 → 잠깐 정지 → 남은 슬롯 카드 팝 소멸.
-    await _dayend_sequence()
-    if _title.visible:
-      if is_instance_valid(banner): banner.queue_free()
-      return   # 마감 연출 중 홈으로 나갔으면 정산 팝업 생략(타이틀 위에 안 뜨게)
+    # 남은 슬롯 카드 팝 소멸은 백그라운드로(await 안 함) — "click ▸" 뜨자마자 탭이 먹히게.
+    # (예전엔 이 시퀀스를 await한 뒤에야 탭 캐처가 생겨서, 힌트만 뜨고 몇 초간 클릭이 안 먹었음)
+    _dayend_sequence()
     # 자동으로 정산 안 감 — 배너 유지한 채 유저 탭 대기, 탭하면 정산 팝업.
     await _tap_to_continue()
+    if not is_inside_tree() or _title.visible:
+      if is_instance_valid(banner): banner.queue_free()
+      return   # 탭 전에 홈으로 나갔으면 정산 팝업 생략(타이틀 위에 안 뜨게)
     if is_instance_valid(banner):
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
