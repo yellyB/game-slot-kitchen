@@ -365,7 +365,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   pick.add_theme_color_override("font_color", Palette.WHITE)
   pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-  pick.custom_minimum_size = Vector2(84, 100)   # 크고 눈에 띄는 선택 버튼(카드 높이 대부분 차지)
+  pick.custom_minimum_size = Vector2(84, 40)   # 눈에 띄되 과하지 않은 선택 버튼 높이
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
   Audio.attach_click(pick)   # 뽑기 버튼 클릭음
