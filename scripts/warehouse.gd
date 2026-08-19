@@ -36,6 +36,7 @@ func _ready() -> void:
 
 	var grid := GridContainer.new()
 	grid.columns = 4
+	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
 	v.add_child(grid)
