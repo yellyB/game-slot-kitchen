@@ -56,17 +56,25 @@ func _setup_fit() -> void:
 
 ## 내용(고정 px)이 카드보다 크면 래퍼를 통째로 축소해 잘림 방지(4열 등 슬롯 축소 시).
 ## 내용이 다 들어가면 scale=1(원래대로). 가로/세로 중 더 빡빡한 비율로 균일 축소.
+const _FIT_MARGIN := 0.9   # 내용이 카드 가장자리에 닿지 않게 여백(균등한 안쪽 패딩)
+
 func _fit_wrap() -> void:
 	if _wrap == null or not is_instance_valid(_wrap):
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	var s := 1.0
+	# 카드 전체(size)가 아니라 실제 내용 영역(_wrap.size = 콘텐츠 여백 제외)을 기준으로.
+	var avail := _wrap.size
+	var raw := INF   # 내용이 딱 들어가는 배율(1=꽉참, <1=넘침)
 	if _content_min.x > 0.0:
-		s = minf(s, size.x / _content_min.x)
+		raw = minf(raw, avail.x / _content_min.x)
 	if _content_min.y > 0.0:
-		s = minf(s, size.y / _content_min.y)
-	_wrap.pivot_offset = size * 0.5   # 중앙 기준 축소(가로·세로 모두 중앙 → 균등)
+		raw = minf(raw, avail.y / _content_min.y)
+	if raw == INF:
+		return
+	# 여백 곱한 뒤 1로 상한 — 넉넉하면 원래 크기(1), 빠듯/넘치면 여백 두고 축소.
+	var s := minf(1.0, raw * _FIT_MARGIN)
+	_wrap.pivot_offset = avail * 0.5   # 내용 영역 중앙 기준 → 상하좌우 균등
 	_wrap.scale = Vector2(s, s)
 
 
