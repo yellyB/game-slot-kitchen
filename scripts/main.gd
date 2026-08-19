@@ -38,6 +38,7 @@ var _hours_bar: ProgressBar
 var _hours_glow: Tween      # 마감 임박 펄스
 var _hours_warning := false  # 임박 상태 진입 여부(전환 시 1회만 처리)
 var _blackout: ColorRect    # 폐업 암전 오버레이
+var _countdown_edge: Panel  # 카운트다운 화면 가장자리 빨강 비네트(마감 임박 원인 구분·A안)
 var _last_countdown := 0    # 막판 카운트다운 마지막 표시 초(중복 방지)
 const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
 
@@ -1329,6 +1330,7 @@ func _countdown_pop(sec: int) -> void:
   _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
   Audio.play("countdown", 1.0 + float(COUNTDOWN_FROM - sec) * 0.08)   # 5:1.0 → 1:1.32
   Audio.vibrate(15)   # 마지막 5초 — 매 초 톡(긴장)
+  _pulse_countdown_edge()   # 화면 가장자리 빨강 비네트 — 마감 임박 원인 구분(A안)
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -1349,6 +1351,27 @@ func _countdown_pop(sec: int) -> void:
   tw.tween_interval(0.25)
   tw.tween_property(l, "modulate:a", 0.0, 0.4)
   tw.tween_callback(l.queue_free)
+
+
+## 카운트다운 빨강 비네트 1회 펄스(페이드인→아웃). 지연 생성, 평소엔 alpha 0이라 안 보임.
+## 접수 불가(슬롯 빨강 플래시)와 원인을 구분하는 시간압박 신호 — 화면 "가장자리"에만 뜸.
+func _pulse_countdown_edge() -> void:
+  if _countdown_edge == null:
+    _countdown_edge = Panel.new()
+    _countdown_edge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    _countdown_edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _countdown_edge.z_index = 190   # 카운트다운 숫자(200)보다 아래, 게임판 위
+    var sb := StyleBoxFlat.new()
+    sb.bg_color = Color(0, 0, 0, 0)   # 중앙 투명 — 테두리만
+    sb.set_border_width_all(20)       # 가장자리 두께
+    sb.border_color = Palette.DANGER
+    sb.border_blend = true            # 안쪽으로 부드럽게 번지게(비네트 느낌)
+    _countdown_edge.add_theme_stylebox_override("panel", sb)
+    add_child(_countdown_edge)
+  _countdown_edge.modulate.a = 0.0
+  var t := create_tween()
+  t.tween_property(_countdown_edge, "modulate:a", 0.7, 0.12).set_trans(Tween.TRANS_SINE)
+  t.tween_property(_countdown_edge, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE)
 
 
 ## 영업시간 바를 평상 상태로 되돌림(색·펄스 리셋).
