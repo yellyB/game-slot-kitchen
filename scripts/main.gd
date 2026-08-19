@@ -862,44 +862,105 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
-func _show_dayend_banner(day: int) -> Label:
-  var l := UI.label(Loc.t("day_closed") % day, 64, Palette.COCOA_800, true)
+func _make_bigbanner(icon_name: String, text: String) -> Control:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(root)
+
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(dim)
+
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 8)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  var img := UI.ui_icon(icon_name, 100)
+  img.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+  box.add_child(img)
+  var l := UI.label(text, 54, Palette.WHITE, true)
   l.add_theme_constant_override("outline_size", 8)
-  l.add_theme_color_override("font_outline_color", Palette.WHITE)
-  l.z_index = 200
+  l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  add_child(l)
+  box.add_child(l)
+
+  var hint := UI.label("click ▸", 20, Palette.WHITE, true)
+  hint.add_theme_constant_override("outline_size", 4)
+  hint.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(hint)
+
+  dim.modulate.a = 0.0
+  img.modulate.a = 0.0
+  img.scale = Vector2(0.5, 0.5)
+  l.modulate.a = 0.0
+  l.scale = Vector2(0.7, 0.7)
+  hint.modulate.a = 0.0
   await get_tree().process_frame
-  if not is_instance_valid(l):
+  if not is_instance_valid(root):
     return null
   var vp := get_viewport_rect().size
+  img.pivot_offset = img.size * 0.5
   l.pivot_offset = l.size * 0.5
-  l.position = (vp - l.size) * 0.5
-  l.scale = Vector2(0.5, 0.5)
-  l.modulate.a = 0.0
-  var tw := create_tween()
-  tw.tween_property(l, "scale", Vector2(1.15, 1.15), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  tw.parallel().tween_property(l, "modulate:a", 1.0, 0.18)
-  tw.tween_property(l, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
-  return l
+  hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72)
+
+  create_tween().tween_property(dim, "modulate:a", 1.0, 0.3)
+
+  var it := create_tween().set_parallel(true)
+  it.tween_property(img, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+  it.tween_property(img, "scale", Vector2.ONE, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+  await it.finished
+  if not is_instance_valid(root):
+    return null
+
+  var lt := create_tween()
+  lt.tween_property(l, "modulate:a", 1.0, 0.14)
+  lt.parallel().tween_property(l, "scale", Vector2(1.12, 1.12), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  lt.tween_property(l, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_SINE)
+  await lt.finished
+
+  var hp := create_tween()
+  hp.tween_property(hint, "modulate:a", 1.0, 0.3)
+  hp.set_loops()
+  hp.tween_property(hint, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
+  hp.tween_property(hint, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  return root
 
 
-func _tap_to_continue(banner: Label = null) -> void:
+func _tap_to_continue() -> void:
   var catcher := Button.new()
   catcher.flat = true
   catcher.focus_mode = Control.FOCUS_NONE
   catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   catcher.z_index = 350
   add_child(catcher)
-  var pulse: Tween = null
-  if is_instance_valid(banner):
-    pulse = create_tween().set_loops()
-    pulse.tween_property(banner, "scale", Vector2(1.06, 1.06), 0.6).set_trans(Tween.TRANS_SINE)
-    pulse.tween_property(banner, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_SINE)
   await catcher.pressed
-  if pulse != null and pulse.is_valid():
-    pulse.kill()
   catcher.queue_free()
+
+
+func _start_day_intro() -> void:
+  Audio.play("day_start")
+  var banner: Control = await _make_bigbanner("sun", "OPEN")
+  await _tap_to_continue()
+  if not is_inside_tree() or _title.visible:
+    if is_instance_valid(banner): banner.queue_free()
+    return
+  if is_instance_valid(banner):
+    var bt := create_tween()
+    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+    bt.tween_callback(banner.queue_free)
+  if is_instance_valid(_session):
+    _session.set_process(true)
 
 
 func _screen_shake(strength := 13.0, dur := 0.45) -> void:
@@ -1057,11 +1118,8 @@ func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
   _session.set_process(false)
   get_tree().create_timer(Config.DAY_INTRO_DELAY).timeout.connect(func():
-    if not is_inside_tree() or _title.visible:
-      return
-    _session.set_process(true)
-    _show_day_banner(day)
-    Audio.play("day_start"))
+    if is_inside_tree() and not _title.visible:
+      _start_day_intro())
   _rent_label.text = UI.money(rent)
   _hours_bar.value = 0
   _reset_hours_bar()
@@ -1168,13 +1226,13 @@ func _on_day_ended(summary: Dictionary) -> void:
   else:
     Audio.play("day_close")
     Audio.vibrate(40)
-    var banner: Label = await _show_dayend_banner(summary["day"])
+    var banner: Control = await _make_bigbanner("moon", "CLOSE")
     _screen_shake()
     await _dayend_sequence()
     if _title.visible:
       if is_instance_valid(banner): banner.queue_free()
       return
-    await _tap_to_continue(banner)
+    await _tap_to_continue()
     if is_instance_valid(banner):
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
@@ -1183,26 +1241,23 @@ func _on_day_ended(summary: Dictionary) -> void:
 
 
 func _show_settlement(summary: Dictionary) -> void:
-  var cash_before: int = summary["cash"]
-  var rev: int = summary["revenue"]
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 
-  var total := UI.label(UI.money(cash_before), 16, Palette.COCOA_800, true)
-  var total_row := _settle_icon_row("coin", total, 20)
-  total_row.modulate.a = 1.0
-  m.add_row(total_row)
+  var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
+  var icon_box := CenterContainer.new()
+  icon_box.custom_minimum_size = Vector2(112, 112)
+  icon_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  icon_box.add_child(UI.ui_icon(receipt_name, 112))
+  m.add_row(icon_box)
 
-  var earned := UI.label("+" + UI.money(rev), 18, Palette.SUCCESS)
-  var earned_row := _settle_icon_row("coin", earned, 24)
-  m.add_row(earned_row)
-
-  var stamp := _settle_label("", Palette.SUCCESS, 40, true)
-  stamp.scale = Vector2(0.5, 0.5)
-  m.add_row(stamp)
+  var amount := UI.label(UI.money(rent), 26, Palette.DANGER, true)
+  var amount_row := _settle_icon_row("coin", amount, 26)
+  amount_row.modulate.a = 1.0
+  m.add_row(amount_row)
 
   var pay_btn := Button.new()
-  pay_btn.text = Loc.t("pay_rent") % ("-" + UI.money(rent))
+  pay_btn.text = Loc.t("pay_rent")
   pay_btn.custom_minimum_size = Vector2(0, 48)
   pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   pay_btn.add_theme_font_size_override("font_size", 18)
@@ -1214,20 +1269,18 @@ func _show_settlement(summary: Dictionary) -> void:
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
   pay_btn.modulate.a = 0.0
   pay_btn.disabled = true
-  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, total, stamp))
+  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, icon_box))
   Audio.attach_click(pay_btn)
   m.add_row(pay_btn)
 
   var tw := create_tween()
-  tw.tween_interval(0.15)
-  tw.tween_property(earned_row, "modulate:a", 1.0, 0.25)
-  tw.tween_interval(0.2)
+  tw.tween_interval(0.25)
   tw.tween_callback(func():
     pay_btn.disabled = false
     create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
 
 
-func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label, stamp: Label) -> void:
+func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control) -> void:
   var passed: bool = summary["passed"]
   var cash_before: int = summary["cash"]
   var rent: int = summary["rent"]
@@ -1235,19 +1288,29 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():
     pay_btn.pressed.disconnect(c["callable"])
+
+  var px: float = icon_box.custom_minimum_size.y
+  for ch in icon_box.get_children():
+    ch.visible = false
+    ch.queue_free()
+  var mark := UI.label("✅" if passed else "❌", int(px * 0.8), Palette.SUCCESS if passed else Palette.DANGER, true)
+  mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  mark.custom_minimum_size = Vector2(px, px)
+  mark.pivot_offset = Vector2(px, px) * 0.5
+  mark.modulate.a = 0.0
+  mark.scale = Vector2(0.5, 0.5)
+  icon_box.add_child(mark)
+  var pt := create_tween()
+  pt.tween_property(mark, "modulate:a", 1.0, 0.12)
+  pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
   if passed:
     if will_pay:
       _session.pay_rent()
-      var upd := func(v: float):
-        if is_instance_valid(total):
-          total.text = UI.money(int(round(v)))
-      create_tween().tween_method(upd, float(cash_before), float(cash_before - rent), 0.4) \
-        .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     Audio.play("day_pass")
     Audio.vibrate(30)
-    stamp.text = "✅"
-    stamp.add_theme_color_override("font_color", Palette.SUCCESS)
-    _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_shop")
     pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
     pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
@@ -1257,28 +1320,9 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, total: Label
   else:
     Audio.play("fail")
     Audio.vibrate(60)
-    stamp.text = "❌"
-    stamp.add_theme_color_override("font_color", Palette.DANGER)
-    _pop_settle_stamp(stamp)
     pay_btn.text = Loc.t("to_title")
     pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
     pay_btn.disabled = false
-
-
-func _pop_settle_stamp(stamp: Label) -> void:
-  stamp.pivot_offset = stamp.size * 0.5
-  var t := create_tween()
-  t.tween_property(stamp, "modulate:a", 1.0, 0.12)
-  t.parallel().tween_property(stamp, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  t.tween_property(stamp, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
-
-
-func _settle_label(text: String, color: Color, font := 16, bold := false) -> Label:
-  var l := UI.label(text, font, color, bold)
-  l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  l.modulate.a = 0.0
-  return l
 
 
 func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
