@@ -8,6 +8,7 @@ const TITLE_TEXT := "Slot Kitchen"
 
 var _start_btn: Button
 var _tut_btn: Button
+var _codex_btn: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -63,6 +64,20 @@ func _ready() -> void:
 	tut.pressed.connect(func(): tutorial_pressed.emit())
 	Audio.attach_click(tut)
 	v.add_child(tut)
+
+	var codex := Button.new()
+	codex.text = Loc.t("codex")
+	_codex_btn = codex
+	codex.custom_minimum_size = Vector2(180, 48)
+	codex.add_theme_font_size_override("font_size", 18)
+	codex.add_theme_color_override("font_color", Palette.COCOA_800)
+	codex.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+	codex.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+	codex.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+	codex.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	codex.pressed.connect(_open_codex)
+	Audio.attach_click(codex)
+	v.add_child(codex)
 
 	var gear := Button.new()
 	gear.add_child(UI.ui_btn_icon("settings", 30))
@@ -130,6 +145,10 @@ func _pulse(node: Control) -> void:
 	t.tween_property(node, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
+func _open_codex() -> void:
+	add_child(CodexScreen.new())
+
+
 func _open_settings() -> void:
 	var panel := SettingsPanel.new()
 	panel.tree_exited.connect(_refresh_texts)
@@ -153,3 +172,5 @@ func _draw_play_triangle(btn: Button) -> void:
 func _refresh_texts() -> void:
 	if is_instance_valid(_tut_btn):
 		_tut_btn.text = Loc.t("tutorial")
+	if is_instance_valid(_codex_btn):
+		_codex_btn.text = Loc.t("codex")

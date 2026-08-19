@@ -4,6 +4,7 @@ extends RefCounted
 const S := {
 	"start": "Start",
 	"tutorial": "Tutorial",
+	"codex": "Codex",
 	"tut_accept": "Tap the customer's {order} to take the order",
 	"tut_warehouse": "Open the {warehouse} pantry to grab ingredients",
 	"tut_ingredients": "Place bean {bean} and water {water} into slots",

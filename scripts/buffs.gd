@@ -34,6 +34,7 @@ func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return
 	_owned.append(id)
+	Codex.discover(id)
 
 
 func remove(id: String) -> bool:
