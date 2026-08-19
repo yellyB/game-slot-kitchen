@@ -1,110 +1,36 @@
 class_name Tutorial
 extends Control
-## 독립 튜토리얼 — 손님 1명(커피) 대상 핵심 루프(접수→재료→조리→서빙) 가이드.
-## 본격 게임(세션/경제)과 완전 분리. 메인 메뉴 [튜토리얼]로만 진입, 끝나면 finished 방출.
-## 컴포넌트(Board·Warehouse·Cooking)는 재사용하되 타이머(인내심)는 꺼서 압박 없이 진행.
+## 게임 내 가이드 오버레이 — 실제 play 화면(Board·Warehouse·Cooking·손님)을 그대로 쓰며
+## 그 위에 스포트라이트 + 단계 진행 + 이동 게이트만 얹는다. host(main)가 실제 노드/스폰 콜백을 주입.
+## 별도 화면을 새로 만들지 않으므로 "게임 시작 직전에 얹기"가 그대로 가능.
+## 끝나면 finished 방출 — 타이틀 복귀/게임 시작은 호출측(main)이 결정.
 
 signal finished
 
-const RECIPE := "coffee"   # 가장 단순한 레시피(원두🌰+물💧, 3초)
+const RECIPE := "coffee"   # 가장 단순한 레시피(원두+물, 3초)
 
 enum { S_ACCEPT, S_WAREHOUSE, S_INGREDIENTS, S_COOK, S_SERVE, S_DONE }
 
-var _board: Board
-var _warehouse: Warehouse
-var _cooking: Cooking
-var _backdrop: ColorRect
-var _queue_row: HBoxContainer
-var _wh_btn: Button
-var _customer: Customer
-var _order: OrderCard
+# host(main) 주입 — 실제 게임 컴포넌트/콜백
+var board: Board
+var queue_row: HBoxContainer
+var warehouse: Warehouse
+var cooking: Cooking
+var warehouse_btn: Button
+var spawn_customer: Callable   # 커피 손님 1명 스폰 (main._spawn_customer.bind(RECIPE))
+
 var _spot: TutorialSpotlight
 var _step := S_ACCEPT
-var _prev_move_target: Callable
 var _prev_move_allowed: Callable
-var _clock := 0.0   # 자체 클록(완성품 born 스탬프용)
+var _order_seen := false   # 주문이 보드에 올라온 적 있는지(서빙 완료 판정용)
 
 
 func _ready() -> void:
 	z_index = 350
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_IGNORE   # 루트는 통과 — 스포트라이트 블로커/구멍만 입력 제어
 
-	Buffs.clear()   # 튜토리얼은 버프 없는 깨끗한 상태(도구 수·조리시간 고정)
-
-	var bg := ColorRect.new()
-	bg.color = Palette.COCOA_50
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
-
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 12)
-	add_child(margin)
-
-	var col := VBoxContainer.new()
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_theme_constant_override("separation", 10)
-	margin.add_child(col)
-
-	# 상단: 타이틀 (나가기 X는 스포트라이트 위에 별도로 — 항상 클릭 가능)
-	var top := HBoxContainer.new()
-	top.add_child(UI.label("🎓 " + Loc.t("tutorial"), 18, Palette.COCOA_800, true))
-	col.add_child(top)
-
-	# 손님 큐
-	_queue_row = HBoxContainer.new()
-	_queue_row.add_theme_constant_override("separation", 8)
-	_queue_row.custom_minimum_size = Vector2(0, 96)
-	col.add_child(_queue_row)
-
-	# 보드
-	_board = Board.new()
-	_board.now_provider = _now
-	_board.tool_tapped.connect(_on_tool_tapped)
-	col.add_child(_board)
-	_board.rebuild(4)
-
-	var spacer := Control.new()
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(spacer)
-
-	# 하단 창고 버튼
-	_wh_btn = Button.new()
-	_wh_btn.text = "🏬"
-	_wh_btn.custom_minimum_size = Vector2(0, 56)
-	_wh_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_wh_btn.add_theme_font_size_override("font_size", 24)
-	_wh_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-	_wh_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-	_wh_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-	_wh_btn.pressed.connect(_toggle_warehouse)
-	col.add_child(_wh_btn)
-
-	# 시트 백드롭 + 창고 + 조리
-	_backdrop = ColorRect.new()
-	_backdrop.color = Color(0.164, 0.129, 0.106, 0.28)
-	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_backdrop.visible = false
-	_backdrop.gui_input.connect(_on_backdrop_input)
-	add_child(_backdrop)
-
-	_warehouse = Warehouse.new()
-	_warehouse.close_requested.connect(_close_sheets)
-	add_child(_warehouse)
-	_cooking = Cooking.new()
-	_cooking.board = _board
-	_cooking.close_requested.connect(_close_sheets)
-	_cooking.cooked.connect(_on_cooked)
-	add_child(_cooking)
-
-	# Move 전역 타깃을 튜토리얼 보드로(끝나면 복원). 배치 성공 감지도 구독.
-	_prev_move_target = Move.default_target
-	Move.default_target = func(_p): return _board.first_empty_slot()
-	# 게이트: 정해진 동작만 허용, 나머지는 무시(적용 안 함). 끝나면 복원.
+	# 이동 게이트: 정해진 동작만 허용(나머지는 무시). 끝나면 복원.
 	_prev_move_allowed = Move.action_allowed
 	Move.action_allowed = _gate
 	Move.performed.connect(_on_move_performed)
@@ -132,12 +58,8 @@ func _ready() -> void:
 	Audio.attach_click(exit)
 	add_child(exit)
 
-	_spawn_customer()
+	spawn_customer.call()   # 커피 손님 1명(실제 스포너 경유)
 	_goto_step(S_ACCEPT)
-
-
-func _now() -> float:
-	return _clock
 
 
 # ── 동작 게이트 (정해진 것만 허용, 나머지 무시) ──────────────
@@ -160,76 +82,7 @@ func _needs_more(id: String) -> bool:
 			need += 1
 	if need == 0:
 		return false
-	return _board.ingredient_counts().get(id, 0) < need
-
-
-# ── 손님 / 주문 ───────────────────────────────────────────
-func _spawn_customer() -> void:
-	_customer = Customer.new()
-	_customer.setup(RECIPE)
-	_customer.confirm_pressed.connect(_on_confirm)
-	_queue_row.add_child(_customer)
-	_customer.set_process(false)   # 인내심 정지(압박 없음)
-	_customer.slide_in()
-
-
-func _on_confirm(customer: Customer) -> void:
-	if _order != null:
-		return
-	var slot := _board.first_empty_slot()
-	if slot == null:
-		return
-	_order = OrderCard.new()
-	_order.setup(RECIPE)
-	_order.born = _now()
-	_order.served.connect(_on_served)
-	customer.queue_free()
-	_customer = null
-	slot.place_card(_order)
-	_order.set_process(false)   # 음식 대기 인내심 정지
-	if _step == S_ACCEPT:
-		_goto_step(S_WAREHOUSE)
-
-
-func _on_served(_order_card: OrderCard, _dish: DishCard) -> void:
-	if _step != S_DONE:
-		_goto_step(S_DONE)
-
-
-# ── 창고 / 조리 시트 ──────────────────────────────────────
-func _toggle_warehouse() -> void:
-	if _warehouse.visible:
-		_close_sheets()   # 닫기는 항상 허용
-		return
-	if _step != S_WAREHOUSE and _step != S_INGREDIENTS:
-		return   # 그 외 단계에서 창고 열기는 무시
-	_cooking.visible = false
-	_warehouse.visible = true
-	_backdrop.visible = true
-	_warehouse.refresh(_board.is_full())
-
-
-func _on_tool_tapped(tool: ToolStation) -> void:
-	if _step != S_COOK:
-		return   # 조리 단계 전 도구 탭은 무시
-	_warehouse.visible = false
-	_backdrop.visible = true
-	_cooking.open_for(tool)
-
-
-func _on_cooked() -> void:
-	_close_sheets()   # 조리 시작 → 시트 닫고 완성 대기(도구석 위에서 3초)
-
-
-func _close_sheets() -> void:
-	_warehouse.visible = false
-	_cooking.visible = false
-	_backdrop.visible = false
-
-
-func _on_backdrop_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-		_close_sheets()
+	return board.ingredient_counts().get(id, 0) < need
 
 
 func _on_move_performed() -> void:
@@ -238,28 +91,29 @@ func _on_move_performed() -> void:
 
 # ── 단계 진행 ─────────────────────────────────────────────
 func _process(_delta: float) -> void:
-	_clock += _delta
-	# 주문 카드 "서빙 가능" 발광
-	if _order != null and is_instance_valid(_order):
-		_order.set_servable(_board.available_dish_ids().has(RECIPE))
+	# 주문 카드 "서빙 가능" 발광은 main의 _refresh_servable이 처리(실제 화면 공용).
 	_check_step()
 	_update_spot_target()   # 구멍(허용 영역) 매 프레임 갱신(시트 열림 등 반영)
 
 
-## 상태 기반 단계는 매 프레임 폴링으로 전진(신호 기반은 각 핸들러에서 처리).
+## 상태 기반 단계는 매 프레임 폴링으로 전진(실제 컴포넌트 상태를 관찰).
 func _check_step() -> void:
 	match _step:
+		S_ACCEPT:
+			if _find_order() != null:   # 손님 탭 → 주문 카드가 보드에 안착
+				_goto_step(S_WAREHOUSE)
 		S_WAREHOUSE:
-			if _warehouse.visible:
+			if warehouse.visible:
 				_goto_step(S_INGREDIENTS)
 		S_INGREDIENTS:
-			if _board.has_ingredients(RECIPE):
-				_close_sheets()   # 재료 다 모임 → 창고 자동 닫고 조리 단계로
+			if board.has_ingredients(RECIPE):
 				_goto_step(S_COOK)
 		S_COOK:
-			var dish := _find_dish()
-			if dish != null:
+			if _find_dish() != null:
 				_goto_step(S_SERVE)
+		S_SERVE:
+			if _order_seen and _find_order() == null:   # 주문이 사라짐 = 서빙 완료(타이머 정지라 만료 없음)
+				_goto_step(S_DONE)
 
 
 func _goto_step(s: int) -> void:
@@ -269,20 +123,21 @@ func _goto_step(s: int) -> void:
 		S_WAREHOUSE: _spot.set_message(Loc.t("tut_warehouse"))
 		S_INGREDIENTS: _spot.set_message(Loc.t("tut_ingredients"))
 		S_COOK: _spot.set_message(Loc.t("tut_cook"))
-		S_SERVE: _spot.set_message(Loc.t("tut_serve"))
+		S_SERVE:
+			_order_seen = true
+			_spot.set_message(Loc.t("tut_serve"))
 		S_DONE: _show_done()
 	_update_spot_target()
 
 
 ## 현재 단계에서 클릭 허용할 영역(구멍). 나머지는 스포트라이트가 전부 차단.
-## 시트가 열리면 그 시트를, 조리/서빙은 보드 전체를 허용(도구·완성품·주문서 상호작용).
 func _current_target() -> Control:
 	match _step:
-		S_ACCEPT: return _customer
-		S_WAREHOUSE: return _wh_btn
-		S_INGREDIENTS: return _warehouse if _warehouse.visible else _wh_btn
-		S_COOK: return _cooking if _cooking.visible else _board
-		S_SERVE: return _board
+		S_ACCEPT: return _first_customer()
+		S_WAREHOUSE: return warehouse_btn
+		S_INGREDIENTS: return warehouse if warehouse.visible else warehouse_btn
+		S_COOK: return cooking if cooking.visible else board
+		S_SERVE: return board
 	return null
 
 
@@ -291,13 +146,29 @@ func _update_spot_target() -> void:
 		_spot.target = _current_target()
 
 
+# ── 실제 보드/큐 상태 조회 ────────────────────────────────
+func _first_customer() -> Control:
+	for c in queue_row.get_children():
+		if c is Customer:
+			return c
+	return null
+
+
+func _find_order() -> OrderCard:
+	for sl in board.slots:
+		var c := sl.get_card()
+		if c is OrderCard:
+			return c
+	return null
+
+
 ## 완성품(도구석 위 우선, 없으면 슬롯) 노드 — 없으면 null.
 func _find_dish() -> Control:
-	for t in _board.tools:
+	for t in board.tools:
 		var d := t.get_dish()
 		if d != null and d.recipe_id == RECIPE:
 			return d
-	for sl in _board.slots:
+	for sl in board.slots:
 		var c := sl.get_card()
 		if c is DishCard and c.recipe_id == RECIPE:
 			return c
@@ -341,7 +212,5 @@ func _show_done() -> void:
 func _finish() -> void:
 	if Move.performed.is_connected(_on_move_performed):
 		Move.performed.disconnect(_on_move_performed)
-	Move.default_target = _prev_move_target   # 본격 게임 상태 복원
-	Move.action_allowed = _prev_move_allowed  # 게이트 해제
-	Move.clear()
+	Move.action_allowed = _prev_move_allowed  # 게이트 해제(본격 게임 동작 복원)
 	finished.emit()

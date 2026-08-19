@@ -14,6 +14,8 @@ var _warehouse_btn: Button
 var _trash_btn: TrashButton
 var _buff_sheet: BuffSheet   # 보유 버프 리스트 서랍(플레이 중 보기 전용)
 var _buff_btn: Button        # 휴지통 옆 [버프] 버튼. 보유 0개면 비활성.
+var _tutorial: Tutorial      # 게임 내 가이드 오버레이(실제 컴포넌트 위)
+var _tutorial_active := false  # 튜토리얼 진행 중 — 시계·트립비용·인내심 타이머 억제
 
 var _queue_row: HBoxContainer
 
@@ -201,14 +203,67 @@ func _show_title() -> void:
   _title.show()
 
 
-## 독립 튜토리얼 진입 — 본격 게임(세션)과 분리. 끝나면 타이틀 복귀.
-func _start_tutorial() -> void:
+## 튜토리얼 진입 — 실제 play 화면 위에 가이드 오버레이를 얹는다(별도 화면 아님).
+## after: 끝난 뒤 행선지 — "title"(기본, 메뉴 복귀) 또는 "game"(바로 게임 시작).
+## → 나중에 "최초 플레이 시 게임 시작 직전 자동 재생"은 _start_tutorial("game") 한 줄이면 됨.
+func _start_tutorial(after := "title") -> void:
   _title.hide()
-  var tut := Tutorial.new()
-  tut.finished.connect(func():
-    tut.queue_free()
-    _show_title())
-  add_child(tut)
+  _enter_tutorial_state()
+  _tutorial = Tutorial.new()
+  _tutorial.board = _board
+  _tutorial.queue_row = _queue_row
+  _tutorial.warehouse = _warehouse
+  _tutorial.cooking = _cooking
+  _tutorial.warehouse_btn = _warehouse_btn
+  _tutorial.spawn_customer = _spawn_customer.bind(Tutorial.RECIPE)
+  _tutorial.finished.connect(func():
+    if is_instance_valid(_tutorial):
+      _tutorial.queue_free()
+    _tutorial = null
+    _exit_tutorial_state()
+    if after == "game":
+      _start_game()
+    else:
+      _show_title())
+  add_child(_tutorial)
+
+
+## 실제 화면을 "가이드용 하루"로 세팅 — 시계·스케줄 스폰·경제를 멈추고 깨끗한 보드 구성.
+func _enter_tutorial_state() -> void:
+  _tutorial_active = true
+  Buffs.clear()                 # 버프 없는 깨끗한 상태
+  _session.set_process(false)   # 시계·스케줄 스폰·마감 정지(가이드 동안 시간 흐르지 않음)
+  _clear_blackout()
+  _day_num.text = "1"
+  _money_label.text = UI.money(0)
+  for s in _board.slots:
+    s.clear()
+  for t in _board.tools:
+    t.reset()
+  for c in _queue_row.get_children():
+    c.queue_free()
+  _board.rebuild(4)             # 가이드용 고정 슬롯 수(주문1+재료2+여유)
+  _warehouse.visible = false
+  _cooking.visible = false
+  _buff_sheet.visible = false
+  _backdrop.visible = false
+  _refresh_warehouse()
+
+
+## 가이드 종료 — 필드 정리 + 게이트 잔재 제거(세션 재개는 _start_game/start_run이 담당).
+func _exit_tutorial_state() -> void:
+  _tutorial_active = false
+  Move.clear()
+  for s in _board.slots:
+    s.clear()
+  for t in _board.tools:
+    t.reset()
+  for c in _queue_row.get_children():
+    c.queue_free()
+  _warehouse.visible = false
+  _cooking.visible = false
+  _buff_sheet.visible = false
+  _backdrop.visible = false
 
 
 # ── 상단바: 일차·돈·가게세 + 영업시간 바 ──────────────────────
@@ -486,6 +541,8 @@ func _refresh_buff_btn() -> void:
 
 ## 월드 정지/재개 — 시계·손님 인내심·조리 타이머 전부. 시트 열림 동안 시간 멈춤.
 func _set_world_paused(p: bool) -> void:
+  if _tutorial_active:
+    return   # 튜토리얼은 세션 자체를 정지(set_process)하고 손님/주문을 개별 정지 관리 — 시트 여닫이로 재개 금지
   _session.set_paused(p)
   for c in _queue_row.get_children():
     if c is Customer:
@@ -500,6 +557,17 @@ func _set_world_paused(p: bool) -> void:
 
 func _close_sheets() -> void:
   _set_world_paused(false)   # 시계 재개(트립 비용은 아래 spend_time으로 별도 소모)
+  # 튜토리얼: 트립 비용·시간 소모 없이 시트만 닫음(시계 정지 상태 유지).
+  if _tutorial_active:
+    if _warehouse.visible:
+      Audio.play("door_close")
+      _warehouse.slide_close()
+    if _cooking.visible:
+      _cooking.slide_close()
+    if _buff_sheet.visible:
+      _buff_sheet.slide_close()
+    _backdrop.visible = false
+    return
   # 창고 퇴장 = 트립 비용(영업시간 소모).
   if _warehouse.visible:
     var cost := Stats.warehouse_cost()
@@ -556,15 +624,17 @@ func _on_background_input(event: InputEvent) -> void:
 
 
 # ── 손님 / 주문 ───────────────────────────────────────────
-func _spawn_customer() -> void:
+func _spawn_customer(force_recipe := "") -> void:
   if _queue_row.get_child_count() >= Config.MAX_QUEUE:
     return
   var c := Customer.new()
-  c.setup(Stats.random_recipe())
+  c.setup(force_recipe if force_recipe != "" else Stats.random_recipe())
   c.confirm_pressed.connect(_on_confirm_order)
   c.expired.connect(_on_customer_expired)
   c.urged.connect(_on_urged)
   _queue_row.add_child(c)
+  if _tutorial_active:
+    c.set_process(false)   # 튜토리얼: 인내심 타이머 정지(압박 없음)
   c.slide_in()   # 오른쪽에서 슬라이드 인 등장
   Audio.play("customer_in")   # 손님 방문음
   _visited_today += 1   # 정산(served_ratio)용 등장 손님 집계 — sim_core._on_spawn과 동치
@@ -612,6 +682,8 @@ func _on_confirm_order(customer: Customer) -> void:
   order.served.connect(_on_served)
   order.rejected.connect(_on_order_rejected)
   order.urged.connect(_on_urged)
+  if _tutorial_active:
+    order.set_process(false)   # 튜토리얼: 음식 대기 인내심 정지
   # 주문서가 클릭한 손님 자리에서 슬롯으로 날아가 안착.
   # 자리는 착지까지 유지(dismiss=투명 홀드) → 뒤 손님이 즉시 안 밀려 "그 손님 주문서"로 읽힘.
   var from_pos := customer.global_position + customer.size * 0.5
