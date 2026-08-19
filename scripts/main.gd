@@ -323,12 +323,10 @@ func _build_bottom_buttons() -> Control:
 
   _buff_btn = Button.new()
   _style_bottom_button(_buff_btn, Palette.MAIN)
-  _buff_btn.text = Loc.t("buffs_btn")
   _buff_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
   _buff_btn.custom_minimum_size = Vector2(64, 56)
-  _buff_btn.add_theme_font_size_override("font_size", 18)
-  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
   _buff_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
+  _buff_btn.add_child(UI.ui_btn_icon("buffs", 40))
   _buff_btn.pressed.connect(_toggle_buffs)
   Audio.attach_click(_buff_btn)
   row.add_child(_buff_btn)
@@ -419,6 +417,7 @@ func _open_buff_sheet() -> void:
 func _refresh_buff_btn() -> void:
   if _buff_btn != null:
     _buff_btn.disabled = Buffs.owned().is_empty()
+    _buff_btn.modulate.a = 0.45 if _buff_btn.disabled else 1.0
 
 
 func _set_world_paused(p: bool) -> void:
