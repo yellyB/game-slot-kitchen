@@ -1185,14 +1185,15 @@ func _tap_to_continue() -> void:
 
 
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
-## (배너 등장 시엔 무음 — 소리는 아래 탭 시점의 door_open만)
+## (배너 등장 시엔 무음 — 소리는 아래 탭 시점의 개점음만)
 func _start_day_intro() -> void:
   var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)   # 해(고해상도) + OPEN + 딤(즉시)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
     return
-  Audio.play("door_open")   # OPEN 화면 탭 = 가게 문 여는 효과음
+  Audio.play("door_open")   # OPEN 화면 탭 = 가게 문 여는 개점 효과음
+  Audio.play("day_start")   # + 어서오세요(개점) — door_open이 약해 함께 재생해 확실히 들리게
   if is_instance_valid(banner):
     var bt := create_tween()
     bt.tween_property(banner, "modulate:a", 0.0, 0.22)
