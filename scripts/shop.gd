@@ -281,11 +281,15 @@ func _show_pack(pack: Array) -> void:
   add_child(overlay)
 
   # 개봉 중에도 [버프] 버튼/서랍으로 보유 버프를 확인 가능하게 오버레이(z10) 위로 올림.
-  # (버프 아이콘이 겹쳐 이름·설명 확인이 필요 → 기존 서랍 재사용) 오버레이가 닫힐 때 z 원복.
+  # (버프 아이콘이 겹쳐 이름·설명 확인이 필요 → 기존 서랍 재사용)
+  # z_index는 '그리기'만 위로 올려주고, '입력'은 트리 순서(나중 형제 우선)라 오버레이 뒤로 재배치해야 클릭이 닿음.
   if not Buffs.owned().is_empty():
     _buff_btn.z_index = 11
     _buff_backdrop.z_index = 12
     _buff_sheet.z_index = 13
+    _buff_btn.move_to_front()       # 오버레이보다 뒤 형제 → 입력 우선
+    _buff_backdrop.move_to_front()
+    _buff_sheet.move_to_front()
     overlay.tree_exited.connect(func():
       _buff_btn.z_index = 0
       _buff_backdrop.z_index = 0
