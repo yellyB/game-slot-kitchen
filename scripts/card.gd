@@ -31,12 +31,21 @@ func _wrap_content() -> void:
 
 
 func _setup_fit() -> void:
-	await get_tree().process_frame
-	if _wrap == null or not is_instance_valid(_wrap):
+	for _i in 8:
+		await get_tree().process_frame
+		if _wrap == null or not is_instance_valid(_wrap):
+			return
+		var m := Vector2.ZERO
+		for ch in _wrap.get_children():
+			if ch is Control:
+				m = m.max((ch as Control).get_combined_minimum_size())
+		if m.x > 0.0 or m.y > 0.0:
+			_content_min = m
+			break
+	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
 	for ch in _wrap.get_children():
 		if ch is Control:
-			_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fit_wrap()
 
@@ -49,6 +58,8 @@ func _fit_wrap() -> void:
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
 	var avail := _wrap.size
+	if avail.x <= 0.0 or avail.y <= 0.0:
+		return
 	var raw := INF
 	if _content_min.x > 0.0:
 		raw = minf(raw, avail.x / _content_min.x)
