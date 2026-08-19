@@ -16,3 +16,4 @@
 - 파일 전체를 `git add <file>`로 담기 전에, 그 파일의 diff가 **전부 내 변경분인지** 반드시 확인한다. 한 파일에 남의 변경분이 섞여 있으면 **내 hunk만** 골라서 스테이징한다 (`git apply --cached`로 해당 hunk만 패치 적용 등).
 - `git add -A`, `git add .`, `git commit -a`, 파일 단위 무분별한 add 금지.
 - 커밋 전 `git status` / `git diff`로 내가 안 건드린 파일이 스테이징되지 않았는지 재확인한다.
+- **커밋 직전 반드시 `git diff --cached`로 "스테이지된 전부가 내 변경인지" 확인한다.** 인덱스에는 다른 에이전트가 미리 스테이지해둔 hunk가 있을 수 있고, 그러면 내가 내 것만 add해도 `git commit`이 그 남의 hunk까지 함께 커밋한다. 남의 hunk가 스테이지돼 있으면 언스테이지(`git restore --staged` 또는 `git reset` 후 내 것만 재스테이지)하고 커밋한다. (실제로 남의 `day_start` 제거가 내 커밋에 딸려갔고, 그 위에 다른 커밋까지 쌓여 되돌리기 어려워진 사고가 있었다.)
