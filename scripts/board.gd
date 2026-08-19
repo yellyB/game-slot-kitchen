@@ -80,6 +80,9 @@ func _shake(n: Control) -> void:
 	t.tween_property(n, "position:x", base - a, 0.07).set_trans(Tween.TRANS_SINE)
 	t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
 	t.tween_property(n, "position:x", base, 0.05).set_trans(Tween.TRANS_SINE)
+	var f := n.create_tween()
+	f.tween_property(n, "modulate", Palette.DANGER, 0.06).set_trans(Tween.TRANS_SINE)
+	f.tween_property(n, "modulate", Color.WHITE, 0.3).set_trans(Tween.TRANS_SINE)
 
 
 func first_empty_slot() -> Slot:

@@ -34,6 +34,7 @@ var _hours_bar: ProgressBar
 var _hours_glow: Tween
 var _hours_warning := false
 var _blackout: ColorRect
+var _countdown_edge: Panel
 var _last_countdown := 0
 const COUNTDOWN_FROM := 5
 
@@ -1219,6 +1220,7 @@ func _countdown_pop(sec: int) -> void:
   _screen_shake(4.0 + float(COUNTDOWN_FROM - sec) * 2.5, 0.4)
   Audio.play("countdown", 1.0 + float(COUNTDOWN_FROM - sec) * 0.08)
   Audio.vibrate(15)
+  _pulse_countdown_edge()
   var l := UI.label(str(sec), 46, Palette.DANGER, true)
   l.add_theme_constant_override("outline_size", 5)
   l.add_theme_color_override("font_outline_color", Palette.WHITE)
@@ -1239,6 +1241,25 @@ func _countdown_pop(sec: int) -> void:
   tw.tween_interval(0.25)
   tw.tween_property(l, "modulate:a", 0.0, 0.4)
   tw.tween_callback(l.queue_free)
+
+
+func _pulse_countdown_edge() -> void:
+  if _countdown_edge == null:
+    _countdown_edge = Panel.new()
+    _countdown_edge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    _countdown_edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _countdown_edge.z_index = 190
+    var sb := StyleBoxFlat.new()
+    sb.bg_color = Color(0, 0, 0, 0)
+    sb.set_border_width_all(20)
+    sb.border_color = Palette.DANGER
+    sb.border_blend = true
+    _countdown_edge.add_theme_stylebox_override("panel", sb)
+    add_child(_countdown_edge)
+  _countdown_edge.modulate.a = 0.0
+  var t := create_tween()
+  t.tween_property(_countdown_edge, "modulate:a", 0.7, 0.12).set_trans(Tween.TRANS_SINE)
+  t.tween_property(_countdown_edge, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE)
 
 
 func _reset_hours_bar() -> void:
