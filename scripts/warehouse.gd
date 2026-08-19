@@ -29,18 +29,12 @@ func _ready() -> void:
 	v.add_theme_constant_override("separation", 10)
 	pad.add_child(v)
 
-	# 헤더 — 상단 가운데 ✕ 닫기(바텀시트 핸들 자리). 창고 이모지/이미지는 없음.
+	# 헤더 — 상단 가운데 닫기 핸들(∨). 창고 이모지/이미지는 없음.
 	var header := CenterContainer.new()
 	v.add_child(header)
-	var close := Button.new()
-	close.text = "✕"
-	close.add_theme_font_size_override("font_size", 16)
-	close.add_theme_color_override("font_color", Palette.COCOA_600)
-	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	var close := make_close_handle()   # 넓은 알약 + 아래 꺾쇠(∨) 닫기 핸들
 	close.pressed.connect(func(): close_requested.emit())
-	Audio.attach_click(close)   # X 닫기 클릭음
+	Audio.attach_click(close)   # 닫기 클릭음
 	header.add_child(close)
 
 	var grid := GridContainer.new()
