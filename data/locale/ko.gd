@@ -130,7 +130,7 @@ const S := {
 	"b.settle_same.name": "전문점", "b.settle_same.label": "그날 서빙의 70%+ 가 같은 메뉴면 그날 매출의 17% 보너스",
 	"b.pat_extend.name": "여유", "b.pat_extend.label": "손님 인내심 +3초 (더 늦게 떠남)",
 	"b.sale_late.name": "인내 보상", "b.sale_late.label": "주문 접수 25초 뒤에 서빙하면 판매금 +35%",
-	"b.sale_burn.name": "소진 보상", "b.sale_burn.label": "손님이 쓴(닳은) 인내심 비율의 40%만큼 판매금 추가",
+	"b.sale_burn.name": "소진 보상", "b.sale_burn.label": "인내심이 다 닳을수록 판매금이 늘어 최대 +40%",
 	"b.sale_crit.name": "벼랑끝", "b.sale_crit.label": "인내심 임박(빨강)일 때 서빙하면 판매금 +20%",
 	"b.pat_down.name": "박대", "b.pat_down.label": "손님 인내심 -30%",
 	"b.onlost_pay.name": "위약금", "b.onlost_pay.label": "주문한 손님이 음식 못 받고 떠나면 그 메뉴값의 34% 획득",

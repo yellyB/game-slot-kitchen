@@ -130,7 +130,7 @@ const S := {
 	"b.settle_same.name": "Specialty", "b.settle_same.label": "70%+ of serves same menu: +17% of day revenue",
 	"b.pat_extend.name": "Grace", "b.pat_extend.label": "Customer patience +3s (leaves later)",
 	"b.sale_late.name": "Patience Reward", "b.sale_late.label": "Serve 25s+ after order taken: sale +35%",
-	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Gain +40% of the patience% the customer used up",
+	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Sale grows as patience drains, up to +40%",
 	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): sale +20%",
 	"b.pat_down.name": "Neglect", "b.pat_down.label": "Customer patience -30%",
 	"b.onlost_pay.name": "Penalty Fee", "b.onlost_pay.label": "When an ordering customer leaves unserved: gain 34% of that menu's price",
