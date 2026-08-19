@@ -11,6 +11,8 @@ var _warehouse_btn: Button
 var _trash_btn: TrashButton
 var _buff_sheet: BuffSheet
 var _buff_btn: Button
+var _tutorial: Tutorial
+var _tutorial_active := false
 
 var _queue_row: HBoxContainer
 
@@ -182,13 +184,62 @@ func _show_title() -> void:
   _title.show()
 
 
-func _start_tutorial() -> void:
+func _start_tutorial(after := "title") -> void:
   _title.hide()
-  var tut := Tutorial.new()
-  tut.finished.connect(func():
-    tut.queue_free()
-    _show_title())
-  add_child(tut)
+  _enter_tutorial_state()
+  _tutorial = Tutorial.new()
+  _tutorial.board = _board
+  _tutorial.queue_row = _queue_row
+  _tutorial.warehouse = _warehouse
+  _tutorial.cooking = _cooking
+  _tutorial.warehouse_btn = _warehouse_btn
+  _tutorial.spawn_customer = _spawn_customer.bind(Tutorial.RECIPE)
+  _tutorial.finished.connect(func():
+    if is_instance_valid(_tutorial):
+      _tutorial.queue_free()
+    _tutorial = null
+    _exit_tutorial_state()
+    if after == "game":
+      _start_game()
+    else:
+      _show_title())
+  add_child(_tutorial)
+
+
+func _enter_tutorial_state() -> void:
+  _tutorial_active = true
+  Buffs.clear()
+  _session.set_process(false)
+  _clear_blackout()
+  _day_num.text = "1"
+  _money_label.text = UI.money(0)
+  for s in _board.slots:
+    s.clear()
+  for t in _board.tools:
+    t.reset()
+  for c in _queue_row.get_children():
+    c.queue_free()
+  _board.rebuild(4)
+  _warehouse.visible = false
+  _cooking.visible = false
+  _buff_sheet.visible = false
+  _backdrop.visible = false
+  _refresh_warehouse()
+
+
+func _exit_tutorial_state() -> void:
+  _tutorial_active = false
+  Move.clear()
+  for s in _board.slots:
+    s.clear()
+  for t in _board.tools:
+    t.reset()
+  for c in _queue_row.get_children():
+    c.queue_free()
+  _warehouse.visible = false
+  _cooking.visible = false
+  _buff_sheet.visible = false
+  _backdrop.visible = false
 
 
 func _build_top_bar() -> Control:
@@ -443,6 +494,8 @@ func _refresh_buff_btn() -> void:
 
 
 func _set_world_paused(p: bool) -> void:
+  if _tutorial_active:
+    return
   _session.set_paused(p)
   for c in _queue_row.get_children():
     if c is Customer:
@@ -457,6 +510,16 @@ func _set_world_paused(p: bool) -> void:
 
 func _close_sheets() -> void:
   _set_world_paused(false)
+  if _tutorial_active:
+    if _warehouse.visible:
+      Audio.play("door_close")
+      _warehouse.slide_close()
+    if _cooking.visible:
+      _cooking.slide_close()
+    if _buff_sheet.visible:
+      _buff_sheet.slide_close()
+    _backdrop.visible = false
+    return
   if _warehouse.visible:
     var cost := Stats.warehouse_cost()
     var before_v := _hours_bar.value
@@ -507,15 +570,17 @@ func _on_background_input(event: InputEvent) -> void:
     Move.background_click()
 
 
-func _spawn_customer() -> void:
+func _spawn_customer(force_recipe := "") -> void:
   if _queue_row.get_child_count() >= Config.MAX_QUEUE:
     return
   var c := Customer.new()
-  c.setup(Stats.random_recipe())
+  c.setup(force_recipe if force_recipe != "" else Stats.random_recipe())
   c.confirm_pressed.connect(_on_confirm_order)
   c.expired.connect(_on_customer_expired)
   c.urged.connect(_on_urged)
   _queue_row.add_child(c)
+  if _tutorial_active:
+    c.set_process(false)
   c.slide_in()
   Audio.play("customer_in")
   _visited_today += 1
@@ -560,6 +625,8 @@ func _on_confirm_order(customer: Customer) -> void:
   order.served.connect(_on_served)
   order.rejected.connect(_on_order_rejected)
   order.urged.connect(_on_urged)
+  if _tutorial_active:
+    order.set_process(false)
   var from_pos := customer.global_position + customer.size * 0.5
   var others: Array = []
   var oldp := {}
