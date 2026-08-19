@@ -461,6 +461,8 @@ func _close_sheets() -> void:
     var cost := Stats.warehouse_cost()
     var before_v := _hours_bar.value
     _session.spend_time(cost)
+    if not _session.is_running():
+      return
     var after_v := _hours_bar.value
     Audio.play("door_close")
     _warehouse.slide_close()
