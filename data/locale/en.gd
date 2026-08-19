@@ -66,7 +66,7 @@ const S := {
 	"b.patience.name": "Patience", "b.patience.label": "Customer patience +10% (waits longer)",
 	"b.day_len.name": "Open Hours", "b.day_len.label": "Open hours +7%",
 	"b.wh_chance.name": "Free Trip", "b.wh_chance.label": "50% chance pantry trip costs no time",
-	"b.wh_fast.name": "1s Trip", "b.wh_fast.label": "Pantry exit time -66%",
+	"b.wh_fast.name": "Hermes' Boots", "b.wh_fast.label": "Pantry exit time -66%",
 	"b.rent_down.name": "Rent", "b.rent_down.label": "Rent -10%",
 	"b.shop_disc.name": "Shop Discount", "b.shop_disc.label": "Shop prices -10% (WIP)",
 	"b.pack_more.name": "Extra Card", "b.pack_more.label": "Buff pack +1 choice (WIP)",
