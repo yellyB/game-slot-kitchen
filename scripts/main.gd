@@ -1185,8 +1185,8 @@ func _tap_to_continue() -> void:
 
 
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
+## (배너 등장 시엔 무음 — 소리는 아래 탭 시점의 door_open만)
 func _start_day_intro() -> void:
-  Audio.play("day_start")
   var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)   # 해(고해상도) + OPEN + 딤(즉시)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
@@ -1608,28 +1608,31 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
 
 
-## 정산 확정 — 통과(✅·상점으로) 또는 파산(❌·처음으로). 빌지 이미지를 결과 마크로 교체.
+## 정산 확정 — 통과면 ✅·상점으로(제자리 교체), 파산이면 정산 닫고 'Run Failed' 게임오버 화면.
 func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
+  if not is_pass:
+    # 파산 확정 → 정산 모달 닫고 'Run Failed' 게임오버 화면으로
+    Audio.play("fail")   # 폐업 스팅
+    Audio.vibrate(60)    # 강한(긴) 에러 진동
+    m.queue_free()
+    _show_run_failed(int(summary["day"]))
+    return
+
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
     pay_btn.pressed.disconnect(c["callable"])
-  if pay_btn.has_meta("bk_btn"):                 # 파산 버튼 있으면 제거
-    var bk = pay_btn.get_meta("bk_btn")
-    if is_instance_valid(bk):
-      bk.queue_free()
 
   # 가게세 금액 라인 페이드아웃 후 접힘
   var at := create_tween()
   at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
   at.tween_callback(func(): amount_row.visible = false)
 
-  # 빌지 이미지 → 같은 크기의 결과(✅/❌)로 교체(팝). 홀더 크기 고정이라 안 흔들림.
+  # 빌지 이미지 → ✅ 로 교체(팝). 홀더 크기 고정이라 안 흔들림.
   var px: float = icon_box.custom_minimum_size.y
-  icon_box.modulate = Color.WHITE   # 플래시 잔상 제거
   for ch in icon_box.get_children():
     ch.visible = false
     ch.queue_free()
-  var mark := UI.label("✅" if is_pass else "❌", int(px * 0.8), Palette.SUCCESS if is_pass else Palette.DANGER, true)
+  var mark := UI.label("✅", int(px * 0.8), Palette.SUCCESS, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
   mark.custom_minimum_size = Vector2(px, px)
@@ -1642,23 +1645,43 @@ func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Butto
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
-  if is_pass:
-    if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):   # 무료통과 아니면 실제 차감
-      _session.pay_rent()
-    Audio.play("day_pass")   # 하루 통과(정산 성공)음
-    Audio.vibrate(30)   # 정산 통과 — 성공 진동
-    pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
-    pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-    pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-    pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-    pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
-    pay_btn.disabled = false
-  else:
-    Audio.play("fail")   # 파산 확정 → 폐업 스팅
-    Audio.vibrate(60)   # 폐업 — 강한(긴) 에러 진동
-    pay_btn.text = Loc.t("to_title")
-    pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
-    pay_btn.disabled = false
+  if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):   # 무료통과 아니면 실제 차감
+    _session.pay_rent()
+  Audio.play("day_pass")   # 하루 통과(정산 성공)음
+  Audio.vibrate(30)   # 정산 통과 — 성공 진동
+  pay_btn.text = Loc.t("to_shop")             # 버튼 → 상점으로
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+  pay_btn.disabled = false
+
+
+## 파산(런 실패) 게임오버 — 'Run Failed' + 일력(n일차, 상단바식) + ❌ + 홈 이미지 버튼.
+func _show_run_failed(day: int) -> void:
+  var m := Modal.open(self).title(Loc.t("run_failed"))
+  # n일차 — 상단바처럼 일력 이미지 + 숫자
+  var badge := UI.day_badge(64)
+  (badge.get_meta("num") as Label).text = str(day)
+  var badge_wrap := CenterContainer.new()
+  badge_wrap.add_child(badge)
+  m.add_row(badge_wrap)
+  # ❌ 크게(지금과 동일한 실패 마크)
+  var x := UI.label("❌", 80, Palette.DANGER, true)
+  x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  m.add_row(x)
+  # 홈 이미지 버튼 → 타이틀(홈)로
+  var home := Button.new()
+  home.custom_minimum_size = Vector2(0, 56)
+  home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  home.add_child(UI.ui_btn_icon("house", 30))   # 텍스트 대신 홈 손그림
+  home.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
+  Audio.attach_click(home)
+  m.add_row(home)
 
 
 ## 파산 신청 버튼 — 가게세 못 낼 때 지불 버튼 아래 등장. 누르면 게임오버(❌)로 진행.
