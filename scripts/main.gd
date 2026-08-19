@@ -369,6 +369,7 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("돈-5만", func(): _session.add_cash(-50000)))
   row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
+  row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
   return row
 
 

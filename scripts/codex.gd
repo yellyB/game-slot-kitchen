@@ -48,3 +48,11 @@ static func _save() -> void:
 	if f == null:
 		return
 	f.store_string(JSON.stringify(_discovered.keys()))
+
+
+## 도감 초기화(디버그) — 발견 기록 전부 삭제 + 저장 파일 제거.
+static func reset() -> void:
+	_discovered.clear()
+	_loaded = true
+	if FileAccess.file_exists(PATH):
+		DirAccess.remove_absolute(PATH)
