@@ -1,13 +1,13 @@
 class_name CodexScreen
 extends Control
 ## 도감 — 버프 카드 순서(card 번호)대로 4×5 그리드, 페이지 넘김.
-## 미발견 = 회색 바탕 + ? / 발견(획득 이력) = 아이콘 + 이름 정상 표시.
-## 발견 기록은 Codex(영구 저장)에서 조회.
+## 발견(획득 이력) = 아이콘 + 이름 + 설명을 카드에 바로 표시(클릭 불필요).
+## 미발견 = 회색 바탕 + ?. 발견 기록은 Codex(영구 저장)에서 조회.
 
 const COLS := 4
 const ROWS := 5
 const PER := COLS * ROWS   # 페이지당 20칸
-const CELL := Vector2(78, 92)
+const CELL := Vector2(82, 132)
 
 var _ids: Array = []
 var _page := 0
@@ -16,8 +16,6 @@ var _grid: GridContainer
 var _page_label: Label
 var _prev: Button
 var _next: Button
-var _detail: PanelContainer      # 하단 상세 영역(카드 클릭 시 이름+설명 표시)
-var _detail_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -72,20 +70,10 @@ func _ready() -> void:
 	_grid.add_theme_constant_override("v_separation", 8)
 	v.add_child(_grid)
 
-	# 하단 상세 영역 — 카드 클릭 시 이곳(빈 공간)에 아이콘+이름+설명 표시(팝업 아님)
-	_detail = PanelContainer.new()
-	_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_detail.add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200))
-	v.add_child(_detail)
-	var dpad := MarginContainer.new()
-	for side in ["left", "right", "top", "bottom"]:
-		dpad.add_theme_constant_override("margin_" + side, 14)
-	_detail.add_child(dpad)
-	_detail_box = VBoxContainer.new()
-	_detail_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	_detail_box.add_theme_constant_override("separation", 8)
-	dpad.add_child(_detail_box)
-	_detail_hint()   # 초기: 안내 문구
+	# 그리드와 네비 사이 여백(네비를 하단으로)
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	v.add_child(spacer)
 
 	# 하단 페이지 네비: ◀  1 / N  ▶
 	var nav := HBoxContainer.new()
@@ -146,38 +134,11 @@ func _render() -> void:
 	_next.disabled = _page >= _pages - 1
 
 
-## 카드 클릭 → 하단 상세 영역에 아이콘 + 이름 + 설명 표시(팝업 아님).
-func _show_detail(id: String) -> void:
-	for c in _detail_box.get_children():
-		c.queue_free()
-	var ic := CenterContainer.new()
-	ic.add_child(BuffDefs.icon_node(id, 52))
-	_detail_box.add_child(ic)
-	var nm := UI.label(BuffDefs.display_name(id), 18, Palette.MAIN, true)
-	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_detail_box.add_child(nm)
-	var desc := UI.label(BuffDefs.display_label(id), 15, Palette.COCOA_600)
-	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_detail_box.add_child(desc)
-
-
-## 상세 영역 초기 안내(선택 전).
-func _detail_hint() -> void:
-	for c in _detail_box.get_children():
-		c.queue_free()
-	var h := UI.label(Loc.t("codex_hint"), 14, Palette.COCOA_400)
-	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_detail_box.add_child(h)
-
-
-## 한 칸 — 발견이면 아이콘+이름(연분홍 카드), 미발견이면 회색+?.
+## 한 칸 — 발견이면 아이콘+이름+설명(연분홍 카드, 클릭 불필요), 미발견이면 회색+?.
 func _make_cell(id: String) -> Control:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = CELL
+	card.clip_contents = true   # 긴 설명이 카드 밖으로 넘치지 않게
 	var found := Codex.is_discovered(id)
 	if found:
 		card.add_theme_stylebox_override("panel", UI.card(Palette.MAIN.lightened(0.82), Palette.MAIN, 2))
@@ -185,26 +146,28 @@ func _make_cell(id: String) -> Control:
 		card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200, 1))
 
 	if found:
-		var v := VBoxContainer.new()
-		v.alignment = BoxContainer.ALIGNMENT_CENTER
-		v.add_theme_constant_override("separation", 2)
-		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		card.add_child(v)
-		var icon := BuffDefs.icon_node(id, 40)
+		var pad := MarginContainer.new()
+		for side in ["left", "right", "top", "bottom"]:
+			pad.add_theme_constant_override("margin_" + side, 5)
+		card.add_child(pad)
+		var box := VBoxContainer.new()
+		box.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_theme_constant_override("separation", 2)
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pad.add_child(box)
+		var icon := BuffDefs.icon_node(id, 30)
 		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		v.add_child(icon)
+		box.add_child(icon)
 		var nm := UI.label(BuffDefs.display_name(id), 11, Palette.MAIN, true)
 		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		v.add_child(nm)
-		# 클릭 → 상세(발견 카드만). 카드 위에 투명 버튼 얹음.
-		var hit := Button.new()
-		hit.flat = true
-		hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		hit.pressed.connect(_show_detail.bind(id))
-		Audio.attach_click(hit)
-		card.add_child(hit)
+		box.add_child(nm)
+		var desc := UI.label(BuffDefs.display_label(id), 9, Palette.COCOA_600)
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		box.add_child(desc)
 	else:
 		var q := UI.label("?", 34, Palette.COCOA_400, true)
 		q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
