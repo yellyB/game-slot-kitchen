@@ -154,9 +154,13 @@ static func icon_node(id: String, px: int) -> Control:
 	return lbl
 
 static func random_pack(n := 3) -> Array:
+	var owned := Buffs.owned()
 	var pool := []
 	for id in ALL.keys():
-		if not ALL[id].get("blocked", false):
-			pool.append(id)
+		if ALL[id].get("blocked", false):
+			continue
+		if id in owned:
+			continue
+		pool.append(id)
 	pool.shuffle()
 	return pool.slice(0, mini(n, pool.size()))
