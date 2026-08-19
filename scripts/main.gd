@@ -355,12 +355,10 @@ func _build_bottom_buttons() -> Control:
   # [버프] — 휴지통 옆. 탭하면 보유 버프 서랍(보기 전용). 보유 0개면 비활성(안 열림).
   _buff_btn = Button.new()
   _style_bottom_button(_buff_btn, Palette.MAIN)
-  _buff_btn.text = Loc.t("buffs_btn")
   _buff_btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN   # 확장 X
   _buff_btn.custom_minimum_size = Vector2(64, 56)
-  _buff_btn.add_theme_font_size_override("font_size", 18)
-  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
   _buff_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
+  _buff_btn.add_child(UI.ui_btn_icon("buffs", 40))   # 텍스트 대신 버프 덱 손그림
   _buff_btn.pressed.connect(_toggle_buffs)
   Audio.attach_click(_buff_btn)
   row.add_child(_buff_btn)
@@ -459,6 +457,7 @@ func _open_buff_sheet() -> void:
 func _refresh_buff_btn() -> void:
   if _buff_btn != null:
     _buff_btn.disabled = Buffs.owned().is_empty()
+    _buff_btn.modulate.a = 0.45 if _buff_btn.disabled else 1.0   # 아이콘도 비활성 시 흐리게
 
 
 ## 월드 정지/재개 — 시계·손님 인내심·조리 타이머 전부. 시트 열림 동안 시간 멈춤.

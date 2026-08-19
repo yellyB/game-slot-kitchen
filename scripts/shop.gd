@@ -117,7 +117,7 @@ func _ready() -> void:
 
   # [버프] — 계속하기(>>) 버튼 왼쪽. 탭하면 보유 버프 서랍. 보유 0개면 비활성(안 열림).
   _buff_btn = Button.new()
-  _buff_btn.text = Loc.t("buffs_btn")
+  _buff_btn.add_child(UI.ui_btn_icon("buffs", 40))   # 텍스트 대신 버프 덱 손그림
   _buff_btn.anchor_left = 1.0
   _buff_btn.anchor_right = 1.0
   _buff_btn.anchor_top = 1.0
@@ -126,10 +126,6 @@ func _ready() -> void:
   _buff_btn.offset_right = -162  # 계속하기와 12 간격
   _buff_btn.offset_top = -76
   _buff_btn.offset_bottom = -8
-  _buff_btn.add_theme_font_size_override("font_size", 16)
-  _buff_btn.add_theme_color_override("font_color", Palette.WHITE)
-  _buff_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
-  _buff_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
   _buff_btn.add_theme_stylebox_override("normal", _round_style(Palette.SUB))
   _buff_btn.add_theme_stylebox_override("hover", _round_style(Palette.SUB.lightened(0.08)))
   _buff_btn.add_theme_stylebox_override("pressed", _round_style(Palette.SUB.darkened(0.1)))
@@ -460,6 +456,7 @@ func _refresh() -> void:
   # [버프] 버튼 — 보유 0개면 비활성(서랍 안 열림).
   if _buff_btn != null:
     _buff_btn.disabled = Buffs.owned().is_empty()
+    _buff_btn.modulate.a = 0.45 if _buff_btn.disabled else 1.0   # 아이콘도 비활성 시 흐리게
 
 
 ## 보유 버프 판매 확인 — 버프명 + 환급액(그날 팩값의 30%). [+환급][취소].
