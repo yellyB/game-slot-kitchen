@@ -350,22 +350,51 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
   Buffs.add(id)
   Audio.play("card_place")
   for c in choices:
-    if not is_instance_valid(c):
+    if not is_instance_valid(c) or c == chosen:
       continue
     c.pivot_offset = c.size * 0.5
-    if c == chosen:
-      var tw := create_tween()
-      tw.tween_property(c, "scale", Vector2(1.4, 1.4), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-      tw.tween_property(c, "modulate:a", 0.0, 0.24).set_delay(0.12)
-    else:
-      var tw2 := create_tween()
-      tw2.set_parallel(true)
-      tw2.tween_property(c, "scale", Vector2(0.5, 0.5), 0.25).set_ease(Tween.EASE_IN)
-      tw2.tween_property(c, "modulate:a", 0.0, 0.25)
-  await get_tree().create_timer(0.42).timeout
+    var tw2 := create_tween()
+    tw2.set_parallel(true)
+    tw2.tween_property(c, "scale", Vector2(0.5, 0.5), 0.25).set_ease(Tween.EASE_IN)
+    tw2.tween_property(c, "modulate:a", 0.0, 0.25)
+  _fly_card_to_buff_btn(chosen)
   if is_instance_valid(overlay):
-    overlay.queue_free()
+    var ot := create_tween()
+    ot.tween_property(overlay, "modulate:a", 0.0, 0.28).set_delay(0.2)
+    ot.tween_callback(overlay.queue_free)
+  await get_tree().create_timer(0.6).timeout
   _refresh()
+
+
+func _fly_card_to_buff_btn(card: Control) -> void:
+  var gpos := card.global_position
+  var sz := card.size
+  card.pivot_offset = sz * 0.5
+  add_child(card)
+  card.top_level = true
+  card.z_index = 60
+  card.global_position = gpos
+  var target := _buff_btn.global_position + _buff_btn.size * 0.5
+  var end_pos := target - sz * 0.5
+  var tw := create_tween()
+  tw.tween_property(card, "scale", Vector2(1.2, 1.2), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.tween_callback(func(): Audio.play("card_slide"))
+  tw.tween_property(card, "global_position", end_pos, 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(card, "scale", Vector2(0.22, 0.22), 0.42).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(card, "modulate:a", 0.0, 0.42).set_delay(0.18)
+  tw.tween_callback(func():
+    _pop_buff_btn()
+    if is_instance_valid(card):
+      card.queue_free())
+
+
+func _pop_buff_btn() -> void:
+  if not is_instance_valid(_buff_btn):
+    return
+  _buff_btn.pivot_offset = _buff_btn.size * 0.5
+  var t := create_tween()
+  t.tween_property(_buff_btn, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  t.tween_property(_buff_btn, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK)
 
 
 func _refresh() -> void:
