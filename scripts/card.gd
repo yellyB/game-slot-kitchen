@@ -2,6 +2,7 @@ class_name Card
 extends PanelContainer
 
 var _style: StyleBoxFlat
+var _wrap: Control
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -25,6 +26,27 @@ func _wrap_content() -> void:
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(wrap)
+	_wrap = wrap
+	resized.connect(_fit_wrap)
+	_fit_wrap.call_deferred()
+
+
+func _fit_wrap() -> void:
+	if _wrap == null or not is_instance_valid(_wrap):
+		return
+	var need := Vector2.ZERO
+	for ch in _wrap.get_children():
+		if ch is Control:
+			need = need.max((ch as Control).get_combined_minimum_size())
+	if need.x <= 0.0 and need.y <= 0.0:
+		return
+	var s := 1.0
+	if need.x > 0.0:
+		s = minf(s, size.x / need.x)
+	if need.y > 0.0:
+		s = minf(s, size.y / need.y)
+	_wrap.pivot_offset = size * 0.5
+	_wrap.scale = Vector2(s, s)
 
 
 func _build_content() -> void:
