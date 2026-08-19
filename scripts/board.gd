@@ -11,6 +11,7 @@ var slots: Array[Slot] = []
 var tools: Array[ToolStation] = []
 var now_provider: Callable = func() -> float: return 0.0
 var _grid: GridContainer
+var _shake_tw := {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -29,6 +30,7 @@ func rebuild(slot_count: int) -> void:
 		ch.queue_free()
 	slots.clear()
 	tools.clear()
+	_shake_tw.clear()
 
 	var tool_count := Config.TOOL_COUNT + Buffs.tool_bonus()
 	var total := slot_count + tool_count
@@ -72,9 +74,17 @@ func shake_slots() -> void:
 		_shake(s)
 
 func _shake(n: Control) -> void:
-	var base := n.position.x
+	if _shake_tw.has(n) and _shake_tw[n] != null and (_shake_tw[n] as Tween).is_valid():
+		(_shake_tw[n] as Tween).kill()
+		n.position.x = n.get_meta("shake_base_x", n.position.x)
+	else:
+		n.set_meta("shake_base_x", n.position.x)
+	var base: float = n.get_meta("shake_base_x")
+	n.position.x = base
+	n.modulate = Color.WHITE
 	var a := 5.0
 	var t := n.create_tween()
+	_shake_tw[n] = t
 	t.tween_property(n, "position:x", base - a, 0.05).set_trans(Tween.TRANS_SINE)
 	t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
 	t.tween_property(n, "position:x", base - a, 0.07).set_trans(Tween.TRANS_SINE)
