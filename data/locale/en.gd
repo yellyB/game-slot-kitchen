@@ -93,7 +93,7 @@ const S := {
 	"b.ramp_t5.name": "Tiramisu Growth", "b.ramp_t5.label": "Each tiramisu sold: its price +7% (permanent)",
 	"b.ramp_t6.name": "Choco Cake Growth", "b.ramp_t6.label": "Each choco cake sold: its price +7% (permanent)",
 	"b.sc_buff_a.name": "Sale per Buff", "b.sc_buff_a.label": "Sale +7% per owned buff",
-	"b.sc_buff_b.name": "Sale per Buff+", "b.sc_buff_b.label": "Sale +10%, +3% per owned buff",
+	"b.sc_buff_b.name": "Sale per Buff+", "b.sc_buff_b.label": "Sale +10%, plus +3% more per owned buff (stacks)",
 	"b.sc_fill_a.name": "Sale per Filled", "b.sc_fill_a.label": "Sale +4% per filled slot",
 	"b.sc_fill_b.name": "Sale per Filled+", "b.sc_fill_b.label": "Sale +10%, +1% per filled slot",
 	"b.sc_empt_a.name": "Sale per Empty", "b.sc_empt_a.label": "Sale +6% per empty slot",

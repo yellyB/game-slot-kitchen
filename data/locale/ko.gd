@@ -93,7 +93,7 @@ const S := {
 	"b.ramp_t5.name": "티라미수 성장", "b.ramp_t5.label": "티라미수 팔 때마다 그 가격 영구 +7% (누적)",
 	"b.ramp_t6.name": "초코케이크 성장", "b.ramp_t6.label": "초코케이크 팔 때마다 그 가격 영구 +7% (누적)",
 	"b.sc_buff_a.name": "버프당 판매", "b.sc_buff_a.label": "보유 버프 1개당 판매금 +7%",
-	"b.sc_buff_b.name": "버프당 판매+", "b.sc_buff_b.label": "판매금 +10%, 보유 버프 1개당 +3%",
+	"b.sc_buff_b.name": "버프당 판매+", "b.sc_buff_b.label": "판매금 +10%, 여기에 보유 버프 1개당 +3% 추가 (합산)",
 	"b.sc_fill_a.name": "찬슬롯 판매", "b.sc_fill_a.label": "채워진 슬롯 1칸당 판매금 +4%",
 	"b.sc_fill_b.name": "찬슬롯 판매+", "b.sc_fill_b.label": "판매금 +10%, 채운 슬롯 1칸당 +1%",
 	"b.sc_empt_a.name": "빈슬롯 판매", "b.sc_empt_a.label": "빈 슬롯 1칸당 판매금 +6%",
