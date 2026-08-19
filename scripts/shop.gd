@@ -339,7 +339,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   pick.add_theme_color_override("font_color", Palette.WHITE)
   pick.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-  pick.custom_minimum_size = Vector2(84, 100)
+  pick.custom_minimum_size = Vector2(84, 40)
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
   Audio.attach_click(pick)
