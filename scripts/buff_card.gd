@@ -33,9 +33,10 @@ func _build_content() -> void:
 
 	v.add_child(BuffDefs.icon_node(buff_id, 36))   # 카테고리 아이콘(손그림)
 
-	var lbl := UI.label(BuffDefs.display_label(buff_id), 12, Palette.MAIN)
+	# 슬롯 위 카드는 제목(이름)만 표시 — 긴 설명 대신 짧은 제목. (상세는 상점/서랍에서 확인)
+	var lbl := UI.label(BuffDefs.display_name(buff_id), 13, Palette.MAIN, true)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# 긴 설명은 한 줄로 폭을 늘리지 말고 카드 폭 안에서 줄바꿈 → 카드/슬롯 크기 고정.
+	# 제목이 길면 카드 폭 안에서 줄바꿈 → 카드/슬롯 크기 고정.
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lbl.custom_minimum_size = Vector2.ZERO
