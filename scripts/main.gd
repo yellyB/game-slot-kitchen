@@ -1086,7 +1086,6 @@ func _tap_to_continue() -> void:
 
 
 func _start_day_intro() -> void:
-  Audio.play("day_start")
   var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
@@ -1469,24 +1468,26 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
 
 
 func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
+  if not is_pass:
+    Audio.play("fail")
+    Audio.vibrate(60)
+    m.queue_free()
+    _show_run_failed(int(summary["day"]))
+    return
+
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():
     pay_btn.pressed.disconnect(c["callable"])
-  if pay_btn.has_meta("bk_btn"):
-    var bk = pay_btn.get_meta("bk_btn")
-    if is_instance_valid(bk):
-      bk.queue_free()
 
   var at := create_tween()
   at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
   at.tween_callback(func(): amount_row.visible = false)
 
   var px: float = icon_box.custom_minimum_size.y
-  icon_box.modulate = Color.WHITE
   for ch in icon_box.get_children():
     ch.visible = false
     ch.queue_free()
-  var mark := UI.label("✅" if is_pass else "❌", int(px * 0.8), Palette.SUCCESS if is_pass else Palette.DANGER, true)
+  var mark := UI.label("✅", int(px * 0.8), Palette.SUCCESS, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
   mark.custom_minimum_size = Vector2(px, px)
@@ -1499,23 +1500,39 @@ func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Butto
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
-  if is_pass:
-    if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):
-      _session.pay_rent()
-    Audio.play("day_pass")
-    Audio.vibrate(30)
-    pay_btn.text = Loc.t("to_shop")
-    pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-    pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-    pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-    pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
-    pay_btn.disabled = false
-  else:
-    Audio.play("fail")
-    Audio.vibrate(60)
-    pay_btn.text = Loc.t("to_title")
-    pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
-    pay_btn.disabled = false
+  if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):
+    _session.pay_rent()
+  Audio.play("day_pass")
+  Audio.vibrate(30)
+  pay_btn.text = Loc.t("to_shop")
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
+  pay_btn.disabled = false
+
+
+func _show_run_failed(day: int) -> void:
+  var m := Modal.open(self).title(Loc.t("run_failed"))
+  var badge := UI.day_badge(64)
+  (badge.get_meta("num") as Label).text = str(day)
+  var badge_wrap := CenterContainer.new()
+  badge_wrap.add_child(badge)
+  m.add_row(badge_wrap)
+  var x := UI.label("❌", 80, Palette.DANGER, true)
+  x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  m.add_row(x)
+  var home := Button.new()
+  home.custom_minimum_size = Vector2(0, 56)
+  home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  home.add_child(UI.ui_btn_icon("house", 30))
+  home.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
+  Audio.attach_click(home)
+  m.add_row(home)
 
 
 func _bankrupt_button() -> Button:
