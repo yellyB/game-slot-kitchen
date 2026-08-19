@@ -7,6 +7,7 @@ extends PanelContainer
 var _style: StyleBoxFlat
 var _wrap: Control   # 내용 래퍼 — 슬롯이 좁아지면(4열 등) 통째로 축소해 잘림 방지
 var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 걸기 전 캡처) — fit 축소 기준
+var _pad := Vector2(4, 4)   # 카드 콘텐츠 여백(size - 내용영역). 측정 후 갱신, self.size 기준 fit용
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -36,7 +37,8 @@ func _wrap_content() -> void:
 		wrap.add_child(ch)
 	add_child(wrap)
 	_wrap = wrap
-	resized.connect(_fit_wrap)   # 슬롯 크기 바뀌면 내용 축소 재계산
+	# 슬롯 크기 바뀌면 재계산 — resized 시점엔 size가 아직 정착 전일 수 있어 deferred로.
+	resized.connect(func(): _fit_wrap.call_deferred())
 	_setup_fit()   # 자연 크기 측정 → 앵커 → 초기 fit (레이아웃 후)
 
 
@@ -44,24 +46,24 @@ func _wrap_content() -> void:
 ## (앵커를 먼저 걸면 컨테이너 min-size가 0으로 보고돼 축소 기준을 못 잡음. 또 _ready 시점엔
 ##  레이아웃 전이라 min-size가 0 → 한 프레임 기다렸다 측정.)
 func _setup_fit() -> void:
-	# 내용 자연 크기가 0이 아닌 값으로 잡힐 때까지 대기(최대 8프레임).
-	# 한 프레임에 0이 잡히면 축소가 안 걸려(scale 1) 잘리는 "랜덤 잘림"을 방지.
+	# 8프레임 동안 내용 자연 크기를 '누적 최댓값'으로 측정.
+	# (아이콘/컨테이너 min-size가 프레임마다 늦게 잡힐 수 있어, 한 프레임 값만 쓰면
+	#  윗줄(말풍선+얼굴)을 놓쳐 축소가 부족→얼굴 잘림. 전 프레임 최댓값으로 방지.)
 	for _i in 8:
 		await get_tree().process_frame
 		if _wrap == null or not is_instance_valid(_wrap):
 			return
-		var m := Vector2.ZERO
 		for ch in _wrap.get_children():
 			if ch is Control:
-				m = m.max((ch as Control).get_combined_minimum_size())
-		if m.x > 0.0 or m.y > 0.0:
-			_content_min = m
-			break
+				_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return   # 끝내 측정 실패(내용 없음 등) — 원본 그대로
 	for ch in _wrap.get_children():
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# 콘텐츠 여백 확정(카드 size - 내용영역). 이후 fit은 항상 최신인 self.size 기준으로.
+	if _wrap.size.x > 0.0 and _wrap.size.y > 0.0:
+		_pad = (size - _wrap.size).max(Vector2.ZERO)
 	_fit_wrap()
 
 
@@ -74,8 +76,9 @@ func _fit_wrap() -> void:
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	# 카드 전체(size)가 아니라 실제 내용 영역(_wrap.size = 콘텐츠 여백 제외)을 기준으로.
-	var avail := _wrap.size
+	# 항상 최신인 카드 self.size에서 콘텐츠 여백(_pad)을 뺀 실제 내용 영역 기준.
+	# (_wrap.size는 resized 시점에 아직 갱신 안 돼 옛 값일 수 있어 축소 부족→잘림.)
+	var avail := size - _pad
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return   # 아직 레이아웃 전(크기 0) — scale 0 되는 것 방지
 	var raw := INF   # 내용이 딱 들어가는 배율(1=꽉참, <1=넘침)
