@@ -256,6 +256,15 @@ func _show_pack(pack: Array) -> void:
   overlay.z_index = 10
   add_child(overlay)
 
+  if not Buffs.owned().is_empty():
+    _buff_btn.z_index = 11
+    _buff_backdrop.z_index = 12
+    _buff_sheet.z_index = 13
+    overlay.tree_exited.connect(func():
+      _buff_btn.z_index = 0
+      _buff_backdrop.z_index = 0
+      _buff_sheet.z_index = 0)
+
   var od := ColorRect.new()
   od.color = Palette.DIM
   od.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
