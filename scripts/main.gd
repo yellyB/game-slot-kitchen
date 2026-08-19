@@ -1387,7 +1387,6 @@ func _on_day_ended(summary: Dictionary) -> void:
     Audio.play("day_close")
     Audio.vibrate(40)
     var banner: Control = await _make_bigbanner("moon_big", "CLOSE")
-    _screen_shake()
     await _dayend_sequence()
     if _title.visible:
       if is_instance_valid(banner): banner.queue_free()
