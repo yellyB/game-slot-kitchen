@@ -65,7 +65,7 @@ func _ready() -> void:
   col.add_child(_build_top_bar())
   if OS.is_debug_build():
     _debug_bar = _build_debug()
-    _debug_bar.visible = false
+    _debug_bar.visible = OS.has_feature("editor")
     col.add_child(_debug_bar)
   col.add_child(_build_customer_queue())
 
