@@ -1440,23 +1440,43 @@ func _show_settlement(summary: Dictionary) -> void:
 
 
 func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
-  var passed: bool = summary["passed"]
-  var cash_before: int = summary["cash"]
-  var rent: int = summary["rent"]
-  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+  if not summary["passed"]:
+    Audio.play("disabled")
+    Audio.vibrate(30)
+    var flash := create_tween()
+    flash.tween_property(icon_box, "modulate", Palette.DANGER, 0.08)
+    flash.tween_property(icon_box, "modulate", Color.WHITE, 0.25)
+    if not pay_btn.get_meta("bk_shown", false):
+      pay_btn.set_meta("bk_shown", true)
+      var bk := _bankrupt_button()
+      pay_btn.set_meta("bk_btn", bk)
+      bk.pressed.connect(func(): _settle_finish(false, summary, m, pay_btn, icon_box, amount_row))
+      m.add_row(bk)
+      bk.modulate.a = 0.0
+      create_tween().tween_property(bk, "modulate:a", 1.0, 0.2)
+    return
+  _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
+
+
+func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():
     pay_btn.pressed.disconnect(c["callable"])
+  if pay_btn.has_meta("bk_btn"):
+    var bk = pay_btn.get_meta("bk_btn")
+    if is_instance_valid(bk):
+      bk.queue_free()
 
   var at := create_tween()
   at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
   at.tween_callback(func(): amount_row.visible = false)
 
   var px: float = icon_box.custom_minimum_size.y
+  icon_box.modulate = Color.WHITE
   for ch in icon_box.get_children():
     ch.visible = false
     ch.queue_free()
-  var mark := UI.label("✅" if passed else "❌", int(px * 0.8), Palette.SUCCESS if passed else Palette.DANGER, true)
+  var mark := UI.label("✅" if is_pass else "❌", int(px * 0.8), Palette.SUCCESS if is_pass else Palette.DANGER, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
   mark.custom_minimum_size = Vector2(px, px)
@@ -1469,8 +1489,8 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
-  if passed:
-    if will_pay:
+  if is_pass:
+    if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):
       _session.pay_rent()
     Audio.play("day_pass")
     Audio.vibrate(30)
@@ -1486,6 +1506,20 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
     pay_btn.text = Loc.t("to_title")
     pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
     pay_btn.disabled = false
+
+
+func _bankrupt_button() -> Button:
+  var b := Button.new()
+  b.text = Loc.t("declare_bankrupt")
+  b.custom_minimum_size = Vector2(0, 44)
+  b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  b.add_theme_font_size_override("font_size", 16)
+  b.add_theme_color_override("font_color", Palette.COCOA_600)
+  b.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+  b.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+  b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+  b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+  return b
 
 
 func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
