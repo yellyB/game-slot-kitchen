@@ -4,6 +4,7 @@ extends PanelContainer
 var _style: StyleBoxFlat
 var _wrap: Control
 var _content_min := Vector2.ZERO
+var _pad := Vector2(4, 4)
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -26,7 +27,7 @@ func _wrap_content() -> void:
 		wrap.add_child(ch)
 	add_child(wrap)
 	_wrap = wrap
-	resized.connect(_fit_wrap)
+	resized.connect(func(): _fit_wrap.call_deferred())
 	_setup_fit()
 
 
@@ -35,18 +36,16 @@ func _setup_fit() -> void:
 		await get_tree().process_frame
 		if _wrap == null or not is_instance_valid(_wrap):
 			return
-		var m := Vector2.ZERO
 		for ch in _wrap.get_children():
 			if ch is Control:
-				m = m.max((ch as Control).get_combined_minimum_size())
-		if m.x > 0.0 or m.y > 0.0:
-			_content_min = m
-			break
+				_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
 	for ch in _wrap.get_children():
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if _wrap.size.x > 0.0 and _wrap.size.y > 0.0:
+		_pad = (size - _wrap.size).max(Vector2.ZERO)
 	_fit_wrap()
 
 
@@ -57,7 +56,7 @@ func _fit_wrap() -> void:
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	var avail := _wrap.size
+	var avail := size - _pad
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
 	var raw := INF
