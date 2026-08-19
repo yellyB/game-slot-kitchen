@@ -44,12 +44,23 @@ func _wrap_content() -> void:
 ## (앵커를 먼저 걸면 컨테이너 min-size가 0으로 보고돼 축소 기준을 못 잡음. 또 _ready 시점엔
 ##  레이아웃 전이라 min-size가 0 → 한 프레임 기다렸다 측정.)
 func _setup_fit() -> void:
-	await get_tree().process_frame
-	if _wrap == null or not is_instance_valid(_wrap):
-		return
+	# 내용 자연 크기가 0이 아닌 값으로 잡힐 때까지 대기(최대 8프레임).
+	# 한 프레임에 0이 잡히면 축소가 안 걸려(scale 1) 잘리는 "랜덤 잘림"을 방지.
+	for _i in 8:
+		await get_tree().process_frame
+		if _wrap == null or not is_instance_valid(_wrap):
+			return
+		var m := Vector2.ZERO
+		for ch in _wrap.get_children():
+			if ch is Control:
+				m = m.max((ch as Control).get_combined_minimum_size())
+		if m.x > 0.0 or m.y > 0.0:
+			_content_min = m
+			break
+	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
+		return   # 끝내 측정 실패(내용 없음 등) — 원본 그대로
 	for ch in _wrap.get_children():
 		if ch is Control:
-			_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fit_wrap()
 
@@ -65,6 +76,8 @@ func _fit_wrap() -> void:
 		return
 	# 카드 전체(size)가 아니라 실제 내용 영역(_wrap.size = 콘텐츠 여백 제외)을 기준으로.
 	var avail := _wrap.size
+	if avail.x <= 0.0 or avail.y <= 0.0:
+		return   # 아직 레이아웃 전(크기 0) — scale 0 되는 것 방지
 	var raw := INF   # 내용이 딱 들어가는 배율(1=꽉참, <1=넘침)
 	if _content_min.x > 0.0:
 		raw = minf(raw, avail.x / _content_min.x)
