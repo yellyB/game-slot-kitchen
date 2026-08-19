@@ -45,3 +45,10 @@ static func _save() -> void:
 	if f == null:
 		return
 	f.store_string(JSON.stringify(_discovered.keys()))
+
+
+static func reset() -> void:
+	_discovered.clear()
+	_loaded = true
+	if FileAccess.file_exists(PATH):
+		DirAccess.remove_absolute(PATH)
