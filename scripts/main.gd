@@ -1046,7 +1046,7 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Contro
   var vp := get_viewport_rect().size
   img.pivot_offset = img.size * 0.5
   l.pivot_offset = l.size * 0.5
-  hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72 - 20.0)   # 하단 중앙(살짝 위로)
+  hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72 - 60.0)   # 하단 중앙(위로)
 
   if dim_fade > 0.0:
     create_tween().tween_property(dim, "modulate:a", 1.0, dim_fade)   # 배경 서서히 어두워짐
