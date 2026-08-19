@@ -9,7 +9,7 @@ static func order_patience() -> float:
 static func dish_patience() -> float:
 	return Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()
 
-## 조리시간 — 카드1(cook_mult) + 카드37(빈 슬롯당 -8%). empty=빈 슬롯 수.
+## 조리시간 — 카드1(cook_mult) + 카드38(빈 슬롯당 -15%). empty=빈 슬롯 수.
 static func cook_time(recipe_id: String, empty := 0) -> float:
 	var t := Buffs.mod("cook_mult", float(Recipes.get_def(recipe_id).get("cook_time", 5.0)))
 	t *= maxf(0.1, 1.0 - Buffs.cook_empty_step() * float(empty))
