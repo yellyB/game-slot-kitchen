@@ -1578,25 +1578,47 @@ func _show_settlement(summary: Dictionary) -> void:
 
 ## 가게세 지불 클릭 — 빌지 이미지를 결과(✅/❌)로 교체 + 통과 시 차감·[상점으로], 실패 시 [처음으로].
 func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
-  var passed: bool = summary["passed"]
-  var cash_before: int = summary["cash"]
-  var rent: int = summary["rent"]
-  var will_pay: bool = passed and not summary["skipped"] and cash_before >= rent
+  # 돈 부족(미통과)이면 게임오버로 바로 안 감 — '파산 신청' 버튼을 아래에 띄우고 계속 시도 허용.
+  if not summary["passed"]:
+    Audio.play("disabled")   # 지불 실패 피드백음
+    Audio.vibrate(30)
+    var flash := create_tween()   # 영수증 빨강 플래시(부족 표시)
+    flash.tween_property(icon_box, "modulate", Palette.DANGER, 0.08)
+    flash.tween_property(icon_box, "modulate", Color.WHITE, 0.25)
+    if not pay_btn.get_meta("bk_shown", false):   # 파산 버튼은 1회만 추가
+      pay_btn.set_meta("bk_shown", true)
+      var bk := _bankrupt_button()
+      pay_btn.set_meta("bk_btn", bk)
+      bk.pressed.connect(func(): _settle_finish(false, summary, m, pay_btn, icon_box, amount_row))
+      m.add_row(bk)
+      bk.modulate.a = 0.0
+      create_tween().tween_property(bk, "modulate:a", 1.0, 0.2)
+    return
+  _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
+
+
+## 정산 확정 — 통과(✅·상점으로) 또는 파산(❌·처음으로). 빌지 이미지를 결과 마크로 교체.
+func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
   pay_btn.disabled = true
   for c in pay_btn.pressed.get_connections():   # 지불 핸들러 해제 → 다음 동작으로 교체
     pay_btn.pressed.disconnect(c["callable"])
+  if pay_btn.has_meta("bk_btn"):                 # 파산 버튼 있으면 제거
+    var bk = pay_btn.get_meta("bk_btn")
+    if is_instance_valid(bk):
+      bk.queue_free()
 
-  # 지불 완료 → 가게세 금액 라인 사라짐(페이드아웃 후 접힘)
+  # 가게세 금액 라인 페이드아웃 후 접힘
   var at := create_tween()
   at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
   at.tween_callback(func(): amount_row.visible = false)
 
-  # 빌지 이미지 → 같은 크기의 결과 표시(✅/❌)로 교체(팝 연출). 홀더 크기 고정이라 안 흔들림.
+  # 빌지 이미지 → 같은 크기의 결과(✅/❌)로 교체(팝). 홀더 크기 고정이라 안 흔들림.
   var px: float = icon_box.custom_minimum_size.y
+  icon_box.modulate = Color.WHITE   # 플래시 잔상 제거
   for ch in icon_box.get_children():
     ch.visible = false
     ch.queue_free()
-  var mark := UI.label("✅" if passed else "❌", int(px * 0.8), Palette.SUCCESS if passed else Palette.DANGER, true)
+  var mark := UI.label("✅" if is_pass else "❌", int(px * 0.8), Palette.SUCCESS if is_pass else Palette.DANGER, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
   mark.custom_minimum_size = Vector2(px, px)
@@ -1609,8 +1631,8 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
-  if passed:
-    if will_pay:                                 # 실제 가게세 차감
+  if is_pass:
+    if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):   # 무료통과 아니면 실제 차감
       _session.pay_rent()
     Audio.play("day_pass")   # 하루 통과(정산 성공)음
     Audio.vibrate(30)   # 정산 통과 — 성공 진동
@@ -1621,11 +1643,26 @@ func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Co
     pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
     pay_btn.disabled = false
   else:
-    Audio.play("fail")   # 돈 부족 → 폐업 스팅
+    Audio.play("fail")   # 파산 확정 → 폐업 스팅
     Audio.vibrate(60)   # 폐업 — 강한(긴) 에러 진동
     pay_btn.text = Loc.t("to_title")
     pay_btn.pressed.connect(func(): m.queue_free(); _fade_to_black(_show_title))
     pay_btn.disabled = false
+
+
+## 파산 신청 버튼 — 가게세 못 낼 때 지불 버튼 아래 등장. 누르면 게임오버(❌)로 진행.
+func _bankrupt_button() -> Button:
+  var b := Button.new()
+  b.text = Loc.t("declare_bankrupt")
+  b.custom_minimum_size = Vector2(0, 44)
+  b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  b.add_theme_font_size_override("font_size", 16)
+  b.add_theme_color_override("font_color", Palette.COCOA_600)
+  b.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+  b.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+  b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+  b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+  return b
 
 
 ## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.

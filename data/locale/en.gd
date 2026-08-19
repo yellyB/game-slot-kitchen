@@ -39,6 +39,7 @@ const S := {
 	"gameover_day": "Ended on day %d",
 	"gameover_reason": "Revenue %s < Rent %s",
 	"to_title": "To title",
+	"declare_bankrupt": "Declare Bankruptcy",
 	"home_title": "Return to home?",
 	"home_warn": "Your current run will be lost",
 	"go_home": "Home",
