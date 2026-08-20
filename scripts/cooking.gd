@@ -62,6 +62,25 @@ func _ready() -> void:
 		_entries.append(entry)
 		list.add_child(entry)
 
+	_align_price_column()   # 모든 행의 가격/시간 블록 폭을 최대치로 통일(시작점 일치)
+
+
+## 모든 레시피의 가격/시간 블록 폭을 '가장 긴 가격' 기준으로 통일 → 열 시작점이 전부 같아짐.
+## (블록은 gap으로 오른쪽 밀착 + 내부 왼쪽정렬이므로, 폭이 같으면 좌변 x도 같음.)
+func _align_price_column() -> void:
+	await get_tree().process_frame   # 라벨 min-size 확정 후 측정
+	if not is_instance_valid(self):
+		return
+	var w := 0.0
+	for entry in _entries:
+		var right: Control = entry.get_meta("right", null)
+		if right != null:
+			w = maxf(w, right.get_combined_minimum_size().x)
+	for entry in _entries:
+		var right: Control = entry.get_meta("right", null)
+		if right != null:
+			right.custom_minimum_size = Vector2(w, 0)
+
 
 func open_for(tool: ToolStation) -> void:
 	_active_tool = tool
@@ -117,6 +136,7 @@ func _entry(id: String) -> Button:
 	right.size_flags_vertical = Control.SIZE_SHRINK_CENTER   # 행 세로 중앙
 	right.add_theme_constant_override("separation", 2)
 	row.add_child(right)
+	entry.set_meta("right", right)   # 가격 열 폭 통일(_align_price_column)용
 	var coin_node := _coin(int(def.get("price", 0)))      # 가격(윗줄)
 	right.add_child(coin_node)
 	# 시간 — 스톱워치 손그림 + 숫자 (아랫줄)
