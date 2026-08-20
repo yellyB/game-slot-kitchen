@@ -30,6 +30,9 @@ const SFX := {
 
 const POOL_SIZE := 8
 const SFX_VOLUME_DB := 0.0
+const SFX_GAIN_DB := {
+	"fail": 2.3,
+}
 
 const BGM := preload("res://assets/audio/bgm/kitchen_table_notes.mp3")
 const BGM_VOLUME_DB := -10.0
@@ -85,5 +88,6 @@ func play(id: String, pitch := 1.0) -> void:
 	var p := _players[_next]
 	_next = (_next + 1) % POOL_SIZE
 	p.stream = stream
+	p.volume_db = SFX_VOLUME_DB + SFX_GAIN_DB.get(id, 0.0)
 	p.pitch_scale = pitch
 	p.play()
