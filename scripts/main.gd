@@ -194,6 +194,8 @@ func _go_home() -> void:
 
 
 func _start_game() -> void:
+  _celebrating = false           # 이전 승리 축포 예약 취소
+  _clear_confetti()              # 남은 색종이 제거(축포 후 홈→시작 시 잔재 방지)
   _last_cash = 0                 # 새 판 — 이전 판 보유금 잔상 제거(시작 시 -표시 방지)
   _money_label.text = UI.money(0)
   _title.hide()
@@ -201,8 +203,16 @@ func _start_game() -> void:
 
 
 func _show_title() -> void:
+  _celebrating = false           # 타이틀 이동 → 예약된 2차 축포 취소
+  _clear_confetti()
   _clear_blackout()   # 게임오버 암전 잔재 제거(안 치우면 시작해도 검은 화면+입력 차단)
   _title.show()
+
+
+## 화면에 남은 축포(색종이) 일괄 제거.
+func _clear_confetti() -> void:
+  for p in get_tree().get_nodes_in_group("confetti"):
+    p.queue_free()
 
 
 ## 튜토리얼 진입 — 실제 play 화면 위에 가이드 오버레이를 얹는다(별도 화면 아님).
@@ -1057,6 +1067,7 @@ func _spawn_confetti(count := 46) -> void:
     p.z_index = 350   # 모달(z 300) 위로
     p.mouse_filter = Control.MOUSE_FILTER_IGNORE
     p.pivot_offset = p.size * 0.5
+    p.add_to_group("confetti")   # 새 게임/홈 이동 시 일괄 제거용
     add_child(p)
     p.position = Vector2(randf_range(vp.x * 0.15, vp.x * 0.85), -20.0)
     var tw := create_tween()
@@ -1512,8 +1523,12 @@ func _on_day_ended(summary: Dictionary) -> void:
       .title(Loc.t("win_title")) \
       .stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
       .button(Loc.t("to_title"), _show_title)
+    _celebrating = true
     _spawn_confetti()   # 축포 한 번
-    get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))   # 0.5s 뒤 한 번 더
+    # 6초 뒤 2차 축포 — 그 사이 타이틀/새 게임으로 나갔으면(_celebrating=false) 취소
+    get_tree().create_timer(6.0).timeout.connect(func():
+      if _celebrating:
+        _spawn_confetti(46))
   else:
     # 마감 임팩트: 마감 종 + 큰 중앙 날짜 배너. (화면 흔들림 없음 — 흔들림은 막판 카운트다운에서만)
     Audio.play("day_close")   # 영업 종료 딩동(마감 임팩트)
