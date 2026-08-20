@@ -84,11 +84,13 @@ func dispose() -> void:
 	queue_free()
 
 func pop_in() -> void:
-	scale = Vector2(0.6, 0.6)
+	modulate.a = 0.0
 	await get_tree().process_frame
 	if not is_instance_valid(self):
 		return
 	pivot_offset = size * 0.5
+	scale = Vector2(0.6, 0.6)
+	modulate.a = 1.0
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
