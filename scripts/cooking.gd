@@ -57,6 +57,23 @@ func _ready() -> void:
 		_entries.append(entry)
 		list.add_child(entry)
 
+	_align_price_column()
+
+
+func _align_price_column() -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(self):
+		return
+	var w := 0.0
+	for entry in _entries:
+		var right: Control = entry.get_meta("right", null)
+		if right != null:
+			w = maxf(w, right.get_combined_minimum_size().x)
+	for entry in _entries:
+		var right: Control = entry.get_meta("right", null)
+		if right != null:
+			right.custom_minimum_size = Vector2(w, 0)
+
 
 func open_for(tool: ToolStation) -> void:
 	_active_tool = tool
@@ -106,6 +123,7 @@ func _entry(id: String) -> Button:
 	right.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	right.add_theme_constant_override("separation", 2)
 	row.add_child(right)
+	entry.set_meta("right", right)
 	var coin_node := _coin(int(def.get("price", 0)))
 	right.add_child(coin_node)
 	var time_node := HBoxContainer.new()
