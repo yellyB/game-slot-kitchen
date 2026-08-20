@@ -25,6 +25,7 @@ func _wrap_content() -> void:
 	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.modulate.a = 0.0
 	wrap.add_child(holder)
 	for ch in built:
 		remove_child(ch)
@@ -45,11 +46,13 @@ func _setup_fit() -> void:
 			if ch is Control:
 				_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
+		_holder.modulate.a = 1.0
 		return
 	for ch in _holder.get_children():
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fit_wrap()
+	_holder.modulate.a = 1.0
 
 
 const _FIT_MARGIN := 0.9
