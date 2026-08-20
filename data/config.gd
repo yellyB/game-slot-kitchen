@@ -28,7 +28,7 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 
 # ── 경제 (금액 최소단위 1원, 가장 싼 메뉴 = 1) ────────────
 const START_MONEY := 0     # 시작 소지금
-const SLOT_PRICE := 500       # 슬롯 +1 확장 1일차 기본가(상점) — 일수 따라 SHOP_PRICE_GROWTH로 상승
+const SLOT_PRICE := 3000      # 슬롯 +1 확장 기본가(상점) — 날짜 인플레 없음, 첫날 여유(~6천)로 딱 1개 살 수준
 const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
 const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
 const SLOT_PRICE_STEP := 2.0     # 슬롯 확장 1개 살 때마다 가격 배수(기하급수). ×2 = 실질 15~17칸까지 확장
