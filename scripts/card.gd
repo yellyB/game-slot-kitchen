@@ -36,6 +36,7 @@ func _wrap_content() -> void:
 	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.modulate.a = 0.0   # 최초 fit(중앙 배치·크기 확정) 전엔 숨김 — 좌상단 자연크기로 잠깐 보이는 것 방지
 	wrap.add_child(holder)
 	for ch in built:
 		remove_child(ch)
@@ -60,11 +61,13 @@ func _setup_fit() -> void:
 			if ch is Control:
 				_content_min = _content_min.max((ch as Control).get_combined_minimum_size())
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
-		return   # 끝내 측정 실패(내용 없음 등) — 원본 그대로
+		_holder.modulate.a = 1.0   # 측정 실패(내용 없음 등) — 원본 그대로 노출
+		return
 	for ch in _holder.get_children():
 		if ch is Control:
 			(ch as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fit_wrap()
+	_holder.modulate.a = 1.0   # fit 완료(중앙·크기 확정) 후 노출
 
 
 ## 내용을 자연 크기(_content_min)로 홀더에 담아 카드 중앙에 놓고, 카드보다 크면 통째로 축소.
