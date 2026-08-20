@@ -36,6 +36,7 @@ var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
 var _hours_glow: Tween      # 마감 임박 펄스
+var _celebrating := false   # 승리 축포 중 — 새 게임/타이틀 이동 시 false(예약된 2차 축포 취소)
 var _hours_warning := false  # 임박 상태 진입 여부(전환 시 1회만 처리)
 var _blackout: ColorRect    # 폐업 암전 오버레이
 var _countdown_edge: Panel  # 카운트다운 화면 가장자리 빨강 비네트(마감 임박 원인 구분·A안)
@@ -1105,7 +1106,7 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Contro
   var dim := ColorRect.new()   # 어두운 배경(흐림 효과)
   dim.color = Color(0.164, 0.129, 0.106, 0.55)
   dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP   # 딤 뜬 동안 뒤 버튼(창고 등) 클릭 차단
   root.add_child(dim)
 
   var center := CenterContainer.new()   # 이미지+텍스트 정중앙
