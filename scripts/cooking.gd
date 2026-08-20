@@ -109,15 +109,22 @@ func _entry(id: String) -> Button:
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(gap)
-	var coin_node := _coin(int(def.get("price", 0)))      # 가격
-	row.add_child(coin_node)
-	# 시간 — 스톱워치 손그림 + 숫자
+
+	# 오른쪽: 가격(윗줄) / 시간(아랫줄) 두 줄 세로 배치 — 가격이 길어도 시간이 안 밀림.
+	var right := VBoxContainer.new()
+	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	right.size_flags_vertical = Control.SIZE_SHRINK_CENTER   # 행 세로 중앙
+	right.add_theme_constant_override("separation", 2)
+	row.add_child(right)
+	var coin_node := _coin(int(def.get("price", 0)))      # 가격(윗줄)
+	right.add_child(coin_node)
+	# 시간 — 스톱워치 손그림 + 숫자 (아랫줄)
 	var time_node := HBoxContainer.new()
 	time_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	time_node.add_theme_constant_override("separation", 2)
 	time_node.add_child(UI.ui_icon("timer", 20))
 	time_node.add_child(UI.label(str(int(def.get("cook_time", 0))), 20, Palette.COCOA_600))
-	row.add_child(time_node)
+	right.add_child(time_node)
 
 	# 제작 불가(비활성) 시 흐리게 할 "제안" 부분 — 재료 아이콘은 보유여부대로 별도 처리.
 	entry.set_meta("offer", [menu_node, coin_node, time_node])
