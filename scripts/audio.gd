@@ -33,6 +33,9 @@ const SFX := {
 
 const POOL_SIZE := 8          # 동시 재생 가능한 효과음 수
 const SFX_VOLUME_DB := 0.0    # 효과음 볼륨(dB) — 튜닝 시 조정
+const SFX_GAIN_DB := {        # 특정 효과음만 상대 볼륨 보정(dB). 없으면 0.
+	"fail": 2.3,          # 런 실패/폐업음 +30%(≈+2.3dB)
+}
 
 ## 배경음(홈·플레이 화면 통틀어 계속 재생, 곡 끝나면 다시). Audio는 오토로드라 화면 전환에도 안 끊김.
 const BGM := preload("res://assets/audio/bgm/kitchen_table_notes.mp3")
@@ -94,5 +97,6 @@ func play(id: String, pitch := 1.0) -> void:
 	var p := _players[_next]
 	_next = (_next + 1) % POOL_SIZE
 	p.stream = stream
+	p.volume_db = SFX_VOLUME_DB + SFX_GAIN_DB.get(id, 0.0)   # 매번 재설정(풀 재사용 시 이전 보정 초기화)
 	p.pitch_scale = pitch   # 카운트다운 등 긴박감 고조용(기본 1.0)
 	p.play()
