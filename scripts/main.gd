@@ -175,6 +175,8 @@ func _go_home() -> void:
 
 
 func _start_game() -> void:
+  _celebrating = false
+  _clear_confetti()
   _last_cash = 0
   _money_label.text = UI.money(0)
   _title.hide()
@@ -182,8 +184,15 @@ func _start_game() -> void:
 
 
 func _show_title() -> void:
+  _celebrating = false
+  _clear_confetti()
   _clear_blackout()
   _title.show()
+
+
+func _clear_confetti() -> void:
+  for p in get_tree().get_nodes_in_group("confetti"):
+    p.queue_free()
 
 
 func _start_tutorial(after := "title") -> void:
@@ -964,6 +973,7 @@ func _spawn_confetti(count := 46) -> void:
     p.z_index = 350
     p.mouse_filter = Control.MOUSE_FILTER_IGNORE
     p.pivot_offset = p.size * 0.5
+    p.add_to_group("confetti")
     add_child(p)
     p.position = Vector2(randf_range(vp.x * 0.15, vp.x * 0.85), -20.0)
     var tw := create_tween()
@@ -1384,8 +1394,11 @@ func _on_day_ended(summary: Dictionary) -> void:
       .title(Loc.t("win_title")) \
       .stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
       .button(Loc.t("to_title"), _show_title)
+    _celebrating = true
     _spawn_confetti()
-    get_tree().create_timer(6.0).timeout.connect(_spawn_confetti.bind(46))
+    get_tree().create_timer(6.0).timeout.connect(func():
+      if _celebrating:
+        _spawn_confetti(46))
   else:
     Audio.play("day_close")
     Audio.vibrate(40)
