@@ -19,7 +19,7 @@ const PATIENCE_DISH := 35.0
 const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
-const SLOT_PRICE := 500
+const SLOT_PRICE := 3000
 const BUFF_PACK_PRICE := 200
 const SHOP_PRICE_GROWTH := 1.65
 const SLOT_PRICE_STEP := 2.0
