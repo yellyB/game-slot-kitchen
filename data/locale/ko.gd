@@ -139,6 +139,6 @@ const S := {
 	"b.sale_crit.name": "벼랑끝", "b.sale_crit.label": "인내심 임박(빨강)에 서빙하면 메뉴가격의 20% 추가 획득",
 	"b.pat_down.name": "박대", "b.pat_down.label": "손님 인내심 -30%",
 	"b.onlost_pay.name": "취소 수수료", "b.onlost_pay.label": "주문 손님이 인내심이 다 되어 떠나면 그 메뉴 가격의 34% 획득",
-	"b.onlost_x2.name": "보복", "b.onlost_x2.label": "주문서를 시간안에 처리못하면 다음번 획득 금액이 두배",
+	"b.onlost_x2.name": "보복", "b.onlost_x2.label": "주문 손님이 인내심이 다 되어 떠나면 다음번 획득 금액이 두배",
 	"b.settle_leave.name": "손절", "b.settle_leave.label": "마감시 그날 받은 주문서의 30% 미만으로 처리했다면 장사 종료 시 보유금액의 15%원",
 }

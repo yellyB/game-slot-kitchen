@@ -139,6 +139,6 @@ const S := {
 	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): +20% of menu price",
 	"b.pat_down.name": "Neglect", "b.pat_down.label": "Customer patience -30%",
 	"b.onlost_pay.name": "Cancellation Fee", "b.onlost_pay.label": "When an ordering customer runs out of patience and leaves: gain 34% of that menu's price",
-	"b.onlost_x2.name": "Revenge", "b.onlost_x2.label": "When an ordering customer leaves unserved: next sale ×2",
+	"b.onlost_x2.name": "Revenge", "b.onlost_x2.label": "When an ordering customer runs out of patience and leaves: next sale ×2",
 	"b.settle_leave.name": "Cut Loss", "b.settle_leave.label": "If 30%+ of ordering customers leave unserved: +15% of cash at close",
 }
