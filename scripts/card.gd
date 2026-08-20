@@ -88,9 +88,14 @@ func dispose() -> void:
 
 func pop_in() -> void:
 	modulate.a = 0.0
-	await get_tree().process_frame
-	if not is_instance_valid(self):
-		return
+	var prev := Vector2.ZERO
+	for _i in 8:
+		await get_tree().process_frame
+		if not is_instance_valid(self):
+			return
+		if size.x > 0.0 and size.y > 0.0 and size == prev:
+			break
+		prev = size
 	pivot_offset = size * 0.5
 	scale = Vector2(0.6, 0.6)
 	modulate.a = 1.0
