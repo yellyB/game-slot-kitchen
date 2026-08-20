@@ -8,6 +8,8 @@ signal close_requested ## ✕ 닫기
 
 const ICON := 44           # 메뉴 아이콘 크기
 const ING := 32            # 재료 아이콘 크기(작게 — 한 줄에 여러 개 들어가게)
+const MAX_ING := 4         # 한 레시피 최대 재료 수(초코케이크) — 재료칸 고정 폭 계산용
+const ING_AREA_W := MAX_ING * ING + (MAX_ING - 1) * 4   # 재료칸 고정 폭(=가격 열 시작점 통일)
 const ENTRY_H := 64        # 레시피 항목 높이(1줄: 메뉴·재료 … 가격·⏱시간)
 const ROW_SEP := 8         # 항목 간격
 const SHEET_CHROME := 84   # 헤더 + 상하 패딩 여유(시트 높이 계산용)
@@ -94,9 +96,11 @@ func _entry(id: String) -> Button:
 	row.add_child(_col_divider())                          # 완성품 | 재료 구분
 
 	# 재료(필요 입력) — 작게. 노드는 _refresh에서 보유여부에 따라 진하게/흐리게.
+	# 고정 폭(최대 4개 기준)으로 잡아, 재료 개수와 무관하게 가격/시간 열이 늘 같은 x에서 시작.
 	var ing := HBoxContainer.new()
 	ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ing.add_theme_constant_override("separation", 4)
+	ing.custom_minimum_size = Vector2(ING_AREA_W, 0)   # 재료칸 고정 → 가격 열 시작점 통일
 	var ing_nodes: Array = []
 	for iid in def.get("ingredients", []):
 		var node := Ingredients.icon_node(iid, ING)
@@ -105,12 +109,7 @@ func _entry(id: String) -> Button:
 	entry.set_meta("ings", ing_nodes)
 	row.add_child(ing)
 
-	var gap := Control.new()
-	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(gap)
-
-	# 오른쪽: 가격(윗줄) / 시간(아랫줄) 두 줄 세로 배치 — 가격이 길어도 시간이 안 밀림.
+	# 오른쪽: 가격(윗줄) / 시간(아랫줄) 두 줄 세로 배치 — 고정 재료칸 뒤라 시작점 일정, 왼쪽정렬.
 	var right := VBoxContainer.new()
 	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	right.size_flags_vertical = Control.SIZE_SHRINK_CENTER   # 행 세로 중앙
@@ -125,6 +124,12 @@ func _entry(id: String) -> Button:
 	time_node.add_child(UI.ui_icon("timer", 20))
 	time_node.add_child(UI.label(str(int(def.get("cook_time", 0))), 20, Palette.COCOA_600))
 	right.add_child(time_node)
+
+	# 남는 공간은 맨 오른쪽으로 — 가격/시간 열은 고정 시작점에 왼쪽정렬 유지.
+	var tail := Control.new()
+	tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(tail)
 
 	# 제작 불가(비활성) 시 흐리게 할 "제안" 부분 — 재료 아이콘은 보유여부대로 별도 처리.
 	entry.set_meta("offer", [menu_node, coin_node, time_node])
