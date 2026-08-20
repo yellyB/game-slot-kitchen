@@ -32,6 +32,7 @@ var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
 var _hours_glow: Tween
+var _celebrating := false
 var _hours_warning := false
 var _blackout: ColorRect
 var _countdown_edge: Panel
@@ -1009,7 +1010,7 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Contro
   var dim := ColorRect.new()
   dim.color = Color(0.164, 0.129, 0.106, 0.55)
   dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
   root.add_child(dim)
 
   var center := CenterContainer.new()
