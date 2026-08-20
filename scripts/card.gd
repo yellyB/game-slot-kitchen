@@ -115,9 +115,17 @@ func pop_in() -> void:
 	# 그래서 첫 프레임은 투명하게 숨겨(레이아웃 크기 계산은 유지) 좌상단 깜빡임을 없애고,
 	# 크기 확정 후 '중앙 기준'으로 작게 시작해 커지게 한다.
 	modulate.a = 0.0
-	await get_tree().process_frame   # 레이아웃 후 크기 확정
-	if not is_instance_valid(self):
-		return
+	# 카드 최종 크기가 확정될 때까지 대기 — 카드마다 슬롯 레이아웃 정착 프레임이 달라
+	# 크기가 0/미확정인 채로 pivot을 잡으면 좌상단 기준이 돼 오른쪽·아래로 커져 보임.
+	# (비-0 + 직전 프레임과 동일 = 안정)으로 판정.
+	var prev := Vector2.ZERO
+	for _i in 8:
+		await get_tree().process_frame
+		if not is_instance_valid(self):
+			return
+		if size.x > 0.0 and size.y > 0.0 and size == prev:
+			break
+		prev = size
 	pivot_offset = size * 0.5        # 중앙 기준 스케일
 	scale = Vector2(0.6, 0.6)
 	modulate.a = 1.0
