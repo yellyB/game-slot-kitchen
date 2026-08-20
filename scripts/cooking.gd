@@ -6,6 +6,8 @@ signal close_requested
 
 const ICON := 44
 const ING := 32
+const MAX_ING := 4
+const ING_AREA_W := MAX_ING * ING + (MAX_ING - 1) * 4
 const ENTRY_H := 64
 const ROW_SEP := 8
 const SHEET_CHROME := 84
@@ -88,6 +90,7 @@ func _entry(id: String) -> Button:
 	var ing := HBoxContainer.new()
 	ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ing.add_theme_constant_override("separation", 4)
+	ing.custom_minimum_size = Vector2(ING_AREA_W, 0)
 	var ing_nodes: Array = []
 	for iid in def.get("ingredients", []):
 		var node := Ingredients.icon_node(iid, ING)
@@ -95,11 +98,6 @@ func _entry(id: String) -> Button:
 		ing_nodes.append({"node": node, "iid": iid})
 	entry.set_meta("ings", ing_nodes)
 	row.add_child(ing)
-
-	var gap := Control.new()
-	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(gap)
 
 	var right := VBoxContainer.new()
 	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -114,6 +112,11 @@ func _entry(id: String) -> Button:
 	time_node.add_child(UI.ui_icon("timer", 20))
 	time_node.add_child(UI.label(str(int(def.get("cook_time", 0))), 20, Palette.COCOA_600))
 	right.add_child(time_node)
+
+	var tail := Control.new()
+	tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(tail)
 
 	entry.set_meta("offer", [menu_node, coin_node, time_node])
 
