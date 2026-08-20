@@ -93,7 +93,7 @@ const S := {
 	"b.mp_t56.name": "명품케이크", "b.mp_t56.label": "티라미수·초코케이크 메뉴 가격 +15%",
 	"b.ramp_t1.name": "모닝커피", "b.ramp_t1.label": "커피 판매 시 기본가의 7%가 메뉴 가격에 추가",
 	"b.ramp_t2.name": "라떼는 말이야", "b.ramp_t2.label": "라떼 판매 시 기본가의 7%가 메뉴 가격에 추가",
-	"b.ramp_t3.name": "반짝반짝", "b.ramp_t3.label": "글레이즈드 판매 시 기본가의 7%가 메뉴 가격에 추가",
+	"b.ramp_t3.name": "설탕코팅", "b.ramp_t3.label": "글레이즈드 판매 시 기본가의 7%가 메뉴 가격에 추가",
 	"b.ramp_t4.name": "초코홀릭", "b.ramp_t4.label": "초코도넛 판매 시 기본가의 7%가 메뉴 가격에 추가",
 	"b.ramp_t5.name": "날 들뜨게 해", "b.ramp_t5.label": "티라미수 판매 시 기본가의 7%가 메뉴 가격에 추가",
 	"b.ramp_t6.name": "악마의 케이크", "b.ramp_t6.label": "초코케이크 판매 시 기본가의 7%가 메뉴 가격에 추가",

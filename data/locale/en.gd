@@ -93,7 +93,7 @@ const S := {
 	"b.mp_t56.name": "Luxury Cake", "b.mp_t56.label": "T5-6 menu price +15%",
 	"b.ramp_t1.name": "But First, Coffee", "b.ramp_t1.label": "Each coffee sold: coffee price +7% (permanent)",
 	"b.ramp_t2.name": "Latte Fever", "b.ramp_t2.label": "Each latte sold: latte price +7% (permanent)",
-	"b.ramp_t3.name": "Glazed & Confused", "b.ramp_t3.label": "Each glazed sold: its price +7% (permanent)",
+	"b.ramp_t3.name": "Sugar Glaze", "b.ramp_t3.label": "Each glazed sold: its price +7% (permanent)",
 	"b.ramp_t4.name": "Chocoholic", "b.ramp_t4.label": "Each choco donut sold: its price +7% (permanent)",
 	"b.ramp_t5.name": "Pick Me Up", "b.ramp_t5.label": "Each tiramisu sold: its price +7% (permanent)",
 	"b.ramp_t6.name": "Devil's Food", "b.ramp_t6.label": "Each choco cake sold: its price +7% (permanent)",
