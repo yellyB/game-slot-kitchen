@@ -31,13 +31,7 @@ func _ready() -> void:
 
 	var header := CenterContainer.new()
 	v.add_child(header)
-	var close := Button.new()
-	close.text = "✕"
-	close.add_theme_font_size_override("font_size", 16)
-	close.add_theme_color_override("font_color", Palette.COCOA_600)
-	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	var close := make_close_handle()
 	close.pressed.connect(func(): close_requested.emit())
 	Audio.attach_click(close)
 	header.add_child(close)
