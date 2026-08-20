@@ -108,11 +108,16 @@ func dispose() -> void:
 ## 배치 시 "팝인" — 작게 나타나 슬롯보다 크게 불룩 튄 뒤 제자리로. Slot.place_card/take_card가 호출.
 ## (흰 카드가 흰 슬롯 위라, 1.0 이상 오버슛해 슬롯 밖으로 불룩해야 눈에 확 띔.)
 func pop_in() -> void:
-	scale = Vector2(0.6, 0.6)
+	# 레이아웃 전엔 size=0 → pivot(중앙)이 (0,0)이 돼 좌상단으로 축소돼 보임.
+	# 그래서 첫 프레임은 투명하게 숨겨(레이아웃 크기 계산은 유지) 좌상단 깜빡임을 없애고,
+	# 크기 확정 후 '중앙 기준'으로 작게 시작해 커지게 한다.
+	modulate.a = 0.0
 	await get_tree().process_frame   # 레이아웃 후 크기 확정
 	if not is_instance_valid(self):
 		return
 	pivot_offset = size * 0.5        # 중앙 기준 스케일
+	scale = Vector2(0.6, 0.6)
+	modulate.a = 1.0
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
