@@ -100,14 +100,20 @@ func _entry(id: String) -> Button:
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(gap)
+
+	var right := VBoxContainer.new()
+	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	right.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	right.add_theme_constant_override("separation", 2)
+	row.add_child(right)
 	var coin_node := _coin(int(def.get("price", 0)))
-	row.add_child(coin_node)
+	right.add_child(coin_node)
 	var time_node := HBoxContainer.new()
 	time_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	time_node.add_theme_constant_override("separation", 2)
 	time_node.add_child(UI.ui_icon("timer", 20))
 	time_node.add_child(UI.label(str(int(def.get("cook_time", 0))), 20, Palette.COCOA_600))
-	row.add_child(time_node)
+	right.add_child(time_node)
 
 	entry.set_meta("offer", [menu_node, coin_node, time_node])
 
