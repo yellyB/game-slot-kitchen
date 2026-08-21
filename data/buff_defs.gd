@@ -135,8 +135,42 @@ static func tex(id: String, small := false) -> Texture2D:
 	if not cache.has(cat):
 		var dir := "buffs_48" if small else "buffs_128"
 		var path := "res://assets/art/%s/buff_%s.png" % [dir, cat]
-		cache[cat] = load(path) if ResourceLoader.exists(path) else null
+		var base: Texture2D = load(path) if ResourceLoader.exists(path) else null
+		cache[cat] = _opaque_crop(base)
 	return cache[cat]
+
+static func _opaque_crop(t: Texture2D) -> Texture2D:
+	if t == null:
+		return null
+	var img := t.get_image()
+	if img == null:
+		return t
+	if img.is_compressed():
+		img.decompress()
+	var w := img.get_width()
+	var h := img.get_height()
+	var minx := w
+	var miny := h
+	var maxx := -1
+	var maxy := -1
+	for y in h:
+		for x in w:
+			if img.get_pixel(x, y).a > 0.06:
+				if x < minx: minx = x
+				if x > maxx: maxx = x
+				if y < miny: miny = y
+				if y > maxy: maxy = y
+	if maxx < minx:
+		return t
+	var m := int(round(float(maxi(maxx - minx + 1, maxy - miny + 1)) * 0.06))
+	minx = maxi(0, minx - m)
+	miny = maxi(0, miny - m)
+	maxx = mini(w - 1, maxx + m)
+	maxy = mini(h - 1, maxy + m)
+	var at := AtlasTexture.new()
+	at.atlas = t
+	at.region = Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1)
+	return at
 
 static func icon_node(id: String, px: int) -> Control:
 	var t := tex(id, px <= 30)
