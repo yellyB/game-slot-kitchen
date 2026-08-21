@@ -740,25 +740,43 @@ func _show_gain_breakdown(breakdown: Array) -> void:
   var base_amt := int(base_entry.get("amount", 0))
   var base_col: Color = GAIN_BASE_COLOR if base_entry.get("src", "") == "base" else GAIN_BUFF_COLOR
 
-  var total_box := HBoxContainer.new()
-  total_box.add_theme_constant_override("separation", 6)
-  total_box.alignment = BoxContainer.ALIGNMENT_CENTER
-  total_box.z_index = 110
-  total_box.add_child(_gain_icon(base_entry, 40))
+  var has_buffs := items.size() > 1
+
   var total_l := UI.label(UI.money(base_amt), 34, base_col, true)
   total_l.add_theme_constant_override("outline_size", 4)
   total_l.add_theme_color_override("font_outline_color", Palette.WHITE)
-  total_box.add_child(total_l)
-  add_child(total_box)
+  total_l.z_index = 110
+  add_child(total_l)
+  var menu_icon := _gain_icon(base_entry, 40)
+  menu_icon.z_index = 110
+  add_child(menu_icon)
   await get_tree().process_frame
-  if not is_instance_valid(total_box):
+  if not is_instance_valid(total_l):
     return
-  total_box.pivot_offset = total_box.size * 0.5
-  total_box.position = size * 0.5 - total_box.size * 0.5
-  total_box.scale = Vector2(0.4, 0.4)
+  var center := size * 0.5
+  total_l.pivot_offset = total_l.size * 0.5
+  total_l.position = center - total_l.size * 0.5
+  if is_instance_valid(menu_icon):
+    var isz := menu_icon.size
+    if isz == Vector2.ZERO:
+      isz = Vector2(40, 40)
+    menu_icon.pivot_offset = isz * 0.5
+    menu_icon.position = Vector2(total_l.position.x - 8.0 - isz.x, center.y - isz.y * 0.5)
+  total_l.scale = Vector2(0.4, 0.4)
   var tin := create_tween()
-  tin.tween_property(total_box, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  tin.tween_property(total_box, "scale", Vector2.ONE, 0.08)
+  tin.tween_property(total_l, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tin.tween_property(total_l, "scale", Vector2.ONE, 0.08)
+  if is_instance_valid(menu_icon):
+    menu_icon.scale = Vector2(0.4, 0.4)
+    var ti2 := create_tween()
+    ti2.tween_property(menu_icon, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+    ti2.tween_property(menu_icon, "scale", Vector2.ONE, 0.08)
+  if has_buffs:
+    get_tree().create_timer(0.28).timeout.connect(func():
+      if is_instance_valid(menu_icon):
+        var fo := create_tween()
+        fo.tween_property(menu_icon, "modulate:a", 0.0, 0.14)
+        fo.tween_callback(menu_icon.queue_free))
 
   var running := base_amt
   var t := 0.42
@@ -769,15 +787,15 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     running += amt
     var to_total := running
     get_tree().create_timer(t).timeout.connect(func():
-      if not is_instance_valid(total_box) or not is_instance_valid(total_l):
+      if not is_instance_valid(total_l):
         return
       Audio.play("serve")
-      _spawn_bonus_pop(amt, entry, total_box.position + Vector2(total_box.size.x * 0.5, 0.0))
+      _spawn_bonus_pop(amt, entry, total_l.position + Vector2(total_l.size.x * 0.5, 0.0))
       var cu := create_tween()
       cu.tween_method(_set_money_text.bind(total_l), float(from_total), float(to_total), 0.3)
       var bump := create_tween()
-      bump.tween_property(total_box, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-      bump.tween_property(total_box, "scale", Vector2.ONE, 0.1))
+      bump.tween_property(total_l, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+      bump.tween_property(total_l, "scale", Vector2.ONE, 0.1))
     t += 0.42
 
   get_tree().create_timer(t + 0.2).timeout.connect(func():
@@ -785,11 +803,11 @@ func _show_gain_breakdown(breakdown: Array) -> void:
       return
     _pop_label(_money_label)
     Audio.play("coins")
-    if is_instance_valid(total_box):
+    if is_instance_valid(total_l):
       var out := create_tween()
-      out.tween_property(total_box, "position:y", total_box.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
-      out.parallel().tween_property(total_box, "modulate:a", 0.0, 0.36)
-      out.tween_callback(total_box.queue_free))
+      out.tween_property(total_l, "position:y", total_l.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
+      out.parallel().tween_property(total_l, "modulate:a", 0.0, 0.36)
+      out.tween_callback(total_l.queue_free))
 
 
 func _set_money_text(v: float, lbl: Label) -> void:
