@@ -169,8 +169,44 @@ static func tex(id: String, small := false) -> Texture2D:
 	if not cache.has(cat):
 		var dir := "buffs_48" if small else "buffs_128"   # 작은 표시=48px, 그 외=128px
 		var path := "res://assets/art/%s/buff_%s.png" % [dir, cat]
-		cache[cat] = load(path) if ResourceLoader.exists(path) else null
+		var base: Texture2D = load(path) if ResourceLoader.exists(path) else null
+		cache[cat] = _opaque_crop(base)   # 원본마다 다른 투명 여백을 제거 → 슬롯에서 아이콘 크기 균일화
 	return cache[cat]
+
+## 텍스처를 불투명 영역(+약간의 여백)으로 크롭한 AtlasTexture 반환. 원본별 여백 차이로
+## 아이콘이 제각각 작아 보이던 문제 보정(모든 카테고리가 칸을 같은 비율로 채우게). 실패 시 원본 그대로.
+static func _opaque_crop(t: Texture2D) -> Texture2D:
+	if t == null:
+		return null
+	var img := t.get_image()
+	if img == null:
+		return t
+	if img.is_compressed():
+		img.decompress()
+	var w := img.get_width()
+	var h := img.get_height()
+	var minx := w
+	var miny := h
+	var maxx := -1
+	var maxy := -1
+	for y in h:
+		for x in w:
+			if img.get_pixel(x, y).a > 0.06:
+				if x < minx: minx = x
+				if x > maxx: maxx = x
+				if y < miny: miny = y
+				if y > maxy: maxy = y
+	if maxx < minx:
+		return t   # 전부 투명 — 그대로
+	var m := int(round(float(maxi(maxx - minx + 1, maxy - miny + 1)) * 0.06))
+	minx = maxi(0, minx - m)
+	miny = maxi(0, miny - m)
+	maxx = mini(w - 1, maxx + m)
+	maxy = mini(h - 1, maxy + m)
+	var at := AtlasTexture.new()
+	at.atlas = t
+	at.region = Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1)
+	return at
 
 ## 버프 아이콘 노드 — 카테고리 텍스처 있으면 TextureRect(px, 밉맵), 없으면 이모지(⚡).
 static func icon_node(id: String, px: int) -> Control:
