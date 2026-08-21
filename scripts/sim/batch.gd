@@ -41,3 +41,23 @@ func compare(n: int, loadouts: Array) -> Array:
 		res["name"] = lo.get("name", "?")
 		out.append(res)
 	return out
+
+
+func buff_report(n: int) -> void:
+	var base := run(n, [], false)
+	print("[BUFFRPT] base(버프0)  승률 %.0f%%  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s)" % [
+		base["win_rate"] * 100.0, base["avg_cash"], base["avg_days"], n,
+		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1"])
+	var rows := []
+	for id in BuffDefs.ids():
+		var r := run(n, [id], false)
+		rows.append({
+			"id": id,
+			"dwin": (r["win_rate"] - base["win_rate"]) * 100.0,
+			"dcash": r["avg_cash"] - base["avg_cash"],
+			"win": r["win_rate"] * 100.0,
+		})
+	rows.sort_custom(func(a, b): return a["dcash"] > b["dcash"])
+	for row in rows:
+		print("[BUFFRPT] %-14s Δ승률 %+6.1f%%  Δ현금 %+9.0f  (승률 %.0f%%)" % [
+			row["id"], row["dwin"], row["dcash"], row["win"]])

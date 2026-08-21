@@ -142,6 +142,11 @@ func _ready() -> void:
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
     get_tree().quit()
 
+  if "--simbuffs" in OS.get_cmdline_user_args():
+    var bn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
+    SimBatch.new().buff_report(bn)
+    get_tree().quit()
+
 
 func _on_home_pressed() -> void:
   _set_world_paused(true)
