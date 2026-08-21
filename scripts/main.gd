@@ -158,6 +158,12 @@ func _ready() -> void:
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
     get_tree().quit()
 
+  # 버프 효과 측정: SIM_RENT=<배수> SIM_N=<판수> godot4 ... -- --simbuffs
+  if "--simbuffs" in OS.get_cmdline_user_args():
+    var bn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
+    SimBatch.new().buff_report(bn)
+    get_tree().quit()
+
 
 ## 홈 버튼 — 확인창(진행 중인 판이 사라짐).
 func _on_home_pressed() -> void:
