@@ -386,8 +386,27 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("돈-5만", func(): _session.add_cash(-50000)))
   row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
+  row.add_child(_debug_btn("버프", _debug_add_buff))
   row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
   return row
+
+
+## 디버그: 랜덤 버프 1개 획득(차단 카드 제외) + 보드 빈 슬롯에 즉시 배치.
+func _debug_add_buff() -> void:
+  var pack := BuffDefs.random_pack(1)
+  if pack.is_empty():
+    return
+  var id: String = pack[0]
+  var before := Buffs.owned().size()
+  Buffs.add(id)
+  if Buffs.owned().size() == before:
+    return   # 보유 가득
+  var slot := _board.first_empty_slot()
+  if slot:
+    var bc := BuffCard.new()
+    bc.setup(id)
+    slot.place_card(bc)
+  _refresh_buff_btn()
 
 
 ## 디버그: 손님 하나 강제 이탈. 슬롯 주문서(순회 순서 첫 번째) 먼저, 없으면 대기열 첫 손님.
