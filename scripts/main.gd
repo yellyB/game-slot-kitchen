@@ -800,40 +800,103 @@ const GAIN_BASE_COLOR := Palette.SUCCESS   # 기본 판매금 색
 const GAIN_BUFF_COLOR := Palette.MAIN      # 버프 추가분 색(판매/비판매 공통)
 
 ## 획득 내역을 화면 중앙에 순차 표시 — 기본가(메뉴 아이콘·기본색) → 버프별 추가분(버프 이모지·버프색).
-## breakdown: [{src, amount, icon}, ...]
+## breakdown: [{src, amount, icon, recipe?/buff?}, ...] — 첫 항목=기본가(메뉴), 이후=버프 보너스.
+## 연출: 메뉴 이미지+가격이 제자리에 뜨고(띠링), 버프 추가금이 하나씩 +N 팝(띠링)되며
+## 그 자리의 합계가 카운트업으로 오른다. 동전음은 최종 합류 때 딱 한 번.
 func _show_gain_breakdown(breakdown: Array) -> void:
-  var i := 0
+  var items: Array = []
   for entry in breakdown:
+    if int(entry.get("amount", 0)) != 0:
+      items.append(entry)
+  if items.is_empty():
+    return
+  var base_entry: Dictionary = items[0]
+  var base_amt := int(base_entry.get("amount", 0))
+  var base_col: Color = GAIN_BASE_COLOR if base_entry.get("src", "") == "base" else GAIN_BUFF_COLOR
+
+  # 중앙 고정 "합계" 표시 — 메뉴 이미지 + 금액(제자리 카운트업). base 뜰 때 띠링은 서빙음(_on_served)이 겸함.
+  var total_box := HBoxContainer.new()
+  total_box.add_theme_constant_override("separation", 6)
+  total_box.alignment = BoxContainer.ALIGNMENT_CENTER
+  total_box.z_index = 110
+  total_box.add_child(_gain_icon(base_entry, 40))
+  var total_l := UI.label(UI.money(base_amt), 34, base_col, true)
+  total_l.add_theme_constant_override("outline_size", 4)
+  total_l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  total_box.add_child(total_l)
+  add_child(total_box)
+  await get_tree().process_frame
+  if not is_instance_valid(total_box):
+    return
+  total_box.pivot_offset = total_box.size * 0.5
+  total_box.position = size * 0.5 - total_box.size * 0.5
+  total_box.scale = Vector2(0.4, 0.4)
+  var tin := create_tween()
+  tin.tween_property(total_box, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tin.tween_property(total_box, "scale", Vector2.ONE, 0.08)
+
+  # 버프 추가금 — 순차로 +N 팝 + 띠링 + 중앙 합계 카운트업
+  var running := base_amt
+  var t := 0.42
+  for k in range(1, items.size()):
+    var entry: Dictionary = items[k]
     var amt := int(entry.get("amount", 0))
-    if amt == 0:
-      continue
-    var is_base: bool = entry.get("src", "") == "base"
-    var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
-    var icon: String = str(entry.get("icon", ""))
-    get_tree().create_timer(i * 0.42).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
-    if not is_base:   # 버프 보너스가 터질 때도 동전음(기본가는 아래 라벨 통통 때 한 번)
-      get_tree().create_timer(i * 0.42).timeout.connect(func():
-        if is_inside_tree():
-          Audio.play("coins"))
-    i += 1
-  # 마지막 항목 뒤 보유금액 라벨 통통 + 코인음
-  get_tree().create_timer(i * 0.42 + 0.1).timeout.connect(func():
-    if is_inside_tree():
-      _pop_label(_money_label)
-      Audio.play("coins"))
+    var from_total := running
+    running += amt
+    var to_total := running
+    get_tree().create_timer(t).timeout.connect(func():
+      if not is_instance_valid(total_box) or not is_instance_valid(total_l):
+        return
+      Audio.play("serve")   # 띠링 — 버프 추가금(메뉴 제공음과 동일)
+      _spawn_bonus_pop(amt, entry, total_box.position + Vector2(total_box.size.x * 0.5, 0.0))
+      var cu := create_tween()
+      cu.tween_method(_set_money_text.bind(total_l), float(from_total), float(to_total), 0.3)
+      var bump := create_tween()
+      bump.tween_property(total_box, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+      bump.tween_property(total_box, "scale", Vector2.ONE, 0.1))
+    t += 0.42
+
+  # 최종 합류 — 보유금 라벨 통통 + 동전음(딱 한 번), 중앙 표시는 떠오르며 사라짐
+  get_tree().create_timer(t + 0.2).timeout.connect(func():
+    if not is_inside_tree():
+      return
+    _pop_label(_money_label)
+    Audio.play("coins")
+    if is_instance_valid(total_box):
+      var out := create_tween()
+      out.tween_property(total_box, "position:y", total_box.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
+      out.parallel().tween_property(total_box, "modulate:a", 0.0, 0.36)
+      out.tween_callback(total_box.queue_free))
 
 
-## 화면 중앙 "[아이콘] +금액" 팝 — 살짝 튀어올랐다 위로 떠오르며 사라짐. idx로 순차 항목이 위로 쌓임.
-func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> void:
+## 카운트업 tween_method 콜백 — 합계 라벨 텍스트를 금액 표기로 갱신.
+func _set_money_text(v: float, lbl: Label) -> void:
+  if is_instance_valid(lbl):
+    lbl.text = UI.money(int(round(v)))
+
+
+## breakdown 항목 → 실제 아이콘 노드. recipe/buff id 있으면 텍스처, 없으면 이모지 폴백.
+func _gain_icon(entry: Dictionary, px: int) -> Control:
+  if entry.has("recipe"):
+    return Recipes.icon_node(str(entry["recipe"]), px)
+  if entry.has("buff"):
+    return BuffDefs.icon_node(str(entry["buff"]), px)
+  var lbl := UI.label(str(entry.get("icon", "")), px)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  return lbl
+
+
+## 버프 추가금 "+N" 팝 — 합계 위에서 살짝 튀어올랐다 떠오르며 사라짐(동전음 없음).
+func _spawn_bonus_pop(amount: int, entry: Dictionary, anchor: Vector2) -> void:
   if not is_inside_tree():
     return
   var box := HBoxContainer.new()
   box.add_theme_constant_override("separation", 4)
   box.alignment = BoxContainer.ALIGNMENT_CENTER
-  box.z_index = 110
-  if icon != "":
-    box.add_child(UI.label(icon, 30))   # 원인: 메뉴 아이콘 / 버프 이모지
-  var amt_l := UI.label("+" + UI.money(amount), 32, color, true)
+  box.z_index = 111
+  box.add_child(_gain_icon(entry, 28))
+  var amt_l := UI.label("+" + UI.money(amount), 28, GAIN_BUFF_COLOR, true)
   amt_l.add_theme_constant_override("outline_size", 4)
   amt_l.add_theme_color_override("font_outline_color", Palette.WHITE)
   box.add_child(amt_l)
@@ -842,13 +905,13 @@ func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> vo
   if not is_instance_valid(box):
     return
   box.pivot_offset = box.size * 0.5
-  box.position = size * 0.5 - box.size * 0.5
+  box.position = anchor - Vector2(box.size.x * 0.5, box.size.y + 6.0)
   box.scale = Vector2(0.4, 0.4)
   var tw := create_tween()
   tw.tween_property(box, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.tween_property(box, "scale", Vector2.ONE, 0.08)
-  tw.tween_interval(0.12)
-  tw.tween_property(box, "position:y", box.position.y - 40.0, 0.34).set_ease(Tween.EASE_IN)
+  tw.tween_interval(0.1)
+  tw.tween_property(box, "position:y", box.position.y - 46.0, 0.34).set_ease(Tween.EASE_IN)
   tw.parallel().tween_property(box, "modulate:a", 0.0, 0.34)
   tw.tween_callback(box.queue_free)
 

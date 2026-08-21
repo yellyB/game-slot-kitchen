@@ -174,7 +174,7 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var addon_id := ""
 	var accum_id := ""
 	var double_id := ""
-	var breakdown: Array = [{"src": "base", "amount": mp, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]   # 기본가(메뉴 아이콘) 먼저
+	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]   # 기본가(메뉴 아이콘) 먼저
 
 	for id in _owned:
 		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
@@ -237,14 +237,14 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			contrib += dflat
 			flat += dflat
 		if contrib != 0:
-			breakdown.append({"src": id, "amount": contrib, "icon": _buff_icon(id)})
+			breakdown.append({"src": id, "amount": contrib, "buff": id, "icon": _buff_icon(id)})
 
 	var bonus := int(round(float(mp) * pct)) + flat
 	if addon_pct > 0.0:
 		var add := int(round(float(bonus) * addon_pct))   # 57: 추가금 재증폭
 		bonus += add
 		if add != 0:
-			breakdown.append({"src": "addon", "amount": add, "icon": _buff_icon(addon_id)})
+			breakdown.append({"src": "addon", "amount": add, "buff": addon_id, "icon": _buff_icon(addon_id)})
 	var amount := mp + bonus
 	var mult := 1
 	if do_double:
@@ -255,13 +255,13 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	if mult > 1:
 		var before := amount
 		amount *= mult
-		breakdown.append({"src": "double", "amount": amount - before, "icon": _buff_icon(double_id)})
+		breakdown.append({"src": "double", "amount": amount - before, "buff": double_id, "icon": _buff_icon(double_id)})
 	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금의 %만 누적(복리 차단)
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
 		amount += payout
 		if payout != 0:
-			breakdown.append({"src": "accum", "amount": payout, "icon": _buff_icon(accum_id)})
+			breakdown.append({"src": "accum", "amount": payout, "buff": accum_id, "icon": _buff_icon(accum_id)})
 	return {"amount": amount, "penalty": penalty, "discard": discard, "breakdown": breakdown}
 
 
