@@ -4,9 +4,9 @@ extends RefCounted
 const DAYS := [
 	{"rent": 1800,  "per_wave": 11},
 	{"rent": 9000,  "per_wave": 12},
-	{"rent": 14000, "per_wave": 13},
-	{"rent": 28000, "per_wave": 13},
-	{"rent": 50000, "per_wave": 14},
+	{"rent": 10000, "per_wave": 13},
+	{"rent": 19000, "per_wave": 13},
+	{"rent": 33000, "per_wave": 14},
 ]
 
 static func count() -> int:
