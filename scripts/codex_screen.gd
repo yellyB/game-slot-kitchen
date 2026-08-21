@@ -140,10 +140,10 @@ func _make_cell(id: String) -> Control:
 	card.custom_minimum_size = CELL
 	card.clip_contents = true   # 긴 설명이 카드 밖으로 넘치지 않게
 	var found := Codex.is_discovered(id)
-	if found:
-		card.add_theme_stylebox_override("panel", UI.card(Palette.MAIN.lightened(0.82), Palette.MAIN, 2))
-	else:
-		card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200, 1))
+	# 그림자 끔 — 둥근 모서리 아래로 회색 뾰족이가 삐져나오는 현상 제거.
+	var sb := UI.card(Palette.MAIN.lightened(0.82), Palette.MAIN, 2) if found else UI.card(Palette.COCOA_100, Palette.COCOA_200, 1)
+	sb.shadow_size = 0
+	card.add_theme_stylebox_override("panel", sb)
 
 	if found:
 		var pad := MarginContainer.new()
