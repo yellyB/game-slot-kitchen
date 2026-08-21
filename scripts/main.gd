@@ -739,6 +739,10 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
     var icon: String = str(entry.get("icon", ""))
     get_tree().create_timer(i * 0.42).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
+    if not is_base:
+      get_tree().create_timer(i * 0.42).timeout.connect(func():
+        if is_inside_tree():
+          Audio.play("coins"))
     i += 1
   get_tree().create_timer(i * 0.42 + 0.1).timeout.connect(func():
     if is_inside_tree():
