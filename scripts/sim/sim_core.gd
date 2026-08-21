@@ -255,7 +255,7 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 
 ## 유휴 도구에 조리 시작 — 필요 재료가 보드에 다 있는 가장 급한 주문부터.
 func _start_cooking() -> void:
-	var empty := _empty_slots()
+	var filled := _board_used()   # 작업 카드 수(주문+완성품+재료) — 카드38(깨끗한 주방)
 	for t in tools:
 		if t["id"] != "":
 			continue
@@ -268,7 +268,7 @@ func _start_cooking() -> void:
 			dishes.append({"id": rid, "born": _now})
 		else:
 			t["id"] = rid
-			t["t"] = Stats.cook_time(rid, empty)
+			t["t"] = Stats.cook_time(rid, filled)
 
 
 ## 조리 가능(재료 충족 & 아직 완성/조리중으로 안 덮인) 주문 중 가장 급한 레시피.

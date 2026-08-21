@@ -99,8 +99,8 @@ func _show_idle() -> void:
   _holder.add_child(icon)
 
 
-## 조리 시작 (재료 소비는 호출 측에서 이미 처리). empty=현재 빈 슬롯 수(카드37 가속).
-func start_cooking(id: String, empty := 0) -> void:
+## 조리 시작 (재료 소비는 호출 측에서 이미 처리). filled=보드에 놓인 카드 수(카드38 감속 완화).
+func start_cooking(id: String, filled := 999) -> void:
   if state != State.IDLE:
     return
   recipe_id = id
@@ -108,7 +108,7 @@ func start_cooking(id: String, empty := 0) -> void:
   if Buffs.on_cook_start():
     _finish_cooking()
     return
-  _cook_total = Stats.cook_time(id, empty)
+  _cook_total = Stats.cook_time(id, filled)
   _cook_left = _cook_total
   state = State.COOKING
   _clear_holder()

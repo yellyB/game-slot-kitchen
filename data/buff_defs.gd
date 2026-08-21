@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## [효과 필드]
 ##  mult{stat,value}            : 패시브 곱연산(Buffs.mod). stat=cook_mult·patience_mult·day_mult·rent_mult
-##  cook_empty{step}            : 빈 슬롯 1개당 조리시간 -step (38)
+##  cook_clean{max,per}         : 조리시간 -(max - filled*per), filled=보드 작업카드수 (38)
 ##  patience_flat               : 인내심 초 가산 (67)
 ##  menu_price{tiers,pct}       : 메뉴가격(base) 배율 인상 (22~24)
 ##  ramp{tier,value}            : 그 등급 판매 시 등급 기본가×value 메뉴가격 누적 (25~30)
@@ -71,7 +71,7 @@ const ALL := {
 	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.0, "step": 0.06}},
 	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.10, "step": 0.02}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "full", "pct": 0.15}},
-	"cook_empty": {"card": 38, "icon": "💨", "cook_empty": {"step": 0.15}},
+	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.05}},
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
 	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},

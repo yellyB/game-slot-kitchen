@@ -104,7 +104,7 @@ const S := {
 	"b.sc_empt_a.name": "Less is More", "b.sc_empt_a.label": "Sale +6% per empty slot",
 	"b.sc_empt_b.name": "Less is More+", "b.sc_empt_b.label": "Sale +10%, +2% per empty slot",
 	"b.sale_full.name": "Full House", "b.sale_full.label": "Serve while board is full (0 empty): sale +15%",
-	"b.cook_empty.name": "Clean Kitchen", "b.cook_empty.label": "Cook time -15% per empty slot",
+	"b.cook_empty.name": "Clean Kitchen", "b.cook_empty.label": "Cook time -40%, +5%p per card on board (cleaner = faster)",
 	"b.sc_order.name": "Order Rush", "b.sc_order.label": "Sale +5% per order card on board",
 	"b.sc_dish.name": "Showcase", "b.sc_dish.label": "Sale +20% per dish on board",
 	"b.sc_ingr.name": "Well Prepped", "b.sc_ingr.label": "Sale +4% per ingredient on board",

@@ -106,11 +106,15 @@ func patience_flat() -> float:
 		s += float(BuffDefs.get_def(id).get("patience_flat", 0.0))
 	return s
 
-func cook_empty_step() -> float:
-	var s := 0.0
+## 카드38(깨끗한 주방) 조리시간 감소율 — 보드에 놓인 카드(filled)가 적을수록 큼.
+## reduction = clamp(max - filled*per, 0, max). filled 기준이라 슬롯 확장과 무관(확장-중립).
+func cook_clean_reduction(filled: int) -> float:
+	var r := 0.0
 	for id in _owned:
-		s += float(BuffDefs.get_def(id).get("cook_empty", {}).get("step", 0.0))
-	return s
+		var c: Dictionary = BuffDefs.get_def(id).get("cook_clean", {})
+		if not c.is_empty():
+			r += maxf(0.0, float(c.get("max", 0.0)) - float(filled) * float(c.get("per", 0.0)))
+	return r
 
 
 # ── 수요 가중(15~20) ──────────────────────────────────────

@@ -201,9 +201,10 @@ func _select(id: String) -> void:
 		return
 	var tool := _active_tool
 	var cards := board.take_ingredient_cards(id)   # 슬롯에서 떼기(연출 후 제거)
-	# 재료 소비 후의 빈 슬롯 수 = 카드37(빈 슬롯당 조리 가속) 입력.
-	var empty := board.empty_slot_count()
-	tool.start_cooking(id, empty)
+	# 재료 소비 후 작업 카드 수(주문+완성품+재료, 버프 제외) = 카드38(깨끗한 주방) 입력.
+	var sc := board.slot_counts()
+	var filled := int(sc["orders"]) + int(sc["dishes"]) + int(sc["ingr"])
+	tool.start_cooking(id, filled)
 	Audio.play("cook_start")   # 조리 시작음(팝)
 	_active_tool = null
 	cooked.emit()  # main이 닫기 + 갱신
