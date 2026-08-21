@@ -803,6 +803,10 @@ func _show_gain_breakdown(breakdown: Array) -> void:
       return
     _pop_label(_money_label)
     Audio.play("coins")
+    if is_instance_valid(menu_icon):
+      var mo := create_tween()
+      mo.tween_property(menu_icon, "modulate:a", 0.0, 0.36)
+      mo.tween_callback(menu_icon.queue_free)
     if is_instance_valid(total_l):
       var out := create_tween()
       out.tween_property(total_l, "position:y", total_l.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
