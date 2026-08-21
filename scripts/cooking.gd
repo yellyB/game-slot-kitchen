@@ -182,8 +182,9 @@ func _select(id: String) -> void:
 		return
 	var tool := _active_tool
 	var cards := board.take_ingredient_cards(id)
-	var empty := board.empty_slot_count()
-	tool.start_cooking(id, empty)
+	var sc := board.slot_counts()
+	var filled := int(sc["orders"]) + int(sc["dishes"]) + int(sc["ingr"])
+	tool.start_cooking(id, filled)
 	Audio.play("cook_start")
 	_active_tool = null
 	cooked.emit()

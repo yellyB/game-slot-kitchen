@@ -241,7 +241,7 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 
 
 func _start_cooking() -> void:
-	var empty := _empty_slots()
+	var filled := _board_used()
 	for t in tools:
 		if t["id"] != "":
 			continue
@@ -254,7 +254,7 @@ func _start_cooking() -> void:
 			dishes.append({"id": rid, "born": _now})
 		else:
 			t["id"] = rid
-			t["t"] = Stats.cook_time(rid, empty)
+			t["t"] = Stats.cook_time(rid, filled)
 
 
 func _pick_cookable() -> String:

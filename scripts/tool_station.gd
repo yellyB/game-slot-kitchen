@@ -88,14 +88,14 @@ func _show_idle() -> void:
   _holder.add_child(icon)
 
 
-func start_cooking(id: String, empty := 0) -> void:
+func start_cooking(id: String, filled := 999) -> void:
   if state != State.IDLE:
     return
   recipe_id = id
   if Buffs.on_cook_start():
     _finish_cooking()
     return
-  _cook_total = Stats.cook_time(id, empty)
+  _cook_total = Stats.cook_time(id, filled)
   _cook_left = _cook_total
   state = State.COOKING
   _clear_holder()

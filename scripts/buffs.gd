@@ -94,11 +94,13 @@ func patience_flat() -> float:
 		s += float(BuffDefs.get_def(id).get("patience_flat", 0.0))
 	return s
 
-func cook_empty_step() -> float:
-	var s := 0.0
+func cook_clean_reduction(filled: int) -> float:
+	var r := 0.0
 	for id in _owned:
-		s += float(BuffDefs.get_def(id).get("cook_empty", {}).get("step", 0.0))
-	return s
+		var c: Dictionary = BuffDefs.get_def(id).get("cook_clean", {})
+		if not c.is_empty():
+			r += maxf(0.0, float(c.get("max", 0.0)) - float(filled) * float(c.get("per", 0.0)))
+	return r
 
 
 func demand_weight(recipe_id: String) -> float:

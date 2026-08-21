@@ -45,7 +45,7 @@ const ALL := {
 	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.0, "step": 0.06}},
 	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 0.10, "step": 0.02}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "full", "pct": 0.15}},
-	"cook_empty": {"card": 38, "icon": "💨", "cook_empty": {"step": 0.15}},
+	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.05}},
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "count", "per": "dishes", "base": 0.0, "step": 0.20}},
 	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.04}},

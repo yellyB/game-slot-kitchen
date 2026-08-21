@@ -7,9 +7,9 @@ static func order_patience() -> float:
 static func dish_patience() -> float:
 	return Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()
 
-static func cook_time(recipe_id: String, empty := 0) -> float:
+static func cook_time(recipe_id: String, filled := 999) -> float:
 	var t := Buffs.mod("cook_mult", float(Recipes.get_def(recipe_id).get("cook_time", 5.0)))
-	t *= maxf(0.1, 1.0 - Buffs.cook_empty_step() * float(empty))
+	t *= maxf(0.1, 1.0 - Buffs.cook_clean_reduction(filled))
 	return maxf(0.1, t)
 
 static func day_length() -> float:
