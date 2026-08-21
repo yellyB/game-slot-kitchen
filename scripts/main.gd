@@ -730,36 +730,93 @@ const GAIN_BASE_COLOR := Palette.SUCCESS
 const GAIN_BUFF_COLOR := Palette.MAIN
 
 func _show_gain_breakdown(breakdown: Array) -> void:
-  var i := 0
+  var items: Array = []
   for entry in breakdown:
+    if int(entry.get("amount", 0)) != 0:
+      items.append(entry)
+  if items.is_empty():
+    return
+  var base_entry: Dictionary = items[0]
+  var base_amt := int(base_entry.get("amount", 0))
+  var base_col: Color = GAIN_BASE_COLOR if base_entry.get("src", "") == "base" else GAIN_BUFF_COLOR
+
+  var total_box := HBoxContainer.new()
+  total_box.add_theme_constant_override("separation", 6)
+  total_box.alignment = BoxContainer.ALIGNMENT_CENTER
+  total_box.z_index = 110
+  total_box.add_child(_gain_icon(base_entry, 40))
+  var total_l := UI.label(UI.money(base_amt), 34, base_col, true)
+  total_l.add_theme_constant_override("outline_size", 4)
+  total_l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  total_box.add_child(total_l)
+  add_child(total_box)
+  await get_tree().process_frame
+  if not is_instance_valid(total_box):
+    return
+  total_box.pivot_offset = total_box.size * 0.5
+  total_box.position = size * 0.5 - total_box.size * 0.5
+  total_box.scale = Vector2(0.4, 0.4)
+  var tin := create_tween()
+  tin.tween_property(total_box, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tin.tween_property(total_box, "scale", Vector2.ONE, 0.08)
+
+  var running := base_amt
+  var t := 0.42
+  for k in range(1, items.size()):
+    var entry: Dictionary = items[k]
     var amt := int(entry.get("amount", 0))
-    if amt == 0:
-      continue
-    var is_base: bool = entry.get("src", "") == "base"
-    var col: Color = GAIN_BASE_COLOR if is_base else GAIN_BUFF_COLOR
-    var icon: String = str(entry.get("icon", ""))
-    get_tree().create_timer(i * 0.42).timeout.connect(_spawn_center_gain.bind(amt, col, i, icon))
-    if not is_base:
-      get_tree().create_timer(i * 0.42).timeout.connect(func():
-        if is_inside_tree():
-          Audio.play("coins"))
-    i += 1
-  get_tree().create_timer(i * 0.42 + 0.1).timeout.connect(func():
-    if is_inside_tree():
-      _pop_label(_money_label)
-      Audio.play("coins"))
+    var from_total := running
+    running += amt
+    var to_total := running
+    get_tree().create_timer(t).timeout.connect(func():
+      if not is_instance_valid(total_box) or not is_instance_valid(total_l):
+        return
+      Audio.play("serve")
+      _spawn_bonus_pop(amt, entry, total_box.position + Vector2(total_box.size.x * 0.5, 0.0))
+      var cu := create_tween()
+      cu.tween_method(_set_money_text.bind(total_l), float(from_total), float(to_total), 0.3)
+      var bump := create_tween()
+      bump.tween_property(total_box, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+      bump.tween_property(total_box, "scale", Vector2.ONE, 0.1))
+    t += 0.42
+
+  get_tree().create_timer(t + 0.2).timeout.connect(func():
+    if not is_inside_tree():
+      return
+    _pop_label(_money_label)
+    Audio.play("coins")
+    if is_instance_valid(total_box):
+      var out := create_tween()
+      out.tween_property(total_box, "position:y", total_box.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
+      out.parallel().tween_property(total_box, "modulate:a", 0.0, 0.36)
+      out.tween_callback(total_box.queue_free))
 
 
-func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> void:
+func _set_money_text(v: float, lbl: Label) -> void:
+  if is_instance_valid(lbl):
+    lbl.text = UI.money(int(round(v)))
+
+
+func _gain_icon(entry: Dictionary, px: int) -> Control:
+  if entry.has("recipe"):
+    return Recipes.icon_node(str(entry["recipe"]), px)
+  if entry.has("buff"):
+    return BuffDefs.icon_node(str(entry["buff"]), px)
+  var lbl := UI.label(str(entry.get("icon", "")), px)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  return lbl
+
+
+func _spawn_bonus_pop(amount: int, entry: Dictionary, anchor: Vector2) -> void:
   if not is_inside_tree():
     return
   var box := HBoxContainer.new()
   box.add_theme_constant_override("separation", 4)
   box.alignment = BoxContainer.ALIGNMENT_CENTER
-  box.z_index = 110
-  if icon != "":
-    box.add_child(UI.label(icon, 30))
-  var amt_l := UI.label("+" + UI.money(amount), 32, color, true)
+  box.z_index = 111
+  box.add_child(_gain_icon(entry, 28))
+  var amt_l := UI.label("+" + UI.money(amount), 28, GAIN_BUFF_COLOR, true)
   amt_l.add_theme_constant_override("outline_size", 4)
   amt_l.add_theme_color_override("font_outline_color", Palette.WHITE)
   box.add_child(amt_l)
@@ -768,13 +825,13 @@ func _spawn_center_gain(amount: int, color: Color, idx: int, icon: String) -> vo
   if not is_instance_valid(box):
     return
   box.pivot_offset = box.size * 0.5
-  box.position = size * 0.5 - box.size * 0.5
+  box.position = anchor - Vector2(box.size.x * 0.5, box.size.y + 6.0)
   box.scale = Vector2(0.4, 0.4)
   var tw := create_tween()
   tw.tween_property(box, "scale", Vector2(1.2, 1.2), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   tw.tween_property(box, "scale", Vector2.ONE, 0.08)
-  tw.tween_interval(0.12)
-  tw.tween_property(box, "position:y", box.position.y - 40.0, 0.34).set_ease(Tween.EASE_IN)
+  tw.tween_interval(0.1)
+  tw.tween_property(box, "position:y", box.position.y - 46.0, 0.34).set_ease(Tween.EASE_IN)
   tw.parallel().tween_property(box, "modulate:a", 0.0, 0.34)
   tw.tween_callback(box.queue_free)
 
