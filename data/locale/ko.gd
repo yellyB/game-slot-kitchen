@@ -104,7 +104,7 @@ const S := {
 	"b.sc_empt_a.name": "여백의 미", "b.sc_empt_a.label": "빈 슬롯 1개당 판매가 +22%",
 	"b.sc_empt_b.name": "여백의 미+", "b.sc_empt_b.label": "판매가 15% + (판매가5% × 빈 슬롯개수)",
 	"b.sale_full.name": "맛집인가봐", "b.sale_full.label": "슬롯이 모두 채워진 상태에서 서빙하면 판매가 +40%",
-	"b.cook_empty.name": "깨끗한주방", "b.cook_empty.label": "조리 시간 -40%, 보드 카드 1개당 +5%p (카드 적을수록 빠름)",
+	"b.cook_empty.name": "깨끗한주방", "b.cook_empty.label": "조리 시간 -40%, 보드 카드 1개당 +5%p",
 	"b.sc_order.name": "주문폭주", "b.sc_order.label": "슬롯에 있는 주문카드 1개당 판매금 +5%",
 	"b.sc_dish.name": "쇼케이스", "b.sc_dish.label": "슬롯에 있는 완성품 1개당 판매금 +20%",
 	"b.sc_ingr.name": "준비는철저히", "b.sc_ingr.label": "슬롯에 있는 재료카드 1개당 판매금 +10%",
