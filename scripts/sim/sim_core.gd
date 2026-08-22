@@ -82,7 +82,7 @@ func _shop() -> void:
 			break
 	# 버프는 소수만 — 각 버프가 슬롯 1칸을 잡아먹어 처리량을 깎으므로 무제한 구매는 자멸.
 	while Buffs.owned().size() < 3 and not Buffs.is_full():
-		if session.cash - Config.shop_price(Config.BUFF_PACK_PRICE, session.day) < next_rent:
+		if session.cash - Config.BUFF_PACK_PRICE < next_rent:
 			break
 		var pack: Array = session.buy_buff_pack()
 		if pack.is_empty():

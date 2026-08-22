@@ -28,12 +28,11 @@ const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨�
 
 # ── 경제 (금액 최소단위 1원, 가장 싼 메뉴 = 1) ────────────
 const START_MONEY := 0     # 시작 소지금
-const SLOT_PRICE := 3000      # 슬롯 +1 확장 기본가(상점) — 날짜 인플레 없음, 첫날 여유(~6천)로 딱 1개 살 수준
-const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 1일차 기본가 — 일수 따라 상승
-const SHOP_PRICE_GROWTH := 1.65  # 상점가 일당 증가 배율(복리): 가격 = ceil(기본 × GROWTH^(day-1))
-const SLOT_PRICE_STEP := 2.0     # 슬롯 확장 1개 살 때마다 가격 배수(기하급수). ×2 = 실질 15~17칸까지 확장
+const SLOT_PRICE := 1800      # 슬롯 +1 확장 기본가(상점) — 날짜 인플레 없음. 살 만한 관문으로 하향(3000→1800)
+const BUFF_PACK_PRICE := 200  # 버프 팩(카드깡) 고정가 — 일수 인플레 없음(항상 200). 슬롯이 실질 관문이라 버프는 싸게 유지
+const SLOT_PRICE_STEP := 1.6     # 슬롯 확장 1개 살 때마다 가격 배수. ×1.6 = 실질 2~3개 확장(1800→2880→4600→7400)
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
-const BUFF_SELL_RATIO := 0.3  # 상점에서 보유 버프 판매 시 환급률 (그날 버프팩 가격의 30%)
+const BUFF_SELL_RATIO := 0.3  # 상점에서 보유 버프 판매 시 환급률 (버프팩 가격의 30%)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 # (가게세는 하루별 → data/levels.gd)
 
@@ -49,10 +48,6 @@ const WAREHOUSE_EXIT_COST := 1.5  # 창고 닫을 때(퇴장) 소모 영업시�
 #  트립이 게임의 전부가 안 되게 하되, 여전히 유의미한 시간비용으로 유지.)
 # (일차별 가게세·손님 수·승리 일차 = data/levels.gd)
 
-
-## 상점가 = 기본가 × 증가율^(day-1), 올림(비용). day는 1부터.
-static func shop_price(base: int, day: int) -> int:
-	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
 
 ## 슬롯 확장가 = 기본가 × 구매수 배수(bought=이미 확장한 수). 살수록 기하급수 상승.
 ## 날짜 인플레는 적용 안 함 — 슬롯은 몇 일차든 같은 기준가(그래서 _day는 미사용).

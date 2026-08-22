@@ -50,7 +50,7 @@ func buy_slot() -> bool:
 
 ## 상점: 버프 팩 구매 → 3개 랜덤 반환(택1은 호출 측). 못 사면 [].
 func buy_buff_pack() -> Array:
-	var price := Config.shop_price(Config.BUFF_PACK_PRICE, day)
+	var price := Config.BUFF_PACK_PRICE
 	if cash < price or Buffs.is_full():
 		return []
 	cash -= price

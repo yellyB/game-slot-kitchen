@@ -89,7 +89,7 @@ func _ready() -> void:
   # 슬롯 확장 = 슬롯+ 손그림, 버프 팩(카드깡) = 카드팩 손그림
   _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 72), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
   _slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
-  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
   # 보유 버프는 인라인 목록 대신 [버프] 버튼 → 서랍(BuffSheet)에서 확인/판매.
 
@@ -472,7 +472,7 @@ func _refresh() -> void:
     _draw_btn.modulate = Color.WHITE   # SOLD OUT은 또렷하게
   else:
     _draw_btn.text = Loc.t("shop_draw")
-    var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day)
+    var can_draw := session.cash >= Config.BUFF_PACK_PRICE
     _draw_btn.disabled = not can_draw
     _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
@@ -482,9 +482,9 @@ func _refresh() -> void:
     _buff_btn.modulate.a = 0.45 if _buff_btn.disabled else 1.0   # 아이콘도 비활성 시 흐리게
 
 
-## 보유 버프 판매 확인 — 버프명 + 환급액(그날 팩값의 30%). [+환급][취소].
+## 보유 버프 판매 확인 — 버프명 + 환급액(팩값의 30%). [+환급][취소].
 func _confirm_sell(id: String) -> void:
-  var refund := int(round(Config.shop_price(Config.BUFF_PACK_PRICE, session.day) * Config.BUFF_SELL_RATIO))
+  var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
   Modal.open(self) \
     .title(BuffDefs.display_name(id)) \
     .button("+" + UI.money(refund), func(): _sell(id, refund)) \
