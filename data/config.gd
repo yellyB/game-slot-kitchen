@@ -19,10 +19,9 @@ const PATIENCE_DISH := 35.0
 const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
-const SLOT_PRICE := 3000
+const SLOT_PRICE := 1800
 const BUFF_PACK_PRICE := 200
-const SHOP_PRICE_GROWTH := 1.65
-const SLOT_PRICE_STEP := 2.0
+const SLOT_PRICE_STEP := 1.6
 const MAX_BUFFS := 5
 const BUFF_SELL_RATIO := 0.3
 const MONEY_ABBR_AT := 100000
@@ -35,9 +34,6 @@ const WAVES := 3
 const WAVE_SPACING := 0.7
 const WAREHOUSE_EXIT_COST := 1.5
 
-
-static func shop_price(base: int, day: int) -> int:
-	return int(ceil(base * pow(SHOP_PRICE_GROWTH, day - 1)))
 
 static func slot_price(_day: int, bought: int) -> int:
 	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))

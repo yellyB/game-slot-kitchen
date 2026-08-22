@@ -79,7 +79,7 @@ func _ready() -> void:
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
   _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 72), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
   _slot_price_label = _last_price_label
-  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.shop_price(Config.BUFF_PACK_PRICE, session.day), Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, _on_draw)
 
 
   var start := Button.new()
@@ -435,7 +435,7 @@ func _refresh() -> void:
     _draw_btn.modulate = Color.WHITE
   else:
     _draw_btn.text = Loc.t("shop_draw")
-    var can_draw := session.cash >= Config.shop_price(Config.BUFF_PACK_PRICE, session.day)
+    var can_draw := session.cash >= Config.BUFF_PACK_PRICE
     _draw_btn.disabled = not can_draw
     _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
@@ -445,7 +445,7 @@ func _refresh() -> void:
 
 
 func _confirm_sell(id: String) -> void:
-  var refund := int(round(Config.shop_price(Config.BUFF_PACK_PRICE, session.day) * Config.BUFF_SELL_RATIO))
+  var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
   Modal.open(self) \
     .title(BuffDefs.display_name(id)) \
     .button("+" + UI.money(refund), func(): _sell(id, refund)) \

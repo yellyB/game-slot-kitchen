@@ -71,7 +71,7 @@ func _shop() -> void:
 		if not session.buy_slot():
 			break
 	while Buffs.owned().size() < 3 and not Buffs.is_full():
-		if session.cash - Config.shop_price(Config.BUFF_PACK_PRICE, session.day) < next_rent:
+		if session.cash - Config.BUFF_PACK_PRICE < next_rent:
 			break
 		var pack: Array = session.buy_buff_pack()
 		if pack.is_empty():

@@ -3,9 +3,9 @@ extends RefCounted
 
 const DAYS := [
 	{"rent": 1800,  "per_wave": 11},
-	{"rent": 9000,  "per_wave": 12},
-	{"rent": 10000, "per_wave": 13},
-	{"rent": 19000, "per_wave": 13},
+	{"rent": 6000,  "per_wave": 12},
+	{"rent": 9000,  "per_wave": 13},
+	{"rent": 15000, "per_wave": 13},
 	{"rent": 33000, "per_wave": 14},
 ]
 

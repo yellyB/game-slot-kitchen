@@ -46,7 +46,7 @@ func buy_slot() -> bool:
 
 
 func buy_buff_pack() -> Array:
-	var price := Config.shop_price(Config.BUFF_PACK_PRICE, day)
+	var price := Config.BUFF_PACK_PRICE
 	if cash < price or Buffs.is_full():
 		return []
 	cash -= price
