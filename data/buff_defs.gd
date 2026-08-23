@@ -43,12 +43,12 @@ const ALL := {
 	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean"},
 
 	# ── 등급/수요 ──
-	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 3.3}},
-	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 3.3}},
-	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 3.3}},
-	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 2.73}},
-	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 2.84}},
-	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 2.96}},
+	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 1.6}},
+	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 1.6}},
+	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 1.6}},
+	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
+	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}},
+	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}},
 
 	# ── 메뉴가격 등급별 인상 ──
 	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 1.04}},
@@ -86,7 +86,7 @@ const ALL := {
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 0.69}},
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 0.52, "chance": 0.10, "penalty_pct": 0.30}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
-	"sale_cash":  {"card": 51, "icon": "🏦", "sale": {"type": "cash", "pct": 0.01}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
+	"sale_cash":  {"card": 51, "icon": "🏦", "sale": {"type": "cash", "pct": 0.01, "cap": 300}, "economy": {"kind": "rent_penalty", "pct": 0.20}},
 	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 0.29}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
 	# ── 판매금: 조건부/앰프(53~58) ──

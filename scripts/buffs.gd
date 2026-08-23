@@ -202,6 +202,8 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 					dpct = float(s["pct"])
 			"cash":
 				dflat = int(round(float(ctx.get("cash", 0)) * float(s["pct"])))
+				if s.has("cap"):   # 스노우볼 방지 — 판매당 보너스 상한
+					dflat = mini(dflat, int(s["cap"]))
 			"risk":
 				dpct = float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
