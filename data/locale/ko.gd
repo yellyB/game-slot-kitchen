@@ -20,6 +20,12 @@ const S := {
 	"vibrate": "진동",
 	"language": "언어",
 
+	"boss.title": "계약 갱신 심사",
+	"boss.hint": "마감까지 %s 확보",
+	"boss.small_kitchen": "좁은 주방",
+	"boss.time_short": "런치 러시",
+	"boss.pricey_trip": "비싼 발품",
+
 	"day_n": "%d일차",
 	"no_empty_slot": "빈 칸 없음",
 	"orders_full": "주문 꽉 참",

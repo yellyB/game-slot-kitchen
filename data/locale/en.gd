@@ -20,6 +20,12 @@ const S := {
 	"vibrate": "Vibration",
 	"language": "Language",
 
+	"boss.title": "Lease Renewal",
+	"boss.hint": "Secure %s by close",
+	"boss.small_kitchen": "Small Kitchen",
+	"boss.time_short": "Lunch Rush",
+	"boss.pricey_trip": "Pricey Trips",
+
 	"day_n": "Day %d",
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",

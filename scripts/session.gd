@@ -60,6 +60,7 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
+	Boss.begin_day()
 	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
 	_rent_paid = false
 	day_revenue = 0

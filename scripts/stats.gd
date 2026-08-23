@@ -13,7 +13,7 @@ static func cook_time(recipe_id: String, filled := 999) -> float:
 	return maxf(0.1, t)
 
 static func day_length() -> float:
-	return Buffs.mod("day_mult", Config.DAY_LENGTH)
+	return Buffs.mod("day_mult", Config.DAY_LENGTH) * Boss.day_length_mult()
 
 static func sell_price(recipe_id: String) -> int:
 	return Buffs.menu_price(recipe_id)
@@ -22,7 +22,7 @@ static func warehouse_cost() -> float:
 	var base := Config.WAREHOUSE_EXIT_COST
 	if OS.has_environment("SIM_TRIP"):
 		base = float(OS.get_environment("SIM_TRIP"))
-	return Buffs.mod("warehouse_mult", base)
+	return Buffs.mod("warehouse_mult", base) * Boss.warehouse_mult()
 
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()

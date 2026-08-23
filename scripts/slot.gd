@@ -4,6 +4,7 @@ extends PanelContainer
 const PAD := 4
 
 var _holder: MarginContainer
+var locked := false
 
 func _ready() -> void:
   custom_minimum_size = Vector2(104, 104)
@@ -21,7 +22,20 @@ func card_rect() -> Rect2:
 
 
 func is_empty() -> bool:
-  return _get_card() == null
+  return not locked and _get_card() == null
+
+
+func lock() -> void:
+  if locked:
+    return
+  locked = true
+  add_theme_stylebox_override("panel", UI.card(Palette.COCOA_200, Palette.COCOA_400, 1))
+  var lbl := UI.label("🔒", 40, Palette.COCOA_800, true)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _holder.add_child(lbl)
 
 
 func _get_card() -> Card:

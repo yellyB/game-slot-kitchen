@@ -184,6 +184,7 @@ func _start_game() -> void:
   _clear_confetti()
   _last_cash = 0
   _money_label.text = UI.money(0)
+  Boss.reset()
   _title.hide()
   _session.start_run()
 
@@ -356,7 +357,14 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
   row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
+  row.add_child(_debug_btn("보스전", _debug_boss))
   return row
+
+
+func _debug_boss() -> void:
+  Boss.queue_random()
+  if _session != null and not _title.visible:
+    _session.debug_end_soon(1.0)
 
 
 func _debug_add_buff() -> void:
@@ -1219,6 +1227,69 @@ func _start_day_intro() -> void:
     _session.set_process(true)
 
 
+func _start_boss_intro() -> void:
+  var banner := _make_boss_banner()
+  await _tap_to_continue()
+  if not is_inside_tree() or _title.visible:
+    if is_instance_valid(banner): banner.queue_free()
+    return
+  Audio.play("door_open")
+  Audio.play("day_start")
+  if is_instance_valid(banner):
+    var bt := create_tween()
+    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+    bt.tween_callback(banner.queue_free)
+  if is_instance_valid(_session):
+    _session.set_process(true)
+
+
+func _make_boss_banner() -> Control:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.62)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 10)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  var seal := UI.label("📜", 84)
+  seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(seal)
+  var title := UI.label(Loc.t("boss.title"), 40, Palette.WHITE, true)
+  title.add_theme_constant_override("outline_size", 8)
+  title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(title)
+  var chip := HBoxContainer.new()
+  chip.alignment = BoxContainer.ALIGNMENT_CENTER
+  chip.add_theme_constant_override("separation", 6)
+  chip.add_child(UI.label(Boss.icon(), 34))
+  chip.add_child(UI.label(Boss.label(), 26, Palette.WHITE, true))
+  box.add_child(chip)
+  var hint := UI.label(Loc.t("boss.hint") % UI.money(_session.rent), 20, Palette.WHITE, true)
+  hint.add_theme_constant_override("outline_size", 4)
+  hint.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(hint)
+  var tap := UI.label("click ▸", 20, Palette.WHITE, true)
+  tap.add_theme_constant_override("outline_size", 4)
+  tap.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  tap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(tap)
+  return root
+
+
 func _screen_shake(strength := 13.0, dur := 0.45) -> void:
   var steps := 7
   var tw := create_tween()
@@ -1416,12 +1487,17 @@ func _on_day_started(day: int, rent: int) -> void:
       var bc := BuffCard.new()
       bc.setup(id)
       slot.place_card(bc, false)
+  if Boss.locked_slots() > 0:
+    _board.lock_last_slots(Boss.locked_slots())
   for c in _queue_row.get_children():
     c.queue_free()
   _refresh_warehouse()
   _refresh_buff_btn()
   if is_inside_tree() and not _title.visible:
-    _start_day_intro()
+    if Boss.is_active():
+      _start_boss_intro()
+    else:
+      _start_day_intro()
 
 
 func _clear_play_field() -> void:
