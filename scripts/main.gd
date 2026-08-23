@@ -204,6 +204,7 @@ func _start_game() -> void:
   _clear_confetti()              # 남은 색종이 제거(축포 후 홈→시작 시 잔재 방지)
   _last_cash = 0                 # 새 판 — 이전 판 보유금 잔상 제거(시작 시 -표시 방지)
   _money_label.text = UI.money(0)
+  Boss.reset()                   # 예약된 보스가 새 판으로 새지 않게
   _title.hide()
   _session.start_run()
 
@@ -388,7 +389,15 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
   row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
+  row.add_child(_debug_btn("보스전", _debug_boss))
   return row
+
+
+## 디버그: 다음날을 보스전(계약 갱신 심사·랜덤 제약)으로 예약 + 오늘 즉시 마감(빠른 진입).
+func _debug_boss() -> void:
+  Boss.queue_random()
+  if _session != null and not _title.visible:
+    _session.debug_end_soon(1.0)
 
 
 ## 디버그: 랜덤 버프 1개 획득(차단 카드 제외) + 보드 빈 슬롯에 즉시 배치.
@@ -1332,6 +1341,74 @@ func _start_day_intro() -> void:
     _session.set_process(true)   # 탭 후 게임플레이(시계·손님 스폰) 시작
 
 
+## 보스 하루 인트로 — 계약 갱신 심사 배너(제약 예고 + 재계약비 목표) → 탭 시 시작.
+func _start_boss_intro() -> void:
+  var banner := _make_boss_banner()
+  await _tap_to_continue()
+  if not is_inside_tree() or _title.visible:
+    if is_instance_valid(banner): banner.queue_free()
+    return
+  Audio.play("door_open")
+  Audio.play("day_start")
+  if is_instance_valid(banner):
+    var bt := create_tween()
+    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+    bt.tween_callback(banner.queue_free)
+  if is_instance_valid(_session):
+    _session.set_process(true)
+
+
+## 계약 갱신 심사 배너 — 딤 + 📜 + 제목 + 제약(아이콘+이름) + 재계약비 목표 + click. 루트 반환.
+func _make_boss_banner() -> Control:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.62)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 10)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  # 📜 + 심사 제목
+  var seal := UI.label("📜", 84)
+  seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(seal)
+  var title := UI.label(Loc.t("boss.title"), 40, Palette.WHITE, true)
+  title.add_theme_constant_override("outline_size", 8)
+  title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(title)
+  # 제약 칩(아이콘 + 이름)
+  var chip := HBoxContainer.new()
+  chip.alignment = BoxContainer.ALIGNMENT_CENTER
+  chip.add_theme_constant_override("separation", 6)
+  chip.add_child(UI.label(Boss.icon(), 34))
+  chip.add_child(UI.label(Boss.label(), 26, Palette.WHITE, true))
+  box.add_child(chip)
+  # 재계약비 목표(마감까지 확보)
+  var hint := UI.label(Loc.t("boss.hint") % UI.money(_session.rent), 20, Palette.WHITE, true)
+  hint.add_theme_constant_override("outline_size", 4)
+  hint.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(hint)
+  var tap := UI.label("click ▸", 20, Palette.WHITE, true)
+  tap.add_theme_constant_override("outline_size", 4)
+  tap.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  tap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(tap)
+  return root
+
+
 ## 화면 전체 흔들림 — 루트(self) 위치를 감쇠 랜덤으로 흔들고 0으로 복귀. 마감 임팩트용.
 func _screen_shake(strength := 13.0, dur := 0.45) -> void:
   var steps := 7
@@ -1550,13 +1627,18 @@ func _on_day_started(day: int, rent: int) -> void:
       var bc := BuffCard.new()
       bc.setup(id)
       slot.place_card(bc, false)   # 버프 재배치는 무음(매일 리빌드 버스트 방지)
+  if Boss.locked_slots() > 0:   # 보스(좁은 주방): 버프 배치 후 뒤쪽 빈칸 잠금
+    _board.lock_last_slots(Boss.locked_slots())
   for c in _queue_row.get_children():
     c.queue_free()
   _refresh_warehouse()
   _refresh_buff_btn()   # 이 판의 보유 버프 유무로 [버프] 버튼 활성화
   # 게임 화면 진입 즉시 딤+OPEN 배너(지연·페이드 없이 바로 어두워짐).
   if is_inside_tree() and not _title.visible:
-    _start_day_intro()
+    if Boss.is_active():
+      _start_boss_intro()
+    else:
+      _start_day_intro()
 
 
 ## 하루 종료 시 필드 정리 — 재료·주문·완성품·큐 제거(타이머 즉시 정지). 버프 카드는 유지.

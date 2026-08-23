@@ -64,6 +64,7 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
+	Boss.begin_day()   # 예약된 보스 제약을 이번 날로 승격(없으면 일반날) — day_length 계산 전에
 	# 슬롯 = 기본(상점확장 포함) + 구조 버프(12)
 	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
 	_rent_paid = false

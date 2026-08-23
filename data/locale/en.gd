@@ -22,6 +22,13 @@ const S := {
 	"vibrate": "Vibration",
 	"language": "Language",
 
+	# Boss (Lease Renewal)
+	"boss.title": "Lease Renewal",
+	"boss.hint": "Secure %s by close",
+	"boss.small_kitchen": "Small Kitchen",
+	"boss.time_short": "Lunch Rush",
+	"boss.pricey_trip": "Pricey Trips",
+
 	# Game — top bar / toast
 	"day_n": "Day %d",
 	"no_empty_slot": "No empty slot",

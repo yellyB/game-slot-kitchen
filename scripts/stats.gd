@@ -17,7 +17,7 @@ static func cook_time(recipe_id: String, filled := 999) -> float:
 	return maxf(0.1, t)
 
 static func day_length() -> float:
-	return Buffs.mod("day_mult", Config.DAY_LENGTH)
+	return Buffs.mod("day_mult", Config.DAY_LENGTH) * Boss.day_length_mult()   # 보스: 런치 러시 단축
 
 ## 메뉴가격(base + 램프누적 + 등급별 %인상). 판매금 보너스는 Buffs.sale_amount에서.
 static func sell_price(recipe_id: String) -> int:
@@ -27,7 +27,7 @@ static func warehouse_cost() -> float:
 	var base := Config.WAREHOUSE_EXIT_COST
 	if OS.has_environment("SIM_TRIP"):   # 실험용 손잡이: 트립 기본비용 오버라이드
 		base = float(OS.get_environment("SIM_TRIP"))
-	return Buffs.mod("warehouse_mult", base)
+	return Buffs.mod("warehouse_mult", base) * Boss.warehouse_mult()   # 보스: 비싼 발품 ×2
 
 ## 손님이 주문할 레시피 뽑기 — 등급 가중(Config.SPAWN_WEIGHTS) × 수요 버프(15~20).
 static func random_recipe() -> String:

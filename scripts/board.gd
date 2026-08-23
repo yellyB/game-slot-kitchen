@@ -114,6 +114,17 @@ func first_empty_slot() -> Slot:
 	return null
 
 
+## 보스(좁은 주방) — 뒤쪽 빈 슬롯 n칸 잠금. 버프 배치 후 호출(버프 칸은 안 잠금).
+func lock_last_slots(n: int) -> void:
+	var cnt := 0
+	for i in range(slots.size() - 1, -1, -1):
+		if cnt >= n:
+			break
+		if slots[i].is_empty():
+			slots[i].lock()
+			cnt += 1
+
+
 func is_full() -> bool:
 	for s in slots:
 		if s.is_empty():

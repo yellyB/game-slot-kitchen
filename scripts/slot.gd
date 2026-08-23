@@ -7,6 +7,7 @@ extends PanelContainer
 const PAD := 4   ## holder 내부 여백(카드와 슬롯 경계). card_rect()도 이 값을 참조.
 
 var _holder: MarginContainer
+var locked := false   ## 보스(좁은 주방) — 사용 불가 칸. 배치 대상·빈칸 집계에서 제외.
 
 func _ready() -> void:
   custom_minimum_size = Vector2(104, 104)
@@ -26,7 +27,21 @@ func card_rect() -> Rect2:
 
 
 func is_empty() -> bool:
-  return _get_card() == null
+  return not locked and _get_card() == null
+
+
+## 보스 제약(좁은 주방): 이 칸을 잠금 — 회색 처리 + 자물쇠 표시. 배치·빈칸 집계에서 빠진다.
+func lock() -> void:
+  if locked:
+    return
+  locked = true
+  add_theme_stylebox_override("panel", UI.card(Palette.COCOA_200, Palette.COCOA_400, 1))
+  var lbl := UI.label("🔒", 40, Palette.COCOA_800, true)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _holder.add_child(lbl)
 
 
 func _get_card() -> Card:
