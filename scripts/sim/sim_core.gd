@@ -17,7 +17,8 @@ var tools: Array = []       # 도구: [{id, t}]
 var dishes: Array = []      # 완성품(미서빙): [{id, born}]
 var ingredients: Array = [] # 보드 위 재료 카드(멀티셋): [ingredient_id, ...]
 
-var _busy := 0.0            # 창고 트립 등으로 플레이어가 묶인 시간(초)
+var _busy := 0.0            # 창고 트립·손동작(핸들링) 등으로 플레이어가 묶인 시간(초)
+var _handle := 0.0          # >0이면 현실 모드: 한 스텝에 한 동작 + 동작당 핸들링 타임(SIM_HANDLE)
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -34,6 +35,7 @@ var _served_by_menu := {}
 ## shop_enabled: 하루 사이 상점(슬롯/버프 구매) 활성. 통제된 로드아웃 비교 땐 false로.
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
+	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -156,11 +158,16 @@ func _reset_day_consumables() -> void:
 
 
 ## 1스텝: 시간·스폰 → 인내심/조리 진행. 플레이어가 트립 중이면(_busy) 행동 스킵.
+## _handle>0(현실 모드): 한 스텝에 한 동작만 + 동작당 손동작 시간(사람 처리량 상한).
+## _handle==0(이상 모드): 기존대로 즉시 다중 처리(조리·트립만 시간 소모).
 func _step() -> void:
 	_now += DT
 	session.tick(DT)
 	_decay_patience()
 	_advance_cooking()
+	if _handle > 0.0:
+		_step_realistic()
+		return
 	_serve()                    # 트립 중에도 완성품은 즉시 서빙(유능한 플레이어)
 	if _busy > 0.0:
 		_busy -= DT
@@ -168,6 +175,26 @@ func _step() -> void:
 	_start_cooking()
 	_accept_from_queue()
 	_maybe_fetch()
+
+
+## 현실 모드 스텝 — 손이 비었을 때만 우선순위 1동작 수행하고 그 손동작 시간만큼 묶인다.
+## 우선순위: 서빙 > 조리 시작 > 주문 접수 > 창고 트립. (사람은 동시에 여러 손동작 불가)
+func _step_realistic() -> void:
+	if _busy > 0.0:
+		_busy -= DT
+		return
+	if _serve_one():
+		_busy = Config.SIM_HANDLE_SERVE * _handle
+		return
+	if _start_cook_one():
+		_busy = Config.SIM_HANDLE_COOK * _handle
+		return
+	if _accept_one():
+		_busy = Config.SIM_HANDLE_ACCEPT * _handle
+		return
+	var grabbed := _maybe_fetch()   # 트립비는 _maybe_fetch가 _busy에 설정 → 재료 배치 시간만 가산
+	if grabbed > 0:
+		_busy += Config.SIM_HANDLE_PLACE * _handle * float(grabbed)
 
 
 func _on_spawn() -> void:
@@ -231,6 +258,74 @@ func _serve() -> void:
 		_served += 1
 		_served_today += 1
 		_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+
+
+## 현실 모드용 단일 동작 — 완성품↔주문 매칭 1건만 서빙. 성공 시 true.
+func _serve_one() -> bool:
+	for di in range(dishes.size() - 1, -1, -1):
+		var rid: String = dishes[di]["id"]
+		var best := -1
+		var best_pat := 1e9
+		for oi in orders.size():
+			if orders[oi]["id"] == rid and orders[oi]["pat"] < best_pat:
+				best = oi
+				best_pat = orders[oi]["pat"]
+		if best < 0:
+			continue
+		var o: Dictionary = orders[best]
+		var ctx := _sale_ctx(o, dishes[di])
+		var res := Buffs.sale_amount(rid, ctx)
+		session.earn(int(res["amount"]))
+		if int(res.get("penalty", 0)) != 0:
+			session.add_cash(-int(res["penalty"]))
+		if res.get("discard", "") != "":
+			Buffs.discard(res["discard"])
+		Buffs.on_serve(rid, ctx)
+		orders.remove_at(best)
+		dishes.remove_at(di)
+		_served += 1
+		_served_today += 1
+		_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+		return true
+	return false
+
+
+## 현실 모드용 단일 동작 — 유휴 도구 1개에 가장 급한 조리 시작. 성공 시 true.
+func _start_cook_one() -> bool:
+	var filled := _board_used()
+	for t in tools:
+		if t["id"] != "":
+			continue
+		var rid := _pick_cookable()
+		if rid == "":
+			return false
+		for ing in Buffs.required_ingredients(rid):
+			ingredients.erase(ing)
+		if Buffs.on_cook_start():
+			dishes.append({"id": rid, "born": _now})
+		else:
+			t["id"] = rid
+			t["t"] = Stats.cook_time(rid, filled)
+		return true
+	return false
+
+
+## 현실 모드용 단일 동작 — 가장 급한 대기 손님 1명 접수. 성공 시 true.
+func _accept_one() -> bool:
+	var cap := _serve_cap()
+	if queue.is_empty() or orders.size() >= Config.MAX_ORDERS or _board_used() >= cap:
+		return false
+	var best := 0
+	for i in queue.size():
+		if queue[i]["pat"] < queue[best]["pat"]:
+			best = i
+	var rid: String = queue[best]["id"]
+	orders.append({"id": rid, "pat": Stats.dish_patience(), "max": Stats.dish_patience(), "born": _now})
+	queue.remove_at(best)
+	_accepted_today += 1
+	if Buffs.consume_instant_order():   # 60
+		dishes.append({"id": rid, "born": _now})
+	return true
 
 
 func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
@@ -303,10 +398,11 @@ func _accept_from_queue() -> void:
 
 ## 조리 못 하는 주문이 있고 빈 슬롯이 있으면 창고 트립 1회(영업시간 소모, _busy).
 ## 급한 주문부터 "완전한 세트"를 채울 만큼만 확보(반쪽 재료 낭비 방지) → 트립당 조리 최대 해금.
-func _maybe_fetch() -> void:
+## 반환: 이번 트립에 가져온 재료 개수(현실 모드에서 배치 핸들링 타임 계산용). 0=트립 없음.
+func _maybe_fetch() -> int:
 	var space := _empty_slots()
 	if space <= 0:
-		return
+		return 0
 	var avail := _ingredient_counts()   # 보드에 있는 재료(주문에 예약해가며 차감)
 	var sorted_orders := orders.duplicate()
 	sorted_orders.sort_custom(func(a, b): return a["pat"] < b["pat"])
@@ -328,13 +424,14 @@ func _maybe_fetch() -> void:
 			avail = trial
 			grab.append_array(missing)
 	if grab.is_empty():
-		return
+		return 0
 	for ing in grab:
 		ingredients.append(ing)
 	var cost := Stats.warehouse_cost()
 	if Buffs.trip_free_chance() > 0.0 and randf() < Buffs.trip_free_chance():
 		cost = 0.0
 	_busy = cost
+	return grab.size()
 
 
 # ── 재료 집계 헬퍼 ────────────────────────────────────────
