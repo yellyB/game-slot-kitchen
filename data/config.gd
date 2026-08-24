@@ -34,6 +34,11 @@ const WAVES := 3
 const WAVE_SPACING := 0.7
 const WAREHOUSE_EXIT_COST := 1.5
 
+const SIM_HANDLE_ACCEPT := 0.5
+const SIM_HANDLE_COOK := 0.4
+const SIM_HANDLE_SERVE := 0.6
+const SIM_HANDLE_PLACE := 0.35
+
 
 static func slot_price(_day: int, bought: int) -> int:
 	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))

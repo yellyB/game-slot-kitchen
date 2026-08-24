@@ -11,6 +11,7 @@ var dishes: Array = []
 var ingredients: Array = []
 
 var _busy := 0.0
+var _handle := 0.0
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -25,6 +26,7 @@ var _served_by_menu := {}
 
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
+	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -148,6 +150,9 @@ func _step() -> void:
 	session.tick(DT)
 	_decay_patience()
 	_advance_cooking()
+	if _handle > 0.0:
+		_step_realistic()
+		return
 	_serve()
 	if _busy > 0.0:
 		_busy -= DT
@@ -155,6 +160,24 @@ func _step() -> void:
 	_start_cooking()
 	_accept_from_queue()
 	_maybe_fetch()
+
+
+func _step_realistic() -> void:
+	if _busy > 0.0:
+		_busy -= DT
+		return
+	if _serve_one():
+		_busy = Config.SIM_HANDLE_SERVE * _handle
+		return
+	if _start_cook_one():
+		_busy = Config.SIM_HANDLE_COOK * _handle
+		return
+	if _accept_one():
+		_busy = Config.SIM_HANDLE_ACCEPT * _handle
+		return
+	var grabbed := _maybe_fetch()
+	if grabbed > 0:
+		_busy += Config.SIM_HANDLE_PLACE * _handle * float(grabbed)
 
 
 func _on_spawn() -> void:
@@ -218,6 +241,71 @@ func _serve() -> void:
 		_served += 1
 		_served_today += 1
 		_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+
+
+func _serve_one() -> bool:
+	for di in range(dishes.size() - 1, -1, -1):
+		var rid: String = dishes[di]["id"]
+		var best := -1
+		var best_pat := 1e9
+		for oi in orders.size():
+			if orders[oi]["id"] == rid and orders[oi]["pat"] < best_pat:
+				best = oi
+				best_pat = orders[oi]["pat"]
+		if best < 0:
+			continue
+		var o: Dictionary = orders[best]
+		var ctx := _sale_ctx(o, dishes[di])
+		var res := Buffs.sale_amount(rid, ctx)
+		session.earn(int(res["amount"]))
+		if int(res.get("penalty", 0)) != 0:
+			session.add_cash(-int(res["penalty"]))
+		if res.get("discard", "") != "":
+			Buffs.discard(res["discard"])
+		Buffs.on_serve(rid, ctx)
+		orders.remove_at(best)
+		dishes.remove_at(di)
+		_served += 1
+		_served_today += 1
+		_served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+		return true
+	return false
+
+
+func _start_cook_one() -> bool:
+	var filled := _board_used()
+	for t in tools:
+		if t["id"] != "":
+			continue
+		var rid := _pick_cookable()
+		if rid == "":
+			return false
+		for ing in Buffs.required_ingredients(rid):
+			ingredients.erase(ing)
+		if Buffs.on_cook_start():
+			dishes.append({"id": rid, "born": _now})
+		else:
+			t["id"] = rid
+			t["t"] = Stats.cook_time(rid, filled)
+		return true
+	return false
+
+
+func _accept_one() -> bool:
+	var cap := _serve_cap()
+	if queue.is_empty() or orders.size() >= Config.MAX_ORDERS or _board_used() >= cap:
+		return false
+	var best := 0
+	for i in queue.size():
+		if queue[i]["pat"] < queue[best]["pat"]:
+			best = i
+	var rid: String = queue[best]["id"]
+	orders.append({"id": rid, "pat": Stats.dish_patience(), "max": Stats.dish_patience(), "born": _now})
+	queue.remove_at(best)
+	_accepted_today += 1
+	if Buffs.consume_instant_order():
+		dishes.append({"id": rid, "born": _now})
+	return true
 
 
 func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
@@ -285,10 +373,10 @@ func _accept_from_queue() -> void:
 			dishes.append({"id": rid, "born": _now})
 
 
-func _maybe_fetch() -> void:
+func _maybe_fetch() -> int:
 	var space := _empty_slots()
 	if space <= 0:
-		return
+		return 0
 	var avail := _ingredient_counts()
 	var sorted_orders := orders.duplicate()
 	sorted_orders.sort_custom(func(a, b): return a["pat"] < b["pat"])
@@ -310,13 +398,14 @@ func _maybe_fetch() -> void:
 			avail = trial
 			grab.append_array(missing)
 	if grab.is_empty():
-		return
+		return 0
 	for ing in grab:
 		ingredients.append(ing)
 	var cost := Stats.warehouse_cost()
 	if Buffs.trip_free_chance() > 0.0 and randf() < Buffs.trip_free_chance():
 		cost = 0.0
 	_busy = cost
+	return grab.size()
 
 
 func _ingredient_counts() -> Dictionary:
