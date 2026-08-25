@@ -1347,7 +1347,7 @@ func _month_track(week: int) -> Control:
   row.add_child(pay)
   v.add_child(row)
 
-  var msg := "이번 주 월세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 월세 납부")
+  var msg := "이번 주 가게세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 가게세 납부")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -1729,15 +1729,11 @@ func _on_day_started(day: int, rent: int) -> void:
   # 하루 시작 홀드 — 게임플레이(시계·스폰) 정지. 인트로(딤+OPEN 배너)는 함수 끝에서 즉시 표시.
   # (예전엔 DAY_INTRO_DELAY 뒤에 떠서 그 사이 딤 없는 빈 화면이 보였음 → 진입 즉시 딤으로 변경)
   _session.set_process(false)
-  # 상단바 월세 표시 = 이번 달 월세(목표). 평주엔 '남은 주', 월말엔 빨강(이번 주 납부).
+  # 상단바 가게세 표시 = 이번 달 가게세(목표) 금액만. 남은 주 안내는 OPEN 배너 트랙에서. 월말엔 빨강.
   var _wk := Levels.get_week(day)
   var _mr := int(_wk["monthly_rent"])
-  if _wk["is_month_end"]:
-    _rent_label.text = UI.money(_mr)
-    _rent_label.add_theme_color_override("font_color", Palette.DANGER)
-  else:
-    _rent_label.text = UI.money(_mr) + "  " + str(int(_wk["weeks_left"])) + "주"
-    _rent_label.add_theme_color_override("font_color", Palette.COCOA_800)
+  _rent_label.text = UI.money(_mr)
+  _rent_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
   _last_countdown = 0  # 카운트다운 상태 리셋
