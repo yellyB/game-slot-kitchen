@@ -139,7 +139,7 @@ func _ready() -> void:
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
     var n := 200
-    print("\n[SIM] ===== 생존 시뮬 (판당 5일, %d회, 상점 ON) =====" % n)
+    print("\n[SIM] ===== 생존 시뮬 (무한 진행·주 단위, %d회, 상점 ON) — 일수=생존 주 =====" % n)
     var s := batch.run(n, [], true)
     print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
       s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
@@ -1542,7 +1542,14 @@ func _reset_hours_bar() -> void:
 func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
   _session.set_process(false)
-  _rent_label.text = UI.money(rent)
+  var _wk := Levels.get_week(day)
+  var _mr := int(_wk["monthly_rent"])
+  if _wk["is_month_end"]:
+    _rent_label.text = UI.money(_mr)
+    _rent_label.add_theme_color_override("font_color", Palette.DANGER)
+  else:
+    _rent_label.text = UI.money(_mr) + "  " + str(int(_wk["weeks_left"])) + "주"
+    _rent_label.add_theme_color_override("font_color", Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()
   _last_countdown = 0
@@ -1582,10 +1589,15 @@ func _on_day_started(day: int, rent: int) -> void:
 
 
 func _log_day(summary: Dictionary) -> void:
+  var wk := Levels.get_week(int(summary.get("day", 0)))
   PlayLog.append({
     "run": _run_id,
     "t": Time.get_datetime_string_from_system(),
     "day": int(summary.get("day", 0)),
+    "month": int(wk["month"]),
+    "week_in_month": int(wk["week_in_month"]),
+    "is_month_end": bool(wk["is_month_end"]),
+    "monthly_rent": int(wk["monthly_rent"]),
     "rent": int(summary.get("rent", 0)),
     "revenue": int(summary.get("revenue", 0)),
     "cash_after": int(summary.get("cash_after", 0)),
@@ -1700,7 +1712,27 @@ func _on_day_ended(summary: Dictionary) -> void:
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
       bt.tween_callback(banner.queue_free)
-    _show_settlement(summary)
+    if int(summary.get("rent", 0)) > 0:
+      _show_settlement(summary)
+    else:
+      _show_week_closed(summary)
+
+
+func _show_week_closed(summary: Dictionary) -> void:
+  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+  var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
+  m.add_row(_settle_icon_row("coin", rev, 26))
+  var go := Button.new()
+  go.text = Loc.t("to_shop")
+  go.custom_minimum_size = Vector2(0, 48)
+  go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  go.add_theme_font_size_override("font_size", 18)
+  go.add_theme_color_override("font_color", Palette.WHITE)
+  go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  Audio.attach_click(go)
+  m.add_row(go)
 
 
 func _show_settlement(summary: Dictionary) -> void:
