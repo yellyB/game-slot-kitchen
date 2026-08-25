@@ -107,8 +107,8 @@ const ALL := {
 
 	# ── 경제/정산(63~66) ──
 	"interest":   {"card": 63, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.12}},
-	"settle_100": {"card": 64, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.58}},
-	"settle_90":  {"card": 65, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.35}},
+	"settle_100": {"card": 64, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 1.00}},
+	"settle_90":  {"card": 65, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.50}},
 	"settle_same":{"card": 66, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.40}},
 
 	# ── 벼랑끝(67~70) ──
