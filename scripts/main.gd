@@ -1230,7 +1230,7 @@ func _month_track(week: int) -> Control:
   row.add_child(pay)
   v.add_child(row)
 
-  var msg := "이번 주 월세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 월세 납부")
+  var msg := "이번 주 가게세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 가게세 납부")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -1589,12 +1589,8 @@ func _on_day_started(day: int, rent: int) -> void:
   _session.set_process(false)
   var _wk := Levels.get_week(day)
   var _mr := int(_wk["monthly_rent"])
-  if _wk["is_month_end"]:
-    _rent_label.text = UI.money(_mr)
-    _rent_label.add_theme_color_override("font_color", Palette.DANGER)
-  else:
-    _rent_label.text = UI.money(_mr) + "  " + str(int(_wk["weeks_left"])) + "주"
-    _rent_label.add_theme_color_override("font_color", Palette.COCOA_800)
+  _rent_label.text = UI.money(_mr)
+  _rent_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()
   _last_countdown = 0
