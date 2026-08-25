@@ -50,50 +50,40 @@ func _ready() -> void:
   v.add_theme_constant_override("separation", 16)
   pad.add_child(v)
 
-  # 헤더(상단바 정보 유지): 주차 배지 + 보유금 + 가게세
-  var header := HBoxContainer.new()
-  header.add_theme_constant_override("separation", 8)
-  header.alignment = BoxContainer.ALIGNMENT_CENTER
-  v.add_child(header)
+  # 상단바 — 게임 화면과 동일: 흰 카드 하나 안에 주차 배지·보유금·가게세(요소별 칩 X)
   var nx := Levels.get_week(session.day + 1)   # 다음(곧 진입할) 주
-  var wbadge := UI.day_badge(40)
+  var bar := PanelContainer.new()
+  bar.add_theme_stylebox_override("panel", UI.card(Palette.WHITE))
+  v.add_child(bar)
+  var barpad := MarginContainer.new()
+  for side in ["left", "right", "top", "bottom"]:
+    barpad.add_theme_constant_override("margin_" + side, 12)
+  bar.add_child(barpad)
+  var header := HBoxContainer.new()
+  header.add_theme_constant_override("separation", 10)
+  barpad.add_child(header)
+
+  var wbadge := UI.day_badge(32)
   (wbadge.get_meta("num") as Label).text = str(session.day + 1)
   header.add_child(wbadge)
+
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   header.add_child(gap)
-  # 보유금 — 배경과 안 겹치게 흰 상자(칩) 안에 표시(대비 확보).
-  var cash_box := PanelContainer.new()
-  cash_box.add_theme_stylebox_override("panel", UI.chip(Palette.WHITE, Palette.COCOA_200))
-  var cbpad := MarginContainer.new()
-  cbpad.add_theme_constant_override("margin_left", 12)
-  cbpad.add_theme_constant_override("margin_right", 12)
-  cbpad.add_theme_constant_override("margin_top", 4)
-  cbpad.add_theme_constant_override("margin_bottom", 4)
-  cash_box.add_child(cbpad)
-  var cbrow := HBoxContainer.new()
-  cbrow.add_theme_constant_override("separation", 5)
-  cbpad.add_child(cbrow)
-  cbrow.add_child(UI.ui_icon("coin", 22))   # 동전 손그림
-  _cash_label = UI.label("0", 22, Palette.COCOA_800, true)
-  cbrow.add_child(_cash_label)
-  header.add_child(cash_box)
 
-  var rent_box := PanelContainer.new()
-  rent_box.add_theme_stylebox_override("panel", UI.chip(Palette.WHITE, Palette.COCOA_200))
-  var rbpad := MarginContainer.new()
-  for side in ["left", "right"]:
-    rbpad.add_theme_constant_override("margin_" + side, 12)
-  rbpad.add_theme_constant_override("margin_top", 4)
-  rbpad.add_theme_constant_override("margin_bottom", 4)
-  rent_box.add_child(rbpad)
-  var rbrow := HBoxContainer.new()
-  rbrow.add_theme_constant_override("separation", 5)
-  rbpad.add_child(rbrow)
-  rbrow.add_child(UI.ui_icon("bill", 22))
+  var coin := HBoxContainer.new()
+  coin.add_theme_constant_override("separation", 4)
+  coin.add_child(UI.ui_icon("coin", 20))
+  _cash_label = UI.label("0", 18, Palette.COCOA_800, true)
+  coin.add_child(_cash_label)
+  header.add_child(coin)
+
+  var rentbox := HBoxContainer.new()
+  rentbox.add_theme_constant_override("separation", 4)
+  rentbox.add_child(UI.ui_icon("bill", 20))
   var rc := Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800
-  rbrow.add_child(UI.label(UI.money(int(nx["monthly_rent"])), 22, rc, true))
-  header.add_child(rent_box)
+  rentbox.add_child(UI.label(UI.money(int(nx["monthly_rent"])), 18, rc, true))
+  header.add_child(rentbox)
 
   # 본문(스크롤) — 상품·보유버프. 콘텐츠 늘어나도 스크롤로 흡수(상점은 날짜마다 성장).
   var scroll := ScrollContainer.new()
