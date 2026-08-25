@@ -154,6 +154,8 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var addon_id := ""
 	var accum_id := ""
 	var double_id := ""
+	var mult := 1.0
+	var mult_id := ""
 	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]
 
 	for id in _owned:
@@ -209,6 +211,9 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"accum":
 				accum_pct += float(s["pct"])
 				accum_id = id
+			"mult":
+				mult *= float(s["value"])
+				mult_id = id
 		var contrib := 0
 		if dpct != 0.0:
 			var new_pct := pct + dpct
@@ -227,16 +232,17 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 		if add != 0:
 			breakdown.append({"src": "addon", "amount": add, "buff": addon_id, "icon": _buff_icon(addon_id)})
 	var amount := mp + bonus
-	var mult := 1
 	if do_double:
-		mult *= 2
+		mult *= 2.0
+		if mult_id == "":
+			mult_id = double_id
 	if _double_next:
-		mult *= 2
+		mult *= 2.0
 		_double_next = false
-	if mult > 1:
+	if mult > 1.0:
 		var before := amount
-		amount *= mult
-		breakdown.append({"src": "double", "amount": amount - before, "buff": double_id, "icon": _buff_icon(double_id)})
+		amount = int(round(float(amount) * mult))
+		breakdown.append({"src": "double", "amount": amount - before, "buff": mult_id, "icon": _buff_icon(mult_id)})
 	if accum_pct > 0.0:
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
