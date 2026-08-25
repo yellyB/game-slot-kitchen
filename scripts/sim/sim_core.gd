@@ -77,7 +77,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 
 ## 하루 사이 상점: 다음 가게세는 남기고, 남는 돈으로 슬롯 확장 → 버프팩 구매(유능 정책).
 func _shop() -> void:
-	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day + 1).get("rent", 0)))))
+	# 월 구조: 다음 주 rent는 월말 빼면 0 → 다가올 '월세'(monthly_rent)를 예비금으로 잡아 저축.
+	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_week(session.day + 1).get("monthly_rent", 0)))))
 	while session.slots < Config.MAX_SLOTS:
 		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
 			break

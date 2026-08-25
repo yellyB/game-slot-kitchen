@@ -1,30 +1,68 @@
 class_name Levels
 extends RefCounted
-## 하루(세션)별 레벨 정의 — 레벨디자인은 이 표를 편집(테스트하며 조정).
-## 웨이브는 항상 3번(Config.WAVES). 하루마다 가게세와 웨이브당 손님 수만 변함.
-## 금액 단위: 가장 싼 메뉴(커피)=100. rent도 같은 스케일.
+## 시간 단위: 1라운드 = 1주, 4주 = 1개월(WEEKS_PER_MONTH). 월세는 월말(4주차)에만 지불.
+## 1~3주차는 지불 없이 벌어서 누적 → 월말에 월세 이상 보유해야 통과(아니면 폐업).
+## **진행에 끝 없음(무한).** 정의된 MONTHS 이후는 공식으로 월세·손님이 계속 escalating.
+##   승리 조건 없음 — 월세를 못 내는 순간까지 무한 플레이. (엔딩 컷오프는 나중에.)
+## 보스(계약 갱신): 분기(3개월)마다 월말 심사 — 보스데이.md, 아직 미구현.
+## 밸런스 v1(월 구조 전환 첫 튜닝) — 실플레이/시뮬로 보정.
 
-const DAYS := [
-	{"rent": 1800,  "per_wave": 11},  # 1일차 (손님 33) — 온보딩, 사실상 통과
-	{"rent": 6000,  "per_wave": 12},  # 2일차 (손님 36)
-	{"rent": 11000, "per_wave": 13},  # 3일차 (손님 39) — 압박 시작(9k→11k: 약빌드 거르기)
-	{"rent": 15000, "per_wave": 13},  # 4일차 (손님 39) — 빡빡(경계선)
-	{"rent": 24000, "per_wave": 14},  # 5일차 (손님 42) — 생존 압박(33k→24k: 실플레이 ~17~20k 부족이라 하향)
+const WEEKS_PER_MONTH := 4
+const RENT_GROWTH := 1.6    # 정의 구간 이후 월세 복리 증가율(달마다 ×)
+const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
+const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 한계
+
+const MONTHS := [
+	{"rent": 24000,  "waves": [11, 12, 13, 14]},  # 1개월차
+	{"rent": 55000,  "waves": [13, 14, 15, 15]},  # 2개월차
+	{"rent": 95000,  "waves": [15, 16, 16, 17]},  # 3개월차 (분기말 — 나중 보스 심사 예정)
 ]
-# 튜닝 v2(난이도 (c)하드코어): 1→2일 절벽(1800→9000, 5배)+시작금0으로 초반 현금흐름이 못 따라가
-# 3~4일 벽. 2~4일 완만화(2일 9k→6k, 3일 10k→9k, 4일 19k→15k)로 곡선 부드럽게. 5일은 실플레이 후 조정.
-# 병행: 슬롯가 하향(3000→1800·×1.6)+버프팩 고정(200)으로 슬롯 확장이 실질 가능해짐(data/config.gd).
 
+## 무한 진행이라 실질 상한(승리 조건으로 안 쓰임). session의 day>=count()가 절대 참이 안 되게.
 static func count() -> int:
-	return DAYS.size()
+	return 1_000_000
 
-static func get_day(day: int) -> Dictionary:
-	var d := (DAYS[clampi(day - 1, 0, DAYS.size() - 1)] as Dictionary).duplicate()
-	# 시뮬 압박 실험용 손잡이: SIM_LOAD 환경변수로 손님 수 배수(예: SIM_LOAD=3).
+static func months() -> int:
+	return MONTHS.size()
+
+## 이 달(0-base)의 월세 — 정의 구간은 표, 이후는 마지막 값 × RENT_GROWTH^(초과 월수).
+static func _monthly_rent(mi: int) -> int:
+	if mi < MONTHS.size():
+		return int(MONTHS[mi]["rent"])
+	var last := int(MONTHS[MONTHS.size() - 1]["rent"])
+	return int(round(float(last) * pow(RENT_GROWTH, mi - (MONTHS.size() - 1))))
+
+## 이 달·주(0-base)의 웨이브당 손님 수 — 정의 이후는 마지막 달에서 월당 +WAVE_STEP(상한 WAVE_CAP).
+static func _waves(mi: int, wi: int) -> int:
+	if mi < MONTHS.size():
+		return int((MONTHS[mi]["waves"] as Array)[wi])
+	var base := int((MONTHS[MONTHS.size() - 1]["waves"] as Array)[wi])
+	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
+
+## 주차(1-base) 정보. per_wave·month·week_in_month·is_month_end·monthly_rent·rent(월말만>0)·weeks_left.
+static func get_week(week: int) -> Dictionary:
+	var w := maxi(0, week - 1)
+	var mi := w / WEEKS_PER_MONTH
+	var wi := w % WEEKS_PER_MONTH
+	var is_end := wi == WEEKS_PER_MONTH - 1
+	var pw := _waves(mi, wi)
+	var mr := _monthly_rent(mi)
 	if OS.has_environment("SIM_LOAD"):
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
-			d["per_wave"] = int(round(float(d.get("per_wave", 3)) * mult))
-	if OS.has_environment("SIM_RENT"):   # 가게세 배수 실험 손잡이
-		d["rent"] = int(round(float(d.get("rent", 0)) * float(OS.get_environment("SIM_RENT"))))
-	return d
+			pw = int(round(float(pw) * mult))
+	if OS.has_environment("SIM_RENT"):
+		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
+	return {
+		"per_wave": pw,
+		"month": mi + 1,
+		"week_in_month": wi + 1,
+		"is_month_end": is_end,
+		"monthly_rent": mr,
+		"rent": mr if is_end else 0,
+		"weeks_left": (WEEKS_PER_MONTH - 1) - wi,
+	}
+
+## 하위호환 별칭 — 기존 호출부(session·sim)가 get_day(day)로 rent/per_wave를 읽음.
+static func get_day(day: int) -> Dictionary:
+	return get_week(day)
