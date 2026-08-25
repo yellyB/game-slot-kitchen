@@ -405,9 +405,12 @@ func day_start_bonus(cash: int) -> int:
 ## 마감 보너스/차감(63~65,73 정산 + 50 가게세차감). ctx: {served,visited,order_lost,accepted,same_max,day_revenue,cash,rent}
 func day_end_bonus(ctx: Dictionary) -> int:
 	var g := 0
-	var visited := maxi(1, int(ctx.get("visited", 0)))
 	var served := int(ctx.get("served", 0))
-	var served_ratio := float(served) / float(visited)
+	# 처리율 = 서빙 / (서빙 + 놓침). '놓침'은 인내심 만료로 떠난 손님(대기열+주문)만.
+	# 마감 시 대기열/슬롯에 남아있던 손님은 분모에서 제외 → 놓친 손님 0명이면 100%(완벽정산).
+	var missed := int(ctx.get("missed", 0))
+	var concluded := served + missed
+	var served_ratio := 1.0 if concluded == 0 else float(served) / float(concluded)
 	var accepted := maxi(1, int(ctx.get("accepted", 0)))
 	var leave_ratio := float(ctx.get("order_lost", 0)) / float(accepted)
 	var same_ratio := 0.0

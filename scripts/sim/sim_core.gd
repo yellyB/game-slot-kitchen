@@ -29,6 +29,7 @@ var _visited_today := 0
 var _served_today := 0
 var _accepted_today := 0
 var _order_lost_today := 0
+var _missed_today := 0   # 놓친 손님(대기열+주문 이탈) — 완벽/우수정산 처리율 분모(main과 동치)
 var _served_by_menu := {}
 
 
@@ -154,6 +155,7 @@ func _reset_day_consumables() -> void:
 	_served_today = 0
 	_accepted_today = 0
 	_order_lost_today = 0
+	_missed_today = 0
 	_served_by_menu = {}
 
 
@@ -210,6 +212,7 @@ func _decay_patience() -> void:
 		if queue[i]["pat"] <= 0.0:
 			queue.remove_at(i)
 			_lost += 1
+			_missed_today += 1
 	for i in range(orders.size() - 1, -1, -1):
 		orders[i]["pat"] -= DT
 		if orders[i]["pat"] <= 0.0:
@@ -217,6 +220,7 @@ func _decay_patience() -> void:
 			orders.remove_at(i)
 			_lost += 1
 			_order_lost_today += 1
+			_missed_today += 1
 			var gain := Buffs.on_lost(rid)
 			if gain != 0:
 				session.earn(gain)
@@ -471,6 +475,7 @@ func _on_day_closing(s: Session) -> void:
 	var ctx := {
 		"served": _served_today,
 		"visited": _visited_today,
+		"missed": _missed_today,
 		"accepted": _accepted_today,
 		"order_lost": _order_lost_today,
 		"same_max": same_max,

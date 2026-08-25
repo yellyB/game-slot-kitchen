@@ -24,6 +24,7 @@ var _visited_today := 0     # 등장 손님 수
 var _accepted_today := 0    # 주문 접수 수(슬롯 주문 카드 생성)
 var _served_today := 0      # 서빙 완료 수
 var _order_lost_today := 0  # 주문 낸 손님이 못 받고 떠난 수(음식대기 만료)
+var _missed_today := 0      # 놓친 손님(대기열 이탈 + 주문 이탈) — 완벽/우수정산 처리율 분모
 var _run_id := ""           # 이번 판 고유 id(로그에서 같은 판 묶기용). _start_game마다 새로 발급.
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 
@@ -809,6 +810,7 @@ func _on_urged(card: Control) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
+  _missed_today += 1   # 대기열 이탈 = 놓친 손님(정산 처리율 분모)
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
   Audio.vibrate(40)   # 손님 놓침 — 에러 진동
@@ -825,6 +827,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _expect_fly = false
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
+  _missed_today += 1   # 주문 이탈 = 놓친 손님(정산 처리율 분모)
   _spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
   Audio.vibrate(40)   # 손님 놓침 — 에러 진동
@@ -1115,6 +1118,7 @@ func _on_day_closing(s: Session) -> void:
   var ctx := {
     "served": _served_today,
     "visited": _visited_today,
+    "missed": _missed_today,
     "accepted": _accepted_today,
     "order_lost": _order_lost_today,
     "same_max": same_max,
@@ -1688,6 +1692,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _accepted_today = 0
   _served_today = 0
   _order_lost_today = 0
+  _missed_today = 0
   _served_by_menu = {}
   Buffs.reset_day()   # #45 적립 하루 리셋
   # 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
