@@ -2,6 +2,7 @@ class_name Shop
 extends Control
 
 signal start_business
+signal go_home
 
 var session: Session
 var _cash_label: Label
@@ -46,38 +47,16 @@ func _ready() -> void:
   pad.add_child(v)
 
   var nx := Levels.get_week(session.day + 1)
-  var bar := PanelContainer.new()
-  bar.add_theme_stylebox_override("panel", UI.card(Palette.WHITE))
+  var bar := UI.top_bar()
   v.add_child(bar)
-  var barpad := MarginContainer.new()
-  for side in ["left", "right", "top", "bottom"]:
-    barpad.add_theme_constant_override("margin_" + side, 12)
-  bar.add_child(barpad)
-  var header := HBoxContainer.new()
-  header.add_theme_constant_override("separation", 10)
-  barpad.add_child(header)
-
-  var wbadge := UI.day_badge(32)
-  (wbadge.get_meta("num") as Label).text = str(session.day + 1)
-  header.add_child(wbadge)
-
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  header.add_child(gap)
-
-  var coin := HBoxContainer.new()
-  coin.add_theme_constant_override("separation", 4)
-  coin.add_child(UI.ui_icon("coin", 20))
-  _cash_label = UI.label("0", 18, Palette.COCOA_800, true)
-  coin.add_child(_cash_label)
-  header.add_child(coin)
-
-  var rentbox := HBoxContainer.new()
-  rentbox.add_theme_constant_override("separation", 4)
-  rentbox.add_child(UI.ui_icon("bill", 20))
-  var rc := Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800
-  rentbox.add_child(UI.label(UI.money(int(nx["monthly_rent"])), 18, rc, true))
-  header.add_child(rentbox)
+  (bar.get_meta("day_num") as Label).text = str(session.day + 1)
+  _cash_label = bar.get_meta("money_label") as Label
+  var rl := bar.get_meta("rent_label") as Label
+  rl.text = UI.money(int(nx["monthly_rent"]))
+  rl.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
+  var home := bar.get_meta("home_btn") as Button
+  home.pressed.connect(func(): go_home.emit())
+  Audio.attach_click(home)
 
   var scroll := ScrollContainer.new()
   scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
