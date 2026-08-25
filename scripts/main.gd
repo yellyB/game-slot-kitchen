@@ -865,9 +865,9 @@ func _show_gain_breakdown(breakdown: Array) -> void:
         fo.tween_property(menu_icon, "modulate:a", 0.0, 0.14)
         fo.tween_callback(menu_icon.queue_free))
 
-  # 버프 추가금 — 순차로 +N 팝 + 띠링 + 중앙 합계 카운트업
+  # 버프 추가금 — 순차로 +N 팝 + 음정 상승(크레셴도) + 점점 커지는 펀치 + 카운트업
   var running := base_amt
-  var t := 0.42
+  var t := 0.34
   for k in range(1, items.size()):
     var entry: Dictionary = items[k]
     var amt := int(entry.get("amount", 0))
@@ -877,36 +877,77 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     get_tree().create_timer(t).timeout.connect(func():
       if not is_instance_valid(total_l):
         return
-      Audio.play("serve")   # 띠링 — 버프 추가금(메뉴 제공음과 동일)
+      Audio.play("serve", clampf(1.0 + float(k) * 0.06, 1.0, 1.9))   # 체인마다 음정↑ = 크레셴도
       _spawn_bonus_pop(amt, entry, total_l.position + Vector2(total_l.size.x * 0.5, 0.0))
       var cu := create_tween()
-      cu.tween_method(_set_money_text.bind(total_l), float(from_total), float(to_total), 0.3)
+      cu.tween_method(_set_money_text.bind(total_l), float(from_total), float(to_total), 0.26)
+      var punch := clampf(1.18 + float(k) * 0.04, 1.18, 1.5)   # 뒤로 갈수록 더 크게 튐
       var bump := create_tween()
-      bump.tween_property(total_l, "scale", Vector2(1.18, 1.18), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-      bump.tween_property(total_l, "scale", Vector2.ONE, 0.1))
-    t += 0.42
+      bump.tween_property(total_l, "scale", Vector2(punch, punch), 0.09).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+      bump.tween_property(total_l, "scale", Vector2.ONE, 0.11))
+    t += 0.34
 
-  # 최종 합류 — 보유금 라벨 통통 + 동전음(딱 한 번), 중앙 표시는 떠오르며 사라짐
+  # 최종 방출 — 금액 규모에 비례해 슬램(큰 스케일→1.0) + 화면 흔들림 + 코인 파티클 + 동전음
+  var total_gain := running
   get_tree().create_timer(t + 0.2).timeout.connect(func():
     if not is_inside_tree():
       return
+    var feel := _gain_feel(total_gain)
     _pop_label(_money_label)
-    Audio.play("coins")
+    Audio.play("coins", feel["pitch"])
+    if feel["shake"] > 0.0:
+      _screen_shake(feel["shake"], 0.35)
     if is_instance_valid(menu_icon):   # 버프 없던 서빙(페이드 안 탄 경우) 메뉴 이미지 정리
       var mo := create_tween()
-      mo.tween_property(menu_icon, "modulate:a", 0.0, 0.36)
+      mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
       mo.tween_callback(menu_icon.queue_free)
     if is_instance_valid(total_l):
-      var out := create_tween()
-      out.tween_property(total_l, "position:y", total_l.position.y - 42.0, 0.36).set_ease(Tween.EASE_IN)
-      out.parallel().tween_property(total_l, "modulate:a", 0.0, 0.36)
-      out.tween_callback(total_l.queue_free))
+      _coin_burst(total_l.position + total_l.size * 0.5, total_gain)   # 코인이 보유금으로 우르르
+      total_l.scale = Vector2(feel["slam"], feel["slam"])   # 크게 나타났다 임팩트 있게 축소
+      var slam := create_tween()
+      slam.tween_property(total_l, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+      slam.tween_interval(0.22)   # 잠깐 유지(잔상)
+      slam.tween_property(total_l, "modulate:a", 0.0, 0.28).set_ease(Tween.EASE_IN)
+      slam.parallel().tween_property(total_l, "position:y", total_l.position.y - 28.0, 0.28)
+      slam.tween_callback(total_l.queue_free))
 
 
 ## 카운트업 tween_method 콜백 — 합계 라벨 텍스트를 금액 표기로 갱신.
 func _set_money_text(v: float, lbl: Label) -> void:
   if is_instance_valid(lbl):
     lbl.text = UI.money(int(round(v)))
+
+
+## 획득 금액 규모 → 최종 슬램 스케일·화면흔들림 강도·동전음 피치. (클수록 크게 터짐)
+func _gain_feel(total: int) -> Dictionary:
+  if total >= 15000:
+    return {"slam": 1.65, "shake": 24.0, "pitch": 1.3}
+  if total >= 6000:
+    return {"slam": 1.45, "shake": 15.0, "pitch": 1.2}
+  if total >= 2000:
+    return {"slam": 1.28, "shake": 8.0, "pitch": 1.1}
+  return {"slam": 1.15, "shake": 0.0, "pitch": 1.0}
+
+
+## 코인 파티클 — from 지점에서 여러 코인이 보유금 라벨로 날아가며 사라짐(금액 클수록 많이).
+func _coin_burst(from: Vector2, amount: int) -> void:
+  if not is_inside_tree():
+    return
+  var n := clampi(3 + int(float(amount) / 1500.0), 3, 14)
+  var target := _money_label.global_position + _money_label.size * 0.5
+  for i in n:
+    var coin := UI.ui_icon("coin", 20)
+    coin.z_index = 116
+    coin.pivot_offset = Vector2(10, 10)
+    coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(coin)
+    coin.global_position = from + Vector2(randf_range(-26, 26), randf_range(-20, 20))
+    var delay := float(i) * 0.025
+    var tw := create_tween().set_parallel(true)
+    tw.tween_property(coin, "global_position", target, 0.42).set_delay(delay).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+    tw.tween_property(coin, "scale", Vector2(0.4, 0.4), 0.42).set_delay(delay)
+    tw.tween_property(coin, "modulate:a", 0.0, 0.42).set_delay(delay).set_ease(Tween.EASE_IN)
+    tw.chain().tween_callback(coin.queue_free)
 
 
 ## breakdown 항목 → 실제 아이콘 노드. recipe/buff id 있으면 텍스처, 없으면 이모지 폴백.
