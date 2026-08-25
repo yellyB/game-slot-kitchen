@@ -600,6 +600,8 @@ func _refresh_warehouse() -> void:
   _warehouse.refresh(_board.is_full())
 
 
+const _WAREHOUSE_KEYS := [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_A, KEY_S, KEY_D, KEY_F, KEY_Z, KEY_X, KEY_C, KEY_V]
+
 func _unhandled_input(event: InputEvent) -> void:
   if not (event is InputEventKey) or not event.pressed or event.echo:
     return
@@ -610,22 +612,10 @@ func _unhandled_input(event: InputEvent) -> void:
     _toggle_warehouse()
     get_viewport().set_input_as_handled()
     return
-  var idx := _digit_index(key)
+  var idx: int = _WAREHOUSE_KEYS.find(key)
   if idx >= 0 and _warehouse.visible:
     _warehouse.place_by_index(idx)
     get_viewport().set_input_as_handled()
-
-
-func _digit_index(key: int) -> int:
-  if key >= KEY_1 and key <= KEY_9:
-    return key - KEY_1
-  if key == KEY_0:
-    return 9
-  if key >= KEY_KP_1 and key <= KEY_KP_9:
-    return key - KEY_KP_1
-  if key == KEY_KP_0:
-    return 9
-  return -1
 
 
 func _process(_delta: float) -> void:
