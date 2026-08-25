@@ -1192,7 +1192,60 @@ func _show_day_banner(day: int) -> void:
   tw.tween_callback(l.queue_free)
 
 
-func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Control:
+func _month_track(week: int) -> Control:
+  var wk := Levels.get_week(week)
+  var wim := int(wk["week_in_month"])
+  var is_end: bool = wk["is_month_end"]
+  var mr := int(wk["monthly_rent"])
+  var wpm := Levels.WEEKS_PER_MONTH
+
+  var v := VBoxContainer.new()
+  v.alignment = BoxContainer.ALIGNMENT_CENTER
+  v.add_theme_constant_override("separation", 6)
+  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  row.add_theme_constant_override("separation", 3)
+  row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  for i in range(1, wpm):
+    var glyph := "●" if i < wim else ("◉" if i == wim else "○")
+    var dot := UI.label(glyph, 24 if i == wim else 18, Palette.WHITE if i <= wim else Color(1, 1, 1, 0.45), true)
+    dot.add_theme_constant_override("outline_size", 3)
+    dot.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+    dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    row.add_child(dot)
+    var conn := UI.label("─", 16, Color(1, 1, 1, 0.45), true)
+    conn.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    row.add_child(conn)
+  var pay := HBoxContainer.new()
+  pay.add_theme_constant_override("separation", 3)
+  pay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay.add_child(UI.ui_icon("bill", 26))
+  var amt := UI.label(UI.money(mr), 20, Palette.DANGER if is_end else Palette.WHITE, true)
+  amt.add_theme_constant_override("outline_size", 3)
+  amt.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  amt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay.add_child(amt)
+  row.add_child(pay)
+  v.add_child(row)
+
+  var msg := "이번 주 월세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 월세 납부")
+  var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
+  lbl.add_theme_constant_override("outline_size", 4)
+  lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  v.add_child(lbl)
+
+  if is_end:
+    var pt := create_tween().set_loops()
+    pt.tween_property(amt, "modulate:a", 0.35, 0.5).set_trans(Tween.TRANS_SINE)
+    pt.tween_property(amt, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+  return v
+
+
+func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Control = null) -> Control:
   var root := Control.new()
   root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   root.z_index = 200
@@ -1223,6 +1276,8 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Contro
   l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
   box.add_child(l)
+  if extra != null:
+    box.add_child(extra)
 
   var hint := UI.label("click ▸", 20, Palette.WHITE, true)
   hint.add_theme_constant_override("outline_size", 4)
@@ -1280,7 +1335,7 @@ func _tap_to_continue() -> void:
 
 
 func _start_day_intro() -> void:
-  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)
+  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0, _month_track(_session.day))
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
