@@ -29,6 +29,7 @@ var _run_id := ""           # 이번 판 고유 id(로그에서 같은 판 묶�
 var _max_sale_today := 0    # OP 검사: 그날 최고 단일 판매금
 var _max_mult_today := 1.0  # OP 검사: 그날 최고 배수(곱연산)
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
+var _sales_by_menu := {}    # 메뉴별 판매 집계(정산 팝업): rid → {count, base, bonus}
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
 var _money_label: Label
@@ -989,6 +990,16 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   # 하루 정산 집계
   _served_today += 1
   _served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+  # 메뉴별 판매 집계(정산 팝업): 기본가(breakdown[0]=base) vs 보너스(나머지)
+  var base_this := amount
+  var bd: Array = res.get("breakdown", [])
+  if bd.size() > 0 and str(bd[0].get("src", "")) == "base":
+    base_this = int(bd[0].get("amount", amount))
+  var e: Dictionary = _sales_by_menu.get(rid, {"count": 0, "base": 0, "bonus": 0})
+  e["count"] = int(e["count"]) + 1
+  e["base"] = int(e["base"]) + base_this
+  e["bonus"] = int(e["bonus"]) + (amount - base_this)
+  _sales_by_menu[rid] = e
 
   var serve_pos := order.global_position + order.size * 0.5
   _show_gain_breakdown(res.get("breakdown", [{"src": "base", "amount": amount}]))   # 중앙에 기본가+버프별 순차
@@ -1692,6 +1703,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _max_sale_today = 0
   _max_mult_today = 1.0
   _served_by_menu = {}
+  _sales_by_menu = {}
   Buffs.reset_day()   # #45 적립 하루 리셋
   # 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
   #   추가로 버프칸 보너스(11 buff_slot)만큼 슬롯을 더 둬서 그만큼 버프가 "공짜"로 얹히게 함
@@ -1863,8 +1875,12 @@ func _on_day_ended(summary: Dictionary) -> void:
 ## 평주 마감 팝업 — 월세 없는 주. 이번 주 매출만 보여주고 바로 [상점으로]. (월말은 _show_settlement)
 func _show_week_closed(summary: Dictionary) -> void:
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
-  m.add_row(_settle_icon_row("coin", rev, 26))
+  var sr := _sales_rows()
+  if sr != null:
+    m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
+  else:
+    var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
+    m.add_row(_settle_icon_row("coin", rev, 26))
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -1880,9 +1896,62 @@ func _show_week_closed(summary: Dictionary) -> void:
 
 ## 하루 정산 팝업 — 영수증(빌지) 이미지 + 가게세 액수 → [가게세 지불] 버튼.
 ## 지불 시 실제 차감(pay_rent) + 빌지 이미지를 같은 크기의 결과 표시(✅/❌)로 교체.
+## 오늘 판매 내역 UI — 메뉴별 [아이콘 ×개수 … 판매금 +보너스] + 합계. 판매 없으면 null.
+func _sales_rows() -> Control:
+  if _sales_by_menu.is_empty():
+    return null
+  var box := VBoxContainer.new()
+  box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  box.add_theme_constant_override("separation", 5)
+  var sum_total := 0
+  var sum_bonus := 0
+  for rid in Recipes.all_ids():   # 등급(정의) 순
+    if not _sales_by_menu.has(rid):
+      continue
+    var e: Dictionary = _sales_by_menu[rid]
+    var bonus: int = int(e["bonus"])
+    var line_total: int = int(e["base"]) + bonus
+    sum_total += line_total
+    sum_bonus += bonus
+    var row := HBoxContainer.new()
+    row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_theme_constant_override("separation", 6)
+    row.add_child(Recipes.icon_node(rid, 30))
+    row.add_child(UI.label("×%d" % int(e["count"]), 15, Palette.COCOA_600, true))
+    var gap := Control.new()
+    gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_child(gap)
+    row.add_child(UI.ui_icon("coin", 16))
+    row.add_child(UI.label(UI.money(line_total), 15, Palette.COCOA_800, true))
+    if bonus > 0:
+      row.add_child(UI.label("  +" + UI.money(bonus), 13, Palette.MAIN))
+    box.add_child(row)
+  var line := ColorRect.new()
+  line.color = Palette.COCOA_200
+  line.custom_minimum_size = Vector2(0, 1.5)
+  box.add_child(line)
+  var trow := HBoxContainer.new()
+  trow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  trow.add_theme_constant_override("separation", 6)
+  trow.add_child(UI.label("합계", 15, Palette.COCOA_600, true))
+  var tgap := Control.new()
+  tgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  trow.add_child(tgap)
+  trow.add_child(UI.ui_icon("coin", 16))
+  trow.add_child(UI.label(UI.money(sum_total), 16, Palette.COCOA_800, true))
+  if sum_bonus > 0:
+    trow.add_child(UI.label("  +" + UI.money(sum_bonus), 13, Palette.MAIN))
+  box.add_child(trow)
+  return box
+
+
 func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+
+  var sr := _sales_rows()
+  if sr != null:
+    m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
 
   # 영수증(빌지) 이미지 — 고정 크기 홀더. 지불 후 같은 크기의 ✅/❌로 교체(레이아웃 안 흔들림).
   # receipt.png 있으면 우선, 없으면 bill(청구서) 폴백. [[화구 아트 로딩과 동일 폴백 패턴]]
