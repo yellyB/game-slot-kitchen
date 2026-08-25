@@ -181,6 +181,7 @@ func _refresh() -> void:
 	var have := board.ingredient_counts()   # ing_id → 보드 위 개수
 	for entry in _entries:
 		var id: String = entry.get_meta("recipe_id")
+		var req := Buffs.required_ingredients(id)   # 생략 버프 반영된 실제 필요 재료
 		var ok := board.has_ingredients(id)
 		entry.disabled = not ok
 		entry.modulate = Color.WHITE
@@ -188,10 +189,13 @@ func _refresh() -> void:
 		var offer_a := 1.0 if ok else 0.35
 		for n in entry.get_meta("offer", []):
 			n.modulate = Color(1, 1, 1, offer_a)
-		# 재료별: 보유하면 진하게, 없으면 흐리게 → "뭐가 없어서 못 만드는지" 표시(비활성이어도 유지)
+		# 재료별: 생략 버프로 안 쓰는 재료는 숨김. 나머지는 보유하면 진하게, 없으면 흐리게.
 		for it in entry.get_meta("ings", []):
-			var present: bool = have.get(it["iid"], 0) > 0
-			it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
+			var needed: bool = it["iid"] in req
+			it["node"].visible = needed
+			if needed:
+				var present: bool = have.get(it["iid"], 0) > 0
+				it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
 
 
 func _select(id: String) -> void:

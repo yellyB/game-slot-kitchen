@@ -194,7 +194,7 @@ func ingredient_counts() -> Dictionary:
 func has_ingredients(recipe_id: String) -> bool:
 	var have := ingredient_counts()
 	var need := {}
-	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+	for iid in Buffs.required_ingredients(recipe_id):   # 생략 버프(계란/밀가루/원두) 반영
 		need[iid] = need.get(iid, 0) + 1
 	for iid in need:
 		if have.get(iid, 0) < need[iid]:
@@ -207,7 +207,7 @@ func has_ingredients(recipe_id: String) -> bool:
 ## 떼기 전에 global_position을 캡처해 함께 반환(떼면 좌표가 로컬로 붕괴되므로).
 func take_ingredient_cards(recipe_id: String) -> Array:
 	var out: Array = []
-	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+	for iid in Buffs.required_ingredients(recipe_id):   # 생략 버프 반영 — 안 쓰는 재료는 소비 안 함
 		for s in slots:
 			var c := s.get_card()
 			if c is IngredientCard and (c as IngredientCard).ing_id == iid:
