@@ -840,8 +840,6 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     var feel := _gain_feel(total_gain)
     _pop_label(_money_label)
     Audio.play("coins", feel["pitch"])
-    if feel["shake"] > 0.0:
-      _screen_shake(feel["shake"], 0.35)
     if is_instance_valid(menu_icon):
       var mo := create_tween()
       mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
