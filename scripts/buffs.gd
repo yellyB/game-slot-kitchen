@@ -404,11 +404,11 @@ func day_start_bonus(cash: int) -> int:
 func day_end_bonus(ctx: Dictionary) -> int:
 	var g := 0
 	var served := int(ctx.get("served", 0))
-	# 처리율 = 서빙 / (서빙 + 놓침). '놓침'은 인내심 만료로 떠난 손님(대기열+주문)만.
-	# 마감 시 대기열/슬롯에 남아있던 손님은 분모에서 제외 → 놓친 손님 0명이면 100%(완벽정산).
+	# 처리율 = (방문 - 놓침) / 방문. '놓침'은 인내심 만료로 떠난 손님(대기열+주문)만.
+	# 놓친 손님 0명이면 100%(완벽정산). 우수정산 = 방문 대비 놓침 10% 이하.
 	var missed := int(ctx.get("missed", 0))
-	var concluded := served + missed
-	var served_ratio := 1.0 if concluded == 0 else float(served) / float(concluded)
+	var visited := int(ctx.get("visited", 0))
+	var served_ratio := 1.0 if visited == 0 else float(visited - missed) / float(visited)
 	var accepted := maxi(1, int(ctx.get("accepted", 0)))
 	var leave_ratio := float(ctx.get("order_lost", 0)) / float(accepted)
 	var same_ratio := 0.0

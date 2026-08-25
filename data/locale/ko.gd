@@ -138,7 +138,7 @@ const S := {
 	"b.inst_order.name": "즉시 주문", "b.inst_order.label": "8번째 서빙을 하면, 다음 주문서를 받았을때 서빙까지 즉시 완료",
 	"b.inst_cook.name": "즉시 조리", "b.inst_cook.label": "4번째 조리마다 조리가 즉시 완료",
 	"b.interest.name": "이자", "b.interest.label": "영업 시작 시 보유 금액의 12% 이자 받음",
-	"b.settle_100.name": "완벽정산", "b.settle_100.label": "그날 손님 100% 처리 시, 마감에 그날 매출의 100% 보너스",
+	"b.settle_100.name": "완벽정산", "b.settle_100.label": "그날 손님 100% 처리 시, 마감에 그날 매출의 75% 보너스",
 	"b.settle_90.name": "우수정산", "b.settle_90.label": "그날 손님 90% 이상 처리 시, 마감에 그날 매출의 50% 보너스",
 	"b.settle_same.name": "전문점", "b.settle_same.label": "그날 서빙의 70% 이상이 같은 메뉴면, 마감에 그날 매출의 40% 보너스",
 	"b.pat_extend.name": "여유", "b.pat_extend.label": "손님 인내심이 다 닳아서 떠나기 전에 7초 더 머문다",
