@@ -53,15 +53,15 @@ const ALL := {
 	# ── 메뉴가격 등급별 인상 ──
 	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 1.04}},
 	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 0.40}},
-	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.40}},
+	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 0.90}},
 
 	# ── 메뉴가격 성장(램프) 25~30 ──
 	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.21}},
 	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.21}},
 	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.21}},
 	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.21}},
-	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 0.21}},
-	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 0.25}},
+	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 0.45}},
+	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 0.55}},
 
 	# ── 판매금: 슬롯/버프 공간 빌드(31~41) ──
 	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.30}},
@@ -92,7 +92,7 @@ const ALL := {
 	# ── 판매금: 조건부/앰프(53~58) ──
 	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 0.86}},
 	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 0.40}},
-	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 0.40}},
+	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 0.90}},
 	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 0.34}},
 	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 0.52}},
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.69}},
