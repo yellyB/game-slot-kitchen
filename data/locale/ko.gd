@@ -122,7 +122,7 @@ const S := {
 	"b.accum_sale.name": "적립", "b.accum_sale.label": "서빙마다 판매금의 2% 누적 획득. 재료 버리거나 하루 끝나면 초기화",
 	"b.sale_flat3.name": "기초체력", "b.sale_flat3.label": "판매금 +34%",
 	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "20% 확률로 판매금 +120%",
-	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 판매금 +52%. 10% 확률로 이 카드 폐기 + 그날 번 돈의 30% 차감",
+	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 판매금 +52%. 10% 확률로 이 카드 폐기",
 	"b.no_buy.name": "절약", "b.no_buy.label": "상점에서 아무것도 안 사면 다음날 모든 판매 +5%",
 	"b.sale_cash.name": "부자세", "b.sale_cash.label": "판매마다 보유금의 1%를 판매금에 추가. 단, 영업 종료 시 가게세의 20% 차감",
 	"b.sale_pat.name": "박리다매", "b.sale_pat.label": "판매가 +29%/ 인내심 -20%",
