@@ -1196,7 +1196,6 @@ func _month_track(week: int) -> Control:
   var wk := Levels.get_week(week)
   var wim := int(wk["week_in_month"])
   var is_end: bool = wk["is_month_end"]
-  var mr := int(wk["monthly_rent"])
   var wpm := Levels.WEEKS_PER_MONTH
 
   var v := VBoxContainer.new()
@@ -1218,19 +1217,12 @@ func _month_track(week: int) -> Control:
     var conn := UI.label("─", 16, Color(1, 1, 1, 0.45), true)
     conn.mouse_filter = Control.MOUSE_FILTER_IGNORE
     row.add_child(conn)
-  var pay := HBoxContainer.new()
-  pay.add_theme_constant_override("separation", 3)
-  pay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  pay.add_child(UI.ui_icon("bill", 26))
-  var amt := UI.label(UI.money(mr), 20, Palette.DANGER if is_end else Palette.WHITE, true)
-  amt.add_theme_constant_override("outline_size", 3)
-  amt.add_theme_color_override("font_outline_color", Palette.COCOA_900)
-  amt.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  pay.add_child(amt)
-  row.add_child(pay)
+  var bill := UI.ui_icon("bill", 28)
+  bill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  row.add_child(bill)
   v.add_child(row)
 
-  var msg := "이번 주 가게세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 가게세 납부")
+  var msg := "이번 주 가게세 납부!" if is_end else (str(int(wk["weeks_left"]) + 1) + "주 후 가게세 납부")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -1240,8 +1232,8 @@ func _month_track(week: int) -> Control:
 
   if is_end:
     var pt := create_tween().set_loops()
-    pt.tween_property(amt, "modulate:a", 0.35, 0.5).set_trans(Tween.TRANS_SINE)
-    pt.tween_property(amt, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+    pt.tween_property(lbl, "modulate:a", 0.4, 0.5).set_trans(Tween.TRANS_SINE)
+    pt.tween_property(lbl, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
   return v
 
 
@@ -1278,6 +1270,7 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Co
   box.add_child(l)
   if extra != null:
     box.add_child(extra)
+    extra.modulate.a = 0.0
 
   var hint := UI.label("click ▸", 20, Palette.WHITE, true)
   hint.add_theme_constant_override("outline_size", 4)
@@ -1314,6 +1307,11 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Co
   lt.parallel().tween_property(l, "scale", Vector2(1.12, 1.12), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   lt.tween_property(l, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_SINE)
   await lt.finished
+
+  if extra != null:
+    var et := create_tween()
+    et.tween_property(extra, "modulate:a", 1.0, 0.25)
+    await et.finished
 
   var hp := create_tween()
   hp.tween_property(hint, "modulate:a", 1.0, 0.3)
