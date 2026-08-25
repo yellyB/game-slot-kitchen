@@ -70,7 +70,11 @@ func _shop() -> void:
 	var nw := Levels.get_week(session.day + 1)
 	var monthly := int(round(Buffs.mod("rent_mult", float(nw.get("monthly_rent", 0)))))
 	var wl := int(nw.get("weeks_left", 0))
-	var next_rent := int(round(float(monthly) * (1.0 - float(wl) / float(Levels.WEEKS_PER_MONTH))))
+	var next_rent := 0
+	if wl == 0:
+		next_rent = monthly
+	elif wl == 1:
+		next_rent = monthly / 2
 	while session.slots < Config.MAX_SLOTS:
 		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
 			break
