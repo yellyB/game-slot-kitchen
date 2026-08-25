@@ -56,3 +56,13 @@ func refresh(full: bool) -> void:
 	for tile in _tiles:
 		tile.disabled = full
 		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
+
+
+## 번호키(0-based idx, 좌상단→우하단 순)로 해당 타일을 첫 빈 슬롯에 배치. 탭과 동일 경로.
+func place_by_index(idx: int) -> void:
+	if idx < 0 or idx >= _tiles.size():
+		return
+	var tile := _tiles[idx]
+	if tile.disabled:
+		return
+	Move.on_click(tile)   # is_quick 타일 → 첫 빈 슬롯에 즉시 배치
