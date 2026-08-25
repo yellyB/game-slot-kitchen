@@ -655,8 +655,11 @@ func _refresh_warehouse() -> void:
   _warehouse.refresh(_board.is_full())
 
 
-## 키보드 단축키(데스크톱/테스트용): 스페이스=창고 토글, 숫자=창고 타일(좌상단→우하단) 첫 빈 슬롯 배치.
-## 숫자는 창고가 열려 있을 때만(트립 비용 경제 유지). 모바일엔 키보드 없어 무영향.
+## 창고 타일(4열 그리드) 자리 대응 키 — QWER(윗줄)·ASDF(둘째줄)·ZXCV(셋째줄). 좌상단→우하단.
+const _WAREHOUSE_KEYS := [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_A, KEY_S, KEY_D, KEY_F, KEY_Z, KEY_X, KEY_C, KEY_V]
+
+## 키보드 단축키(데스크톱/테스트용): 스페이스=창고 토글, QWER/ASDF=창고 타일(자리 대응) 첫 빈 슬롯 배치.
+## 타일 키는 창고가 열려 있을 때만(트립 비용 경제 유지). 모바일엔 키보드 없어 무영향.
 func _unhandled_input(event: InputEvent) -> void:
   if not (event is InputEventKey) or not event.pressed or event.echo:
     return
@@ -667,23 +670,10 @@ func _unhandled_input(event: InputEvent) -> void:
     _toggle_warehouse()
     get_viewport().set_input_as_handled()
     return
-  var idx := _digit_index(key)
+  var idx: int = _WAREHOUSE_KEYS.find(key)
   if idx >= 0 and _warehouse.visible:
     _warehouse.place_by_index(idx)
     get_viewport().set_input_as_handled()
-
-
-## 숫자키 → 0-based 인덱스. 1~9 → 0~8, 0 → 9. (상단 숫자열·넘패드 공용)
-func _digit_index(key: int) -> int:
-  if key >= KEY_1 and key <= KEY_9:
-    return key - KEY_1
-  if key == KEY_0:
-    return 9
-  if key >= KEY_KP_1 and key <= KEY_KP_9:
-    return key - KEY_KP_1
-  if key == KEY_KP_0:
-    return 9
-  return -1
 
 
 func _process(_delta: float) -> void:
