@@ -20,6 +20,7 @@ var _visited_today := 0
 var _accepted_today := 0
 var _served_today := 0
 var _order_lost_today := 0
+var _run_id := ""
 var _served_by_menu := {}
 
 var _day_num: Label
@@ -185,6 +186,7 @@ func _start_game() -> void:
   _last_cash = 0
   _money_label.text = UI.money(0)
   Boss.reset()
+  _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())
   _title.hide()
   _session.start_run()
 
@@ -1570,6 +1572,7 @@ func _on_day_started(day: int, rent: int) -> void:
 
 func _log_day(summary: Dictionary) -> void:
   PlayLog.append({
+    "run": _run_id,
     "t": Time.get_datetime_string_from_system(),
     "day": int(summary.get("day", 0)),
     "rent": int(summary.get("rent", 0)),
