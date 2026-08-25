@@ -77,8 +77,12 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 
 ## 하루 사이 상점: 다음 가게세는 남기고, 남는 돈으로 슬롯 확장 → 버프팩 구매(유능 정책).
 func _shop() -> void:
-	# 월 구조: 다음 주 rent는 월말 빼면 0 → 다가올 '월세'(monthly_rent)를 예비금으로 잡아 저축.
-	var next_rent := int(round(Buffs.mod("rent_mult", float(Levels.get_week(session.day + 1).get("monthly_rent", 0)))))
+	# 월 구조: 월세는 월말에 한 번. 예비금은 '월말이 가까울수록↑'(초반엔 투자, 말엔 전액 확보).
+	# reserve = 월세 × (1 - 월말까지_남은주/4)  → 1주차 25%·2주 50%·3주 75%·월말 100%.
+	var nw := Levels.get_week(session.day + 1)
+	var monthly := int(round(Buffs.mod("rent_mult", float(nw.get("monthly_rent", 0)))))
+	var wl := int(nw.get("weeks_left", 0))
+	var next_rent := int(round(float(monthly) * (1.0 - float(wl) / float(Levels.WEEKS_PER_MONTH))))
 	while session.slots < Config.MAX_SLOTS:
 		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
 			break
