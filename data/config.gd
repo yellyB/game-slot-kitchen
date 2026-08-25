@@ -21,6 +21,7 @@ const PATIENCE_LOW_FRAC := 0.3
 const START_MONEY := 0
 const SLOT_PRICE := 1800
 const BUFF_PACK_PRICE := 200
+const BUFF_REROLL_BASE := 100
 const SLOT_PRICE_STEP := 1.6
 const MAX_BUFFS := 5
 const BUFF_SELL_RATIO := 0.3
