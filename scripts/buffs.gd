@@ -231,9 +231,19 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"accum":
 				accum_pct += float(s["pct"])
 				accum_id = id
-			"mult":                       # 배수(곱연산) — 실수 배수를 곱해서 쌓음
-				mult *= float(s["value"])
-				mult_id = id
+			"mult":                       # 배수(곱연산) — 조건 충족 시 실수 배수를 곱함
+				var mok := true
+				match s.get("when", ""):
+					"board_full": mok = int(ctx.get("empty", -1)) == 0
+					"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
+				if mok:
+					mult *= float(s["value"])
+					mult_id = id
+			"mult_count":                 # 개수 비례 배수 — 대상 1개당 step만큼 배수↑
+				var mc := _ctx_count(s.get("per", ""), ctx)
+				if mc > 0:
+					mult *= 1.0 + float(s["step"]) * float(mc)
+					mult_id = id
 		# 이 버프의 기여금 — 누적 %로 증분 반올림(합이 총 보너스와 정확히 일치)
 		var contrib := 0
 		if dpct != 0.0:
