@@ -1306,7 +1306,63 @@ func _show_day_banner(day: int) -> void:
 
 ## 큰 중앙 배너 화면 — 딤(어두운 배경) + 이미지(달/해) 크게 + 텍스트(CLOSE/OPEN) + 하단 "click ▸" 힌트.
 ## 자동 페이드 안 함(탭 대기 동안 유지). 딤·내용·힌트를 담은 루트 Control 반환(탭 시 통째로 페이드).
-func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Control:
+## OPEN 배너용 월 진행 트랙 — 주차 노드(●◉○) ─ … ─ [🧾 월세]. 끝의 청구서=이번 달 납부 목표.
+## 월말 주면 금액 빨강+점멸 + "이번 주 납부!" 문구. 그 외엔 "N주 후 월세 납부".
+func _month_track(week: int) -> Control:
+  var wk := Levels.get_week(week)
+  var wim := int(wk["week_in_month"])       # 1..4 (이번 달 몇 주차)
+  var is_end: bool = wk["is_month_end"]
+  var mr := int(wk["monthly_rent"])
+  var wpm := Levels.WEEKS_PER_MONTH
+
+  var v := VBoxContainer.new()
+  v.alignment = BoxContainer.ALIGNMENT_CENTER
+  v.add_theme_constant_override("separation", 6)
+  v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  row.add_theme_constant_override("separation", 3)
+  row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  for i in range(1, wpm):   # 주차 점 1..(wpm-1). 지난주 ●, 이번주 ◉, 미래 ○
+    var glyph := "●" if i < wim else ("◉" if i == wim else "○")
+    var dot := UI.label(glyph, 24 if i == wim else 18, Palette.WHITE if i <= wim else Color(1, 1, 1, 0.45), true)
+    dot.add_theme_constant_override("outline_size", 3)
+    dot.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+    dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    row.add_child(dot)
+    var conn := UI.label("─", 16, Color(1, 1, 1, 0.45), true)
+    conn.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    row.add_child(conn)
+  # 끝 = 납부 노드(청구서 + 월세 금액)
+  var pay := HBoxContainer.new()
+  pay.add_theme_constant_override("separation", 3)
+  pay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay.add_child(UI.ui_icon("bill", 26))
+  var amt := UI.label(UI.money(mr), 20, Palette.DANGER if is_end else Palette.WHITE, true)
+  amt.add_theme_constant_override("outline_size", 3)
+  amt.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  amt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay.add_child(amt)
+  row.add_child(pay)
+  v.add_child(row)
+
+  var msg := "이번 주 월세 납부!" if is_end else (str(int(wk["weeks_left"])) + "주 후 월세 납부")
+  var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
+  lbl.add_theme_constant_override("outline_size", 4)
+  lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  v.add_child(lbl)
+
+  if is_end:   # 납부 주 — 금액 점멸(긴장)
+    var pt := create_tween().set_loops()
+    pt.tween_property(amt, "modulate:a", 0.35, 0.5).set_trans(Tween.TRANS_SINE)
+    pt.tween_property(amt, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+  return v
+
+
+func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Control = null) -> Control:
   var root := Control.new()
   root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   root.z_index = 200
@@ -1337,6 +1393,8 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3) -> Contro
   l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
   box.add_child(l)
+  if extra != null:   # OPEN 배너의 월 진행 트랙(월세 예고) — OPEN 글자 아래 중앙
+    box.add_child(extra)
 
   var hint := UI.label("click ▸", 20, Palette.WHITE, true)   # 하단 탭 유도 힌트
   hint.add_theme_constant_override("outline_size", 4)
@@ -1399,7 +1457,7 @@ func _tap_to_continue() -> void:
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
 ## (배너 등장 시엔 무음 — 소리는 아래 탭 시점의 개점음만)
 func _start_day_intro() -> void:
-  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0)   # 해(고해상도) + OPEN + 딤(즉시)
+  var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0, _month_track(_session.day))   # 해 + OPEN + 월세 예고 트랙
   await _tap_to_continue()
   if not is_inside_tree() or _title.visible:
     if is_instance_valid(banner): banner.queue_free()
