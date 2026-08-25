@@ -212,8 +212,18 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 				accum_pct += float(s["pct"])
 				accum_id = id
 			"mult":
-				mult *= float(s["value"])
-				mult_id = id
+				var mok := true
+				match s.get("when", ""):
+					"board_full": mok = int(ctx.get("empty", -1)) == 0
+					"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
+				if mok:
+					mult *= float(s["value"])
+					mult_id = id
+			"mult_count":
+				var mc := _ctx_count(s.get("per", ""), ctx)
+				if mc > 0:
+					mult *= 1.0 + float(s["step"]) * float(mc)
+					mult_id = id
 		var contrib := 0
 		if dpct != 0.0:
 			var new_pct := pct + dpct
