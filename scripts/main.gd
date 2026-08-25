@@ -358,7 +358,7 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("도감-", func(): Codex.reset()))
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))
-  row.add_child(_debug_btn("로그비우기", func(): PlayLog.clear()))
+  row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
   return row
 
 
