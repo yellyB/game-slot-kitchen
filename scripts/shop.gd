@@ -4,6 +4,7 @@ extends Control
 ## 딤 배경 + 입력 차단. 대강 구현(디자인 후 정리).
 
 signal start_business
+signal go_home   # 상단바 홈 버튼 → main이 확인창(진행 판 포기) 처리
 
 var session: Session  # main이 add_child 전에 주입
 var _cash_label: Label
@@ -50,40 +51,18 @@ func _ready() -> void:
   v.add_theme_constant_override("separation", 16)
   pad.add_child(v)
 
-  # 상단바 — 게임 화면과 동일: 흰 카드 하나 안에 주차 배지·보유금·가게세(요소별 칩 X)
+  # 상단바 — 게임 화면과 완전히 동일한 공용 컴포넌트(UI.top_bar)를 그대로 사용.
   var nx := Levels.get_week(session.day + 1)   # 다음(곧 진입할) 주
-  var bar := PanelContainer.new()
-  bar.add_theme_stylebox_override("panel", UI.card(Palette.WHITE))
+  var bar := UI.top_bar()
   v.add_child(bar)
-  var barpad := MarginContainer.new()
-  for side in ["left", "right", "top", "bottom"]:
-    barpad.add_theme_constant_override("margin_" + side, 12)
-  bar.add_child(barpad)
-  var header := HBoxContainer.new()
-  header.add_theme_constant_override("separation", 10)
-  barpad.add_child(header)
-
-  var wbadge := UI.day_badge(32)
-  (wbadge.get_meta("num") as Label).text = str(session.day + 1)
-  header.add_child(wbadge)
-
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  header.add_child(gap)
-
-  var coin := HBoxContainer.new()
-  coin.add_theme_constant_override("separation", 4)
-  coin.add_child(UI.ui_icon("coin", 20))
-  _cash_label = UI.label("0", 18, Palette.COCOA_800, true)
-  coin.add_child(_cash_label)
-  header.add_child(coin)
-
-  var rentbox := HBoxContainer.new()
-  rentbox.add_theme_constant_override("separation", 4)
-  rentbox.add_child(UI.ui_icon("bill", 20))
-  var rc := Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800
-  rentbox.add_child(UI.label(UI.money(int(nx["monthly_rent"])), 18, rc, true))
-  header.add_child(rentbox)
+  (bar.get_meta("day_num") as Label).text = str(session.day + 1)
+  _cash_label = bar.get_meta("money_label") as Label
+  var rl := bar.get_meta("rent_label") as Label
+  rl.text = UI.money(int(nx["monthly_rent"]))
+  rl.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
+  var home := bar.get_meta("home_btn") as Button
+  home.pressed.connect(func(): go_home.emit())
+  Audio.attach_click(home)
 
   # 본문(스크롤) — 상품·보유버프. 콘텐츠 늘어나도 스크롤로 흡수(상점은 날짜마다 성장).
   var scroll := ScrollContainer.new()

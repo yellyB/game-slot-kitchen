@@ -92,6 +92,79 @@ static func ui_btn_icon(name: String, px: int) -> Control:
 	cc.add_child(ui_icon(name, px))
 	return cc
 
+
+## 상단바 컴포넌트 — 게임 화면·상점 공용. 흰 카드 안에 [날짜배지·홈·보유금·가게세] + 시간바.
+## 갱신·배선용 참조를 meta로 노출: day_num·money_label·rent_label·hours_bar·home_btn·coin_box.
+static func top_bar() -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", card(Palette.WHITE))
+
+	var pad := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, 12)
+	panel.add_child(pad)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	pad.add_child(box)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	box.add_child(row)
+
+	var badge := day_badge(32)
+	row.add_child(badge)
+
+	var home := Button.new()
+	home.custom_minimum_size = Vector2(34, 34)
+	home.add_child(ui_btn_icon("house", 22))
+	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
+	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
+	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
+	row.add_child(home)
+
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(gap)
+
+	var coin := HBoxContainer.new()
+	coin.add_theme_constant_override("separation", 4)
+	coin.add_child(ui_icon("coin", 20))
+	var money := label("0", 18, Palette.COCOA_800, true)
+	coin.add_child(money)
+	row.add_child(coin)
+
+	var rentbox := HBoxContainer.new()
+	rentbox.add_theme_constant_override("separation", 4)
+	rentbox.add_child(ui_icon("bill", 20))
+	var rent := label("0", 18, Palette.COCOA_800, true)
+	rentbox.add_child(rent)
+	row.add_child(rentbox)
+
+	var hours := HBoxContainer.new()
+	hours.add_theme_constant_override("separation", 8)
+	box.add_child(hours)
+	hours.add_child(ui_icon("sun", 18))
+	var hbar := ProgressBar.new()
+	hbar.min_value = 0
+	hbar.max_value = 100
+	hbar.value = 0
+	hbar.show_percentage = false
+	hbar.custom_minimum_size = Vector2(0, 14)
+	hbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
+	hbar.add_theme_stylebox_override("fill", chip(Palette.ACCENT))
+	hours.add_child(hbar)
+	hours.add_child(ui_icon("moon", 18))
+
+	panel.set_meta("day_num", badge.get_meta("num"))
+	panel.set_meta("money_label", money)
+	panel.set_meta("rent_label", rent)
+	panel.set_meta("hours_bar", hbar)
+	panel.set_meta("home_btn", home)
+	panel.set_meta("coin_box", coin)
+	return panel
+
 ## 3자리 콤마 구분.
 static func _comma(a: int) -> String:
 	var s := str(a)

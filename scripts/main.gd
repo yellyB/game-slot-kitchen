@@ -290,79 +290,22 @@ func _exit_tutorial_state() -> void:
   _backdrop.visible = false
 
 
-# ── 상단바: 일차·돈·가게세 + 영업시간 바 ──────────────────────
+# ── 상단바: 일차·돈·가게세 + 영업시간 바 (UI.top_bar 공용 컴포넌트) ──────────────────────
 func _build_top_bar() -> Control:
-  var panel := PanelContainer.new()
-  panel.add_theme_stylebox_override("panel", UI.card(Palette.WHITE))
+  var panel := UI.top_bar()
+  _day_num = panel.get_meta("day_num") as Label
+  _money_label = panel.get_meta("money_label") as Label
+  _rent_label = panel.get_meta("rent_label") as Label
+  _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
-  var pad := MarginContainer.new()
-  for side in ["left", "right", "top", "bottom"]:
-    pad.add_theme_constant_override("margin_" + side, 12)
-  panel.add_child(pad)
-
-  var box := VBoxContainer.new()
-  box.add_theme_constant_override("separation", 8)
-  pad.add_child(box)
-
-  var row := HBoxContainer.new()
-  row.add_theme_constant_override("separation", 10)
-  box.add_child(row)
-
-  # 홈(타이틀)으로 — 진행 중인 판 포기(확인창). 좌상단, 돈·가게세와 안 겹치게 작게.
-  var home := Button.new()
-  home.custom_minimum_size = Vector2(34, 34)
-  home.add_child(UI.ui_btn_icon("house", 22))   # 집 손그림(이모지 대신)
-  home.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-  home.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-  home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+  var home := panel.get_meta("home_btn") as Button
   home.pressed.connect(_on_home_pressed)
   Audio.attach_click(home)
 
-  var day_badge := UI.day_badge(32)   # 일력 이미지 + 위에 날짜 숫자(40→32, 20%↓)
-  _day_num = day_badge.get_meta("num") as Label
-  row.add_child(day_badge)   # 날짜 먼저(왼쪽)
-  row.add_child(home)        # 집 다음(오른쪽)
-
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_child(gap)
-
-  # 돈 (소지금) — 동전 손그림. 5연속 클릭 = 디버그 바 토글(개발용, 디버그 빌드만).
-  var coin := HBoxContainer.new()
-  coin.add_theme_constant_override("separation", 4)
-  coin.mouse_filter = Control.MOUSE_FILTER_STOP   # 클릭 감지(자식 아이콘/라벨은 IGNORE)
+  # 보유금 5연속 클릭 = 디버그 바 토글(개발용).
+  var coin := panel.get_meta("coin_box") as HBoxContainer
+  coin.mouse_filter = Control.MOUSE_FILTER_STOP
   coin.gui_input.connect(_on_cash_clicked)
-  coin.add_child(UI.ui_icon("coin", 20))
-  _money_label = UI.label("0", 18, Palette.COCOA_800, true)
-  coin.add_child(_money_label)
-  row.add_child(coin)
-
-  # 가게세(목표금액) — 봉투/청구서 손그림
-  var rentbox := HBoxContainer.new()
-  rentbox.add_theme_constant_override("separation", 4)
-  rentbox.add_child(UI.ui_icon("bill", 20))
-  _rent_label = UI.label("0", 18, Palette.COCOA_800, true)
-  rentbox.add_child(_rent_label)
-  row.add_child(rentbox)
-
-  var hours := HBoxContainer.new()
-  hours.add_theme_constant_override("separation", 8)
-  box.add_child(hours)
-
-  hours.add_child(UI.ui_icon("sun", 18))
-
-  _hours_bar = ProgressBar.new()
-  _hours_bar.min_value = 0
-  _hours_bar.max_value = 100
-  _hours_bar.value = 0
-  _hours_bar.show_percentage = false
-  _hours_bar.custom_minimum_size = Vector2(0, 14)
-  _hours_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  _hours_bar.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-  _hours_bar.add_theme_stylebox_override("fill", UI.chip(Palette.ACCENT))
-  hours.add_child(_hours_bar)
-
-  hours.add_child(UI.ui_icon("moon", 18))
 
   return panel
 
@@ -2120,6 +2063,7 @@ func _open_shop() -> void:
   var shop := Shop.new()
   shop.session = _session
   shop.start_business.connect(_session.advance_day)
+  shop.go_home.connect(_on_home_pressed)
   add_child(shop)
 
 
