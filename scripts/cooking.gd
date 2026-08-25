@@ -164,6 +164,7 @@ func _refresh() -> void:
 	var have := board.ingredient_counts()
 	for entry in _entries:
 		var id: String = entry.get_meta("recipe_id")
+		var req := Buffs.required_ingredients(id)
 		var ok := board.has_ingredients(id)
 		entry.disabled = not ok
 		entry.modulate = Color.WHITE
@@ -171,8 +172,11 @@ func _refresh() -> void:
 		for n in entry.get_meta("offer", []):
 			n.modulate = Color(1, 1, 1, offer_a)
 		for it in entry.get_meta("ings", []):
-			var present: bool = have.get(it["iid"], 0) > 0
-			it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
+			var needed: bool = it["iid"] in req
+			it["node"].visible = needed
+			if needed:
+				var present: bool = have.get(it["iid"], 0) > 0
+				it["node"].modulate = Color.WHITE if present else Color(1, 1, 1, 0.25)
 
 
 func _select(id: String) -> void:

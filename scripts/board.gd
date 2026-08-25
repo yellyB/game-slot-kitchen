@@ -173,7 +173,7 @@ func ingredient_counts() -> Dictionary:
 func has_ingredients(recipe_id: String) -> bool:
 	var have := ingredient_counts()
 	var need := {}
-	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+	for iid in Buffs.required_ingredients(recipe_id):
 		need[iid] = need.get(iid, 0) + 1
 	for iid in need:
 		if have.get(iid, 0) < need[iid]:
@@ -183,7 +183,7 @@ func has_ingredients(recipe_id: String) -> bool:
 
 func take_ingredient_cards(recipe_id: String) -> Array:
 	var out: Array = []
-	for iid in Recipes.get_def(recipe_id).get("ingredients", []):
+	for iid in Buffs.required_ingredients(recipe_id):
 		for s in slots:
 			var c := s.get_card()
 			if c is IngredientCard and (c as IngredientCard).ing_id == iid:
