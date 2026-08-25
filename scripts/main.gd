@@ -924,8 +924,7 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     var feel := _gain_feel(total_gain)
     _pop_label(_money_label)
     Audio.play("coins", feel["pitch"])
-    if feel["shake"] > 0.0:
-      _screen_shake(feel["shake"], 0.35)
+    # (서빙 보상 화면 흔들림 제거 — 플레이 중 산만함. 흔들림은 막판 카운트다운에서만.)
     if is_instance_valid(menu_icon):   # 버프 없던 서빙(페이드 안 탄 경우) 메뉴 이미지 정리
       var mo := create_tween()
       mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
