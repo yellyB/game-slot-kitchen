@@ -22,6 +22,8 @@ var _served_today := 0
 var _order_lost_today := 0
 var _missed_today := 0
 var _run_id := ""
+var _max_sale_today := 0
+var _max_mult_today := 1.0
 var _served_by_menu := {}
 
 var _day_num: Label
@@ -946,6 +948,8 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   var ctx := _sale_ctx(order, dish)
   var res := Buffs.sale_amount(rid, ctx)
   var amount := int(res["amount"])
+  _max_sale_today = maxi(_max_sale_today, amount)
+  _max_mult_today = maxf(_max_mult_today, float(res.get("mult", 1.0)))
   _expect_fly = true
   _session.earn(amount)
   _expect_fly = false
@@ -1552,6 +1556,8 @@ func _on_day_started(day: int, rent: int) -> void:
   _served_today = 0
   _order_lost_today = 0
   _missed_today = 0
+  _max_sale_today = 0
+  _max_mult_today = 1.0
   _served_by_menu = {}
   Buffs.reset_day()
   Move.clear()
@@ -1589,6 +1595,8 @@ func _log_day(summary: Dictionary) -> void:
     "accepted": _accepted_today,
     "served": _served_today,
     "lost": _order_lost_today,
+    "max_sale": _max_sale_today,
+    "max_mult": snappedf(_max_mult_today, 0.01),
     "slots": _session.slots,
     "buffs": Buffs.owned(),
     "boss": Boss.kind(),
