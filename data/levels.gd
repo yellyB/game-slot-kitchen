@@ -7,9 +7,9 @@ const WAVE_STEP := 1
 const WAVE_CAP := 18
 
 const MONTHS := [
-	{"rent": 24000,  "waves": [11, 12, 13, 14]},
-	{"rent": 55000,  "waves": [13, 14, 15, 15]},
-	{"rent": 95000,  "waves": [15, 16, 16, 17]},
+	{"rent": 40000,  "waves": [11, 12, 13, 14]},
+	{"rent": 75000,  "waves": [13, 14, 15, 15]},
+	{"rent": 130000, "waves": [15, 16, 16, 17]},
 ]
 
 static func count() -> int:
