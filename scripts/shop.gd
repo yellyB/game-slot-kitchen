@@ -47,7 +47,12 @@ func _ready() -> void:
 
   var header := HBoxContainer.new()
   header.add_theme_constant_override("separation", 8)
+  header.alignment = BoxContainer.ALIGNMENT_CENTER
   v.add_child(header)
+  var nx := Levels.get_week(session.day + 1)
+  var wbadge := UI.day_badge(40)
+  (wbadge.get_meta("num") as Label).text = str(session.day + 1)
+  header.add_child(wbadge)
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   header.add_child(gap)
@@ -66,6 +71,22 @@ func _ready() -> void:
   _cash_label = UI.label("0", 22, Palette.COCOA_800, true)
   cbrow.add_child(_cash_label)
   header.add_child(cash_box)
+
+  var rent_box := PanelContainer.new()
+  rent_box.add_theme_stylebox_override("panel", UI.chip(Palette.WHITE, Palette.COCOA_200))
+  var rbpad := MarginContainer.new()
+  for side in ["left", "right"]:
+    rbpad.add_theme_constant_override("margin_" + side, 12)
+  rbpad.add_theme_constant_override("margin_top", 4)
+  rbpad.add_theme_constant_override("margin_bottom", 4)
+  rent_box.add_child(rbpad)
+  var rbrow := HBoxContainer.new()
+  rbrow.add_theme_constant_override("separation", 5)
+  rbpad.add_child(rbrow)
+  rbrow.add_child(UI.ui_icon("bill", 22))
+  var rc := Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800
+  rbrow.add_child(UI.label(UI.money(int(nx["monthly_rent"])), 22, rc, true))
+  header.add_child(rent_box)
 
   var scroll := ScrollContainer.new()
   scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
