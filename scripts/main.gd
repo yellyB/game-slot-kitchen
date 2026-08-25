@@ -20,6 +20,7 @@ var _visited_today := 0
 var _accepted_today := 0
 var _served_today := 0
 var _order_lost_today := 0
+var _missed_today := 0
 var _run_id := ""
 var _served_by_menu := {}
 
@@ -739,6 +740,7 @@ func _on_urged(card: Control) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
+  _missed_today += 1
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -753,6 +755,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _expect_fly = false
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])
   _order_lost_today += 1
+  _missed_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -1017,6 +1020,7 @@ func _on_day_closing(s: Session) -> void:
   var ctx := {
     "served": _served_today,
     "visited": _visited_today,
+    "missed": _missed_today,
     "accepted": _accepted_today,
     "order_lost": _order_lost_today,
     "same_max": same_max,
@@ -1547,6 +1551,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _accepted_today = 0
   _served_today = 0
   _order_lost_today = 0
+  _missed_today = 0
   _served_by_menu = {}
   Buffs.reset_day()
   Move.clear()

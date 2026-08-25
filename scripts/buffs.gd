@@ -372,9 +372,10 @@ func day_start_bonus(cash: int) -> int:
 
 func day_end_bonus(ctx: Dictionary) -> int:
 	var g := 0
-	var visited := maxi(1, int(ctx.get("visited", 0)))
 	var served := int(ctx.get("served", 0))
-	var served_ratio := float(served) / float(visited)
+	var missed := int(ctx.get("missed", 0))
+	var concluded := served + missed
+	var served_ratio := 1.0 if concluded == 0 else float(served) / float(concluded)
 	var accepted := maxi(1, int(ctx.get("accepted", 0)))
 	var leave_ratio := float(ctx.get("order_lost", 0)) / float(accepted)
 	var same_ratio := 0.0
