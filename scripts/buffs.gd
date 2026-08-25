@@ -278,7 +278,7 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 		amount += payout
 		if payout != 0:
 			breakdown.append({"src": "accum", "amount": payout, "buff": accum_id, "icon": _buff_icon(accum_id)})
-	return {"amount": amount, "penalty": penalty, "discard": discard, "breakdown": breakdown}
+	return {"amount": amount, "penalty": penalty, "discard": discard, "breakdown": breakdown, "mult": mult}
 
 
 func _ctx_count(per: String, ctx: Dictionary) -> int:

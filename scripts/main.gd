@@ -26,6 +26,8 @@ var _served_today := 0      # 서빙 완료 수
 var _order_lost_today := 0  # 주문 낸 손님이 못 받고 떠난 수(음식대기 만료)
 var _missed_today := 0      # 놓친 손님(대기열 이탈 + 주문 이탈) — 완벽/우수정산 처리율 분모
 var _run_id := ""           # 이번 판 고유 id(로그에서 같은 판 묶기용). _start_game마다 새로 발급.
+var _max_sale_today := 0    # OP 검사: 그날 최고 단일 판매금
+var _max_mult_today := 1.0  # OP 검사: 그날 최고 배수(곱연산)
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
@@ -1036,6 +1038,8 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   var ctx := _sale_ctx(order, dish)
   var res := Buffs.sale_amount(rid, ctx)
   var amount := int(res["amount"])
+  _max_sale_today = maxi(_max_sale_today, amount)                       # OP 검사: 최고 단일 판매금
+  _max_mult_today = maxf(_max_mult_today, float(res.get("mult", 1.0)))  # OP 검사: 최고 배수
   _expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
   _session.earn(amount)
   _expect_fly = false
@@ -1693,6 +1697,8 @@ func _on_day_started(day: int, rent: int) -> void:
   _served_today = 0
   _order_lost_today = 0
   _missed_today = 0
+  _max_sale_today = 0
+  _max_mult_today = 1.0
   _served_by_menu = {}
   Buffs.reset_day()   # #45 적립 하루 리셋
   # 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
@@ -1736,6 +1742,8 @@ func _log_day(summary: Dictionary) -> void:
     "accepted": _accepted_today,
     "served": _served_today,
     "lost": _order_lost_today,
+    "max_sale": _max_sale_today,
+    "max_mult": snappedf(_max_mult_today, 0.01),
     "slots": _session.slots,
     "buffs": Buffs.owned(),
     "boss": Boss.kind(),
