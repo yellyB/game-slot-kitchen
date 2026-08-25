@@ -25,6 +25,7 @@ var _run_id := ""
 var _max_sale_today := 0
 var _max_mult_today := 1.0
 var _served_by_menu := {}
+var _sales_by_menu := {}
 
 var _day_num: Label
 var _money_label: Label
@@ -896,6 +897,15 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   Buffs.on_serve(rid, ctx)
   _served_today += 1
   _served_by_menu[rid] = int(_served_by_menu.get(rid, 0)) + 1
+  var base_this := amount
+  var bd: Array = res.get("breakdown", [])
+  if bd.size() > 0 and str(bd[0].get("src", "")) == "base":
+    base_this = int(bd[0].get("amount", amount))
+  var e: Dictionary = _sales_by_menu.get(rid, {"count": 0, "base": 0, "bonus": 0})
+  e["count"] = int(e["count"]) + 1
+  e["base"] = int(e["base"]) + base_this
+  e["bonus"] = int(e["bonus"]) + (amount - base_this)
+  _sales_by_menu[rid] = e
 
   var serve_pos := order.global_position + order.size * 0.5
   _show_gain_breakdown(res.get("breakdown", [{"src": "base", "amount": amount}]))
@@ -1548,6 +1558,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _max_sale_today = 0
   _max_mult_today = 1.0
   _served_by_menu = {}
+  _sales_by_menu = {}
   Buffs.reset_day()
   Move.clear()
   _board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
@@ -1702,8 +1713,12 @@ func _on_day_ended(summary: Dictionary) -> void:
 
 func _show_week_closed(summary: Dictionary) -> void:
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
-  m.add_row(_settle_icon_row("coin", rev, 26))
+  var sr := _sales_rows()
+  if sr != null:
+    m.add_row(sr)
+  else:
+    var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
+    m.add_row(_settle_icon_row("coin", rev, 26))
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -1717,9 +1732,61 @@ func _show_week_closed(summary: Dictionary) -> void:
   m.add_row(go)
 
 
+func _sales_rows() -> Control:
+  if _sales_by_menu.is_empty():
+    return null
+  var box := VBoxContainer.new()
+  box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  box.add_theme_constant_override("separation", 5)
+  var sum_total := 0
+  var sum_bonus := 0
+  for rid in Recipes.all_ids():
+    if not _sales_by_menu.has(rid):
+      continue
+    var e: Dictionary = _sales_by_menu[rid]
+    var bonus: int = int(e["bonus"])
+    var line_total: int = int(e["base"]) + bonus
+    sum_total += line_total
+    sum_bonus += bonus
+    var row := HBoxContainer.new()
+    row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_theme_constant_override("separation", 6)
+    row.add_child(Recipes.icon_node(rid, 30))
+    row.add_child(UI.label("×%d" % int(e["count"]), 15, Palette.COCOA_600, true))
+    var gap := Control.new()
+    gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_child(gap)
+    row.add_child(UI.ui_icon("coin", 16))
+    row.add_child(UI.label(UI.money(line_total), 15, Palette.COCOA_800, true))
+    if bonus > 0:
+      row.add_child(UI.label("  +" + UI.money(bonus), 13, Palette.MAIN))
+    box.add_child(row)
+  var line := ColorRect.new()
+  line.color = Palette.COCOA_200
+  line.custom_minimum_size = Vector2(0, 1.5)
+  box.add_child(line)
+  var trow := HBoxContainer.new()
+  trow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  trow.add_theme_constant_override("separation", 6)
+  trow.add_child(UI.label("합계", 15, Palette.COCOA_600, true))
+  var tgap := Control.new()
+  tgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  trow.add_child(tgap)
+  trow.add_child(UI.ui_icon("coin", 16))
+  trow.add_child(UI.label(UI.money(sum_total), 16, Palette.COCOA_800, true))
+  if sum_bonus > 0:
+    trow.add_child(UI.label("  +" + UI.money(sum_bonus), 13, Palette.MAIN))
+  box.add_child(trow)
+  return box
+
+
 func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+
+  var sr := _sales_rows()
+  if sr != null:
+    m.add_row(sr)
 
   var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
   var icon_box := CenterContainer.new()
