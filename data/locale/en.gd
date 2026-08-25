@@ -30,14 +30,14 @@ const S := {
 	"boss.pricey_trip": "Pricey Trips",
 
 	# Game — top bar / toast
-	"day_n": "Day %d",
+	"day_n": "Week %d",
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",
 
 	# Game — result modals
 	"win_title": "You Win! 🎉",
-	"win_days": "%d days cleared",
-	"day_closed": "Day %d closed",
+	"win_days": "%d weeks cleared",
+	"day_closed": "Week %d closed",
 	"revenue": "Revenue  %s",
 	"rent": "Rent  %s",
 	"remaining": "Left  %s",
@@ -45,7 +45,7 @@ const S := {
 	"passed": "Passed! ✅",
 	"failed": "Failed… ❌",
 	"gameover_title": "Closed down 😢",
-	"gameover_day": "Ended on day %d",
+	"gameover_day": "Ended on week %d",
 	"gameover_reason": "Revenue %s < Rent %s",
 	"to_title": "To title",
 	"declare_bankrupt": "Declare Bankruptcy",

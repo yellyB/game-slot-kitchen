@@ -30,14 +30,14 @@ const S := {
 	"boss.pricey_trip": "비싼 발품",
 
 	# 게임 — 상단바 / 토스트
-	"day_n": "%d일차",
+	"day_n": "%d주차",
 	"no_empty_slot": "빈 칸 없음",
 	"orders_full": "주문 꽉 참",
 
 	# 게임 — 결과 모달
 	"win_title": "승리! 🎉",
-	"win_days": "%d일 완주",
-	"day_closed": "%d일차 마감",
+	"win_days": "%d주 완주",
+	"day_closed": "%d주차 마감",
 	"revenue": "매출  %s",
 	"rent": "가게세  %s",
 	"remaining": "남음  %s",
@@ -45,7 +45,7 @@ const S := {
 	"passed": "통과! ✅",
 	"failed": "실패… ❌",
 	"gameover_title": "폐업 😢",
-	"gameover_day": "%d일차에서 끝",
+	"gameover_day": "%d주차에서 끝",
 	"gameover_reason": "매출 %s < 가게세 %s",
 	"to_title": "처음으로",
 	"declare_bankrupt": "파산 신청",
