@@ -383,14 +383,13 @@ func _build_debug() -> Control:
   var row := HBoxContainer.new()
   row.add_theme_constant_override("separation", 6)
   row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
-  row.add_child(_debug_btn("돈+10만", func(): _session.add_cash(100000)))
-  row.add_child(_debug_btn("돈-5만", func(): _session.add_cash(-50000)))
-  row.add_child(_debug_btn("즉시종료", func(): _session.debug_end_soon(1.0)))
-  row.add_child(_debug_btn("손님내보냄", _debug_kick_customer))
+  row.add_child(_debug_btn("+10만", func(): _session.add_cash(100000)))
+  row.add_child(_debug_btn("종료", func(): _session.debug_end_soon(1.0)))
+  row.add_child(_debug_btn("손님-", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
-  row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
-  row.add_child(_debug_btn("보스전", _debug_boss))
-  row.add_child(_debug_btn("로그복사", func(): DisplayServer.clipboard_set(PlayLog.read_text())))   # 폰: 클립보드로 빼기
+  row.add_child(_debug_btn("도감-", func(): Codex.reset()))
+  row.add_child(_debug_btn("보스", _debug_boss))
+  row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))   # 폰: 클립보드로 빼기
   row.add_child(_debug_btn("로그경로", func(): print("[PLAYLOG] ", PlayLog.abs_path())))
   row.add_child(_debug_btn("로그비우기", func(): PlayLog.clear()))
   return row
