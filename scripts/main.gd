@@ -595,6 +595,34 @@ func _refresh_warehouse() -> void:
   _warehouse.refresh(_board.is_full())
 
 
+func _unhandled_input(event: InputEvent) -> void:
+  if not (event is InputEventKey) or not event.pressed or event.echo:
+    return
+  if _title.visible or _tutorial_active or not _session.is_running():
+    return
+  var key := (event as InputEventKey).keycode
+  if key == KEY_SPACE:
+    _toggle_warehouse()
+    get_viewport().set_input_as_handled()
+    return
+  var idx := _digit_index(key)
+  if idx >= 0 and _warehouse.visible:
+    _warehouse.place_by_index(idx)
+    get_viewport().set_input_as_handled()
+
+
+func _digit_index(key: int) -> int:
+  if key >= KEY_1 and key <= KEY_9:
+    return key - KEY_1
+  if key == KEY_0:
+    return 9
+  if key >= KEY_KP_1 and key <= KEY_KP_9:
+    return key - KEY_KP_1
+  if key == KEY_KP_0:
+    return 9
+  return -1
+
+
 func _process(_delta: float) -> void:
   _refresh_servable()
 

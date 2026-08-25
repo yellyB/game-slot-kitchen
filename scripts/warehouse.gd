@@ -52,3 +52,12 @@ func refresh(full: bool) -> void:
 	for tile in _tiles:
 		tile.disabled = full
 		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
+
+
+func place_by_index(idx: int) -> void:
+	if idx < 0 or idx >= _tiles.size():
+		return
+	var tile := _tiles[idx]
+	if tile.disabled:
+		return
+	Move.on_click(tile)
