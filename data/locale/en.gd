@@ -84,7 +84,7 @@ const S := {
 	"b.pack_more.name": "Extra Card", "b.pack_more.label": "Buff pack +1 choice (WIP)",
 	"b.rent_skip.name": "Get Out of Jail", "b.rent_skip.label": "Skip rent once for free (even if short on cash)",
 	"b.reveal.name": "Mind Reader", "b.reveal.label": "Reveal waiting customers' desired menu (WIP)",
-	"b.buff_slot.name": "Hoarder", "b.buff_slot.label": "Buff slot +1",
+	"b.buff_slot.name": "Hoarder", "b.buff_slot.label": "Buff cap +1",
 	"b.tool_slot.name": "Kitchen Expansion", "b.tool_slot.label": "Tool +1 (slot +1 too)",
 	"b.opt_egg.name": "Egg-Free", "b.opt_egg.label": "Cook without egg",
 	"b.opt_flour.name": "Gluten-Free", "b.opt_flour.label": "Cook without flour",

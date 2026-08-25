@@ -84,7 +84,7 @@ const S := {
 	"b.pack_more.name": "후보확장", "b.pack_more.label": "카드팩 오픈 시 나오는 카드 개수 +1개",
 	"b.rent_skip.name": "한번은 봐준다", "b.rent_skip.label": "가게세 못낼 시 하루는 통과. 사용 시 파괴됨",
 	"b.reveal.name": "독심술", "b.reveal.label": "대기중인 첫번째 손님 1명의 메뉴 미리 공개",
-	"b.buff_slot.name": "욕심쟁이", "b.buff_slot.label": "버프카드 칸 +1",
+	"b.buff_slot.name": "욕심쟁이", "b.buff_slot.label": "버프카드 상한 +1",
 	"b.tool_slot.name": "주방 확장", "b.tool_slot.label": "도구 수 +1",
 	"b.opt_egg.name": "락토", "b.opt_egg.label": "계란이 슬롯에 없어도 조리 가능",
 	"b.opt_flour.name": "글루텐프리", "b.opt_flour.label": "밀가루 슬롯에 없어도 조리 가능",
