@@ -24,6 +24,7 @@ var _visited_today := 0     # 등장 손님 수
 var _accepted_today := 0    # 주문 접수 수(슬롯 주문 카드 생성)
 var _served_today := 0      # 서빙 완료 수
 var _order_lost_today := 0  # 주문 낸 손님이 못 받고 떠난 수(음식대기 만료)
+var _run_id := ""           # 이번 판 고유 id(로그에서 같은 판 묶기용). _start_game마다 새로 발급.
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
@@ -205,6 +206,7 @@ func _start_game() -> void:
   _last_cash = 0                 # 새 판 — 이전 판 보유금 잔상 제거(시작 시 -표시 방지)
   _money_label.text = UI.money(0)
   Boss.reset()                   # 예약된 보스가 새 판으로 새지 않게
+  _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())   # 판 고유 id
   _title.hide()
   _session.start_run()
 
@@ -1717,6 +1719,7 @@ func _on_day_started(day: int, rent: int) -> void:
 ## 실플레이 로그 — 하루 마감 지표를 user://playlog.jsonl 에 1줄 추가(카운터 리셋 전 호출).
 func _log_day(summary: Dictionary) -> void:
   PlayLog.append({
+    "run": _run_id,
     "t": Time.get_datetime_string_from_system(),
     "day": int(summary.get("day", 0)),
     "rent": int(summary.get("rent", 0)),
