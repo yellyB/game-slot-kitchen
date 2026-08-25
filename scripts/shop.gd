@@ -13,6 +13,7 @@ var _buff_btn: Button            # 보유 버프 서랍 여는 버튼(계속하�
 var _buff_sheet: BuffSheet       # 보유 버프 리스트 서랍(바텀시트)
 var _buff_backdrop: ColorRect    # 서랍 열림 시 딤 + 바깥 탭 닫기
 var _drew := false   # 이번 상점 방문에서 이미 뽑았는지(방문당 1회). 다음날 재진입 시 새 인스턴스로 리셋.
+var _reroll := 0     # 이번 개봉에서 리롤한 횟수(비용 ×2 계산용). _on_draw마다 0으로 리셋.
 var _slot_price_label: Label   # 슬롯 가격 표시(구매마다 갱신)
 var _last_price_label: Label   # _product가 방금 만든 가격 라벨(호출 직후 회수용)
 
@@ -266,6 +267,7 @@ func _on_draw() -> void:
   if pack.is_empty():
     return
   _drew = true
+  _reroll = 0   # 새 개봉 — 리롤 비용 초기화
   _refresh()
   _show_pack(pack)
 
@@ -290,10 +292,7 @@ func _show_pack(pack: Array) -> void:
     _buff_btn.move_to_front()       # 오버레이보다 뒤 형제 → 입력 우선
     _buff_backdrop.move_to_front()
     _buff_sheet.move_to_front()
-    overlay.tree_exited.connect(func():
-      _buff_btn.z_index = 0
-      _buff_backdrop.z_index = 0
-      _buff_sheet.z_index = 0)
+    # z 복원은 픽 완료(_pick_chosen)에서 — 리롤은 오버레이를 재생성하므로 여기서 복원하면 안 됨.
 
   var od := ColorRect.new()
   od.color = Palette.DIM
@@ -324,6 +323,39 @@ func _show_pack(pack: Array) -> void:
     choices.append(choice)
     _reveal_choice(choice, i)   # 하나씩 팝하며 개봉
     i += 1
+
+  # 리롤 — 돈 내고 3장 다시 뽑기(리롤마다 ×2). 못 사면 흐리게 비활성.
+  var cost := Config.BUFF_REROLL_BASE * int(pow(2, _reroll))
+  var can := session.cash >= cost
+  var reroll := Button.new()
+  reroll.add_theme_font_size_override("font_size", 16)
+  reroll.add_theme_color_override("font_color", Palette.WHITE)
+  reroll.add_theme_stylebox_override("normal", UI.chip(Palette.SUB))
+  reroll.add_theme_stylebox_override("hover", UI.chip(Palette.SUB.lightened(0.08)))
+  reroll.add_theme_stylebox_override("disabled", UI.chip(Palette.SUB))
+  reroll.custom_minimum_size = Vector2(160, 40)
+  reroll.text = "🔄  " + UI.money(cost)
+  reroll.disabled = not can
+  reroll.modulate = Color.WHITE if can else Color(1, 1, 1, 0.5)
+  reroll.pressed.connect(func(): _do_reroll(cost, overlay))
+  Audio.attach_click(reroll)
+  box.add_child(reroll)
+
+
+## 리롤 — 비용 차감 후 현재 개봉을 닫고 새 3장으로 다시 개봉(리롤 횟수·비용↑).
+func _do_reroll(cost: int, overlay: Control) -> void:
+  if session.cash < cost:
+    return
+  var newpack := BuffDefs.random_pack(3)
+  if newpack.is_empty():
+    return   # 뽑을 후보 없음(전부 보유 등) — 리롤 취소
+  session.add_cash(-cost)
+  Audio.play("coins")
+  _reroll += 1
+  if is_instance_valid(overlay):
+    overlay.queue_free()
+  _refresh()
+  _show_pack(newpack)
 
 
 ## 개봉 연출 — 카드가 작게/투명하게 시작해 순서대로 튀며 나타남.
@@ -393,6 +425,9 @@ func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control)
   if overlay.get_meta("picked", false):
     return   # 중복 선택 방지
   overlay.set_meta("picked", true)
+  _buff_btn.z_index = 0       # 개봉 중 올렸던 z 복원(픽으로 개봉 종료)
+  _buff_backdrop.z_index = 0
+  _buff_sheet.z_index = 0
   Buffs.add(id)
   Audio.play("card_place")   # 버프 선택 확정(탁)
   # 나머지 후보 — 쪼그라들며 사라짐
