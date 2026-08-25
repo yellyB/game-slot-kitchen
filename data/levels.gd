@@ -2,14 +2,15 @@ class_name Levels
 extends RefCounted
 
 const WEEKS_PER_MONTH := 4
-const RENT_GROWTH := 1.6
+const RENT_BASE := 40000
+const RENT_GROWTH := 1.10
 const WAVE_STEP := 1
 const WAVE_CAP := 18
 
 const MONTHS := [
-	{"rent": 40000,  "waves": [11, 12, 13, 14]},
-	{"rent": 75000,  "waves": [13, 14, 15, 15]},
-	{"rent": 130000, "waves": [15, 16, 16, 17]},
+	{"waves": [11, 12, 13, 14]},
+	{"waves": [13, 14, 15, 15]},
+	{"waves": [15, 16, 16, 17]},
 ]
 
 static func count() -> int:
@@ -19,10 +20,10 @@ static func months() -> int:
 	return MONTHS.size()
 
 static func _monthly_rent(mi: int) -> int:
-	if mi < MONTHS.size():
-		return int(MONTHS[mi]["rent"])
-	var last := int(MONTHS[MONTHS.size() - 1]["rent"])
-	return int(round(float(last) * pow(RENT_GROWTH, mi - (MONTHS.size() - 1))))
+	var g := RENT_GROWTH
+	if OS.has_environment("SIM_GROWTH"):
+		g = float(OS.get_environment("SIM_GROWTH"))
+	return int(round(float(RENT_BASE) * pow(g, mi)))
 
 static func _waves(mi: int, wi: int) -> int:
 	if mi < MONTHS.size():
