@@ -8,14 +8,18 @@ extends RefCounted
 ## 밸런스 v1(월 구조 전환 첫 튜닝) — 실플레이/시뮬로 보정.
 
 const WEEKS_PER_MONTH := 4
-const RENT_GROWTH := 1.6    # 정의 구간 이후 월세 복리 증가율(달마다 ×)
+## 월세 = RENT_BASE × RENT_GROWTH^(개월-1). 목표: 최적빌드=4분기(12개월)생존, 약빌드=1~2분기 사망.
+## → 증가율은 최적 빌드의 수입 성장에 겨우 못 미치게(완만). sim/실플레이로 보정. SIM_GROWTH로 스윕.
+const RENT_BASE := 40000    # 1개월차 월세(온보딩)
+const RENT_GROWTH := 1.10   # 월 복리 — 시뮬: 평균빌드 ~11개월, 최적 ~14~16개월(보스 추가 시 ~12로), 약빌드 1~2분기
 const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
 const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 한계
 
+# waves(주차별 손님 수)만 정의 — 월세는 공식(_monthly_rent). 정의 이후는 마지막 달 waves 연장.
 const MONTHS := [
-	{"rent": 40000,  "waves": [11, 12, 13, 14]},  # 1개월차 (≈4주치 — 온보딩)
-	{"rent": 75000,  "waves": [13, 14, 15, 15]},  # 2개월차
-	{"rent": 130000, "waves": [15, 16, 16, 17]},  # 3개월차 (분기말 — 나중 보스 심사 예정)
+	{"waves": [11, 12, 13, 14]},  # 1개월차
+	{"waves": [13, 14, 15, 15]},  # 2개월차
+	{"waves": [15, 16, 16, 17]},  # 3개월차
 ]
 
 ## 무한 진행이라 실질 상한(승리 조건으로 안 쓰임). session의 day>=count()가 절대 참이 안 되게.
@@ -25,12 +29,12 @@ static func count() -> int:
 static func months() -> int:
 	return MONTHS.size()
 
-## 이 달(0-base)의 월세 — 정의 구간은 표, 이후는 마지막 값 × RENT_GROWTH^(초과 월수).
+## 이 달(0-base)의 월세 = RENT_BASE × 증가율^개월. 무한 공식. SIM_GROWTH로 증가율 스윕(시뮬).
 static func _monthly_rent(mi: int) -> int:
-	if mi < MONTHS.size():
-		return int(MONTHS[mi]["rent"])
-	var last := int(MONTHS[MONTHS.size() - 1]["rent"])
-	return int(round(float(last) * pow(RENT_GROWTH, mi - (MONTHS.size() - 1))))
+	var g := RENT_GROWTH
+	if OS.has_environment("SIM_GROWTH"):
+		g = float(OS.get_environment("SIM_GROWTH"))
+	return int(round(float(RENT_BASE) * pow(g, mi)))
 
 ## 이 달·주(0-base)의 웨이브당 손님 수 — 정의 이후는 마지막 달에서 월당 +WAVE_STEP(상한 WAVE_CAP).
 static func _waves(mi: int, wi: int) -> int:
