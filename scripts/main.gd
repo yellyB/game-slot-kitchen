@@ -358,6 +358,9 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("버프", _debug_add_buff))
   row.add_child(_debug_btn("도감초기화", func(): Codex.reset()))
   row.add_child(_debug_btn("보스전", _debug_boss))
+  row.add_child(_debug_btn("로그복사", func(): DisplayServer.clipboard_set(PlayLog.read_text())))
+  row.add_child(_debug_btn("로그경로", func(): print("[PLAYLOG] ", PlayLog.abs_path())))
+  row.add_child(_debug_btn("로그비우기", func(): PlayLog.clear()))
   return row
 
 
@@ -1539,6 +1542,27 @@ func _on_day_started(day: int, rent: int) -> void:
       _start_day_intro()
 
 
+func _log_day(summary: Dictionary) -> void:
+  PlayLog.append({
+    "t": Time.get_datetime_string_from_system(),
+    "day": int(summary.get("day", 0)),
+    "rent": int(summary.get("rent", 0)),
+    "revenue": int(summary.get("revenue", 0)),
+    "cash_after": int(summary.get("cash_after", 0)),
+    "passed": bool(summary.get("passed", false)),
+    "won": bool(summary.get("won", false)),
+    "visited": _visited_today,
+    "accepted": _accepted_today,
+    "served": _served_today,
+    "lost": _order_lost_today,
+    "slots": _session.slots,
+    "buffs": Buffs.owned(),
+    "boss": Boss.kind(),
+  })
+  if OS.has_feature("editor"):
+    print("[PLAYLOG] ", PlayLog.abs_path())
+
+
 func _clear_play_field() -> void:
   for s in _board.slots:
     if s.get_card() is BuffCard:
@@ -1601,6 +1625,7 @@ func _pop_clear_slots() -> void:
 
 
 func _on_day_ended(summary: Dictionary) -> void:
+  _log_day(summary)
   if _warehouse.visible:
     _warehouse.slide_close()
   if _cooking.visible:
