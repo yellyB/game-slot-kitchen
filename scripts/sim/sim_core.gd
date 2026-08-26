@@ -518,3 +518,54 @@ func _count_orders(rid: String) -> int:
 		if o["id"] == rid:
 			n += 1
 	return n
+
+
+## 로그 리플레이 — 실제 플레이의 주차별 빌드(buffs·slots)를 그대로 주입해 각 주(週)를 재시뮬.
+## 슬롯/버프 구매 비용을 차감해 현금 궤적까지 실플에 근접(→ sale_cash 등 현금연동 버프 재현).
+## handle>0이면 현실 처리량(사람 손동작 시간). script[i] = {"buffs":[...], "slots":N}.
+## 반환: 주차별 [{week, served, accepted, lost, revenue, cash, rent, passed}]. 실패 주에서 중단.
+func run_replay(script: Array, seed_v := 0, handle := 0.6) -> Array:
+	seed(seed_v)
+	_handle = handle
+	session = Session.new()
+	session.spawn_requested.connect(_on_spawn)
+	session.day_closing.connect(_on_day_closing)
+	session.day_ended.connect(func(s): _last = s)
+	session.start_run()   # day 1 running
+	Buffs.clear()
+	var out: Array = []
+	var prev_slots := session.slots
+	for wi in script.size():
+		var wk: Dictionary = script[wi]
+		# 슬롯 증가분 = 상점 구매 → 비용 차감
+		var new_slots := int(wk.get("slots", session.slots))
+		while prev_slots < new_slots:
+			session.cash -= Config.slot_price(session.day, prev_slots - Config.START_SLOTS)
+			prev_slots += 1
+		session.slots = new_slots
+		# 신규 버프 획득 → 팩값 차감
+		for b in wk.get("buffs", []):
+			if not Buffs.owned().has(b):
+				session.cash -= Config.BUFF_PACK_PRICE
+				Buffs.add(b)
+		if session.cash < 0:
+			session.cash = 0
+		_reset_day_consumables()
+		var safety := 0
+		while session.is_running():
+			_step()
+			safety += 1
+			if safety > 2_000_000:
+				break
+		out.append({
+			"week": wi + 1, "served": _served_today, "accepted": _accepted_today,
+			"lost": _missed_today, "revenue": int(_last.get("revenue", 0)),
+			"cash": session.cash, "rent": int(_last.get("rent", 0)),
+			"passed": bool(_last.get("passed", false)),
+		})
+		if not _last.get("passed", false):
+			break
+		if wi + 1 < script.size():
+			session.advance_day()
+	session.free()
+	return out

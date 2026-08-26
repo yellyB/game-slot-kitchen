@@ -139,6 +139,27 @@ func _ready() -> void:
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
 
+  if "--replay" in OS.get_cmdline_user_args():
+    var full := ["ramp_t3", "sc_fill_a", "settle_90", "sale_cash", "settle_100"]
+    var bw := [[], full.slice(0, 1), full.slice(0, 2), full.slice(0, 3), full.slice(0, 4),
+      full, full, full, full, full, full, full, full, full, full, full]
+    var slots := [9, 12, 13, 14, 14, 15, 16, 18, 18, 19, 19, 20, 20, 21, 21, 21]
+    var log_served := [22, 18, 18, 20, 21, 21, 20, 21, 20, 23, 23, 21, 24, 23, 19, 22]
+    var log_rev := [12700, 12278, 13026, 40232, 27162, 81585, 97068, 58163, 98179, 83390, 220993, 228375, 369779, 353730, 310290, 443576]
+    var script := []
+    for wi in bw.size():
+      script.append({"buffs": bw[wi], "slots": slots[wi]})
+    var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.6
+    var res: Array = SimCore.new().run_replay(script, 0, h)
+    print("[REPLAY] handle=%.1f  주 | 서빙(sim/log) | 매출(sim/log)  Δ%%" % h)
+    for i in res.size():
+      var r: Dictionary = res[i]
+      var lr: int = log_rev[i]
+      var d := (float(r["revenue"]) - lr) / maxf(1.0, lr) * 100.0
+      print("[REPLAY] %2d | %2d / %2d | %10d / %10d  %+5.0f%%%s" % [
+        r["week"], r["served"], log_served[i], r["revenue"], lr, d, "" if r["passed"] else "  ← 사망"])
+    get_tree().quit()
+
   # 개발용 테스트 하니스 (릴리스엔 영향 없음): godot4 ... -- --test
   if OS.is_debug_build() and "--test" in OS.get_cmdline_user_args():
     await TestHarness.new().run(self)
