@@ -283,6 +283,14 @@ func required_ingredients(recipe_id: String) -> Array:
 			out.append(ing)
 	return out
 
+func omitted_ingredients() -> Dictionary:
+	var out := {}
+	for id in _owned:
+		var ing: String = BuffDefs.get_def(id).get("opt_ingredient", "")
+		if ing != "":
+			out[ing] = true
+	return out
+
 func trip_free_chance() -> float:
 	var c := 0.0
 	for id in _owned:

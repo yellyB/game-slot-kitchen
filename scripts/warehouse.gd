@@ -49,9 +49,11 @@ func _ready() -> void:
 
 
 func refresh(full: bool) -> void:
+	var omit := Buffs.omitted_ingredients()
 	for tile in _tiles:
-		tile.disabled = full
-		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
+		var off := full or omit.has(tile.ing_id)
+		tile.disabled = off
+		tile.modulate = Color(1, 1, 1, 0.45) if off else Color.WHITE
 
 
 func place_by_index(idx: int) -> void:
