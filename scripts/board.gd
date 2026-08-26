@@ -1,5 +1,5 @@
 class_name Board
-extends CenterContainer
+extends Control
 ## 슬롯 그리드 — 재료/주문/완성품 칸 + 도구석. 세션마다 슬롯 수만큼 재구성.
 ## 재료 조회·소비, 빈 칸 조회 담당. (도구석은 그리드 마지막 칸들)
 
@@ -83,6 +83,11 @@ func _relayout() -> void:
 	var s := Vector2(best_edge, best_edge)
 	for ch in _grid.get_children():
 		(ch as Control).custom_minimum_size = s
+	# plain Control이라 컨테이너 자동 중앙정렬이 없음 → 그리드 크기·위치를 직접 잡아 가운데로.
+	var rows := int(ceil(float(total) / best_cols))
+	var gsize := Vector2(best_cols * best_edge + (best_cols - 1) * SEP, rows * best_edge + (rows - 1) * SEP)
+	_grid.size = gsize
+	_grid.position = ((size - gsize) * 0.5).max(Vector2.ZERO)
 
 
 ## 거부 피드백 — 슬롯들이 좌우로 2회 왕복하며 흔들림(자리 없음/주문 꽉 참 시).
