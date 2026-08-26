@@ -273,11 +273,20 @@ func _show_pack(pack: Array) -> void:
   oc.add_child(box)
 
   if Buffs.is_full():
-    var warn := UI.label(Loc.t("shop_full_notice"), 15, Palette.DANGER, true)
+    var warnbox := PanelContainer.new()
+    warnbox.add_theme_stylebox_override("panel", UI.chip(Palette.DANGER))
+    var wp := MarginContainer.new()
+    for side in ["left", "right"]:
+      wp.add_theme_constant_override("margin_" + side, 16)
+    for side in ["top", "bottom"]:
+      wp.add_theme_constant_override("margin_" + side, 9)
+    warnbox.add_child(wp)
+    var warn := UI.label(Loc.t("shop_full_notice"), 15, Palette.WHITE, true)
     warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    warn.custom_minimum_size = Vector2(330, 0)
-    box.add_child(warn)
+    warn.custom_minimum_size = Vector2(320, 0)
+    wp.add_child(warn)
+    box.add_child(warnbox)
 
   var t := UI.label(Loc.t("shop_pick3"), 18, Palette.WHITE, true)
   t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -295,6 +304,19 @@ func _show_pack(pack: Array) -> void:
     choices.append(choice)
     _reveal_choice(choice, i)
     i += 1
+
+  if Buffs.is_full():
+    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
+    var sell := Button.new()
+    sell.add_theme_font_size_override("font_size", 16)
+    sell.add_theme_color_override("font_color", Palette.WHITE)
+    sell.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_400))
+    sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_400.lightened(0.08)))
+    sell.custom_minimum_size = Vector2(160, 40)
+    sell.text = Loc.t("shop_sell") + "  +" + UI.money(refund)
+    sell.pressed.connect(func(): _sell_drawn(overlay))
+    Audio.attach_click(sell)
+    box.add_child(sell)
 
   var cost := Config.BUFF_REROLL_BASE * int(pow(2, _reroll))
   var can := session.cash >= cost
@@ -384,26 +406,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _try_pick(card, id, choices, overlay))
   Audio.attach_click(pick)
-
-  if Buffs.is_full():
-    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
-    var btns := VBoxContainer.new()
-    btns.add_theme_constant_override("separation", 6)
-    btns.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-    btns.add_child(pick)
-    var sell := Button.new()
-    sell.text = Loc.t("shop_sell") + " +" + UI.money(refund)
-    sell.add_theme_font_size_override("font_size", 15)
-    sell.add_theme_color_override("font_color", Palette.COCOA_800)
-    sell.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-    sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-    sell.custom_minimum_size = Vector2(84, 34)
-    sell.pressed.connect(func(): _sell_drawn(overlay))
-    Audio.attach_click(sell)
-    btns.add_child(sell)
-    h.add_child(btns)
-  else:
-    h.add_child(pick)
+  h.add_child(pick)
   return card
 
 
