@@ -1,5 +1,5 @@
 class_name Board
-extends CenterContainer
+extends Control
 
 signal tool_tapped(tool: ToolStation)
 
@@ -72,6 +72,10 @@ func _relayout() -> void:
 	var s := Vector2(best_edge, best_edge)
 	for ch in _grid.get_children():
 		(ch as Control).custom_minimum_size = s
+	var rows := int(ceil(float(total) / best_cols))
+	var gsize := Vector2(best_cols * best_edge + (best_cols - 1) * SEP, rows * best_edge + (rows - 1) * SEP)
+	_grid.size = gsize
+	_grid.position = ((size - gsize) * 0.5).max(Vector2.ZERO)
 
 
 func shake_slots() -> void:
