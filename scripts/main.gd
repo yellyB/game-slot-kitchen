@@ -26,6 +26,7 @@ var _max_sale_today := 0
 var _max_mult_today := 1.0
 var _served_by_menu := {}
 var _sales_by_menu := {}
+var _settle_bonus := 0
 
 var _day_num: Label
 var _money_label: Label
@@ -816,14 +817,14 @@ func _gain_feel(total: int) -> Dictionary:
   return {"slam": 1.15, "shake": 0.0, "pitch": 1.0}
 
 
-func _coin_burst(from: Vector2, amount: int) -> void:
+func _coin_burst(from: Vector2, amount: int, z := 116) -> void:
   if not is_inside_tree():
     return
   var n := clampi(3 + int(float(amount) / 1500.0), 3, 14)
   var target := _money_label.global_position + _money_label.size * 0.5
   for i in n:
     var coin := UI.ui_icon("coin", 20)
-    coin.z_index = 116
+    coin.z_index = z
     coin.pivot_offset = Vector2(10, 10)
     coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(coin)
@@ -976,8 +977,12 @@ func _on_day_closing(s: Session) -> void:
     "rent": s.rent,
   }
   var bonus := Buffs.day_end_bonus(ctx)
-  if bonus != 0:
+  if bonus > 0:
+    _settle_bonus = bonus
+    _expect_fly = true
     s.earn(bonus)
+    _expect_fly = false
+    _money_label.text = UI.money(_last_cash - bonus)
 
 
 func _detach_and_fade(card: Control) -> void:
@@ -1559,6 +1564,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _max_mult_today = 1.0
   _served_by_menu = {}
   _sales_by_menu = {}
+  _settle_bonus = 0
   Buffs.reset_day()
   Move.clear()
   _board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
@@ -1719,6 +1725,7 @@ func _show_week_closed(summary: Dictionary) -> void:
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
     m.add_row(_settle_icon_row("coin", rev, 26))
+  _add_settle_bonus_row(m)
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -1780,6 +1787,40 @@ func _sales_rows() -> Control:
   return box
 
 
+func _add_settle_bonus_row(m: Modal) -> void:
+  if _settle_bonus <= 0:
+    return
+  var bonus := _settle_bonus
+  _settle_bonus = 0
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.label(Loc.t("settle_bonus"), 15, Palette.MAIN, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  row.add_child(UI.ui_icon("coin", 16))
+  var amt_l := UI.label("+" + UI.money(0), 16, Palette.MAIN, true)
+  row.add_child(amt_l)
+  m.add_row(row)
+  _animate_settle_bonus(amt_l, bonus)
+
+
+func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
+  await get_tree().process_frame
+  if not is_instance_valid(amt_l) or not is_inside_tree():
+    return
+  var cu := create_tween()
+  cu.tween_method(func(v: float): amt_l.text = "+" + UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
+    .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+  var from := amt_l.global_position + amt_l.size * 0.5
+  _coin_burst(from, bonus, 350)
+  var mc := create_tween()
+  mc.tween_method(_set_money_text.bind(_money_label), float(_last_cash - bonus), float(_last_cash), 0.6)
+  mc.tween_callback(func(): _pop_label(_money_label))
+  Audio.play("coins", 1.1)
+
+
 func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
@@ -1787,6 +1828,7 @@ func _show_settlement(summary: Dictionary) -> void:
   var sr := _sales_rows()
   if sr != null:
     m.add_row(sr)
+  _add_settle_bonus_row(m)
 
   var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
   var icon_box := CenterContainer.new()
