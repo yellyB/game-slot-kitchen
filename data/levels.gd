@@ -8,10 +8,13 @@ extends RefCounted
 ## 밸런스 v1(월 구조 전환 첫 튜닝) — 실플레이/시뮬로 보정.
 
 const WEEKS_PER_MONTH := 4
-## 월세 = RENT_BASE × RENT_GROWTH^(개월-1). 목표: 최적빌드=4분기(12개월)생존, 약빌드=1~2분기 사망.
-## → 증가율은 최적 빌드의 수입 성장에 겨우 못 미치게(완만). sim/실플레이로 보정. SIM_GROWTH로 스윕.
+## 월세 = 볼록 곡선(완만한 기본 복리 + 후반 가속 항). 초반은 거의 그대로(온보딩 보호),
+## 중후반은 가파르게 올라 스노우볼을 오래 압박. 실로그(중간빌드 월매출)에 맞춰 튜닝. SIM_GROWTH로 스윕.
+##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
 const RENT_BASE := 40000    # 1개월차 월세(온보딩)
-const RENT_GROWTH := 1.10   # 월 복리 — 시뮬: 평균빌드 ~11개월, 최적 ~14~16개월(보스 추가 시 ~12로), 약빌드 1~2분기
+const RENT_GROWTH := 1.12   # 완만한 기본 복리(초반 보호)
+const RENT_ACCEL := 1.60    # 후반 가속 항 복리(볼록 — 중후반 압박↑)
+const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
 const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
 const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 한계
 
@@ -29,12 +32,12 @@ static func count() -> int:
 static func months() -> int:
 	return MONTHS.size()
 
-## 이 달(0-base)의 월세 = RENT_BASE × 증가율^개월. 무한 공식. SIM_GROWTH로 증가율 스윕(시뮬).
+## 이 달(0-base)의 월세 — 볼록 곡선(완만 기본 복리 + 후반 가속). 무한 공식. SIM_GROWTH로 기본 복리 스윕.
 static func _monthly_rent(mi: int) -> int:
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))
-	return int(round(float(RENT_BASE) * pow(g, mi)))
+	return int(round(float(RENT_BASE) * (pow(g, mi) + RENT_ACCEL_W * (pow(RENT_ACCEL, mi) - 1.0))))
 
 ## 이 달·주(0-base)의 웨이브당 손님 수 — 정의 이후는 마지막 달에서 월당 +WAVE_STEP(상한 WAVE_CAP).
 static func _waves(mi: int, wi: int) -> int:
