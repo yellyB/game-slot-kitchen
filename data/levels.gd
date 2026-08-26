@@ -3,7 +3,7 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 40000
-const RENT_GROWTH := 1.12
+const RENT_GROWTH := 1.25
 const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
 const WAVE_STEP := 1
