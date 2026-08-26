@@ -3,7 +3,9 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 40000
-const RENT_GROWTH := 1.10
+const RENT_GROWTH := 1.12
+const RENT_ACCEL := 1.60
+const RENT_ACCEL_W := 0.02
 const WAVE_STEP := 1
 const WAVE_CAP := 18
 
@@ -23,7 +25,7 @@ static func _monthly_rent(mi: int) -> int:
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))
-	return int(round(float(RENT_BASE) * pow(g, mi)))
+	return int(round(float(RENT_BASE) * (pow(g, mi) + RENT_ACCEL_W * (pow(RENT_ACCEL, mi) - 1.0))))
 
 static func _waves(mi: int, wi: int) -> int:
 	if mi < MONTHS.size():
