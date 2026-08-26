@@ -66,6 +66,8 @@ const S := {
 	"shop_pick3": "3개 중 1개 선택",
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
+	"shop_sell": "팔기",
+	"shop_full_notice": "버프칸이 가득 찼어요 — 버프를 하나 팔아야 받을 수 있어요",
 
 
 	"b.cook.name": "높은 화력", "b.cook.label": "조리 시간 -29%",

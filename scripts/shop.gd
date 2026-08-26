@@ -15,6 +15,7 @@ var _drew := false
 var _reroll := 0
 var _slot_price_label: Label
 var _last_price_label: Label
+var _shake_tws := {}
 
 func _ready() -> void:
   set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -270,6 +271,14 @@ func _show_pack(pack: Array) -> void:
   box.add_theme_constant_override("separation", 12)
   box.alignment = BoxContainer.ALIGNMENT_CENTER
   oc.add_child(box)
+
+  if Buffs.is_full():
+    var warn := UI.label(Loc.t("shop_full_notice"), 15, Palette.DANGER, true)
+    warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    warn.custom_minimum_size = Vector2(330, 0)
+    box.add_child(warn)
+
   var t := UI.label(Loc.t("shop_pick3"), 18, Palette.WHITE, true)
   t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(t)
@@ -373,10 +382,79 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   pick.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
   pick.custom_minimum_size = Vector2(84, 40)
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-  pick.pressed.connect(func(): _pick_chosen(card, id, choices, overlay))
+  pick.pressed.connect(func(): _try_pick(card, id, choices, overlay))
   Audio.attach_click(pick)
-  h.add_child(pick)
+
+  if Buffs.is_full():
+    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
+    var btns := VBoxContainer.new()
+    btns.add_theme_constant_override("separation", 6)
+    btns.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+    btns.add_child(pick)
+    var sell := Button.new()
+    sell.text = Loc.t("shop_sell") + " +" + UI.money(refund)
+    sell.add_theme_font_size_override("font_size", 15)
+    sell.add_theme_color_override("font_color", Palette.COCOA_800)
+    sell.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+    sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+    sell.custom_minimum_size = Vector2(84, 34)
+    sell.pressed.connect(func(): _sell_drawn(overlay))
+    Audio.attach_click(sell)
+    btns.add_child(sell)
+    h.add_child(btns)
+  else:
+    h.add_child(pick)
   return card
+
+
+func _try_pick(chosen: Control, id: String, choices: Array, overlay: Control) -> void:
+  if overlay.get_meta("picked", false):
+    return
+  if Buffs.is_full():
+    _shake_choices(choices)
+    Audio.play("disabled")
+    return
+  _pick_chosen(chosen, id, choices, overlay)
+
+
+func _sell_drawn(overlay: Control) -> void:
+  if overlay.get_meta("picked", false):
+    return
+  overlay.set_meta("picked", true)
+  _buff_btn.z_index = 0
+  _buff_backdrop.z_index = 0
+  _buff_sheet.z_index = 0
+  session.add_cash(int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO)))
+  Audio.play("coins")
+  if is_instance_valid(overlay):
+    var ot := create_tween()
+    ot.tween_property(overlay, "modulate:a", 0.0, 0.28)
+    ot.tween_callback(overlay.queue_free)
+  await get_tree().create_timer(0.4).timeout
+  _refresh()
+
+
+func _shake_choices(choices: Array) -> void:
+  for c in choices:
+    if is_instance_valid(c):
+      _shake_card(c)
+
+func _shake_card(n: Control) -> void:
+  if _shake_tws.has(n) and _shake_tws[n] != null and (_shake_tws[n] as Tween).is_valid():
+    (_shake_tws[n] as Tween).kill()
+    n.position.x = n.get_meta("shake_base_x", n.position.x)
+  else:
+    n.set_meta("shake_base_x", n.position.x)
+  var base: float = n.get_meta("shake_base_x")
+  n.position.x = base
+  var a := 5.0
+  var t := n.create_tween()
+  _shake_tws[n] = t
+  t.tween_property(n, "position:x", base - a, 0.05).set_trans(Tween.TRANS_SINE)
+  t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
+  t.tween_property(n, "position:x", base - a, 0.07).set_trans(Tween.TRANS_SINE)
+  t.tween_property(n, "position:x", base + a, 0.07).set_trans(Tween.TRANS_SINE)
+  t.tween_property(n, "position:x", base, 0.05).set_trans(Tween.TRANS_SINE)
 
 
 func _pick_chosen(chosen: Control, id: String, choices: Array, overlay: Control) -> void:
@@ -452,7 +530,7 @@ func _refresh() -> void:
     _buy_slot_btn.disabled = not can_slot
     _buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
 
-  if _drew or Buffs.is_full():
+  if _drew:
     _draw_btn.text = Loc.t("sold_out")
     _draw_btn.disabled = true
     _draw_btn.modulate = Color.WHITE

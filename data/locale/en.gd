@@ -66,6 +66,8 @@ const S := {
 	"shop_pick3": "Pick 1 of 3",
 	"shop_price": "Price %s",
 	"sold_out": "SOLD OUT",
+	"shop_sell": "Sell",
+	"shop_full_notice": "Buff slots full — sell one to make room",
 
 
 	"b.cook.name": "Full Blast", "b.cook.label": "Cook time -29%",
