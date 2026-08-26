@@ -13,7 +13,7 @@ const WEEKS_PER_MONTH := 4
 ##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
 const RENT_BASE := 40000    # 1개월차 월세(온보딩)
 const RENT_GROWTH := 1.12   # 완만한 기본 복리(초반 보호)
-const RENT_ACCEL := 1.60    # 후반 가속 항 복리(볼록 — 중후반 압박↑)
+const RENT_ACCEL := 2.50    # 후반 가속 항 복리(볼록) — 시뮬: 강빌드 ~12개월 겨우 통과 후 탈락
 const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
 const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
 const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 한계
@@ -37,7 +37,10 @@ static func _monthly_rent(mi: int) -> int:
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))
-	return int(round(float(RENT_BASE) * (pow(g, mi) + RENT_ACCEL_W * (pow(RENT_ACCEL, mi) - 1.0))))
+	var a := RENT_ACCEL
+	if OS.has_environment("SIM_ACCEL"):
+		a = float(OS.get_environment("SIM_ACCEL"))
+	return int(round(float(RENT_BASE) * (pow(g, mi) + RENT_ACCEL_W * (pow(a, mi) - 1.0))))
 
 ## 이 달·주(0-base)의 웨이브당 손님 수 — 정의 이후는 마지막 달에서 월당 +WAVE_STEP(상한 WAVE_CAP).
 static func _waves(mi: int, wi: int) -> int:
