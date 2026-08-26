@@ -1746,6 +1746,9 @@ func _show_week_closed(summary: Dictionary) -> void:
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
     m.add_row(_settle_icon_row("coin", rev, 26))
+  var cr := _churn_row()
+  if cr != null:
+    m.add_row(cr)
   _add_settle_bonus_row(m)
   var go := Button.new()
   go.text = Loc.t("to_shop")
@@ -1808,6 +1811,22 @@ func _sales_rows() -> Control:
   return box
 
 
+func _churn_row() -> Control:
+  if _visited_today <= 0:
+    return null
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.ui_icon("mood_angry", 22))
+  row.add_child(UI.label(Loc.t("settle_churn"), 15, Palette.COCOA_600, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  var col := Palette.DANGER if _missed_today > 0 else Palette.SUCCESS
+  row.add_child(UI.label("%d / %d" % [_missed_today, _visited_today], 16, col, true))
+  return row
+
+
 func _add_settle_bonus_row(m: Modal) -> void:
   if _settle_bonus <= 0:
     return
@@ -1849,6 +1868,9 @@ func _show_settlement(summary: Dictionary) -> void:
   var sr := _sales_rows()
   if sr != null:
     m.add_row(sr)
+  var cr := _churn_row()
+  if cr != null:
+    m.add_row(cr)
   _add_settle_bonus_row(m)
 
   var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"

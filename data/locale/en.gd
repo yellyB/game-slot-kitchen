@@ -34,6 +34,7 @@ const S := {
 	"win_days": "%d weeks cleared",
 	"day_closed": "Week %d closed",
 	"settle_bonus": "Close Bonus",
+	"settle_churn": "Walkouts",
 	"revenue": "Revenue  %s",
 	"rent": "Rent  %s",
 	"remaining": "Left  %s",
