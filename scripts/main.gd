@@ -1992,7 +1992,8 @@ func _churn_row() -> Control:
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(gap)
   var col := Palette.DANGER if _missed_today > 0 else Palette.SUCCESS
-  row.add_child(UI.label("%d / %d" % [_missed_today, _visited_today], 16, col, true))
+  var pct := int(round(float(_missed_today) / float(_visited_today) * 100.0))
+  row.add_child(UI.label("%d%%" % pct, 16, col, true))
   return row
 
 
