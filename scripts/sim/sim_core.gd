@@ -12,6 +12,7 @@ var ingredients: Array = []
 
 var _busy := 0.0
 var _handle := 0.0
+var _miss := 0.0
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -28,6 +29,7 @@ var _served_by_menu := {}
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
+	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -192,8 +194,12 @@ func _step_realistic() -> void:
 func _on_spawn() -> void:
 	if queue.size() >= Config.MAX_QUEUE:
 		return
-	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
 	_visited_today += 1
+	if _miss > 0.0 and randf() < _miss:
+		_lost += 1
+		_missed_today += 1
+		return
+	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
 
 
 func _decay_patience() -> void:
@@ -492,6 +498,7 @@ func _count_orders(rid: String) -> int:
 func run_replay(script: Array, seed_v := 0, handle := 0.6) -> Array:
 	seed(seed_v)
 	_handle = handle
+	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.25
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
