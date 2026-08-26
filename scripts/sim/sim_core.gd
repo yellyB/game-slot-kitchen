@@ -19,6 +19,7 @@ var ingredients: Array = [] # 보드 위 재료 카드(멀티셋): [ingredient_i
 
 var _busy := 0.0            # 창고 트립·손동작(핸들링) 등으로 플레이어가 묶인 시간(초)
 var _handle := 0.0          # >0이면 현실 모드: 한 스텝에 한 동작 + 동작당 핸들링 타임(SIM_HANDLE)
+var _miss := 0.0            # 사람 놓침 확률(현실 모드, SIM_MISS)
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -37,6 +38,7 @@ var _served_by_menu := {}
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
+	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -211,8 +213,12 @@ func _step_realistic() -> void:
 func _on_spawn() -> void:
 	if queue.size() >= Config.MAX_QUEUE:
 		return
-	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
 	_visited_today += 1
+	if _miss > 0.0 and randf() < _miss:   # 응대 못 한 손님(처리율 = 1-SIM_MISS)
+		_lost += 1
+		_missed_today += 1
+		return
+	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
 
 
 func _decay_patience() -> void:
@@ -520,13 +526,11 @@ func _count_orders(rid: String) -> int:
 	return n
 
 
-## 로그 리플레이 — 실제 플레이의 주차별 빌드(buffs·slots)를 그대로 주입해 각 주(週)를 재시뮬.
-## 슬롯/버프 구매 비용을 차감해 현금 궤적까지 실플에 근접(→ sale_cash 등 현금연동 버프 재현).
-## handle>0이면 현실 처리량(사람 손동작 시간). script[i] = {"buffs":[...], "slots":N}.
-## 반환: 주차별 [{week, served, accepted, lost, revenue, cash, rent, passed}]. 실패 주에서 중단.
+## 로그 리플레이 — 주차별 빌드(script[i]={buffs,slots}, 구매비 차감)를 주입해 각 주 재시뮬.
 func run_replay(script: Array, seed_v := 0, handle := 0.6) -> Array:
 	seed(seed_v)
 	_handle = handle
+	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.25
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
