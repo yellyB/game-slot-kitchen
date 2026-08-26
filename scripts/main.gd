@@ -1070,13 +1070,59 @@ func _sale_ctx(order: OrderCard, dish: DishCard) -> Dictionary:
   }
 
 
-## 자기폐기(48) 버프 카드를 보드에서 제거(보유 목록은 Buffs.discard가 처리).
+## 자기폐기(48·49 등) 버프 카드를 보드에서 제거(보유 목록은 Buffs.discard가 처리).
+## 슬롯에서 빼내 최상위로 올린 뒤 파괴 연출을 재생 → 플레이어가 사라지는 순간을 인지.
 func _remove_buff_card(buff_id: String) -> void:
   for s in _board.slots:
     var c := s.get_card()
     if c is BuffCard and c.buff_id == buff_id:
-      s.clear()
+      var gpos := c.global_position
+      var parent := c.get_parent()
+      if parent != null:
+        parent.remove_child(c)   # 슬롯 비움(홀더에서 분리) — clear() 대신 직접 빼서 연출용으로 보존
+      add_child(c)
+      c.top_level = true
+      c.global_position = gpos
+      _destroy_buff_card_fx(c)
       return
+
+
+## 버프 카드 파괴 연출 — 제자리에서 붉게 부풀었다 회전하며 쪼그라들어 사라짐 + 파편 버스트 + 파괴음.
+func _destroy_buff_card_fx(c: Control) -> void:
+  var center := c.global_position + c.size * 0.5
+  c.pivot_offset = c.size * 0.5
+  c.z_index = 120
+  c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  c.modulate = Palette.DANGER
+  Audio.play("trash")
+  _shard_burst(center)
+  var tw := create_tween()
+  tw.tween_property(c, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.tween_property(c, "scale", Vector2(0.15, 0.15), 0.32).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(c, "rotation", randf_range(-0.7, 0.7), 0.32)
+  tw.parallel().tween_property(c, "modulate:a", 0.0, 0.32).set_ease(Tween.EASE_IN)
+  tw.chain().tween_callback(c.queue_free)
+
+
+## 파괴 파편 — 중심에서 사방으로 튀어나가 페이드되는 붉은 조각들.
+func _shard_burst(center: Vector2) -> void:
+  for i in 8:
+    var p := ColorRect.new()
+    p.color = Palette.DANGER
+    p.size = Vector2(6, 6)
+    p.pivot_offset = Vector2(3, 3)
+    p.z_index = 121
+    p.top_level = true
+    p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(p)
+    p.global_position = center
+    var ang := TAU * float(i) / 8.0 + randf_range(-0.3, 0.3)
+    var dest := center + Vector2(cos(ang), sin(ang)) * randf_range(40.0, 85.0)
+    var tw := create_tween().set_parallel(true)
+    tw.tween_property(p, "global_position", dest, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    tw.tween_property(p, "scale", Vector2(0.2, 0.2), 0.35)
+    tw.tween_property(p, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_IN)
+    tw.chain().tween_callback(p.queue_free)
 
 
 ## 마감 정산 훅(가게세 차감 전) — 정산 보너스/차감(63~65,73,50)을 세션에 반영.
