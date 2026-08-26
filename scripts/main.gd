@@ -1910,6 +1910,9 @@ func _show_week_closed(summary: Dictionary) -> void:
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
     m.add_row(_settle_icon_row("coin", rev, 26))
+  var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
+  if cr != null:
+    m.add_row(cr)
   _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
   var go := Button.new()
   go.text = Loc.t("to_shop")
@@ -1975,6 +1978,24 @@ func _sales_rows() -> Control:
   return box
 
 
+## 오늘 손님 이탈 — 방문 대비 떠난(놓친) 손님 수. 완벽/우수정산 처리율의 근거를 마감에 노출.
+##   이탈 = 대기열 이탈 + 주문 이탈(_missed_today), 분모 = 등장 손님(_visited_today).
+func _churn_row() -> Control:
+  if _visited_today <= 0:
+    return null
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.ui_icon("mood_angry", 22))
+  row.add_child(UI.label(Loc.t("settle_churn"), 15, Palette.COCOA_600, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  var col := Palette.DANGER if _missed_today > 0 else Palette.SUCCESS
+  row.add_child(UI.label("%d / %d" % [_missed_today, _visited_today], 16, col, true))
+  return row
+
+
 ## 마감 추가금(day_end_bonus: 64·65·66·74 등) 정산 팝업 행 — 있으면 "마감 보너스 +N" 행을 넣고,
 ## 코인이 지갑으로 날아가며 상단 보유금이 촤르륵 오르는 연출(서빙 획득과 동일 결). earn은 이미 됨.
 func _add_settle_bonus_row(m: Modal) -> void:
@@ -2019,6 +2040,9 @@ func _show_settlement(summary: Dictionary) -> void:
   var sr := _sales_rows()
   if sr != null:
     m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
+  var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
+  if cr != null:
+    m.add_row(cr)
   _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
 
   # 영수증(빌지) 이미지 — 고정 크기 홀더. 지불 후 같은 크기의 ✅/❌로 교체(레이아웃 안 흔들림).
