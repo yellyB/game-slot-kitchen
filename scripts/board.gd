@@ -13,8 +13,13 @@ var now_provider: Callable = func() -> float: return 0.0
 var _grid: GridContainer
 var _shake_tw := {}
 
+func _get_minimum_size() -> Vector2:
+	return Vector2.ZERO
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	clip_contents = true
 	_grid = GridContainer.new()
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_grid.columns = Config.BOARD_COLS
