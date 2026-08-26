@@ -12,7 +12,7 @@ const WEEKS_PER_MONTH := 4
 ## 중후반은 가파르게 올라 스노우볼을 오래 압박. 실로그(중간빌드 월매출)에 맞춰 튜닝. SIM_GROWTH로 스윕.
 ##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
 const RENT_BASE := 40000    # 1개월차 월세(온보딩)
-const RENT_GROWTH := 1.12   # 완만한 기본 복리(초반 보호)
+const RENT_GROWTH := 1.25   # 기본 복리 — 초반 월세 상향(2개월차 여유 축소). 강빌드 12개월 지점은 ACCEL이 결정
 const RENT_ACCEL := 2.50    # 후반 가속 항 복리(볼록) — 시뮬: 강빌드 ~12개월 겨우 통과 후 탈락
 const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
 const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
