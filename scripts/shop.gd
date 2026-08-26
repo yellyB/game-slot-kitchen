@@ -300,12 +300,22 @@ func _show_pack(pack: Array) -> void:
   oc.add_child(box)
 
   # 가득 찬 채로 카드깡 → 개봉 즉시 상단 안내(선택하려면 서랍에서 버프를 팔아 자리 확보).
+  # 딤 배경과 겹쳐 안 보이던 문제 → 꽉 찬 DANGER 알약 배경 + 흰 글씨로 대비 확보.
   if Buffs.is_full():
-    var warn := UI.label(Loc.t("shop_full_notice"), 15, Palette.DANGER, true)
+    var warnbox := PanelContainer.new()
+    warnbox.add_theme_stylebox_override("panel", UI.chip(Palette.DANGER))
+    var wp := MarginContainer.new()
+    for side in ["left", "right"]:
+      wp.add_theme_constant_override("margin_" + side, 16)
+    for side in ["top", "bottom"]:
+      wp.add_theme_constant_override("margin_" + side, 9)
+    warnbox.add_child(wp)
+    var warn := UI.label(Loc.t("shop_full_notice"), 15, Palette.WHITE, true)
     warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    warn.custom_minimum_size = Vector2(330, 0)
-    box.add_child(warn)
+    warn.custom_minimum_size = Vector2(320, 0)
+    wp.add_child(warn)
+    box.add_child(warnbox)
 
   var t := UI.label(Loc.t("shop_pick3"), 18, Palette.WHITE, true)
   t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -323,6 +333,20 @@ func _show_pack(pack: Array) -> void:
     choices.append(choice)
     _reveal_choice(choice, i)   # 하나씩 팝하며 개봉
     i += 1
+
+  # 가득 찬 채로 개봉 — 리롤 위에 [되팔기 +환급] 하나. 아무것도 안 받고 환급받고 종료.
+  if Buffs.is_full():
+    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
+    var sell := Button.new()
+    sell.add_theme_font_size_override("font_size", 16)
+    sell.add_theme_color_override("font_color", Palette.WHITE)
+    sell.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_400))
+    sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_400.lightened(0.08)))
+    sell.custom_minimum_size = Vector2(160, 40)
+    sell.text = Loc.t("shop_sell") + "  +" + UI.money(refund)
+    sell.pressed.connect(func(): _sell_drawn(overlay))
+    Audio.attach_click(sell)
+    box.add_child(sell)
 
   # 리롤 — 돈 내고 3장 다시 뽑기(리롤마다 ×2). 못 사면 흐리게 비활성.
   var cost := Config.BUFF_REROLL_BASE * int(pow(2, _reroll))
@@ -416,27 +440,7 @@ func _pack_choice(id: String, choices: Array, overlay: Control) -> Control:
   pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
   pick.pressed.connect(func(): _try_pick(card, id, choices, overlay))
   Audio.attach_click(pick)   # 뽑기 버튼 클릭음
-
-  # 가득 찬 채로 개봉 — [선택] 아래 [팔기 +환급]. 선택은 자리 없으면 흔들림, 팔기는 이 카드 환급.
-  if Buffs.is_full():
-    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
-    var btns := VBoxContainer.new()
-    btns.add_theme_constant_override("separation", 6)
-    btns.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-    btns.add_child(pick)
-    var sell := Button.new()
-    sell.text = Loc.t("shop_sell") + " +" + UI.money(refund)
-    sell.add_theme_font_size_override("font_size", 15)
-    sell.add_theme_color_override("font_color", Palette.COCOA_800)
-    sell.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-    sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-    sell.custom_minimum_size = Vector2(84, 34)
-    sell.pressed.connect(func(): _sell_drawn(overlay))
-    Audio.attach_click(sell)
-    btns.add_child(sell)
-    h.add_child(btns)
-  else:
-    h.add_child(pick)
+  h.add_child(pick)
   return card
 
 
