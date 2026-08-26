@@ -15,8 +15,16 @@ var now_provider: Callable = func() -> float: return 0.0  ## 게임 클록(초) 
 var _grid: GridContainer
 var _shake_tw := {}   ## 슬롯별 진행 중 흔들림 트윈 — 반복 흔들림 시 겹침(왼쪽 드리프트) 방지
 
+## 그리드(셀들의 최소 크기 합)가 Board의 세로 최소값을 부풀리면, 부모 VBox의
+## 최소 높이가 화면을 넘겨 하단 버튼이 잘린다. Board는 최소 크기를 0으로 보고해
+## "남는 공간만" 배정받고, _relayout이 그 공간에 맞춰 셀을 축소하게 한다.
+func _get_minimum_size() -> Vector2:
+	return Vector2.ZERO
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	clip_contents = true   # 축소 전 한 프레임 등 그리드가 Board 밖으로 삐져나가도 안 보이게
 	_grid = GridContainer.new()
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_grid.columns = Config.BOARD_COLS
