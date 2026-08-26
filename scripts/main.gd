@@ -978,8 +978,51 @@ func _remove_buff_card(buff_id: String) -> void:
   for s in _board.slots:
     var c := s.get_card()
     if c is BuffCard and c.buff_id == buff_id:
-      s.clear()
+      var gpos := c.global_position
+      var parent := c.get_parent()
+      if parent != null:
+        parent.remove_child(c)
+      add_child(c)
+      c.top_level = true
+      c.global_position = gpos
+      _destroy_buff_card_fx(c)
       return
+
+
+func _destroy_buff_card_fx(c: Control) -> void:
+  var center := c.global_position + c.size * 0.5
+  c.pivot_offset = c.size * 0.5
+  c.z_index = 120
+  c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  c.modulate = Palette.DANGER
+  Audio.play("trash")
+  _shard_burst(center)
+  var tw := create_tween()
+  tw.tween_property(c, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.tween_property(c, "scale", Vector2(0.15, 0.15), 0.32).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+  tw.parallel().tween_property(c, "rotation", randf_range(-0.7, 0.7), 0.32)
+  tw.parallel().tween_property(c, "modulate:a", 0.0, 0.32).set_ease(Tween.EASE_IN)
+  tw.chain().tween_callback(c.queue_free)
+
+
+func _shard_burst(center: Vector2) -> void:
+  for i in 8:
+    var p := ColorRect.new()
+    p.color = Palette.DANGER
+    p.size = Vector2(6, 6)
+    p.pivot_offset = Vector2(3, 3)
+    p.z_index = 121
+    p.top_level = true
+    p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(p)
+    p.global_position = center
+    var ang := TAU * float(i) / 8.0 + randf_range(-0.3, 0.3)
+    var dest := center + Vector2(cos(ang), sin(ang)) * randf_range(40.0, 85.0)
+    var tw := create_tween().set_parallel(true)
+    tw.tween_property(p, "global_position", dest, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+    tw.tween_property(p, "scale", Vector2(0.2, 0.2), 0.35)
+    tw.tween_property(p, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_IN)
+    tw.chain().tween_callback(p.queue_free)
 
 
 func _on_day_closing(s: Session) -> void:
