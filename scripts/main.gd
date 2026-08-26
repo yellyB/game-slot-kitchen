@@ -1986,7 +1986,6 @@ func _churn_row() -> Control:
   var row := HBoxContainer.new()
   row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_theme_constant_override("separation", 6)
-  row.add_child(UI.ui_icon("mood_angry", 22))
   row.add_child(UI.label(Loc.t("settle_churn"), 15, Palette.COCOA_600, true))
   var gap := Control.new()
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
