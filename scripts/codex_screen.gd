@@ -160,12 +160,12 @@ func _make_cell(id: String) -> Control:
 		box.add_child(icon)
 		var nm := UI.label(BuffDefs.display_name(id), 11, Palette.MAIN, true)
 		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		nm.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY   # 글자단위 — 앱/에디터 줄바꿈 일관(단어단위 시 줄 늘어남)
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		box.add_child(nm)
 		var desc := UI.label(BuffDefs.display_label(id), 9, Palette.COCOA_600)
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY   # 글자단위
 		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		box.add_child(desc)
 	else:
