@@ -51,11 +51,13 @@ func _ready() -> void:
 		grid.add_child(tile)
 
 
-## 보드 꽉 차면 타일 비활성(회색).
+## 보드 꽉 차거나(회색) 생략 버프로 안 쓰는 재료면(뿌옇게) 타일 비활성.
 func refresh(full: bool) -> void:
+	var omit := Buffs.omitted_ingredients()
 	for tile in _tiles:
-		tile.disabled = full
-		tile.modulate = Color(1, 1, 1, 0.45) if full else Color.WHITE
+		var off := full or omit.has(tile.ing_id)
+		tile.disabled = off
+		tile.modulate = Color(1, 1, 1, 0.45) if off else Color.WHITE
 
 
 ## 번호키(0-based idx, 좌상단→우하단 순)로 해당 타일을 첫 빈 슬롯에 배치. 탭과 동일 경로.

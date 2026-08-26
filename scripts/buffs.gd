@@ -306,6 +306,15 @@ func required_ingredients(recipe_id: String) -> Array:
 			out.append(ing)
 	return out
 
+## 생략 버프(13~15)로 더는 꺼낼 필요 없는 재료 집합 — 창고 타일 비활성 표시용.
+func omitted_ingredients() -> Dictionary:
+	var out := {}
+	for id in _owned:
+		var ing: String = BuffDefs.get_def(id).get("opt_ingredient", "")
+		if ing != "":
+			out[ing] = true
+	return out
+
 ## 창고 트립이 공짜(시간 0)일 확률 — 카드4(30%). 여러 장이면 최대값.
 func trip_free_chance() -> float:
 	var c := 0.0
