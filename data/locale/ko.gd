@@ -38,6 +38,7 @@ const S := {
 	"win_title": "승리! 🎉",
 	"win_days": "%d주 완주",
 	"day_closed": "%d주차 마감",
+	"settle_bonus": "마감 보너스",
 	"revenue": "매출  %s",
 	"rent": "가게세  %s",
 	"remaining": "남음  %s",

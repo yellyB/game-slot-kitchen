@@ -30,6 +30,7 @@ var _max_sale_today := 0    # OP 검사: 그날 최고 단일 판매금
 var _max_mult_today := 1.0  # OP 검사: 그날 최고 배수(곱연산)
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 var _sales_by_menu := {}    # 메뉴별 판매 집계(정산 팝업): rid → {count, base, bonus}
+var _settle_bonus := 0      # 마감 추가금(day_end_bonus) — day_closing에서 earn, 정산 팝업에서 연출
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
 var _money_label: Label
@@ -902,14 +903,14 @@ func _gain_feel(total: int) -> Dictionary:
 
 
 ## 코인 파티클 — from 지점에서 여러 코인이 보유금 라벨로 날아가며 사라짐(금액 클수록 많이).
-func _coin_burst(from: Vector2, amount: int) -> void:
+func _coin_burst(from: Vector2, amount: int, z := 116) -> void:
   if not is_inside_tree():
     return
   var n := clampi(3 + int(float(amount) / 1500.0), 3, 14)
   var target := _money_label.global_position + _money_label.size * 0.5
   for i in n:
     var coin := UI.ui_icon("coin", 20)
-    coin.z_index = 116
+    coin.z_index = z
     coin.pivot_offset = Vector2(10, 10)
     coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(coin)
@@ -1074,8 +1075,14 @@ func _on_day_closing(s: Session) -> void:
     "rent": s.rent,
   }
   var bonus := Buffs.day_end_bonus(ctx)
-  if bonus != 0:
+  if bonus > 0:
+    # 즉시 팝/동전음은 억제(_expect_fly)하고 표시금액도 증가 전으로 되돌린다.
+    # 정산 팝업이 뜰 때 코인 연출과 함께 촤르륵 올린다(_add_settle_bonus_row).
+    _settle_bonus = bonus
+    _expect_fly = true
     s.earn(bonus)
+    _expect_fly = false
+    _money_label.text = UI.money(_last_cash - bonus)
 
 
 ## 이탈 연출 — 카드를 부모(슬롯/큐)에서 떼어내 제자리에서 쪼그라들며 페이드아웃 후 제거.
@@ -1704,6 +1711,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _max_mult_today = 1.0
   _served_by_menu = {}
   _sales_by_menu = {}
+  _settle_bonus = 0
   Buffs.reset_day()   # #45 적립 하루 리셋
   # 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
   #   추가로 버프칸 보너스(11 buff_slot)만큼 슬롯을 더 둬서 그만큼 버프가 "공짜"로 얹히게 함
@@ -1881,6 +1889,7 @@ func _show_week_closed(summary: Dictionary) -> void:
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
     m.add_row(_settle_icon_row("coin", rev, 26))
+  _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -1945,6 +1954,43 @@ func _sales_rows() -> Control:
   return box
 
 
+## 마감 추가금(day_end_bonus: 64·65·66·74 등) 정산 팝업 행 — 있으면 "마감 보너스 +N" 행을 넣고,
+## 코인이 지갑으로 날아가며 상단 보유금이 촤르륵 오르는 연출(서빙 획득과 동일 결). earn은 이미 됨.
+func _add_settle_bonus_row(m: Modal) -> void:
+  if _settle_bonus <= 0:
+    return
+  var bonus := _settle_bonus
+  _settle_bonus = 0
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.label(Loc.t("settle_bonus"), 15, Palette.MAIN, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  row.add_child(UI.ui_icon("coin", 16))
+  var amt_l := UI.label("+" + UI.money(0), 16, Palette.MAIN, true)
+  row.add_child(amt_l)
+  m.add_row(row)
+  _animate_settle_bonus(amt_l, bonus)
+
+
+## 위 행의 등장 연출(비동기) — 팝업 +금액 카운트업 + 코인 버스트 + 상단 보유금 카운트업/팝.
+func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
+  await get_tree().process_frame   # 레이아웃 확정 후 위치 사용
+  if not is_instance_valid(amt_l) or not is_inside_tree():
+    return
+  var cu := create_tween()
+  cu.tween_method(func(v: float): amt_l.text = "+" + UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
+    .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+  var from := amt_l.global_position + amt_l.size * 0.5
+  _coin_burst(from, bonus, 350)   # z 350 — 모달 딤(300) 위로 보이게
+  var mc := create_tween()
+  mc.tween_method(_set_money_text.bind(_money_label), float(_last_cash - bonus), float(_last_cash), 0.6)
+  mc.tween_callback(func(): _pop_label(_money_label))
+  Audio.play("coins", 1.1)
+
+
 func _show_settlement(summary: Dictionary) -> void:
   var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
@@ -1952,6 +1998,7 @@ func _show_settlement(summary: Dictionary) -> void:
   var sr := _sales_rows()
   if sr != null:
     m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
+  _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
 
   # 영수증(빌지) 이미지 — 고정 크기 홀더. 지불 후 같은 크기의 ✅/❌로 교체(레이아웃 안 흔들림).
   # receipt.png 있으면 우선, 없으면 bill(청구서) 폴백. [[화구 아트 로딩과 동일 폴백 패턴]]

@@ -38,6 +38,7 @@ const S := {
 	"win_title": "You Win! 🎉",
 	"win_days": "%d weeks cleared",
 	"day_closed": "Week %d closed",
+	"settle_bonus": "Close Bonus",
 	"revenue": "Revenue  %s",
 	"rent": "Rent  %s",
 	"remaining": "Left  %s",
