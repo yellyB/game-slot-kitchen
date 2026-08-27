@@ -140,7 +140,7 @@ const S := {
 	"b.mult_all.name": "황금손", "b.mult_all.label": "서빙 시 점수 배수 ×1.3",
 	"b.serve_tip.name": "짤랑이", "b.serve_tip.label": "서빙할 때마다 8% 확률로 팁 +1원",
 	"b.settle_perfect.name": "만점 후기", "b.settle_perfect.label": "그 주 손님 이탈률 0%면, 마감에 +5원",
-	"b.nest_egg.name": "곗돈", "b.nest_egg.label": "얻은 뒤 4주차 마감에 파괴되며 +15원",
+	"b.nest_egg.name": "예금통장", "b.nest_egg.label": "얻은 뒤 4주차 마감에 파괴되며 +15원",
 	"b.auto_serve.name": "이심전심", "b.auto_serve.label": "조리 완료 시, 50% 확률로 맞는 주문서가 슬롯에 있으면 자동 서빙",
 	"b.auto_cook.name": "밀프랩", "b.auto_cook.label": "주문 접수 시 재료·도구 있으면 그 주문의 메뉴 자동 조리 시작",
 	"b.inst_order.name": "즉시 주문", "b.inst_order.label": "8번째 서빙을 하면, 다음 주문서를 받았을때 서빙까지 즉시 완료",
