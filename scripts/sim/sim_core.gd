@@ -59,7 +59,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 			if safety > 5_000_000:
 				break
 		result["days"] = session.day
-		if OS.has_environment("SIM_TRACE") and run_seed == 0:
+		if OS.has_environment("SIM_TRACE") and run_seed < int(OS.get_environment("SIM_TRACE")):
 			print("[TRACE] d%d m%d/w%d  served=%d miss=%d  slots=%d buffs=%d(%s)  score=%d/%d  pass=%s" % [
 				session.day, int(Levels.get_day(session.day).get("month", 0)), int(Levels.get_day(session.day).get("week_in_month", 0)),
 				_served_today, _missed_today, session.slots, Buffs.owned().size(), ",".join(Buffs.owned()),
