@@ -501,8 +501,9 @@ func _on_day_closing(s: Session) -> void:
 	var db := Buffs.day_end_bonus(ctx)
 	if int(db["score"]) != 0:
 		s.earn(int(db["score"]), true)
-	if int(db["money"]) != 0:
-		s.earn(int(db["money"]), false)
+	var money_g := int(db["money"]) + Config.WEEK_REWARD_BASE + _served_today * Config.WEEK_REWARD_PER_SERVE
+	if money_g != 0:
+		s.earn(money_g, false)
 
 
 # ── 유틸 ──────────────────────────────────────────────────

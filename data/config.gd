@@ -31,11 +31,14 @@ const START_MONEY := 0     # 시작 소지금
 # 현금비례 보너스(이자·부자세)의 기준잔액 — 보너스 = pct × √(현금 × 이 값).
 # 잔액이 이 값일 때 정확히 pct%로 동작하고, 그 이상은 이율이 체감(√)해 지수폭주를 차단.
 const CASH_BONUS_REF := 25000
-const SLOT_PRICE := 5000      # 슬롯 +1 확장 기본가. 1주차 수입~10k 기준 slot1=5000(수입 절반)·slot2=8000 → 1일차 1개만, 주당 ~1.5개.
-const BUFF_PACK_PRICE := 500  # 버프 팩(카드깡) 고정가 — 일수 인플레 없음
-const BUFF_REROLL_BASE := 100 # 팩 개봉 중 리롤(3장 다시 뽑기) 기본가 — 리롤마다 ×2(100·200·400…), 방문마다 리셋
-const SLOT_PRICE_STEP := 1.6     # 슬롯 확장 1개 살 때마다 가격 배수. ×1.6(5000→8000→12800→20480…) → 사실상 주당 1개 페이스
+const SLOT_PRICE := 5         # 슬롯 +1 확장 기본가(소액 통화). ×1.6 누적(5→8→13→20…) → 주당 ~1개.
+const BUFF_PACK_PRICE := 2    # 버프 팩(카드깡) 고정가 — 최소 단위
+const BUFF_REROLL_BASE := 1   # 팩 개봉 중 리롤 기본가 — 리롤마다 ×2(1·2·4…), 방문마다 리셋
+const SLOT_PRICE_STEP := 1.6     # 슬롯 확장 1개 살 때마다 가격 배수
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
+# 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만 들어옴. 소액.
+const WEEK_REWARD_BASE := 5
+const WEEK_REWARD_PER_SERVE := 0
 const BUFF_SELL_RATIO := 0.2  # 보유 버프 판매 환급률 (버프팩 가격의 20% = 500→100원)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 # (가게세는 하루별 → data/levels.gd)
