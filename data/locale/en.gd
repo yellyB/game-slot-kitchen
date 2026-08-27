@@ -60,6 +60,8 @@ const S := {
 	"close": "Close",
 	"to_shop": "To shop",
 	"pay_rent": "Pay Rent",
+	"check_score": "Check Score",
+	"pay_fee": "Spend %s",
 	"insufficient": "Not enough money",
 
 	# Shop

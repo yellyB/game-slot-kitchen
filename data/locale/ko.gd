@@ -60,6 +60,8 @@ const S := {
 	"close": "닫기",
 	"to_shop": "상점으로",
 	"pay_rent": "가게세 지불",
+	"check_score": "실적 확인",
+	"pay_fee": "%s 소모",
 	"insufficient": "돈이 부족합니다",
 
 	# 상점

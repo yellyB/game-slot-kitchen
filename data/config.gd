@@ -43,6 +43,7 @@ const WEEK_REWARD_BASE := 5
 const WEEK_REWARD_PER_SERVE := 0
 const BUFF_SELL_RATIO := 0.2  # 보유 버프 판매 환급률 (버프팩 가격의 20% = 500→100원)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
+const SCORE_GATE_FEE_DIV := 100  # 실적(점수) 미달 시 목표점수의 1/이 값 만큼 코인 지불로 통과
 # (가게세는 하루별 → data/levels.gd)
 
 # ── 세션 / 하루 ───────────────────────────────────────────
