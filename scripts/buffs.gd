@@ -410,16 +410,16 @@ func consume_instant_order() -> bool:
 
 
 # ── 손님 이탈(71,72) ──────────────────────────────────────
-## 주문 낸 손님이 못 받고 떠날 때 호출 → 즉시 획득할 보상액(원). 72는 다음 획득 2배 예약.
-func on_lost(recipe_id: String) -> int:
+## 주문 낸 손님이 못 받고 떠날 때 호출 → 즉시 획득할 돈(원). 72는 확률 팁, 73은 다음 획득 2배 예약.
+func on_lost(_recipe_id: String) -> int:
 	var gain := 0
-	var mp := menu_price(recipe_id)
 	for id in _owned:
 		var ol: Dictionary = BuffDefs.get_def(id).get("onlost", {})
 		if ol.is_empty():
 			continue
-		if ol.has("money_pct"):
-			gain += int(round(float(mp) * float(ol["money_pct"])))
+		if ol.has("money"):
+			if randf() < float(ol.get("chance", 1.0)):
+				gain += int(ol["money"])
 		if ol.get("double_next", false):
 			_double_next = true
 	return gain

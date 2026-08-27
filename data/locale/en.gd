@@ -156,7 +156,7 @@ const S := {
 	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Gain up to 81% of menu score, scaling with patience used",
 	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): +52% of menu score",
 	"b.pat_down.name": "Neglect", "b.pat_down.label": "Customer patience -30%",
-	"b.onlost_pay.name": "Cancellation Fee", "b.onlost_pay.label": "If you fail to fulfill an order: gain 69% of that menu's price",
+	"b.onlost_pay.name": "Cancellation Fee", "b.onlost_pay.label": "If you miss an order: 50% chance to gain +1 money",
 	"b.onlost_x2.name": "Revenge", "b.onlost_x2.label": "If you fail to fulfill an order: next score ×2",
 	"b.settle_leave.name": "Cut Loss", "b.settle_leave.label": "If you miss 30%+ of the week's orders: +10 money at close",
 }
