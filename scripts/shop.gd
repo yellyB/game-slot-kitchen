@@ -8,15 +8,14 @@ signal go_home   # 상단바 홈 버튼 → main이 확인창(진행 판 포기)
 
 var session: Session  # main이 add_child 전에 주입
 var _cash_label: Label
-var _buy_slot_btn: Button
-var _draw_btn: Button
 var _buff_btn: Button            # 보유 버프 서랍 여는 버튼(계속하기 왼쪽). 보유 0개면 비활성.
 var _buff_sheet: BuffSheet       # 보유 버프 리스트 서랍(바텀시트)
 var _buff_backdrop: ColorRect    # 서랍 열림 시 딤 + 바깥 탭 닫기
-var _drew := false   # 이번 상점 방문에서 이미 뽑았는지(방문당 1회). 다음날 재진입 시 새 인스턴스로 리셋.
-var _reroll := 0     # 이번 개봉에서 리롤한 횟수(비용 ×2 계산용). _on_draw마다 0으로 리셋.
-var _slot_price_label: Label   # 슬롯 가격 표시(구매마다 갱신)
+# 상점 물품 3칸 — 슬롯쿠폰(1회용) + 버프팩. 각 칸이 독립 상태(done)를 가짐(방문당 팩 여러 개 개봉 가능).
+var _products: Array = []   # 항목: {kind:"coupon"|"pack", card, btn, price_label, done}
+var _reroll := 0     # 이번 개봉에서 리롤한 횟수(비용 ×2 계산용). 팩 개봉마다 0으로 리셋.
 var _last_price_label: Label   # _product가 방금 만든 가격 라벨(호출 직후 회수용)
+var _last_card: PanelContainer # _product가 방금 만든 카드(호출 직후 회수용)
 var _shake_tws := {}   # 후보 카드별 진행 중 흔들림 트윈(반복 클릭 시 드리프트 방지)
 
 func _ready() -> void:
@@ -76,12 +75,13 @@ func _ready() -> void:
   body.add_theme_constant_override("separation", 12)
   scroll.add_child(body)
 
-  # 상품: 슬롯 확장 / 버프 팩
-  var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  # 슬롯 확장 = 슬롯+ 손그림, 버프 팩(카드깡) = 카드팩 손그림
-  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 72), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
-  _slot_price_label = _last_price_label   # 슬롯 가격 라벨 회수(구매마다 갱신)
-  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  # 상품 3칸 — 슬롯확장권(1회용 쿠폰) + 버프팩(카드깡). 확장 여지만큼 쿠폰 배치(최대 2),
+  # 나머지는 버프팩. 슬롯 만렙이면 쿠폰 0 → 버프팩 3개.
+  var coupon_n := clampi(Config.MAX_SLOTS - session.slots, 0, 2)
+  for _i in coupon_n:
+    _add_slot_coupon(body)
+  for _i in (3 - coupon_n):
+    _add_buff_pack(body)
 
   # 보유 버프는 인라인 목록 대신 [버프] 버튼 → 서랍(BuffSheet)에서 확인/판매.
 
@@ -185,8 +185,28 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
   btn.pressed.connect(cb)
   Audio.attach_click(btn)   # 구매 버튼 클릭음
   row.add_child(btn)
+  _last_card = card
   parent.add_child(card)
   return btn
+
+
+## 슬롯확장권 카드 1칸 — 탭하면 슬롯 +1(escalating 가격), 그 칸은 SOLD OUT(1회용).
+func _add_slot_coupon(parent: Node) -> void:
+  var st := {"kind": "coupon", "done": false}
+  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  st["btn"] = _product(parent, UI.ui_icon("slot_expand", 72), price, Loc.t("shop_buy"), Palette.SUB, func(): _on_buy_coupon(st))
+  st["card"] = _last_card
+  st["price_label"] = _last_price_label
+  _products.append(st)
+
+
+## 버프팩 카드 1칸 — 탭하면 3장 개봉(택1), 그 칸은 SOLD OUT.
+func _add_buff_pack(parent: Node) -> void:
+  var st := {"kind": "pack", "done": false}
+  st["btn"] = _product(parent, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, func(): _on_draw_pack(st))
+  st["card"] = _last_card
+  st["price_label"] = _last_price_label
+  _products.append(st)
 
 
 ## 임의 경로 손그림 아이콘 → TextureRect(px×px, 비율유지 중앙). ui/ 밖 자산용(예: buffs_128).
@@ -245,19 +265,22 @@ func _close_buffs() -> void:
   _buff_sheet.slide_close()
 
 
-func _on_buy_slot() -> void:
+func _on_buy_coupon(st: Dictionary) -> void:
+  if st["done"]:
+    return
   if session.buy_slot():
+    st["done"] = true   # 쿠폰 1회용 — 소진
     Audio.play("coins")   # 슬롯 구매(동전)
     _refresh()
 
 
-func _on_draw() -> void:
-  if _drew:
-    return   # 방문당 1회만
+func _on_draw_pack(st: Dictionary) -> void:
+  if st["done"]:
+    return   # 그 칸은 이미 개봉함
   var pack := session.buy_buff_pack()
   if pack.is_empty():
     return
-  _drew = true
+  st["done"] = true
   _reroll = 0   # 새 개봉 — 리롤 비용 초기화
   _refresh()
   _show_pack(pack)
@@ -563,30 +586,33 @@ func _pop_buff_btn() -> void:
 func _refresh() -> void:
   _cash_label.text = UI.money(session.cash)
 
-  # 슬롯 확장 — 구매마다 가격 급증. 갱신 후 표시. MAX 도달 시 SOLD OUT.
+  # 상품 3칸 — 슬롯쿠폰/버프팩 각 칸 상태 갱신.
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  if _slot_price_label != null:
-    _slot_price_label.text = UI.money(slot_price)
-  if session.slots >= Config.MAX_SLOTS:
-    _buy_slot_btn.text = Loc.t("sold_out")
-    _buy_slot_btn.disabled = true
-    _buy_slot_btn.modulate = Color.WHITE   # SOLD OUT은 또렷하게(글자 대비 위해 안 흐림)
-  else:
-    _buy_slot_btn.text = Loc.t("shop_buy")
-    var can_slot := session.cash >= slot_price
-    _buy_slot_btn.disabled = not can_slot
-    _buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-
-  # 버프 팩 — 방문당 1회. 뽑았으면 SOLD OUT(가득 차도 뽑기는 허용 — 선택 시 판매 요구).
-  if _drew:
-    _draw_btn.text = Loc.t("sold_out")
-    _draw_btn.disabled = true
-    _draw_btn.modulate = Color.WHITE   # SOLD OUT은 또렷하게
-  else:
-    _draw_btn.text = Loc.t("shop_draw")
-    var can_draw := session.cash >= Config.BUFF_PACK_PRICE
-    _draw_btn.disabled = not can_draw
-    _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+  for st in _products:
+    var btn: Button = st["btn"]
+    if st["kind"] == "coupon":
+      # 쿠폰 가격은 구매 수에 따라 급증 — 옆 칸을 사면 다음 칸 값도 갱신.
+      (st["price_label"] as Label).text = UI.money(slot_price)
+      if st["done"] or session.slots >= Config.MAX_SLOTS:
+        btn.text = Loc.t("sold_out")
+        btn.disabled = true
+        btn.modulate = Color.WHITE
+      else:
+        btn.text = Loc.t("shop_buy")
+        var can_slot := session.cash >= slot_price
+        btn.disabled = not can_slot
+        btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+    else:
+      # 버프팩 — 그 칸을 이미 개봉했으면 SOLD OUT(가득 차도 개봉은 허용 — 선택 시 판매 요구).
+      if st["done"]:
+        btn.text = Loc.t("sold_out")
+        btn.disabled = true
+        btn.modulate = Color.WHITE
+      else:
+        btn.text = Loc.t("shop_draw")
+        var can_draw := session.cash >= Config.BUFF_PACK_PRICE
+        btn.disabled = not can_draw
+        btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
   # [버프] 버튼 — 보유 0개면 비활성(서랍 안 열림).
   if _buff_btn != null:

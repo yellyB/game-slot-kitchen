@@ -107,9 +107,9 @@ const ALL := {
 
 	# ── 경제/정산(63~66) ──
 	"interest":   {"card": 63, "icon": "🏦", "economy": {"kind": "interest", "pct": 0.12}},
-	"settle_100": {"card": 64, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.75}},
-	"settle_90":  {"card": 65, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.50}},
-	"settle_same":{"card": 66, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.40}},
+	"settle_100": {"card": 64, "icon": "🏆", "settle": {"kind": "served", "threshold": 1.00, "pct": 0.25}},
+	"settle_90":  {"card": 65, "icon": "🥇", "settle": {"kind": "served", "threshold": 0.90, "pct": 0.15}},
+	"settle_same":{"card": 66, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.20}},
 
 	# ── 벼랑끝(67~70) ──
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
@@ -121,7 +121,7 @@ const ALL := {
 	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
 	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"money_pct": 0.69}},
 	"onlost_x2":  {"card": 73, "icon": "😈", "onlost": {"double_next": true}},
-	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "pct": 0.35}},
+	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "pct": 0.20}},
 }
 
 static func ids() -> Array:

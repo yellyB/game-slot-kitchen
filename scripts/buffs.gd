@@ -203,7 +203,9 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 				if randf() < float(s.get("chance", 0.0)):
 					dpct = float(s["pct"])
 			"cash":
-				dflat = int(round(float(ctx.get("cash", 0)) * float(s["pct"])))
+				# 부자세(51) 체감: pct × √(현금 × 기준잔액). 잔액 클수록 회당 보너스율↓(지수폭주 차단).
+				var cc := float(maxi(0, int(ctx.get("cash", 0))))
+				dflat = int(round(float(s["pct"]) * sqrt(cc * float(Config.CASH_BONUS_REF))))
 			"risk":
 				dpct = float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
@@ -400,13 +402,14 @@ func on_lost(recipe_id: String) -> int:
 
 
 # ── 개장/마감 정산(62 / 63~65,73,50) ──────────────────────
-## 개장 보너스(62 이자). cash 기준.
+## 개장 보너스(63 이자). 체감 이율: pct × √(현금 × 기준잔액). 잔액 클수록 이율↓(지수폭주 차단).
 func day_start_bonus(cash: int) -> int:
 	var g := 0
+	var c := float(maxi(0, cash))
 	for id in _owned:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "interest":
-			g += int(round(float(cash) * float(e["pct"])))
+			g += int(round(float(e["pct"]) * sqrt(c * float(Config.CASH_BONUS_REF))))
 	return g
 
 ## 마감 보너스/차감(63~65,73 정산 + 50 가게세차감). ctx: {served,visited,order_lost,accepted,same_max,day_revenue,cash,rent}

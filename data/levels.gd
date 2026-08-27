@@ -11,7 +11,11 @@ const WEEKS_PER_MONTH := 4
 ## 월세 = 볼록 곡선(완만한 기본 복리 + 후반 가속 항). 초반은 거의 그대로(온보딩 보호),
 ## 중후반은 가파르게 올라 스노우볼을 오래 압박. 실로그(중간빌드 월매출)에 맞춰 튜닝. SIM_GROWTH로 스윕.
 ##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
-const RENT_BASE := 40000    # 1개월차 월세(온보딩)
+const RENT_BASE := 40000    # 곡선 기준값(mi>=onboarding 스케일). 초반은 RENT_ONBOARD로 별도.
+# 1~6개월차 월세 — 6개월 아크 명시값(게임 엔딩=6개월 전제). 7개월차+는 아래 곡선 공식.
+#   실플레이(#2134) 기준 각 월말 여유(직전현금÷월세) ~1.3~1.8배 유지하도록 튜닝.
+#   월1 25k(온보딩, 여유 1.3배) → 월2부터 성장세에 맞춰 상향.
+const RENT_ONBOARD := [25000, 55000, 80000, 110000, 150000, 195000]
 const RENT_GROWTH := 1.25   # 기본 복리 — 초반 월세 상향(2개월차 여유 축소). 강빌드 12개월 지점은 ACCEL이 결정
 const RENT_ACCEL := 2.50    # 후반 가속 항 복리(볼록) — 시뮬: 강빌드 ~12개월 겨우 통과 후 탈락
 const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
@@ -34,6 +38,8 @@ static func months() -> int:
 
 ## 이 달(0-base)의 월세 — 볼록 곡선(완만 기본 복리 + 후반 가속). 무한 공식. SIM_GROWTH로 기본 복리 스윕.
 static func _monthly_rent(mi: int) -> int:
+	if mi < RENT_ONBOARD.size():
+		return int(RENT_ONBOARD[mi])   # 온보딩 램프 — 곡선과 분리(후반 압박 유지하며 초반 관문만 완화)
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))

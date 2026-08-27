@@ -5,8 +5,24 @@ extends RefCounted
 
 const PATH := "user://playlog.jsonl"
 
-## 항목 1건을 파일 끝에 JSON 한 줄로 추가.
+static var _ver_cache := ""
+
+## 현재 코드 버전 — 짧은 커밋 해시(+미커밋 변경 있으면 -dirty). 세션당 1회 계산·캐시.
+## 에디터/디버그(프로젝트 폴더에서 git 사용 가능)에서만 유효. 아니면 "unknown".
+static func version() -> String:
+	if _ver_cache != "":
+		return _ver_cache
+	var out: Array = []
+	var dir := ProjectSettings.globalize_path("res://")
+	var rc := OS.execute("git", ["-C", dir, "describe", "--always", "--dirty", "--abbrev=7"], out)
+	var v := String(out[0]).strip_edges() if out.size() > 0 else ""
+	_ver_cache = v if (rc == 0 and v != "") else "unknown"
+	return _ver_cache
+
+## 항목 1건을 파일 끝에 JSON 한 줄로 추가. 코드 버전(commit)을 자동 첨부.
 static func append(entry: Dictionary) -> void:
+	if not entry.has("commit"):
+		entry["commit"] = version()
 	var f: FileAccess
 	if FileAccess.file_exists(PATH):
 		f = FileAccess.open(PATH, FileAccess.READ_WRITE)
