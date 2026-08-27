@@ -31,10 +31,12 @@ const START_MONEY := 0     # 시작 소지금
 # 현금비례 보너스(이자·부자세)의 기준잔액 — 보너스 = pct × √(현금 × 이 값).
 # 잔액이 이 값일 때 정확히 pct%로 동작하고, 그 이상은 이율이 체감(√)해 지수폭주를 차단.
 const CASH_BONUS_REF := 25000
-const SLOT_PRICE := 5         # 슬롯 +1 확장 기본가(소액 통화). ×1.6 누적(5→8→13→20…) → 주당 ~1개.
+const SLOT_PRICE := 4         # 슬롯 +1 확장 기본가(소액 통화). 구간별 상승(초반 급→후반 완만): 4→7→12→20→24…
 const BUFF_PACK_PRICE := 2    # 버프 팩(카드깡) 고정가 — 최소 단위
 const BUFF_REROLL_BASE := 1   # 팩 개봉 중 리롤 기본가 — 리롤마다 ×2(1·2·4…), 방문마다 리셋
-const SLOT_PRICE_STEP := 1.6     # 슬롯 확장 1개 살 때마다 가격 배수
+const SLOT_PRICE_STEP_EARLY := 1.7   # 슬롯 확장 배수 — 무릎(KNEE) 전 초반 급경사
+const SLOT_PRICE_STEP_LATE := 1.2    # 슬롯 확장 배수 — 무릎 후 후반 완만
+const SLOT_PRICE_KNEE := 3           # 이 구매 횟수까지 EARLY 배수, 이후 LATE 배수
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 # 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만 들어옴. 소액.
 const WEEK_REWARD_BASE := 5
@@ -64,7 +66,10 @@ const SIM_HANDLE_SERVE := 0.6    # 완성품 드래그해 서빙
 const SIM_HANDLE_PLACE := 0.35   # 창고 재료 1개를 슬롯에 놓기
 
 
-## 슬롯 확장가 = 기본가 × 구매수 배수(bought=이미 확장한 수). 살수록 기하급수 상승.
-## 날짜 인플레는 적용 안 함 — 슬롯은 몇 일차든 같은 기준가(그래서 _day는 미사용).
+## 슬롯 확장가 = 기본가 × 구간별 배수(bought=이미 확장한 수). 무릎(KNEE) 전은 EARLY 배수(급),
+## 후는 LATE 배수(완만) — 초반 가파르고 후반 완만한 concave 곡선. 날짜 인플레 없음(_day 미사용).
 static func slot_price(_day: int, bought: int) -> int:
-	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))
+	var b := maxi(0, bought)
+	var early := mini(b, SLOT_PRICE_KNEE)
+	var late := maxi(0, b - SLOT_PRICE_KNEE)
+	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP_EARLY, early) * pow(SLOT_PRICE_STEP_LATE, late)))
