@@ -57,9 +57,13 @@ func _ready() -> void:
   v.add_child(bar)
   (bar.get_meta("day_num") as Label).text = str(session.day + 1)
   _cash_label = bar.get_meta("money_label") as Label
-  var rl := bar.get_meta("rent_label") as Label
-  rl.text = UI.money(int(nx["monthly_rent"]))
-  rl.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
+  var sbar := bar.get_meta("score_bar") as ProgressBar
+  var slabel := bar.get_meta("score_label") as Label
+  var target := int(nx["monthly_rent"])
+  sbar.max_value = maxi(1, target)
+  sbar.value = session.month_score
+  slabel.text = "%d/%d" % [int(round(session.month_score / 100.0)), int(round(target / 100.0))]
+  slabel.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
   var home := bar.get_meta("home_btn") as Button
   home.pressed.connect(func(): go_home.emit())
   Audio.attach_click(home)

@@ -37,7 +37,8 @@ var _money_label: Label
 var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클릭으로 토글
 var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
 var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
-var _rent_label: Label
+var _score_bar: ProgressBar   # 이달 실적(점수) 진행 — max=이달 가게세, value=month_score
+var _score_label: Label
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
@@ -318,7 +319,8 @@ func _build_top_bar() -> Control:
   var panel := UI.top_bar()
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
-  _rent_label = panel.get_meta("rent_label") as Label
+  _score_bar = panel.get_meta("score_bar") as ProgressBar
+  _score_label = panel.get_meta("score_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -1249,10 +1251,21 @@ func _dot(color: Color) -> Control:
 
 
 # ── 세션 반응 ─────────────────────────────────────────────
+## 실적 막대바 갱신 — 목표 = 이달 가게세, 현재 = month_score. 라벨은 점수(÷100 정수).
+func _update_score_bar() -> void:
+  if _score_bar == null or _session == null:
+    return
+  var target := int(Levels.get_week(_session.day)["monthly_rent"])
+  _score_bar.max_value = maxi(1, target)
+  _score_bar.value = _session.month_score
+  _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
+
+
 func _on_cash_changed(cash: int) -> void:
   var delta := cash - _last_cash
   _last_cash = cash
   _money_label.text = UI.money(cash)
+  _update_score_bar()
   if delta > 0 and not _expect_fly:   # fly 없는 증가(디버그 등)는 즉시 팝
     _pop_label(_money_label)
     Audio.play("coins")             # 소지금 증가음(동전)
@@ -1754,11 +1767,9 @@ func _on_day_started(day: int, rent: int) -> void:
   # 하루 시작 홀드 — 게임플레이(시계·스폰) 정지. 인트로(딤+OPEN 배너)는 함수 끝에서 즉시 표시.
   # (예전엔 DAY_INTRO_DELAY 뒤에 떠서 그 사이 딤 없는 빈 화면이 보였음 → 진입 즉시 딤으로 변경)
   _session.set_process(false)
-  # 상단바 가게세 표시 = 이번 달 가게세(목표) 금액만. 남은 주 안내는 OPEN 배너 트랙에서. 월말엔 빨강.
   var _wk := Levels.get_week(day)
-  var _mr := int(_wk["monthly_rent"])
-  _rent_label.text = UI.money(_mr)
-  _rent_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
+  _update_score_bar()
+  _score_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
   _last_countdown = 0  # 카운트다운 상태 리셋
