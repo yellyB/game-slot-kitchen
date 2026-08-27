@@ -439,7 +439,10 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 			match st.get("kind", ""):
 				"served":
 					if served_ratio >= float(st["threshold"]):
-						score_g += int(round(float(day_rev) * float(st["pct"])))
+						if st.has("money"):
+							money_g += int(st["money"])
+						else:
+							score_g += int(round(float(day_rev) * float(st["pct"])))
 				"samemenu":
 					if same_ratio >= float(st["threshold"]):
 						score_g += int(round(float(day_rev) * float(st["pct"])))

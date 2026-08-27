@@ -98,7 +98,8 @@ const ALL := {
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.69}},
 
 	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 1.3}},
-	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.25, "money": 1}},
+	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.08, "money": 1}},
+	"settle_perfect": {"card": 77, "icon": "💯", "settle": {"kind": "served", "threshold": 1.00, "money": 5}},
 
 	# ── 자동화(59~62) ──
 	"auto_serve": {"card": 59, "icon": "🤖", "blocked": true},
@@ -146,6 +147,7 @@ const _CAT_OVERRIDE := {
 	"wh_chance": "time", "wh_fast": "time",
 	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
 	"no_buy": "money", "onlost_pay": "money", "settle_leave": "money", "serve_tip": "money",
+	"settle_perfect": "money",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth", "sale_cash": "growth",
