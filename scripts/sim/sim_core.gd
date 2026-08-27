@@ -59,6 +59,12 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 			if safety > 5_000_000:
 				break
 		result["days"] = session.day
+		if OS.has_environment("SIM_TRACE") and run_seed == 0:
+			print("[TRACE] d%d m%d/w%d  served=%d miss=%d  slots=%d buffs=%d(%s)  score=%d/%d  pass=%s" % [
+				session.day, int(Levels.get_day(session.day).get("month", 0)), int(Levels.get_day(session.day).get("week_in_month", 0)),
+				_served_today, _missed_today, session.slots, Buffs.owned().size(), ",".join(Buffs.owned()),
+				session.month_score, session.rent if session.rent > 0 else int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day).get("monthly_rent", 0))))),
+				str(_last.get("passed", false))])
 		if not _last.get("passed", false):
 			break
 		if _last.get("won", false):
@@ -77,34 +83,25 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 	return result
 
 
-## 하루 사이 상점: 다음 가게세는 남기고, 남는 돈으로 슬롯 확장 → 버프팩 구매(유능 정책).
+## 하루 사이 상점 — 돈은 상점 전용(가게세는 점수로 통과)이라 예비금 없이 다 투자.
+## 실플레이 관측: 현금 항상 바닥, 버프칸 가득까지 채움. 슬롯·버프를 살 수 있는 만큼 교대로 산다.
 func _shop() -> void:
-	# 월 구조: 월세는 월말에 한 번. 사람처럼 '월초엔 버프에 투자, 월말엔 저축'.
-	# 예비금 = 월초(남은주≥2) 0(자유 투자) → 남은주 1: 월세/2 → 월말(0): 월세 전액.
-	var nw := Levels.get_week(session.day + 1)
-	var monthly := int(round(Buffs.mod("rent_mult", float(nw.get("monthly_rent", 0)))))
-	var wl := int(nw.get("weeks_left", 0))
-	var next_rent := 0
-	if wl == 0:
-		next_rent = monthly
-	elif wl == 1:
-		next_rent = monthly / 2
-	while session.slots < Config.MAX_SLOTS:
-		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
-			break
-		if not session.buy_slot():
-			break
-	# 버프는 소수만 — 각 버프가 슬롯 1칸을 잡아먹어 처리량을 깎으므로 무제한 구매는 자멸.
-	while Buffs.owned().size() < 3 and not Buffs.is_full():
-		if session.cash - Config.BUFF_PACK_PRICE < next_rent:
-			break
-		var pack: Array = session.buy_buff_pack()
-		if pack.is_empty():
-			break
-		var pick := _pick_buff(pack)
-		if pick == "":
-			break
-		Buffs.add(pick)
+	var progressed := true
+	while progressed:
+		progressed = false
+		if session.slots < Config.MAX_SLOTS \
+				and session.cash >= Config.slot_price(session.day, session.slots - Config.START_SLOTS):
+			if session.buy_slot():
+				progressed = true
+		# 버프도 슬롯을 점유 → 주문 처리공간(최소 MAX_ORDERS)이 남을 때만 추가.
+		if not Buffs.is_full() and session.slots - Buffs.owned().size() > Config.MAX_ORDERS \
+				and session.cash >= Config.BUFF_PACK_PRICE:
+			var pack: Array = session.buy_buff_pack()
+			if not pack.is_empty():
+				var pick := _pick_buff(pack)
+				if pick != "":
+					Buffs.add(pick)
+				progressed = true
 
 
 ## 팩 3장 중 슬롯값을 가장 잘 하는 카드 선택(시뮬 발견 기반 우선순위 휴리스틱).
@@ -338,7 +335,8 @@ func _start_cook_one() -> bool:
 ## 현실 모드용 단일 동작 — 가장 급한 대기 손님 1명 접수. 성공 시 true.
 func _accept_one() -> bool:
 	var cap := _serve_cap()
-	if queue.is_empty() or orders.size() >= Config.MAX_ORDERS or _board_used() >= cap:
+	var order_cap := mini(Config.MAX_ORDERS, maxi(1, cap - 3))   # 조리·재료 공간 확보(빡빡한 보드 데드락 방지)
+	if queue.is_empty() or orders.size() >= order_cap or _board_used() >= cap:
 		return false
 	var best := 0
 	for i in queue.size():
@@ -407,8 +405,9 @@ func _pick_cookable() -> String:
 
 func _accept_from_queue() -> void:
 	var cap := _serve_cap()
-	# 주문 상한(MAX_ORDERS)까지 + 물리적 슬롯 여유 있을 때만 접수. 나머지 슬롯=재료/완성품용.
-	while not queue.is_empty() and orders.size() < Config.MAX_ORDERS and _board_used() < cap:
+	# 주문 상한 + 물리적 슬롯 여유 + 조리·재료 공간 예비. 나머지 슬롯=재료/완성품용.
+	var order_cap := mini(Config.MAX_ORDERS, maxi(1, cap - 3))
+	while not queue.is_empty() and orders.size() < order_cap and _board_used() < cap:
 		var best := 0
 		for i in queue.size():
 			if queue[i]["pat"] < queue[best]["pat"]:
