@@ -86,7 +86,7 @@ const ALL := {
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 1.20}},
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 0.52, "chance": 0.10}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
-	"sale_cash":  {"card": 51, "icon": "🏦", "sale": {"type": "cash", "pct": 0.01}},
+	"sale_cash":  {"card": 51, "icon": "🏦", "settle": {"kind": "served", "threshold": 0.0, "pct": 0.10}},
 	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 0.29}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
 	# ── 판매금: 조건부/앰프(53~58) ──

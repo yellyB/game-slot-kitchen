@@ -128,7 +128,7 @@ const S := {
 	"b.prob_bonus.name": "Lucky", "b.prob_bonus.label": "20% chance sale +120%",
 	"b.sale_risk.name": "Gamble", "b.sale_risk.label": "Sale +52%, but 10% chance: this card is destroyed",
 	"b.no_buy.name": "Thrift", "b.no_buy.label": "Buy nothing that day: next day all sales +5% (WIP)",
-	"b.sale_cash.name": "Wealth Tax", "b.sale_cash.label": "Each sale: bonus scaling with cash — rate drops on larger balances (~1% when small)",
+	"b.sale_cash.name": "Base Settle", "b.sale_cash.label": "At close: +10% of the day's revenue",
 	"b.sale_pat.name": "Volume Sale", "b.sale_pat.label": "Sale +29%, but customer patience -20%",
 	"b.sale_t12.name": "Adept", "b.sale_t12.label": "T1-2 menu sale +86%",
 	"b.sale_t34.name": "Craftsman", "b.sale_t34.label": "T3-4 menu sale +40%",
