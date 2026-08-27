@@ -11,14 +11,14 @@ var locked := false   ## 보스(좁은 주방) — 사용 불가 칸. 배치 대
 
 ## PanelContainer 기본 최소크기는 자식(카드) 내용까지 반영 → 슬롯이 _relayout이 정한 칸 크기보다
 ## 커져 그리드가 보드 밖으로 넘침(맨 아랫줄 잘림). custom_minimum_size(=_relayout이 지정한 칸 크기)만
-## 최소값으로 보고해 칸을 고정하고, 넘치는 내용은 clip_contents로 칸 안에서 자른다.
+## 최소값으로 보고해 칸을 고정한다. (clip_contents는 카드 드롭섀도까지 사각으로 잘라 모서리에
+## 각진 회색이 보였어서 안 씀 — 넘침은 이 최소크기 고정만으로 해결됨)
 func _get_minimum_size() -> Vector2:
   return custom_minimum_size
 
 
 func _ready() -> void:
   custom_minimum_size = Vector2(104, 104)
-  clip_contents = true
   add_theme_stylebox_override("panel", UI.card(Palette.WHITE, Palette.COCOA_200, 1))
 
   _holder = MarginContainer.new()
