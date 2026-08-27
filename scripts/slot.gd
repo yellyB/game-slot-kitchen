@@ -8,6 +8,7 @@ const PAD := 4   ## holder 내부 여백(카드와 슬롯 경계). card_rect()�
 
 var _holder: MarginContainer
 var locked := false   ## 보스(좁은 주방) — 사용 불가 칸. 배치 대상·빈칸 집계에서 제외.
+var board_index := -1   ## board.slots 내 인덱스(rebuild가 지정). 버프 위치 기억에 사용.
 
 ## PanelContainer 기본 최소크기는 자식(카드) 내용까지 반영 → 슬롯이 _relayout이 정한 칸 크기보다
 ## 커져 그리드가 보드 밖으로 넘침(맨 아랫줄 잘림). custom_minimum_size(=_relayout이 지정한 칸 크기)만
@@ -52,6 +53,12 @@ func lock() -> void:
   _holder.add_child(lbl)
 
 
+## 버프 카드가 이 슬롯에 안착하면 그 위치를 기억(다음 주 리빌드 때 같은 칸으로 복원).
+func _remember_buff_pos(card: Card) -> void:
+  if card is BuffCard and board_index >= 0:
+    Buffs.set_slot_pos((card as BuffCard).buff_id, board_index)
+
+
 func _get_card() -> Card:
   for ch in _holder.get_children():
     if ch is Card:
@@ -88,6 +95,7 @@ func place_card(card: Card, play_sfx := true, pop := true) -> void:
   card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   card.size_flags_vertical = Control.SIZE_EXPAND_FILL
   _holder.add_child(card)
+  _remember_buff_pos(card)
   if pop:
     card.pop_in()   # 배치 팝 애니
   if play_sfx:
@@ -103,6 +111,7 @@ func take_card(card: Card) -> void:
   if prev:
     prev.remove_child(card)
   _holder.add_child(card)
+  _remember_buff_pos(card)
   card.pop_in()   # 이동 팝 애니
   Audio.play("card_place")   # 슬롯에 카드 생김(탁)
   Audio.vibrate(10)          # 카드 안착 — 약한 톡 진동

@@ -1804,9 +1804,15 @@ func _on_day_started(day: int, rent: int) -> void:
   #   → 순 작업공간 = effective_slots - max(0, 보유버프수 - buff_slot_bonus) (sim_core._serve_cap과 동치).
   Move.clear()
   _board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
-  # 보유 버프는 슬롯을 점유(배치형) — 작업공간과 트레이드오프
+  # 보유 버프는 슬롯을 점유(배치형) — 작업공간과 트레이드오프.
+  # 지난 주 안착 위치(Buffs.slot_pos)를 우선 복원, 무효(신규·범위밖·이미 참)면 first_empty 폴백.
   for id in Buffs.owned():
-    var slot := _board.first_empty_slot()
+    var idx := Buffs.slot_pos(id)
+    var slot: Slot = null
+    if idx >= 0 and idx < _board.slots.size() and _board.slots[idx].is_empty():
+      slot = _board.slots[idx]
+    else:
+      slot = _board.first_empty_slot()
     if slot:
       var bc := BuffCard.new()
       bc.setup(id)

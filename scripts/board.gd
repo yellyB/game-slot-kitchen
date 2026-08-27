@@ -49,6 +49,7 @@ func rebuild(slot_count: int) -> void:
 	for i in total:
 		if i < slot_count:
 			var slot := Slot.new()
+			slot.board_index = i
 			slots.append(slot)
 			_grid.add_child(slot)
 		else:

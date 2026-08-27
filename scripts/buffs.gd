@@ -4,6 +4,7 @@ extends Node
 ## 상태: 램프/카운터/스트릭 등은 런 스코프(clear에서 리셋). 일부는 reset_day()로 하루 스코프.
 
 var _owned: Array[String] = []
+var _slot_pos: Dictionary = {}   # buff_id → 마지막 배치 슬롯 인덱스. 하루 리빌드 때 이 칸으로 복원(런 스코프).
 
 # 런 스코프 상태(clear에서 리셋)
 var _ramp_bonus: Dictionary = {}   # recipe_id → 메뉴가격 누적(원, 정수). 24~29·42~44.
@@ -20,6 +21,7 @@ var _mature_age := {}              # 만기 적금(78) — 버프별 획득 후 
 
 func clear() -> void:
 	_owned.clear()
+	_slot_pos.clear()
 	_ramp_bonus.clear()
 	_serve_count = 0
 	_cook_count = 0
@@ -53,6 +55,7 @@ func remove(id: String) -> bool:
 	if idx < 0:
 		return false
 	_owned.remove_at(idx)
+	_slot_pos.erase(id)   # 판 버프의 저장 위치도 제거 — 재구매 시 옛 칸으로 안 가게
 	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
 	if not r.is_empty():
 		var tier := int(r.get("tier", 0))
@@ -68,6 +71,16 @@ func is_full() -> bool:
 
 func owned() -> Array[String]:
 	return _owned
+
+
+## 버프 카드가 안착한 슬롯 인덱스 기록(드롭·리빌드 배치 시 slot.gd에서 호출).
+func set_slot_pos(id: String, idx: int) -> void:
+	_slot_pos[id] = idx
+
+
+## 저장된 슬롯 인덱스(없으면 -1). 하루 시작 배치가 이 칸을 우선 사용, 무효면 first_empty 폴백.
+func slot_pos(id: String) -> int:
+	return int(_slot_pos.get(id, -1))
 
 
 func has_effect(id: String) -> bool:
