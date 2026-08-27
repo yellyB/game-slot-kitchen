@@ -1803,10 +1803,7 @@ func _on_day_ended(summary: Dictionary) -> void:
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
       bt.tween_callback(banner.queue_free)
     if int(summary.get("rent", 0)) > 0:
-      if summary.get("passed_by_score", false):
-        _show_month_cleared(summary)
-      else:
-        _show_settlement(summary)
+      _show_settlement(summary)
     else:
       _show_week_closed(summary)
 
@@ -1823,44 +1820,6 @@ func _show_week_closed(summary: Dictionary) -> void:
   if cr != null:
     m.add_row(cr)
   _add_settle_bonus_row(m)
-  var go := Button.new()
-  go.text = Loc.t("to_shop")
-  go.custom_minimum_size = Vector2(0, 48)
-  go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  go.add_theme_font_size_override("font_size", 18)
-  go.add_theme_color_override("font_color", Palette.WHITE)
-  go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-  go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-  go.pressed.connect(func(): m.queue_free(); _open_shop())
-  Audio.attach_click(go)
-  m.add_row(go)
-
-
-func _show_month_cleared(summary: Dictionary) -> void:
-  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"]) \
-    .stamp_row(Loc.t("score_pass"), Palette.SUCCESS, 0.1)
-  var sr := _sales_rows()
-  if sr != null:
-    m.add_row(sr)
-  var cr := _churn_row()
-  if cr != null:
-    m.add_row(cr)
-  _add_settle_bonus_row(m)
-
-  var pay_btn := Button.new()
-  pay_btn.text = Loc.t("pay_rent")
-  pay_btn.custom_minimum_size = Vector2(0, 48)
-  pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  pay_btn.add_theme_font_size_override("font_size", 18)
-  pay_btn.add_theme_color_override("font_color", Palette.WHITE)
-  pay_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
-  pay_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
-  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
-  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
-  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
-  Audio.attach_click(pay_btn)
-  m.add_row(pay_btn)
-
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -1951,7 +1910,7 @@ func _add_settle_bonus_row(m: Modal) -> void:
   gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   row.add_child(gap)
   row.add_child(UI.ui_icon("coin", 16))
-  var amt_l := UI.label("+" + UI.money(0), 16, Palette.MAIN, true)
+  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
   row.add_child(amt_l)
   m.add_row(row)
   _animate_settle_bonus(amt_l, bonus)
@@ -1962,7 +1921,7 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   if not is_instance_valid(amt_l) or not is_inside_tree():
     return
   var cu := create_tween()
-  cu.tween_method(func(v: float): amt_l.text = "+" + UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
+  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
     .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   var from := amt_l.global_position + amt_l.size * 0.5
   _coin_burst(from, bonus, 350)
@@ -1996,8 +1955,55 @@ func _show_settlement(summary: Dictionary) -> void:
   amount_row.modulate.a = 1.0
   m.add_row(amount_row)
 
+  var check_btn := Button.new()
+  check_btn.text = Loc.t("check_score")
+  check_btn.custom_minimum_size = Vector2(0, 48)
+  check_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  check_btn.add_theme_font_size_override("font_size", 18)
+  check_btn.add_theme_color_override("font_color", Palette.WHITE)
+  check_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  check_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  check_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  check_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  check_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  check_btn.modulate.a = 0.0
+  check_btn.disabled = true
+  check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn, icon_box, amount_row))
+  Audio.attach_click(check_btn)
+  m.add_row(check_btn)
+
+  var tw := create_tween()
+  tw.tween_interval(0.25)
+  tw.tween_callback(func():
+    check_btn.disabled = false
+    create_tween().tween_property(check_btn, "modulate:a", 1.0, 0.2))
+
+
+func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box: Control, amount_row: Control) -> void:
+  var goal: int = int(summary["rent"])
+  if int(summary["month_score"]) >= goal:
+    _settle_pass(summary, m, check_btn, icon_box, amount_row)
+    return
+  if check_btn.get_meta("opts_shown", false):
+    return
+  check_btn.set_meta("opts_shown", true)
+  Audio.play("disabled")
+  Audio.vibrate(30)
+  var ct := create_tween()
+  ct.tween_property(check_btn, "modulate:a", 0.0, 0.15)
+  ct.tween_callback(check_btn.queue_free)
+  m.pin_top()
+
+  var fee: int = int(goal / Config.SCORE_GATE_FEE_DIV)
+  var wrap := VBoxContainer.new()
+  wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  wrap.add_theme_constant_override("separation", 8)
+  wrap.modulate.a = 0.0
+
   var pay_btn := Button.new()
-  pay_btn.text = Loc.t("pay_rent")
+  pay_btn.icon = load("res://assets/art/ui/coin.png")
+  pay_btn.add_theme_constant_override("icon_max_width", 20)
+  pay_btn.text = Loc.t("pay_fee") % UI.money(fee)
   pay_btn.custom_minimum_size = Vector2(0, 48)
   pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   pay_btn.add_theme_font_size_override("font_size", 18)
@@ -2007,58 +2013,27 @@ func _show_settlement(summary: Dictionary) -> void:
   pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
   pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
-  pay_btn.modulate.a = 0.0
-  pay_btn.disabled = true
-  pay_btn.pressed.connect(func(): _on_settle_pay(summary, m, pay_btn, icon_box, amount_row))
+  pay_btn.disabled = _session.cash < fee
+  pay_btn.pressed.connect(func():
+    if _session.cash < fee:
+      return
+    _session.add_cash(-fee)
+    _settle_pass(summary, m, wrap, icon_box, amount_row))
   Audio.attach_click(pay_btn)
-  m.add_row(pay_btn)
+  wrap.add_child(pay_btn)
 
-  var tw := create_tween()
-  tw.tween_interval(0.25)
-  tw.tween_callback(func():
-    pay_btn.disabled = false
-    create_tween().tween_property(pay_btn, "modulate:a", 1.0, 0.2))
+  var bk := _bankrupt_button()
+  bk.pressed.connect(func(): _settle_bankrupt(summary, m))
+  Audio.attach_click(bk)
+  wrap.add_child(bk)
 
-
-func _on_settle_pay(summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
-  if not summary["passed"]:
-    Audio.play("disabled")
-    Audio.vibrate(30)
-    if not pay_btn.get_meta("bk_shown", false):
-      pay_btn.set_meta("bk_shown", true)
-      m.pin_top()
-      var bk := _bankrupt_button()
-      bk.pressed.connect(func(): _settle_finish(false, summary, m, pay_btn, icon_box, amount_row))
-      var wrap := Control.new()
-      wrap.clip_contents = true
-      wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-      wrap.custom_minimum_size = Vector2(0, 0)
-      wrap.modulate.a = 0.0
-      bk.anchor_right = 1.0
-      bk.offset_right = 0
-      bk.offset_top = 0
-      bk.offset_bottom = 44
-      wrap.add_child(bk)
-      pay_btn.set_meta("bk_btn", wrap)
-      m.add_row(wrap)
-      var gt := create_tween().set_parallel(true)
-      gt.tween_property(wrap, "custom_minimum_size:y", 44.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-      gt.tween_property(wrap, "modulate:a", 1.0, 0.28)
-    return
-  _settle_finish(true, summary, m, pay_btn, icon_box, amount_row)
+  m.add_row(wrap)
+  create_tween().tween_property(wrap, "modulate:a", 1.0, 0.28)
 
 
-func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Button, icon_box: Control, amount_row: Control) -> void:
-  if not is_pass:
-    Audio.play("fail")
-    Audio.vibrate(60)
-    m.queue_free()
-    _show_run_failed(int(summary["day"]))
-    return
-
-  pay_btn.disabled = true
-  for c in pay_btn.pressed.get_connections():
-    pay_btn.pressed.disconnect(c["callable"])
+func _settle_pass(summary: Dictionary, m: Modal, action_node: Control, icon_box: Control, amount_row: Control) -> void:
+  if is_instance_valid(action_node):
+    action_node.queue_free()
 
   var at := create_tween()
   at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
@@ -2081,16 +2056,27 @@ func _settle_finish(is_pass: bool, summary: Dictionary, m: Modal, pay_btn: Butto
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
   pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
 
-  if not summary["skipped"] and int(summary["cash"]) >= int(summary["rent"]):
-    _session.pay_rent()
   Audio.play("day_pass")
   Audio.vibrate(30)
-  pay_btn.text = Loc.t("to_shop")
-  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-  pay_btn.pressed.connect(func(): m.queue_free(); _open_shop())
-  pay_btn.disabled = false
+
+  var go := Button.new()
+  go.text = Loc.t("to_shop")
+  go.custom_minimum_size = Vector2(0, 48)
+  go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  go.add_theme_font_size_override("font_size", 18)
+  go.add_theme_color_override("font_color", Palette.WHITE)
+  go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  Audio.attach_click(go)
+  m.add_row(go)
+
+
+func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
+  Audio.play("fail")
+  Audio.vibrate(60)
+  m.queue_free()
+  _show_run_failed(int(summary["day"]))
 
 
 func _show_run_failed(day: int) -> void:
