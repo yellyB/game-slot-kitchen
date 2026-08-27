@@ -2114,7 +2114,12 @@ func _show_settlement(summary: Dictionary) -> void:
   var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
   if cr != null:
     m.add_row(cr)
+  var had_bonus := _settle_bonus > 0
   _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
+  if had_bonus:
+    var sp := Control.new()
+    sp.custom_minimum_size = Vector2(0, 30)   # 마감 보너스↔목표 ~40px(모달 간격 5×2 포함)
+    m.add_row(sp)
 
   # 통과 목표 — 별 + 목표점수(점수 게이트라 코인이 아닌 별로 표시)
   var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
@@ -2160,8 +2165,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   # 미통과 — [지불하기]·[파산 신청] 선택지 노출(1회만)
   if check_btn.get_meta("opts_shown", false):
     return
-  check_btn.set_meta("opts_shown", true)
-  check_btn.disabled = true   # 유지하되 재클릭 방지(버튼은 그대로 두고 아래로 선택지 추가)
+  check_btn.set_meta("opts_shown", true)   # 재클릭해도 선택지 중복 추가 방지(버튼은 활성 유지)
   Audio.play("disabled")   # 미통과 피드백음
   Audio.vibrate(30)
   m.pin_top()   # 팝업 위치 고정 → 실적확인 버튼은 두고 아래로만 버튼 추가
@@ -2195,6 +2199,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
   pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  pay_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_400))
   pay_btn.disabled = _session.cash < fee
   pay_btn.pressed.connect(func():
     if _session.cash < fee:
