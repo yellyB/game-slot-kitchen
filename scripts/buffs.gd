@@ -164,7 +164,7 @@ func menu_price(recipe_id: String) -> int:
 	for id in _owned:                                # 21~23 등급별 %인상
 		var m: Dictionary = BuffDefs.get_def(id).get("menu_price", {})
 		if not m.is_empty() and tier in m.get("tiers", []):
-			tp += float(m.get("pct", 0.0))
+			tp += float(m.get("pct", 0.0)) - 1.0   # 표시값=배수(×N) → 풀 기여 값-1
 	return int(round(mp * (1.0 + tp)))
 
 
@@ -203,10 +203,10 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 		var dflat := 0
 		match s.get("type", ""):
 			"flat":
-				dpct = float(s["pct"])
+				dpct = float(s["pct"]) - 1.0
 			"tier":
 				if tier in s.get("tiers", []):
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"count":
 				dpct = float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx))
 			"full":
@@ -218,26 +218,26 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 					double_id = id
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"risk":
-				dpct = float(s["pct"])
+				dpct = float(s["pct"]) - 1.0
 				if randf() < float(s.get("chance", 0.0)):
 					discard = id
 					penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
 			"fresh":
 				if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"fast_order":
 				if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"late":
 				if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"consumed":
-				dpct = float(s["pct"]) * (1.0 - float(ctx.get("pat_frac", 1.0)))
+				dpct = (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0)))
 			"critical":
 				if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
-					dpct = float(s["pct"])
+					dpct = float(s["pct"]) - 1.0
 			"addon":
 				addon_pct += float(s["pct"])
 				addon_id = id
