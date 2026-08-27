@@ -20,8 +20,14 @@ var _holder: MarginContainer
 var _style: StyleBoxFlat
 var _glow: Tween
 
+## 슬롯과 동일 — 자식 내용이 칸을 부풀려 그리드가 보드 밖으로 넘치지 않게 최소크기를 칸 크기로 고정.
+func _get_minimum_size() -> Vector2:
+  return custom_minimum_size
+
+
 func _ready() -> void:
   custom_minimum_size = Vector2(104, 104)
+  clip_contents = true
   _style = UI.card(Palette.TOOL, Palette.SUB, 2)
   add_theme_stylebox_override("panel", _style)
 
