@@ -108,22 +108,24 @@ static func top_bar() -> PanelContainer:
 	box.add_theme_constant_override("separation", 6)
 	pad.add_child(box)
 
-	# 점수 목표 줄(실적 막대바)
+	# 상단: 왼쪽 날짜(두 줄 높이) + 오른쪽 [점수 줄 / 보유금 줄]
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	box.add_child(top)
+	var badge := day_badge(56)
+	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(badge)
+	var rcol := VBoxContainer.new()
+	rcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rcol.add_theme_constant_override("separation", 4)
+	top.add_child(rcol)
+
 	var srow := HBoxContainer.new()
 	srow.add_theme_constant_override("separation", 8)
-	box.add_child(srow)
-	var badge := day_badge(32)
-	srow.add_child(badge)
-	var home := Button.new()
-	home.custom_minimum_size = Vector2(34, 34)
-	home.add_child(ui_btn_icon("house", 22))
-	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
-	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
-	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
-	srow.add_child(home)
-	var lgap := Control.new()
-	lgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	srow.add_child(lgap)
+	rcol.add_child(srow)
+	var sgap := Control.new()
+	sgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	srow.add_child(sgap)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	srow.add_child(ui_icon(star_name, 20))
 	var sbar := ProgressBar.new()
@@ -138,11 +140,17 @@ static func top_bar() -> PanelContainer:
 	srow.add_child(sbar)
 	var score := label("0/0", 15, Palette.COCOA_800, true)
 	srow.add_child(score)
+	var home := Button.new()
+	home.custom_minimum_size = Vector2(34, 34)
+	home.add_child(ui_btn_icon("house", 22))
+	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
+	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
+	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
+	srow.add_child(home)
 
-	# 보유금 줄
 	var crow := HBoxContainer.new()
 	crow.add_theme_constant_override("separation", 4)
-	box.add_child(crow)
+	rcol.add_child(crow)
 	var cgap := Control.new()
 	cgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	crow.add_child(cgap)
