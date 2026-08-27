@@ -128,14 +128,16 @@ static func top_bar() -> PanelContainer:
 	sbar.max_value = 100
 	sbar.value = 0
 	sbar.show_percentage = false
-	sbar.custom_minimum_size = Vector2(0, 16)
-	sbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sbar.custom_minimum_size = Vector2(64, 16)
 	sbar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	sbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
 	sbar.add_theme_stylebox_override("fill", chip(Palette.MAIN))
 	srow.add_child(sbar)
 	var score := label("0/0", 15, Palette.COCOA_800, true)
 	srow.add_child(score)
+	var sgap := Control.new()
+	sgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	srow.add_child(sgap)
 
 	# 보유금 줄
 	var crow := HBoxContainer.new()
