@@ -12,6 +12,7 @@ var cash := 0
 var day := 1
 var rent := 0
 var day_revenue := 0
+var month_score := 0
 var slots := Config.START_SLOTS
 
 var _elapsed := 0.0
@@ -64,6 +65,8 @@ func start_day() -> void:
 	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
 	_rent_paid = false
 	day_revenue = 0
+	if int(Levels.get_day(day).get("week_in_month", 1)) == 1:
+		month_score = 0
 	_elapsed = 0.0
 	_next_idx = 0
 	_day_length = Stats.day_length()
@@ -117,11 +120,14 @@ func spend_time(seconds: float) -> void:
 func earn(amount: int) -> void:
 	cash += amount
 	day_revenue += amount
+	month_score += amount
 	cash_changed.emit(cash)
 
 
 func pay_rent() -> void:
 	if _rent_paid or rent <= 0 or cash < rent:
+		return
+	if month_score >= rent:
 		return
 	_rent_paid = true
 	cash -= rent
@@ -151,7 +157,8 @@ func tick(delta: float) -> void:
 func _end_day() -> void:
 	_running = false
 	day_closing.emit(self)
-	var passed := cash >= rent
+	var passed_by_score := rent > 0 and month_score >= rent
+	var passed := passed_by_score or cash >= rent
 	if not passed and Buffs.has_effect("rent_skip") and not _rent_skip_used:
 		passed = true
 		_rent_skip_used = true
@@ -161,13 +168,15 @@ func _end_day() -> void:
 		"revenue": day_revenue,
 		"rent": rent,
 		"passed": passed,
+		"passed_by_score": passed_by_score,
+		"month_score": month_score,
 		"won": false,
 		"skipped": _rent_skip_used and cash < rent,
 		"cash": cash,
 	}
 	if passed:
 		summary["won"] = day >= Levels.count()
-	summary["cash_after"] = (cash - rent) if (passed and cash >= rent) else cash
+	summary["cash_after"] = cash if passed_by_score else ((cash - rent) if (passed and cash >= rent) else cash)
 	day_ended.emit(summary)
 
 
