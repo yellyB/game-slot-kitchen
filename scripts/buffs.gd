@@ -426,14 +426,14 @@ func on_lost(recipe_id: String) -> int:
 
 
 # ── 개장/마감 정산(62 / 63~65,73,50) ──────────────────────
-## 개장 보너스(63 이자). 체감 이율: pct × √(현금 × 기준잔액). 잔액 클수록 이율↓(지수폭주 차단).
+## 개장 보너스(63 이자). 보유현금 × pct(정액 이율).
 func day_start_bonus(cash: int) -> int:
 	var g := 0
 	var c := float(maxi(0, cash))
 	for id in _owned:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "interest":
-			g += int(round(float(e["pct"]) * sqrt(c * float(Config.CASH_BONUS_REF))))
+			g += int(round(float(e["pct"]) * c))
 	return g
 
 ## 마감 보너스/차감(63~65,73 정산 + 50 가게세차감). ctx: {served,visited,order_lost,accepted,same_max,day_revenue,cash,rent}
@@ -465,7 +465,10 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"leave":
 					if leave_ratio >= float(st["threshold"]):
-						money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
+						if st.has("money"):
+							money_g += int(st["money"])
+						else:
+							money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
 			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
