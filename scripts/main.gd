@@ -2106,7 +2106,6 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
 
 
 func _show_settlement(summary: Dictionary) -> void:
-  var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 
   var sr := _sales_rows()
@@ -2117,20 +2116,9 @@ func _show_settlement(summary: Dictionary) -> void:
     m.add_row(cr)
   _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
 
-  # 영수증(빌지) 이미지 — 고정 크기 홀더. 지불 후 같은 크기의 ✅/❌로 교체(레이아웃 안 흔들림).
-  # receipt.png 있으면 우선, 없으면 bill(청구서) 폴백. [[화구 아트 로딩과 동일 폴백 패턴]]
-  var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
-  var icon_box := CenterContainer.new()
-  icon_box.custom_minimum_size = Vector2(112, 112)
-  icon_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  icon_box.add_child(UI.ui_icon(receipt_name, 112))
-  m.add_row(icon_box)
-
-  # 가게세 지불 액수 — 코인 + 금액(빨강, 크게)
-  var amount := UI.label(UI.money(rent), 26, Palette.DANGER, true)
-  var amount_row := _settle_icon_row("coin", amount, 26)
-  amount_row.modulate.a = 1.0   # 처음부터 보임
-  m.add_row(amount_row)
+  # 통과 목표 — 별 + 목표점수(점수 게이트라 코인이 아닌 별로 표시)
+  var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
+  m.add_row(_settle_icon_row("star", goal_lbl, 26))
 
   # '실적확인' 버튼(핵심 액션) — 처음 숨김 → 잠깐 뒤 등장. 클릭 시 점수로 통과 판정.
   var check_btn := Button.new()
@@ -2146,7 +2134,7 @@ func _show_settlement(summary: Dictionary) -> void:
   check_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
   check_btn.modulate.a = 0.0
   check_btn.disabled = true
-  check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn, icon_box, amount_row))
+  check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn))
   Audio.attach_click(check_btn)
   m.add_row(check_btn)
 
@@ -2160,10 +2148,10 @@ func _show_settlement(summary: Dictionary) -> void:
 
 ## 실적확인 클릭 — 이제까지 모은 점수(month_score)로 통과/미통과 판정.
 ## 통과: ✅ + [상점으로]. 미통과: [지불하기(목표점수 1/100 소모)]·[파산 신청] 두 버튼 노출(1회).
-func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box: Control, amount_row: Control) -> void:
+func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   var goal: int = int(summary["rent"])
   if int(summary["month_score"]) >= goal:   # 점수로 통과 — 무료
-    _settle_pass(summary, m, check_btn, icon_box, amount_row)
+    _settle_pass(summary, m, check_btn)
     return
   # 미통과 — [지불하기]·[파산 신청] 선택지 노출(1회만)
   if check_btn.get_meta("opts_shown", false):
@@ -2184,9 +2172,18 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
 
   # 지불하기 — 코인 아이콘 + "{fee} 소모". 잔액 부족이면 비활성.
   var pay_btn := Button.new()
-  pay_btn.icon = load("res://assets/art/ui/coin.png")
-  pay_btn.add_theme_constant_override("icon_max_width", 20)
-  pay_btn.text = Loc.t("pay_fee") % UI.money(fee)
+  var pay_row := HBoxContainer.new()
+  pay_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay_row.alignment = BoxContainer.ALIGNMENT_CENTER
+  pay_row.add_theme_constant_override("separation", 5)
+  pay_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  var pay_coin := UI.ui_icon("coin", 20)
+  pay_coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  pay_row.add_child(pay_coin)
+  var pay_lbl := UI.label(Loc.t("pay_fee") % UI.money(fee), 18, Palette.WHITE, true)
+  pay_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  pay_row.add_child(pay_lbl)
+  pay_btn.add_child(pay_row)
   pay_btn.custom_minimum_size = Vector2(0, 48)
   pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   pay_btn.add_theme_font_size_override("font_size", 18)
@@ -2201,7 +2198,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
     if _session.cash < fee:
       return
     _session.add_cash(-fee)   # 지불 — 소지금만 차감(점수 채널과 무관)
-    _settle_pass(summary, m, wrap, icon_box, amount_row))
+    _settle_pass(summary, m, wrap))
   Audio.attach_click(pay_btn)
   wrap.add_child(pay_btn)
 
@@ -2215,21 +2212,12 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
   create_tween().tween_property(wrap, "modulate:a", 1.0, 0.28)
 
 
-## 정산 통과 확정 — 액션 버튼 치우고 빌지→✅ 교체 후 [상점으로]. (점수통과·지불통과 공용)
-func _settle_pass(summary: Dictionary, m: Modal, action_node: Control, icon_box: Control, amount_row: Control) -> void:
+## 정산 통과 확정 — 액션 버튼 치우고 ✅ 표시 후 [상점으로]. (점수통과·지불통과 공용)
+func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()   # [실적확인] 또는 [지불/파산] 묶음 제거
 
-  # 가게세 금액 라인 페이드아웃 후 접힘
-  var at := create_tween()
-  at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
-  at.tween_callback(func(): amount_row.visible = false)
-
-  # 빌지 이미지 → ✅ 로 교체(팝). 홀더 크기 고정이라 안 흔들림.
-  var px: float = icon_box.custom_minimum_size.y
-  for ch in icon_box.get_children():
-    ch.visible = false
-    ch.queue_free()
+  var px := 112.0
   var mark := UI.label("✅", int(px * 0.8), Palette.SUCCESS, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -2237,7 +2225,10 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control, icon_box:
   mark.pivot_offset = Vector2(px, px) * 0.5
   mark.modulate.a = 0.0
   mark.scale = Vector2(0.5, 0.5)
-  icon_box.add_child(mark)
+  var mark_box := CenterContainer.new()
+  mark_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  mark_box.add_child(mark)
+  m.add_row(mark_box)
   var pt := create_tween()
   pt.tween_property(mark, "modulate:a", 1.0, 0.12)
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
