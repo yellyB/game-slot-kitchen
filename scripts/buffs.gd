@@ -377,15 +377,15 @@ func consume_instant_order() -> bool:
 	return false
 
 
-func on_lost(recipe_id: String) -> int:
+func on_lost(_recipe_id: String) -> int:
 	var gain := 0
-	var mp := menu_price(recipe_id)
 	for id in _owned:
 		var ol: Dictionary = BuffDefs.get_def(id).get("onlost", {})
 		if ol.is_empty():
 			continue
-		if ol.has("money_pct"):
-			gain += int(round(float(mp) * float(ol["money_pct"])))
+		if ol.has("money"):
+			if randf() < float(ol.get("chance", 1.0)):
+				gain += int(ol["money"])
 		if ol.get("double_next", false):
 			_double_next = true
 	return gain

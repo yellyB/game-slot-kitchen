@@ -90,7 +90,7 @@ const ALL := {
 	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 0.52}},
 
 	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
-	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"money_pct": 0.69}},
+	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"chance": 0.50, "money": 1}},
 	"onlost_x2":  {"card": 73, "icon": "😈", "onlost": {"double_next": true}},
 	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "money": 10}},
 }
