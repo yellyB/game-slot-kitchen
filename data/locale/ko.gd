@@ -40,6 +40,7 @@ const S := {
 	"day_closed": "%d주차 마감",
 	"settle_bonus": "마감 보너스",
 	"settle_churn": "이탈",
+	"score_pass": "실적 달성! 통과",
 	"revenue": "매출  %s",
 	"rent": "가게세  %s",
 	"remaining": "남음  %s",
