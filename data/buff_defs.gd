@@ -99,7 +99,7 @@ const ALL := {
 
 	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 1.3}},
 	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.08, "money": 1}},
-	"settle_perfect": {"card": 77, "icon": "💯", "settle": {"kind": "served", "threshold": 1.00, "money": 3}},
+	"settle_perfect": {"card": 77, "icon": "💯", "settle": {"kind": "served", "threshold": 1.00, "money": 5}},
 	"nest_egg":   {"card": 78, "icon": "🐷", "matures": {"weeks": 4, "money": 15}},
 
 	# ── 자동화(59~62) ──

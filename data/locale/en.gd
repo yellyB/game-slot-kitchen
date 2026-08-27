@@ -141,7 +141,7 @@ const S := {
 	"b.sale_addon.name": "Puff Up", "b.sale_addon.label": "Gain +69% of buff-added score",
 	"b.mult_all.name": "Golden Touch", "b.mult_all.label": "Each serve: score Mult ×1.3",
 	"b.serve_tip.name": "Jingle", "b.serve_tip.label": "Each serve: 8% chance to earn a +1 tip",
-	"b.settle_perfect.name": "Five-Star Review", "b.settle_perfect.label": "Zero walkout rate for the week: +3 money at close",
+	"b.settle_perfect.name": "Five-Star Review", "b.settle_perfect.label": "Zero walkout rate for the week: +5 money at close",
 	"b.nest_egg.name": "Savings Account", "b.nest_egg.label": "Destroyed at the 4th week's close for +15 money",
 	"b.auto_serve.name": "Telepathy", "b.auto_serve.label": "50% chance auto serve (WIP)",
 	"b.auto_cook.name": "Meal Prep", "b.auto_cook.label": "Auto cook when order taken (WIP)",
