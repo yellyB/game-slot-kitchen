@@ -143,8 +143,8 @@ func _coin(amount: int) -> Control:
 	var box := HBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 4)
-	box.add_child(UI.ui_icon("coin", 18))
-	box.add_child(UI.label(UI.money(amount), 18, Palette.COCOA_800, true))
+	box.add_child(UI.ui_icon("star", 18))
+	box.add_child(UI.label(str(int(round(amount / 100.0))), 18, Palette.COCOA_800, true))
 	return box
 
 func _col_divider() -> Control:
