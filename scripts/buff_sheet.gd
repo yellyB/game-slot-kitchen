@@ -5,7 +5,13 @@ signal close_requested
 
 var on_sell: Callable
 
+const ROW_H := 66.0
+const ROW_SEP := 8.0
+const CHROME := 64.0
+const TOP_KEEP := 120.0
+
 var _list: VBoxContainer
+var _count: Label
 
 func _ready() -> void:
 	visible = false
@@ -36,6 +42,17 @@ func _ready() -> void:
 	Audio.attach_click(close)
 	header.add_child(close)
 
+	_count = UI.label("", 14, Palette.MAIN, true)
+	_count.anchor_left = 1.0
+	_count.anchor_right = 1.0
+	_count.offset_left = -74
+	_count.offset_right = -16
+	_count.offset_top = 12
+	_count.offset_bottom = 34
+	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	add_child(_count)
+
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -49,6 +66,13 @@ func _ready() -> void:
 
 func open() -> void:
 	rebuild()
+	var n := Buffs.owned().size()
+	var want := CHROME + n * ROW_H + maxf(0.0, n - 1) * ROW_SEP
+	var cap := get_viewport_rect().size.y - TOP_KEEP
+	offset_top = -minf(want, cap)
+	_rest_top = offset_top
+	_rest_bottom = offset_bottom
+	_rest_captured = true
 	slide_open()
 
 
@@ -57,6 +81,7 @@ func rebuild() -> void:
 		c.queue_free()
 	for id in Buffs.owned():
 		_list.add_child(_entry(id))
+	_count.text = "%d/%d" % [Buffs.owned().size(), Config.MAX_BUFFS + Buffs.buff_slot_bonus()]
 
 
 func _entry(id: String) -> Control:
