@@ -6,15 +6,13 @@ signal go_home
 
 var session: Session
 var _cash_label: Label
-var _buy_slot_btn: Button
-var _draw_btn: Button
 var _buff_btn: Button
 var _buff_sheet: BuffSheet
 var _buff_backdrop: ColorRect
-var _drew := false
+var _products: Array = []
 var _reroll := 0
-var _slot_price_label: Label
 var _last_price_label: Label
+var _last_card: PanelContainer
 var _shake_tws := {}
 
 func _ready() -> void:
@@ -69,10 +67,11 @@ func _ready() -> void:
   body.add_theme_constant_override("separation", 12)
   scroll.add_child(body)
 
-  var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  _buy_slot_btn = _product(body, UI.ui_icon("slot_expand", 72), slot_price, Loc.t("shop_buy"), Palette.SUB, _on_buy_slot)
-  _slot_price_label = _last_price_label
-  _draw_btn = _product(body, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, _on_draw)
+  var coupon_n := clampi(Config.MAX_SLOTS - session.slots, 0, 2)
+  for _i in coupon_n:
+    _add_slot_coupon(body)
+  for _i in (3 - coupon_n):
+    _add_buff_pack(body)
 
 
   var start := Button.new()
@@ -168,8 +167,26 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
   btn.pressed.connect(cb)
   Audio.attach_click(btn)
   row.add_child(btn)
+  _last_card = card
   parent.add_child(card)
   return btn
+
+
+func _add_slot_coupon(parent: Node) -> void:
+  var st := {"kind": "coupon", "done": false}
+  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  st["btn"] = _product(parent, UI.ui_icon("slot_expand", 72), price, Loc.t("shop_buy"), Palette.SUB, func(): _on_buy_coupon(st))
+  st["card"] = _last_card
+  st["price_label"] = _last_price_label
+  _products.append(st)
+
+
+func _add_buff_pack(parent: Node) -> void:
+  var st := {"kind": "pack", "done": false}
+  st["btn"] = _product(parent, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, func(): _on_draw_pack(st))
+  st["card"] = _last_card
+  st["price_label"] = _last_price_label
+  _products.append(st)
 
 
 func _art_icon(path: String, px: int) -> TextureRect:
@@ -223,19 +240,22 @@ func _close_buffs() -> void:
   _buff_sheet.slide_close()
 
 
-func _on_buy_slot() -> void:
+func _on_buy_coupon(st: Dictionary) -> void:
+  if st["done"]:
+    return
   if session.buy_slot():
+    st["done"] = true
     Audio.play("coins")
     _refresh()
 
 
-func _on_draw() -> void:
-  if _drew:
+func _on_draw_pack(st: Dictionary) -> void:
+  if st["done"]:
     return
   var pack := session.buy_buff_pack()
   if pack.is_empty():
     return
-  _drew = true
+  st["done"] = true
   _reroll = 0
   _refresh()
   _show_pack(pack)
@@ -521,27 +541,29 @@ func _refresh() -> void:
   _cash_label.text = UI.money(session.cash)
 
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
-  if _slot_price_label != null:
-    _slot_price_label.text = UI.money(slot_price)
-  if session.slots >= Config.MAX_SLOTS:
-    _buy_slot_btn.text = Loc.t("sold_out")
-    _buy_slot_btn.disabled = true
-    _buy_slot_btn.modulate = Color.WHITE
-  else:
-    _buy_slot_btn.text = Loc.t("shop_buy")
-    var can_slot := session.cash >= slot_price
-    _buy_slot_btn.disabled = not can_slot
-    _buy_slot_btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
-
-  if _drew:
-    _draw_btn.text = Loc.t("sold_out")
-    _draw_btn.disabled = true
-    _draw_btn.modulate = Color.WHITE
-  else:
-    _draw_btn.text = Loc.t("shop_draw")
-    var can_draw := session.cash >= Config.BUFF_PACK_PRICE
-    _draw_btn.disabled = not can_draw
-    _draw_btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+  for st in _products:
+    var btn: Button = st["btn"]
+    if st["kind"] == "coupon":
+      (st["price_label"] as Label).text = UI.money(slot_price)
+      if st["done"] or session.slots >= Config.MAX_SLOTS:
+        btn.text = Loc.t("sold_out")
+        btn.disabled = true
+        btn.modulate = Color.WHITE
+      else:
+        btn.text = Loc.t("shop_buy")
+        var can_slot := session.cash >= slot_price
+        btn.disabled = not can_slot
+        btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+    else:
+      if st["done"]:
+        btn.text = Loc.t("sold_out")
+        btn.disabled = true
+        btn.modulate = Color.WHITE
+      else:
+        btn.text = Loc.t("shop_draw")
+        var can_draw := session.cash >= Config.BUFF_PACK_PRICE
+        btn.disabled = not can_draw
+        btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
 
   if _buff_btn != null:
     _buff_btn.disabled = Buffs.owned().is_empty()

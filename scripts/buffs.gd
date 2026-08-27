@@ -183,7 +183,8 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 				if randf() < float(s.get("chance", 0.0)):
 					dpct = float(s["pct"])
 			"cash":
-				dflat = int(round(float(ctx.get("cash", 0)) * float(s["pct"])))
+				var cc := float(maxi(0, int(ctx.get("cash", 0))))
+				dflat = int(round(float(s["pct"]) * sqrt(cc * float(Config.CASH_BONUS_REF))))
 			"risk":
 				dpct = float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
@@ -370,10 +371,11 @@ func on_lost(recipe_id: String) -> int:
 
 func day_start_bonus(cash: int) -> int:
 	var g := 0
+	var c := float(maxi(0, cash))
 	for id in _owned:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "interest":
-			g += int(round(float(cash) * float(e["pct"])))
+			g += int(round(float(e["pct"]) * sqrt(c * float(Config.CASH_BONUS_REF))))
 	return g
 
 func day_end_bonus(ctx: Dictionary) -> int:

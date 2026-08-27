@@ -3,6 +3,7 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 40000
+const RENT_ONBOARD := [25000, 55000, 80000, 110000, 150000, 195000]
 const RENT_GROWTH := 1.25
 const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
@@ -22,6 +23,8 @@ static func months() -> int:
 	return MONTHS.size()
 
 static func _monthly_rent(mi: int) -> int:
+	if mi < RENT_ONBOARD.size():
+		return int(RENT_ONBOARD[mi])
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))
