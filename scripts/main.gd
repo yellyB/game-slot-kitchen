@@ -911,6 +911,9 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   _expect_fly = true
   _session.earn(amount)
   _expect_fly = false
+  var tip := Buffs.serve_tip()
+  if tip > 0:
+    _session.earn(tip, false)
   var penalty := int(res.get("penalty", 0))
   if penalty != 0:
     _session.add_cash(-penalty)

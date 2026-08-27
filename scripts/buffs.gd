@@ -337,6 +337,16 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 func _add_ramp(recipe_id: String, inc: int) -> void:
 	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
 
+func serve_tip() -> int:
+	var g := 0
+	for id in _owned:
+		var t: Dictionary = BuffDefs.get_def(id).get("tip", {})
+		if t.is_empty():
+			continue
+		if randf() < float(t.get("chance", 0.0)):
+			g += int(t.get("money", 0))
+	return g
+
 func on_cook_start() -> bool:
 	_cook_count += 1
 	for id in _owned:
