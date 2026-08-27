@@ -74,7 +74,7 @@ const S := {
 	"shop_price": "Price %s",
 	"sold_out": "SOLD OUT",
 	"shop_sell": "Pass",
-	"shop_full_notice": "Buff slots full — sell one to make room",
+	"shop_full_notice": "Buffs full — sell one to take",
 
 
 	# Buff cards (name/label) — keys: b.<slug>.name / b.<slug>.label
