@@ -2131,9 +2131,11 @@ func _show_settlement(summary: Dictionary) -> void:
   check_btn.add_theme_color_override("font_color", Palette.WHITE)
   check_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
   check_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  check_btn.add_theme_color_override("font_disabled_color", Palette.COCOA_600)
   check_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   check_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
   check_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  check_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_200))
   check_btn.modulate.a = 0.0
   check_btn.disabled = true
   check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn))
