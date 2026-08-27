@@ -15,6 +15,7 @@ config/description="슬롯 키친 — 도넛 카페 슬롯 요리 게임 MVP"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
+config/quit_on_go_back=false
 
 [autoload]
 
