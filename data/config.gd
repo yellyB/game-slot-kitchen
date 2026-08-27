@@ -20,10 +20,12 @@ const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
 const CASH_BONUS_REF := 25000
-const SLOT_PRICE := 5
+const SLOT_PRICE := 4
 const BUFF_PACK_PRICE := 2
 const BUFF_REROLL_BASE := 1
-const SLOT_PRICE_STEP := 1.6
+const SLOT_PRICE_STEP_EARLY := 1.7
+const SLOT_PRICE_STEP_LATE := 1.2
+const SLOT_PRICE_KNEE := 3
 const MAX_BUFFS := 5
 const WEEK_REWARD_BASE := 5
 const WEEK_REWARD_PER_SERVE := 0
@@ -45,4 +47,7 @@ const SIM_HANDLE_PLACE := 0.35
 
 
 static func slot_price(_day: int, bought: int) -> int:
-	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP, max(0, bought))))
+	var b := maxi(0, bought)
+	var early := mini(b, SLOT_PRICE_KNEE)
+	var late := maxi(0, b - SLOT_PRICE_KNEE)
+	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP_EARLY, early) * pow(SLOT_PRICE_STEP_LATE, late)))
