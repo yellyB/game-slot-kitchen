@@ -33,7 +33,6 @@ var _money_label: Label
 var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
-var _score_bar: ProgressBar
 var _score_label: Label
 var _last_cash := 0
 var _expect_fly := false
@@ -292,7 +291,6 @@ func _build_top_bar() -> Control:
   var panel := UI.top_bar()
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
-  _score_bar = panel.get_meta("score_bar") as ProgressBar
   _score_label = panel.get_meta("score_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
@@ -1144,11 +1142,9 @@ func _dot(color: Color) -> Control:
 
 
 func _update_score_bar() -> void:
-  if _score_bar == null or _session == null:
+  if _score_label == null or _session == null:
     return
   var target := int(Levels.get_week(_session.day)["monthly_rent"])
-  _score_bar.max_value = maxi(1, target)
-  _score_bar.value = _session.month_score
   _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
 
 
