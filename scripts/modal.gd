@@ -85,6 +85,12 @@ func add_row(ctrl: Control) -> Modal:
 	return self
 
 
+## 본문 행 간격(px) — 기본 10. 촘촘히 붙이고 싶을 때(정산 등).
+func gap(px: int) -> Modal:
+	_body.add_theme_constant_override("separation", px)
+	return self
+
+
 ## 패널을 지금 위치에 고정 — 이후 add_row는 중앙 재정렬 없이 아래로만 높이가 늘어남.
 ## (CenterContainer에서 빼내 self 자식으로 옮기고 현재 좌표에 앵커. 폭은 그대로라 가로 중앙 유지.)
 func pin_top() -> void:

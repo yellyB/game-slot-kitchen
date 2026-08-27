@@ -2106,7 +2106,7 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
 
 
 func _show_settlement(summary: Dictionary) -> void:
-  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"]).gap(5)
 
   var sr := _sales_rows()
   if sr != null:
@@ -2118,7 +2118,9 @@ func _show_settlement(summary: Dictionary) -> void:
 
   # 통과 목표 — 별 + 목표점수(점수 게이트라 코인이 아닌 별로 표시)
   var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
-  m.add_row(_settle_icon_row("star", goal_lbl, 26))
+  var goal_row := _settle_icon_row("star", goal_lbl, 26)
+  goal_row.modulate.a = 1.0   # _settle_icon_row 기본 숨김(0) — 정적 표시라 바로 보이게
+  m.add_row(goal_row)
 
   # '실적확인' 버튼(핵심 액션) — 처음 숨김 → 잠깐 뒤 등장. 클릭 시 점수로 통과 판정.
   var check_btn := Button.new()
@@ -2157,12 +2159,10 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   if check_btn.get_meta("opts_shown", false):
     return
   check_btn.set_meta("opts_shown", true)
+  check_btn.disabled = true   # 유지하되 재클릭 방지(버튼은 그대로 두고 아래로 선택지 추가)
   Audio.play("disabled")   # 미통과 피드백음
   Audio.vibrate(30)
-  var ct := create_tween()   # 실적확인 버튼 접힘
-  ct.tween_property(check_btn, "modulate:a", 0.0, 0.15)
-  ct.tween_callback(check_btn.queue_free)
-  m.pin_top()   # 팝업 위치 고정 → 아래로만 높이가 늘어남
+  m.pin_top()   # 팝업 위치 고정 → 실적확인 버튼은 두고 아래로만 버튼 추가
 
   var fee: int = int(goal / Config.SCORE_GATE_FEE_DIV)   # 목표점수의 1/N 만큼 코인 지불로 통과
   var wrap := VBoxContainer.new()
@@ -2198,6 +2198,8 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
     if _session.cash < fee:
       return
     _session.add_cash(-fee)   # 지불 — 소지금만 차감(점수 채널과 무관)
+    if is_instance_valid(check_btn):
+      check_btn.queue_free()   # 통과 확정 → 유지했던 실적확인 버튼도 정리
     _settle_pass(summary, m, wrap))
   Audio.attach_click(pay_btn)
   wrap.add_child(pay_btn)
