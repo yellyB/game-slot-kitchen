@@ -121,6 +121,9 @@ static func top_bar() -> PanelContainer:
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
 	srow.add_child(home)
+	var lgap := Control.new()
+	lgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	srow.add_child(lgap)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	srow.add_child(ui_icon(star_name, 20))
 	var sbar := ProgressBar.new()
@@ -135,9 +138,6 @@ static func top_bar() -> PanelContainer:
 	srow.add_child(sbar)
 	var score := label("0/0", 15, Palette.COCOA_800, true)
 	srow.add_child(score)
-	var sgap := Control.new()
-	sgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	srow.add_child(sgap)
 
 	# 보유금 줄
 	var crow := HBoxContainer.new()
