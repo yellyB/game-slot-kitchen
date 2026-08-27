@@ -238,7 +238,7 @@ func _decay_patience() -> void:
 			_missed_today += 1
 			var gain := Buffs.on_lost(rid)
 			if gain != 0:
-				session.earn(gain)
+				session.earn(gain, false)
 
 
 func _advance_cooking() -> void:

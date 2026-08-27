@@ -783,7 +783,7 @@ func _on_order_expired(order: OrderCard) -> void:
   var gain := Buffs.on_lost(order.recipe_id)
   if gain != 0:
     _expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
-    _session.earn(gain)
+    _session.earn(gain, false)   # 취소수수료 = 돈만(점수 X)
     _expect_fly = false
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
