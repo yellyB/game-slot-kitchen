@@ -808,7 +808,7 @@ func _show_gain_breakdown(breakdown: Array) -> void:
       return
     var feel := _gain_feel(total_gain)
     _pop_label(_score_label)
-    Audio.play("coins", feel["pitch"])
+    Audio.play("score_up", feel["pitch"])
     if is_instance_valid(menu_icon):
       var mo := create_tween()
       mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
