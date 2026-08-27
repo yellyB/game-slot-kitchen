@@ -57,11 +57,8 @@ func _ready() -> void:
   v.add_child(bar)
   (bar.get_meta("day_num") as Label).text = str(session.day + 1)
   _cash_label = bar.get_meta("money_label") as Label
-  var sbar := bar.get_meta("score_bar") as ProgressBar
   var slabel := bar.get_meta("score_label") as Label
   var target := int(nx["monthly_rent"])
-  sbar.max_value = maxi(1, target)
-  sbar.value = session.month_score
   slabel.text = "%d/%d" % [int(round(session.month_score / 100.0)), int(round(target / 100.0))]
   slabel.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
   var home := bar.get_meta("home_btn") as Button
@@ -594,10 +591,12 @@ func _refresh() -> void:
   var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
   for st in _products:
     var btn: Button = st["btn"]
+    var sold := false
     if st["kind"] == "coupon":
       # 쿠폰 가격은 구매 수에 따라 급증 — 옆 칸을 사면 다음 칸 값도 갱신.
       (st["price_label"] as Label).text = UI.money(slot_price)
       if st["done"] or session.slots >= Config.MAX_SLOTS:
+        sold = true
         btn.text = Loc.t("sold_out")
         btn.disabled = true
         btn.modulate = Color.WHITE
@@ -609,6 +608,7 @@ func _refresh() -> void:
     else:
       # 버프팩 — 그 칸을 이미 개봉했으면 SOLD OUT(가득 차도 개봉은 허용 — 선택 시 판매 요구).
       if st["done"]:
+        sold = true
         btn.text = Loc.t("sold_out")
         btn.disabled = true
         btn.modulate = Color.WHITE
@@ -617,11 +617,22 @@ func _refresh() -> void:
         var can_draw := session.cash >= Config.BUFF_PACK_PRICE
         btn.disabled = not can_draw
         btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)
+    _set_card_sold(st["card"] as PanelContainer, sold)
 
   # [버프] 버튼 — 보유 0개면 비활성(서랍 안 열림).
   if _buff_btn != null:
     _buff_btn.disabled = Buffs.owned().is_empty()
     _buff_btn.modulate.a = 0.45 if _buff_btn.disabled else 1.0   # 아이콘도 비활성 시 흐리게
+
+
+## 품절(구매·개봉 완료) 칸 — 불투명한 회색(disabled) 배경으로 "소진" 표시. 되돌리면 원래 크림 카드.
+## (투명도 X — 알파 낮추면 뒤 배경이 비쳐 보임. 배경색만 disabled 톤으로 교체)
+func _set_card_sold(card: PanelContainer, sold: bool) -> void:
+  if sold:
+    card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_200, Palette.COCOA_200))
+  else:
+    card.add_theme_stylebox_override("panel", UI.card(Palette.COCOA_100, Palette.COCOA_200))
+  card.modulate = Color.WHITE
 
 
 ## 보유 버프 판매 확인 — 버프명 + 환급액(팩값의 30%). [+환급][취소].

@@ -94,7 +94,7 @@ static func ui_btn_icon(name: String, px: int) -> Control:
 
 
 ## 상단바 컴포넌트 — 게임·상점 공용. 1줄:[홈·실적바·점수·보유금] / 2줄:[날짜·시간바].
-## meta: day_num·money_label·score_bar·score_label·hours_bar·home_btn·coin_box.
+## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box.
 static func top_bar() -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", card(Palette.WHITE))
@@ -124,17 +124,7 @@ static func top_bar() -> PanelContainer:
 	row1.add_child(gap)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	row1.add_child(ui_icon(star_name, 22))
-	var sbar := ProgressBar.new()
-	sbar.min_value = 0
-	sbar.max_value = 100
-	sbar.value = 0
-	sbar.show_percentage = false
-	sbar.custom_minimum_size = Vector2(64, 16)
-	sbar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	sbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
-	sbar.add_theme_stylebox_override("fill", chip(Palette.MAIN))
-	row1.add_child(sbar)
-	var score := label("0/0", 15, Palette.COCOA_800, true)
+	var score := label("0", 18, Palette.COCOA_800, true)
 	row1.add_child(score)
 	var midgap := Control.new()
 	midgap.custom_minimum_size = Vector2(10, 0)
@@ -168,7 +158,6 @@ static func top_bar() -> PanelContainer:
 
 	panel.set_meta("day_num", badge.get_meta("num"))
 	panel.set_meta("money_label", money)
-	panel.set_meta("score_bar", sbar)
 	panel.set_meta("score_label", score)
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)

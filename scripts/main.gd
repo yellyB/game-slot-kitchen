@@ -37,8 +37,7 @@ var _money_label: Label
 var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클릭으로 토글
 var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
 var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
-var _score_bar: ProgressBar   # 이달 실적(점수) 진행 — max=이달 가게세, value=month_score
-var _score_label: Label
+var _score_label: Label   # 이달 실적(점수) — "현재/목표"(÷100)
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
@@ -319,7 +318,6 @@ func _build_top_bar() -> Control:
   var panel := UI.top_bar()
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
-  _score_bar = panel.get_meta("score_bar") as ProgressBar
   _score_label = panel.get_meta("score_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
@@ -1257,13 +1255,11 @@ func _dot(color: Color) -> Control:
 
 
 # ── 세션 반응 ─────────────────────────────────────────────
-## 실적 막대바 갱신 — 목표 = 이달 가게세, 현재 = month_score. 라벨은 점수(÷100 정수).
+## 실적 갱신 — "현재/목표" 점수(÷100). 목표 = 이달 가게세.
 func _update_score_bar() -> void:
-  if _score_bar == null or _session == null:
+  if _score_label == null or _session == null:
     return
   var target := int(Levels.get_week(_session.day)["monthly_rent"])
-  _score_bar.max_value = maxi(1, target)
-  _score_bar.value = _session.month_score
   _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
 
 
