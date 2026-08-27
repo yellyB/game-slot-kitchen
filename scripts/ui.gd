@@ -96,33 +96,21 @@ static func top_bar() -> PanelContainer:
 	box.add_theme_constant_override("separation", 6)
 	pad.add_child(box)
 
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 8)
-	box.add_child(top)
-	var badge := day_badge(44)
-	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	top.add_child(badge)
+	var row1 := HBoxContainer.new()
+	row1.add_theme_constant_override("separation", 8)
+	box.add_child(row1)
 	var home := Button.new()
 	home.custom_minimum_size = Vector2(34, 34)
-	home.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	home.add_child(ui_btn_icon("house", 22))
 	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
-	top.add_child(home)
+	row1.add_child(home)
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(gap)
-	var rcol := VBoxContainer.new()
-	rcol.add_theme_constant_override("separation", 4)
-	top.add_child(rcol)
-
-	var srow := HBoxContainer.new()
-	srow.alignment = BoxContainer.ALIGNMENT_END
-	srow.add_theme_constant_override("separation", 8)
-	rcol.add_child(srow)
+	row1.add_child(gap)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
-	srow.add_child(ui_icon(star_name, 20))
+	row1.add_child(ui_icon(star_name, 22))
 	var sbar := ProgressBar.new()
 	sbar.min_value = 0
 	sbar.max_value = 100
@@ -132,25 +120,25 @@ static func top_bar() -> PanelContainer:
 	sbar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	sbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
 	sbar.add_theme_stylebox_override("fill", chip(Palette.MAIN))
-	srow.add_child(sbar)
+	row1.add_child(sbar)
 	var score := label("0/0", 15, Palette.COCOA_800, true)
-	srow.add_child(score)
-
-	var crow := HBoxContainer.new()
-	crow.alignment = BoxContainer.ALIGNMENT_END
-	crow.add_theme_constant_override("separation", 4)
-	rcol.add_child(crow)
+	row1.add_child(score)
+	var midgap := Control.new()
+	midgap.custom_minimum_size = Vector2(10, 0)
+	row1.add_child(midgap)
 	var coin := HBoxContainer.new()
 	coin.add_theme_constant_override("separation", 4)
-	coin.add_child(ui_icon("coin", 20))
+	coin.add_child(ui_icon("coin", 22))
 	var money := label("0", 18, Palette.COCOA_800, true)
 	coin.add_child(money)
-	crow.add_child(coin)
+	row1.add_child(coin)
 
-	var hours := HBoxContainer.new()
-	hours.add_theme_constant_override("separation", 8)
-	box.add_child(hours)
-	hours.add_child(ui_icon("sun", 18))
+	var row2 := HBoxContainer.new()
+	row2.add_theme_constant_override("separation", 8)
+	box.add_child(row2)
+	var badge := day_badge(32)
+	row2.add_child(badge)
+	row2.add_child(ui_icon("sun", 22))
 	var hbar := ProgressBar.new()
 	hbar.min_value = 0
 	hbar.max_value = 100
@@ -158,10 +146,11 @@ static func top_bar() -> PanelContainer:
 	hbar.show_percentage = false
 	hbar.custom_minimum_size = Vector2(0, 14)
 	hbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
 	hbar.add_theme_stylebox_override("fill", chip(Palette.ACCENT))
-	hours.add_child(hbar)
-	hours.add_child(ui_icon("moon", 18))
+	row2.add_child(hbar)
+	row2.add_child(ui_icon("moon", 22))
 
 	panel.set_meta("day_num", badge.get_meta("num"))
 	panel.set_meta("money_label", money)
