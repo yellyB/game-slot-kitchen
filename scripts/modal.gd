@@ -80,6 +80,11 @@ func add_row(ctrl: Control) -> Modal:
 	return self
 
 
+func gap(px: int) -> Modal:
+	_body.add_theme_constant_override("separation", px)
+	return self
+
+
 func pin_top() -> void:
 	if _pinned or _panel == null or not is_instance_valid(_panel):
 		return

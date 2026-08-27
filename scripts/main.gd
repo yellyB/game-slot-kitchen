@@ -1932,7 +1932,7 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
 
 
 func _show_settlement(summary: Dictionary) -> void:
-  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
+  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"]).gap(5)
 
   var sr := _sales_rows()
   if sr != null:
@@ -1943,7 +1943,9 @@ func _show_settlement(summary: Dictionary) -> void:
   _add_settle_bonus_row(m)
 
   var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
-  m.add_row(_settle_icon_row("star", goal_lbl, 26))
+  var goal_row := _settle_icon_row("star", goal_lbl, 26)
+  goal_row.modulate.a = 1.0
+  m.add_row(goal_row)
 
   var check_btn := Button.new()
   check_btn.text = Loc.t("check_score")
@@ -1977,11 +1979,9 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   if check_btn.get_meta("opts_shown", false):
     return
   check_btn.set_meta("opts_shown", true)
+  check_btn.disabled = true
   Audio.play("disabled")
   Audio.vibrate(30)
-  var ct := create_tween()
-  ct.tween_property(check_btn, "modulate:a", 0.0, 0.15)
-  ct.tween_callback(check_btn.queue_free)
   m.pin_top()
 
   var fee: int = int(goal / Config.SCORE_GATE_FEE_DIV)
@@ -2017,6 +2017,8 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
     if _session.cash < fee:
       return
     _session.add_cash(-fee)
+    if is_instance_valid(check_btn):
+      check_btn.queue_free()
     _settle_pass(summary, m, wrap))
   Audio.attach_click(pay_btn)
   wrap.add_child(pay_btn)
