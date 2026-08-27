@@ -355,6 +355,7 @@ func _build_debug() -> Control:
   row.add_theme_constant_override("separation", 6)
   row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
   row.add_child(_debug_btn("+10만", func(): _session.add_cash(100000)))
+  row.add_child(_debug_btn("별+10만", func(): _session.earn(100000, true)))
   row.add_child(_debug_btn("종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님-", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
