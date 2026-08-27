@@ -22,7 +22,6 @@ func _get_minimum_size() -> Vector2:
 
 func _ready() -> void:
   custom_minimum_size = Vector2(104, 104)
-  clip_contents = true
   _style = UI.card(Palette.TOOL, Palette.SUB, 2)
   add_theme_stylebox_override("panel", _style)
 
