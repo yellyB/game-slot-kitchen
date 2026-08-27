@@ -1833,6 +1833,7 @@ func _log_day(summary: Dictionary) -> void:
     "monthly_rent": int(wk["monthly_rent"]),
     "rent": int(summary.get("rent", 0)),
     "revenue": int(summary.get("revenue", 0)),
+    "month_score": int(summary.get("month_score", 0)),
     "cash_after": int(summary.get("cash_after", 0)),
     "passed": bool(summary.get("passed", false)),
     "won": bool(summary.get("won", false)),
