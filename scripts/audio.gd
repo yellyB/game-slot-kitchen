@@ -10,6 +10,7 @@ const SFX := {
 	"cook_start": preload("res://assets/audio/sfx/cook_start.wav"),  # 조리 시작(팝)
 	"serve": preload("res://assets/audio/sfx/serve.wav"),           # 서빙 완료(리워드)
 	"coins": preload("res://assets/audio/sfx/coins.wav"),           # 소지금 변동(동전)
+	"score_up": preload("res://assets/audio/sfx/star_rise.wav"),    # 점수(별) 오름(글로켄슈필 상승)
 	"day_start": preload("res://assets/audio/sfx/day_start.mp3"),   # 하루 시작(어서오세요)
 	"click": preload("res://assets/audio/sfx/click.wav"),           # 버튼 클릭(종이 크런치)
 	"pack_open": preload("res://assets/audio/sfx/pack_open.ogg"),   # 카드팩 개봉 순간
