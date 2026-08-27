@@ -713,7 +713,7 @@ func _on_order_expired(order: OrderCard) -> void:
   var gain := Buffs.on_lost(order.recipe_id)
   if gain != 0:
     _expect_fly = true
-    _session.earn(gain)
+    _session.earn(gain, false)
     _expect_fly = false
     _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])
   _order_lost_today += 1

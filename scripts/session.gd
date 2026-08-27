@@ -117,10 +117,11 @@ func spend_time(seconds: float) -> void:
 		_end_day()
 
 
-func earn(amount: int) -> void:
+func earn(amount: int, as_score := true) -> void:
 	cash += amount
-	day_revenue += amount
-	month_score += amount
+	if as_score:
+		day_revenue += amount
+		month_score += amount
 	cash_changed.emit(cash)
 
 
