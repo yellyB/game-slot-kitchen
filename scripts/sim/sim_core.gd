@@ -498,9 +498,11 @@ func _on_day_closing(s: Session) -> void:
 		"cash": s.cash,
 		"rent": s.rent,
 	}
-	var bonus := Buffs.day_end_bonus(ctx)
-	if bonus != 0:
-		s.earn(bonus)
+	var db := Buffs.day_end_bonus(ctx)
+	if int(db["score"]) != 0:
+		s.earn(int(db["score"]), true)
+	if int(db["money"]) != 0:
+		s.earn(int(db["money"]), false)
 
 
 # ── 유틸 ──────────────────────────────────────────────────

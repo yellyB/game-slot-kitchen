@@ -1143,15 +1143,21 @@ func _on_day_closing(s: Session) -> void:
     "cash": s.cash,
     "rent": s.rent,
   }
-  var bonus := Buffs.day_end_bonus(ctx)
-  if bonus > 0:
+  var db := Buffs.day_end_bonus(ctx)
+  var score_g := int(db["score"])   # 정산3형제·콩고물 = 점수
+  var money_g := int(db["money"])   # 손절 = 돈
+  var total := score_g + money_g
+  if total != 0:
     # 즉시 팝/동전음은 억제(_expect_fly)하고 표시금액도 증가 전으로 되돌린다.
     # 정산 팝업이 뜰 때 코인 연출과 함께 촤르륵 올린다(_add_settle_bonus_row).
-    _settle_bonus = bonus
+    _settle_bonus = total
     _expect_fly = true
-    s.earn(bonus)
+    if score_g != 0:
+      s.earn(score_g, true)
+    if money_g != 0:
+      s.earn(money_g, false)
     _expect_fly = false
-    _money_label.text = UI.money(_last_cash - bonus)
+    _money_label.text = UI.money(_last_cash - total)
 
 
 ## 이탈 연출 — 카드를 부모(슬롯/큐)에서 떼어내 제자리에서 쪼그라들며 페이드아웃 후 제거.

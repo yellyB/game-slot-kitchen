@@ -409,11 +409,10 @@ func day_start_bonus(cash: int) -> int:
 	return g
 
 ## 마감 보너스/차감(63~65,73 정산 + 50 가게세차감). ctx: {served,visited,order_lost,accepted,same_max,day_revenue,cash,rent}
-func day_end_bonus(ctx: Dictionary) -> int:
-	var g := 0
+func day_end_bonus(ctx: Dictionary) -> Dictionary:
+	var score_g := 0
+	var money_g := 0
 	var served := int(ctx.get("served", 0))
-	# 처리율 = (방문 - 놓침) / 방문. '놓침'은 인내심 만료로 떠난 손님(대기열+주문)만.
-	# 놓친 손님 0명이면 100%(완벽정산). 우수정산 = 방문 대비 놓침 10% 이하.
 	var missed := int(ctx.get("missed", 0))
 	var visited := int(ctx.get("visited", 0))
 	var served_ratio := 1.0 if visited == 0 else float(visited - missed) / float(visited)
@@ -429,17 +428,17 @@ func day_end_bonus(ctx: Dictionary) -> int:
 			match st.get("kind", ""):
 				"served":
 					if served_ratio >= float(st["threshold"]):
-						g += int(round(float(day_rev) * float(st["pct"])))
+						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"samemenu":
 					if same_ratio >= float(st["threshold"]):
-						g += int(round(float(day_rev) * float(st["pct"])))
+						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"leave":
 					if leave_ratio >= float(st["threshold"]):
-						g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
+						money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
-			g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
-	return g
+			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
+	return {"score": score_g, "money": money_g}
 
 ## 폐기(48) — 소유 목록에서 제거.
 func discard(id: String) -> void:
