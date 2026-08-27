@@ -397,7 +397,7 @@ func day_start_bonus(cash: int) -> int:
 	for id in _owned:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "interest":
-			g += int(round(float(e["pct"]) * sqrt(c * float(Config.CASH_BONUS_REF))))
+			g += int(round(float(e["pct"]) * c))
 	return g
 
 func day_end_bonus(ctx: Dictionary) -> Dictionary:
@@ -428,7 +428,10 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"leave":
 					if leave_ratio >= float(st["threshold"]):
-						money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
+						if st.has("money"):
+							money_g += int(st["money"])
+						else:
+							money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
 			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
