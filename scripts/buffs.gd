@@ -202,10 +202,6 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
 					dpct = float(s["pct"])
-			"cash":
-				# 부자세(51) 체감: pct × √(현금 × 기준잔액). 잔액 클수록 회당 보너스율↓(지수폭주 차단).
-				var cc := float(maxi(0, int(ctx.get("cash", 0))))
-				dflat = int(round(float(s["pct"]) * sqrt(cc * float(Config.CASH_BONUS_REF))))
 			"risk":
 				dpct = float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):

@@ -128,7 +128,7 @@ const S := {
 	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "20% 확률로 판매금 +120%",
 	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 판매금 +52%. 10% 확률로 이 카드 폐기",
 	"b.no_buy.name": "절약", "b.no_buy.label": "상점에서 아무것도 안 사면 다음날 모든 판매 +5%",
-	"b.sale_cash.name": "기본정산", "b.sale_cash.label": "마감 시 그날 매출의 10% 추가",
+	"b.sale_cash.name": "콩고물", "b.sale_cash.label": "마감 시 그날 매출의 10% 추가",
 	"b.sale_pat.name": "박리다매", "b.sale_pat.label": "판매가 +29%/ 인내심 -20%",
 	"b.sale_t12.name": "고수", "b.sale_t12.label": "커피·라떼 판매금액+86%",
 	"b.sale_t34.name": "장인", "b.sale_t34.label": "글레이즈드·초코도넛 판매금액+40%",
