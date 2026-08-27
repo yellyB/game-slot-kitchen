@@ -806,14 +806,14 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     if not is_inside_tree():
       return
     var feel := _gain_feel(total_gain)
-    _pop_label(_money_label)
+    _pop_label(_score_label)
     Audio.play("coins", feel["pitch"])
     if is_instance_valid(menu_icon):
       var mo := create_tween()
       mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
       mo.tween_callback(menu_icon.queue_free)
     if is_instance_valid(total_l):
-      _coin_burst(total_l.position + total_l.size * 0.5, total_gain)
+      _coin_burst(total_l.position + total_l.size * 0.5, total_gain, 116, _score_label, "star")
       total_l.scale = Vector2(feel["slam"], feel["slam"])
       var slam := create_tween()
       slam.tween_property(total_l, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -838,13 +838,14 @@ func _gain_feel(total: int) -> Dictionary:
   return {"slam": 1.15, "shake": 0.0, "pitch": 1.0}
 
 
-func _coin_burst(from: Vector2, amount: int, z := 116) -> void:
+func _coin_burst(from: Vector2, amount: int, z := 116, target_node: Control = null, icon := "coin") -> void:
   if not is_inside_tree():
     return
+  var tgt: Control = target_node if target_node != null else _money_label
   var n := clampi(3 + int(float(amount) / 1500.0), 3, 14)
-  var target := _money_label.global_position + _money_label.size * 0.5
+  var target := tgt.global_position + tgt.size * 0.5
   for i in n:
-    var coin := UI.ui_icon("coin", 20)
+    var coin := UI.ui_icon(icon, 20)
     coin.z_index = z
     coin.pivot_offset = Vector2(10, 10)
     coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1043,16 +1044,16 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])
   var money_g := int(db["money"])
-  var total := score_g + money_g
-  if total != 0:
-    _settle_bonus = total
+  if score_g != 0 or money_g != 0:
+    _settle_bonus = money_g
+
     _expect_fly = true
     if score_g != 0:
       s.earn(score_g, true)
     if money_g != 0:
       s.earn(money_g, false)
     _expect_fly = false
-    _money_label.text = UI.money(_last_cash - total)
+    _money_label.text = UI.money(_last_cash - money_g)
 
 
 func _detach_and_fade(card: Control) -> void:
@@ -1145,7 +1146,7 @@ func _update_score_bar() -> void:
   if _score_label == null or _session == null:
     return
   var target := int(Levels.get_week(_session.day)["monthly_rent"])
-  _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
+  _score_label.text = "%s/%s" % [UI.money(_session.month_score), UI.money(target)]
 
 
 func _on_cash_changed(cash: int) -> void:
