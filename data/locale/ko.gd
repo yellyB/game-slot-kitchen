@@ -68,7 +68,7 @@ const S := {
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
 	"shop_sell": "패스",
-	"shop_full_notice": "버프칸이 가득 찼어요 — 버프를 하나 팔아야 받을 수 있어요",
+	"shop_full_notice": "버프칸 가득 — 하나 팔아야 받아요",
 
 
 	"b.cook.name": "높은 화력", "b.cook.label": "조리 시간 -29%",
