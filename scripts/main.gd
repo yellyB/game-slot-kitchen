@@ -1654,7 +1654,12 @@ func _on_day_started(day: int, rent: int) -> void:
   Move.clear()
   _board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
   for id in Buffs.owned():
-    var slot := _board.first_empty_slot()
+    var idx := Buffs.slot_pos(id)
+    var slot: Slot = null
+    if idx >= 0 and idx < _board.slots.size() and _board.slots[idx].is_empty():
+      slot = _board.slots[idx]
+    else:
+      slot = _board.first_empty_slot()
     if slot:
       var bc := BuffCard.new()
       bc.setup(id)

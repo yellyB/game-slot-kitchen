@@ -5,6 +5,7 @@ const PAD := 4
 
 var _holder: MarginContainer
 var locked := false
+var board_index := -1
 
 func _get_minimum_size() -> Vector2:
   return custom_minimum_size
@@ -42,6 +43,11 @@ func lock() -> void:
   _holder.add_child(lbl)
 
 
+func _remember_buff_pos(card: Card) -> void:
+  if card is BuffCard and board_index >= 0:
+    Buffs.set_slot_pos((card as BuffCard).buff_id, board_index)
+
+
 func _get_card() -> Card:
   for ch in _holder.get_children():
     if ch is Card:
@@ -72,6 +78,7 @@ func place_card(card: Card, play_sfx := true, pop := true) -> void:
   card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   card.size_flags_vertical = Control.SIZE_EXPAND_FILL
   _holder.add_child(card)
+  _remember_buff_pos(card)
   if pop:
     card.pop_in()
   if play_sfx:
@@ -86,6 +93,7 @@ func take_card(card: Card) -> void:
   if prev:
     prev.remove_child(card)
   _holder.add_child(card)
+  _remember_buff_pos(card)
   card.pop_in()
   Audio.play("card_place")
   Audio.vibrate(10)

@@ -1,6 +1,7 @@
 extends Node
 
 var _owned: Array[String] = []
+var _slot_pos: Dictionary = {}
 
 var _ramp_bonus: Dictionary = {}
 var _serve_count := 0
@@ -16,6 +17,7 @@ var _mature_age := {}
 
 func clear() -> void:
 	_owned.clear()
+	_slot_pos.clear()
 	_ramp_bonus.clear()
 	_serve_count = 0
 	_cook_count = 0
@@ -46,6 +48,7 @@ func remove(id: String) -> bool:
 	if idx < 0:
 		return false
 	_owned.remove_at(idx)
+	_slot_pos.erase(id)
 	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
 	if not r.is_empty():
 		var tier := int(r.get("tier", 0))
@@ -61,6 +64,14 @@ func is_full() -> bool:
 
 func owned() -> Array[String]:
 	return _owned
+
+
+func set_slot_pos(id: String, idx: int) -> void:
+	_slot_pos[id] = idx
+
+
+func slot_pos(id: String) -> int:
+	return int(_slot_pos.get(id, -1))
 
 
 func has_effect(id: String) -> bool:
