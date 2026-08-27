@@ -83,12 +83,15 @@ func _fit_wrap() -> void:
 	var avail := _wrap.size   # 카드 내용영역(full-rect). deferred라 갱신 완료 상태.
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
+	# 자동 줄바꿈 라벨은 측정 시 '한 줄로 편' 넓은 min-width를 보고 → 축소 강제로 내용이 과소해짐.
+	# 가로 최소치를 카드 폭으로 클램프(넓은 텍스트는 축소 대신 줄바꿈, 축소는 세로 기준만).
+	var cmin_x := minf(_content_min.x, avail.x)
 	# 홀더 크기 = max(자연 크기, 내용영역) — 넘칠 땐 자연 크기(대칭), 넉넉할 땐 내용영역(꽉 참).
-	var target := Vector2(maxf(_content_min.x, avail.x), maxf(_content_min.y, avail.y))
+	var target := Vector2(maxf(cmin_x, avail.x), maxf(_content_min.y, avail.y))
 	_holder.size = target
 	_holder.position = (avail - target) * 0.5   # 내용영역 중앙(넘치면 좌우로 대칭 오버플로)
 	_holder.pivot_offset = target * 0.5
-	var raw := minf(avail.x / _content_min.x, avail.y / _content_min.y)
+	var raw := minf(avail.x / cmin_x, avail.y / _content_min.y)
 	var s := minf(1.0, raw * _FIT_MARGIN)   # 넉넉하면 1(그대로), 빠듯/넘치면 여백 두고 축소
 	_holder.scale = Vector2(s, s)
 
