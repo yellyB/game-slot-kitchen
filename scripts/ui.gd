@@ -97,22 +97,30 @@ static func top_bar() -> PanelContainer:
 	pad.add_child(box)
 
 	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 10)
+	top.add_theme_constant_override("separation", 8)
 	box.add_child(top)
-	var badge := day_badge(56)
+	var badge := day_badge(44)
 	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(badge)
+	var home := Button.new()
+	home.custom_minimum_size = Vector2(34, 34)
+	home.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	home.add_child(ui_btn_icon("house", 22))
+	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
+	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
+	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
+	top.add_child(home)
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(gap)
 	var rcol := VBoxContainer.new()
-	rcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rcol.add_theme_constant_override("separation", 4)
 	top.add_child(rcol)
 
 	var srow := HBoxContainer.new()
+	srow.alignment = BoxContainer.ALIGNMENT_END
 	srow.add_theme_constant_override("separation", 8)
 	rcol.add_child(srow)
-	var sgap := Control.new()
-	sgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	srow.add_child(sgap)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	srow.add_child(ui_icon(star_name, 20))
 	var sbar := ProgressBar.new()
@@ -127,20 +135,11 @@ static func top_bar() -> PanelContainer:
 	srow.add_child(sbar)
 	var score := label("0/0", 15, Palette.COCOA_800, true)
 	srow.add_child(score)
-	var home := Button.new()
-	home.custom_minimum_size = Vector2(34, 34)
-	home.add_child(ui_btn_icon("house", 22))
-	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
-	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
-	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
-	srow.add_child(home)
 
 	var crow := HBoxContainer.new()
+	crow.alignment = BoxContainer.ALIGNMENT_END
 	crow.add_theme_constant_override("separation", 4)
 	rcol.add_child(crow)
-	var cgap := Control.new()
-	cgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	crow.add_child(cgap)
 	var coin := HBoxContainer.new()
 	coin.add_theme_constant_override("separation", 4)
 	coin.add_child(ui_icon("coin", 20))
