@@ -50,6 +50,12 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 			if safety > 5_000_000:
 				break
 		result["days"] = session.day
+		if OS.has_environment("SIM_TRACE") and run_seed == 0:
+			print("[TRACE] d%d m%d/w%d  served=%d miss=%d  slots=%d buffs=%d(%s)  score=%d/%d  pass=%s" % [
+				session.day, int(Levels.get_day(session.day).get("month", 0)), int(Levels.get_day(session.day).get("week_in_month", 0)),
+				_served_today, _missed_today, session.slots, Buffs.owned().size(), ",".join(Buffs.owned()),
+				session.month_score, session.rent if session.rent > 0 else int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day).get("monthly_rent", 0))))),
+				str(_last.get("passed", false))])
 		if not _last.get("passed", false):
 			break
 		if _last.get("won", false):
@@ -69,29 +75,21 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 
 
 func _shop() -> void:
-	var nw := Levels.get_week(session.day + 1)
-	var monthly := int(round(Buffs.mod("rent_mult", float(nw.get("monthly_rent", 0)))))
-	var wl := int(nw.get("weeks_left", 0))
-	var next_rent := 0
-	if wl == 0:
-		next_rent = monthly
-	elif wl == 1:
-		next_rent = monthly / 2
-	while session.slots < Config.MAX_SLOTS:
-		if session.cash - Config.slot_price(session.day, session.slots - Config.START_SLOTS) < next_rent:
-			break
-		if not session.buy_slot():
-			break
-	while Buffs.owned().size() < 3 and not Buffs.is_full():
-		if session.cash - Config.BUFF_PACK_PRICE < next_rent:
-			break
-		var pack: Array = session.buy_buff_pack()
-		if pack.is_empty():
-			break
-		var pick := _pick_buff(pack)
-		if pick == "":
-			break
-		Buffs.add(pick)
+	var progressed := true
+	while progressed:
+		progressed = false
+		if session.slots < Config.MAX_SLOTS \
+				and session.cash >= Config.slot_price(session.day, session.slots - Config.START_SLOTS):
+			if session.buy_slot():
+				progressed = true
+		if not Buffs.is_full() and session.slots - Buffs.owned().size() > Config.MAX_ORDERS \
+				and session.cash >= Config.BUFF_PACK_PRICE:
+			var pack: Array = session.buy_buff_pack()
+			if not pack.is_empty():
+				var pick := _pick_buff(pack)
+				if pick != "":
+					Buffs.add(pick)
+				progressed = true
 
 
 func _pick_buff(pack: Array) -> String:
@@ -316,7 +314,8 @@ func _start_cook_one() -> bool:
 
 func _accept_one() -> bool:
 	var cap := _serve_cap()
-	if queue.is_empty() or orders.size() >= Config.MAX_ORDERS or _board_used() >= cap:
+	var order_cap := mini(Config.MAX_ORDERS, maxi(1, cap - 3))
+	if queue.is_empty() or orders.size() >= order_cap or _board_used() >= cap:
 		return false
 	var best := 0
 	for i in queue.size():
@@ -383,7 +382,8 @@ func _pick_cookable() -> String:
 
 func _accept_from_queue() -> void:
 	var cap := _serve_cap()
-	while not queue.is_empty() and orders.size() < Config.MAX_ORDERS and _board_used() < cap:
+	var order_cap := mini(Config.MAX_ORDERS, maxi(1, cap - 3))
+	while not queue.is_empty() and orders.size() < order_cap and _board_used() < cap:
 		var best := 0
 		for i in queue.size():
 			if queue[i]["pat"] < queue[best]["pat"]:
