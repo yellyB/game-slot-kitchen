@@ -8,7 +8,13 @@ signal close_requested
 
 var on_sell: Callable   # 상점에서만 주입(항목 탭 → 판매 확인). 비어있으면 보기 전용.
 
+const ROW_H := 66.0     # 항목 1개 예상 높이(계산용) — 스크롤 없이 잘 보이게 여유
+const ROW_SEP := 8.0
+const CHROME := 64.0    # 패딩(28) + 닫기핸들(26) + separation(10)
+const TOP_KEEP := 120.0 # 화면 위 남길 여백(상단바 노출) — 넘으면 스크롤
+
 var _list: VBoxContainer
+var _count: Label
 
 func _ready() -> void:
 	visible = false
@@ -40,7 +46,19 @@ func _ready() -> void:
 	Audio.attach_click(close)   # 닫기 클릭음
 	header.add_child(close)
 
-	# 목록 — 보유 버프가 많아도 스크롤로 흡수(시트 높이 고정).
+	# 보유/상한(n/5) — 헤더 위 우상단 오버레이(닫기 핸들 중앙정렬 유지).
+	_count = UI.label("", 14, Palette.MAIN, true)
+	_count.anchor_left = 1.0
+	_count.anchor_right = 1.0
+	_count.offset_left = -74
+	_count.offset_right = -16
+	_count.offset_top = 12
+	_count.offset_bottom = 34
+	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	add_child(_count)
+
+	# 목록 — 개수만큼 높이 늘고(open에서 계산), 화면 넘치면 스크롤로 흡수.
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -53,8 +71,16 @@ func _ready() -> void:
 
 
 ## 현재 보유 버프로 목록 재구성 후 슬라이드 업.
+## 시트 높이 = 보유 개수에 맞춤(적으면 낮게, 많으면 높게). 상한 넘으면 그 높이서 스크롤.
 func open() -> void:
 	rebuild()
+	var n := Buffs.owned().size()
+	var want := CHROME + n * ROW_H + maxf(0.0, n - 1) * ROW_SEP
+	var cap := get_viewport_rect().size.y - TOP_KEEP
+	offset_top = -minf(want, cap)
+	_rest_top = offset_top       # 가변 높이라 매번 rest 갱신 후 슬라이드
+	_rest_bottom = offset_bottom
+	_rest_captured = true        # slide_open의 최초 1회 캡처 건너뛰고 위 값 사용
 	slide_open()   # Sheet 베이스 — 아래서 슬라이드 업
 
 
@@ -64,6 +90,7 @@ func rebuild() -> void:
 		c.queue_free()
 	for id in Buffs.owned():
 		_list.add_child(_entry(id))
+	_count.text = "%d/%d" % [Buffs.owned().size(), Config.MAX_BUFFS + Buffs.buff_slot_bonus()]
 
 
 ## 버프 항목 한 줄: [아이콘] 이름 / 설명 … (상점이면 우측에 판매 코인 힌트, 탭=판매).
