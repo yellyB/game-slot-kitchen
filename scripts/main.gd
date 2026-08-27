@@ -1059,6 +1059,8 @@ func _on_day_closing(s: Session) -> void:
       s.earn(money_g, false)
     _expect_fly = false
     _money_label.text = UI.money(_last_cash - money_g)
+  for id in db.get("destroy", []):
+    _remove_buff_card(id)
 
 
 func _detach_and_fade(card: Control) -> void:
@@ -1839,6 +1841,21 @@ func _show_month_cleared(summary: Dictionary) -> void:
   if cr != null:
     m.add_row(cr)
   _add_settle_bonus_row(m)
+
+  var pay_btn := Button.new()
+  pay_btn.text = Loc.t("pay_rent")
+  pay_btn.custom_minimum_size = Vector2(0, 48)
+  pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  pay_btn.add_theme_font_size_override("font_size", 18)
+  pay_btn.add_theme_color_override("font_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_hover_color", Palette.WHITE)
+  pay_btn.add_theme_color_override("font_pressed_color", Palette.WHITE)
+  pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
+  pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
+  pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  Audio.attach_click(pay_btn)
+  m.add_row(pay_btn)
+
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)

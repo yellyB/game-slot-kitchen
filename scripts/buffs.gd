@@ -11,6 +11,7 @@ var _serve_times: Array[float] = []
 var _accum := 0
 var _double_next := false
 var _instant_order := false
+var _mature_age := {}
 
 
 func clear() -> void:
@@ -24,6 +25,7 @@ func clear() -> void:
 	_accum = 0
 	_double_next = false
 	_instant_order = false
+	_mature_age.clear()
 
 
 func reset_day() -> void:
@@ -34,6 +36,8 @@ func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return
 	_owned.append(id)
+	if BuffDefs.get_def(id).has("matures"):
+		_mature_age[id] = 0
 	Codex.discover(id)
 
 
@@ -417,7 +421,19 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
 			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
-	return {"score": score_g, "money": money_g}
+	var destroy_ids: Array = []
+	for id in _owned:
+		var mt: Dictionary = BuffDefs.get_def(id).get("matures", {})
+		if mt.is_empty():
+			continue
+		_mature_age[id] = int(_mature_age.get(id, 0)) + 1
+		if _mature_age[id] >= int(mt.get("weeks", 0)):
+			money_g += int(mt.get("money", 0))
+			destroy_ids.append(id)
+	for id in destroy_ids:
+		_owned.erase(id)
+		_mature_age.erase(id)
+	return {"score": score_g, "money": money_g, "destroy": destroy_ids}
 
 func discard(id: String) -> void:
 	_owned.erase(id)
