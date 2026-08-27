@@ -1256,7 +1256,7 @@ func _month_track(week: int) -> Control:
   row.add_child(bill)
   v.add_child(row)
 
-  var msg := "이번 주 가게세 납부!" if is_end else (str(int(wk["weeks_left"]) + 1) + "주 후 가게세 납부")
+  var msg := "이번 주 실적 심사!" if is_end else (str(int(wk["weeks_left"]) + 1) + "주 후 실적 심사")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -1787,7 +1787,10 @@ func _on_day_ended(summary: Dictionary) -> void:
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
       bt.tween_callback(banner.queue_free)
     if int(summary.get("rent", 0)) > 0:
-      _show_settlement(summary)
+      if summary.get("passed_by_score", false):
+        _show_month_cleared(summary)
+      else:
+        _show_settlement(summary)
     else:
       _show_week_closed(summary)
 
@@ -1800,6 +1803,29 @@ func _show_week_closed(summary: Dictionary) -> void:
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
     m.add_row(_settle_icon_row("coin", rev, 26))
+  var cr := _churn_row()
+  if cr != null:
+    m.add_row(cr)
+  _add_settle_bonus_row(m)
+  var go := Button.new()
+  go.text = Loc.t("to_shop")
+  go.custom_minimum_size = Vector2(0, 48)
+  go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  go.add_theme_font_size_override("font_size", 18)
+  go.add_theme_color_override("font_color", Palette.WHITE)
+  go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+  go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  Audio.attach_click(go)
+  m.add_row(go)
+
+
+func _show_month_cleared(summary: Dictionary) -> void:
+  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"]) \
+    .stamp_row(Loc.t("score_pass"), Palette.SUCCESS, 0.1)
+  var sr := _sales_rows()
+  if sr != null:
+    m.add_row(sr)
   var cr := _churn_row()
   if cr != null:
     m.add_row(cr)
