@@ -93,41 +93,49 @@ static func top_bar() -> PanelContainer:
 	panel.add_child(pad)
 
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
+	box.add_theme_constant_override("separation", 6)
 	pad.add_child(box)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	box.add_child(row)
-
+	var srow := HBoxContainer.new()
+	srow.add_theme_constant_override("separation", 8)
+	box.add_child(srow)
 	var badge := day_badge(32)
-	row.add_child(badge)
-
+	srow.add_child(badge)
 	var home := Button.new()
 	home.custom_minimum_size = Vector2(34, 34)
 	home.add_child(ui_btn_icon("house", 22))
 	home.add_theme_stylebox_override("normal", chip(Palette.COCOA_100, Palette.COCOA_200))
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
-	row.add_child(home)
+	srow.add_child(home)
+	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
+	srow.add_child(ui_icon(star_name, 20))
+	var sbar := ProgressBar.new()
+	sbar.min_value = 0
+	sbar.max_value = 100
+	sbar.value = 0
+	sbar.show_percentage = false
+	sbar.custom_minimum_size = Vector2(0, 16)
+	sbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sbar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sbar.add_theme_stylebox_override("background", chip(Palette.COCOA_100, Palette.COCOA_200))
+	sbar.add_theme_stylebox_override("fill", chip(Palette.MAIN))
+	srow.add_child(sbar)
+	var score := label("0/0", 15, Palette.COCOA_800, true)
+	srow.add_child(score)
 
-	var gap := Control.new()
-	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(gap)
-
+	var crow := HBoxContainer.new()
+	crow.add_theme_constant_override("separation", 4)
+	box.add_child(crow)
+	var cgap := Control.new()
+	cgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	crow.add_child(cgap)
 	var coin := HBoxContainer.new()
 	coin.add_theme_constant_override("separation", 4)
 	coin.add_child(ui_icon("coin", 20))
 	var money := label("0", 18, Palette.COCOA_800, true)
 	coin.add_child(money)
-	row.add_child(coin)
-
-	var rentbox := HBoxContainer.new()
-	rentbox.add_theme_constant_override("separation", 4)
-	rentbox.add_child(ui_icon("bill", 20))
-	var rent := label("0", 18, Palette.COCOA_800, true)
-	rentbox.add_child(rent)
-	row.add_child(rentbox)
+	crow.add_child(coin)
 
 	var hours := HBoxContainer.new()
 	hours.add_theme_constant_override("separation", 8)
@@ -147,7 +155,8 @@ static func top_bar() -> PanelContainer:
 
 	panel.set_meta("day_num", badge.get_meta("num"))
 	panel.set_meta("money_label", money)
-	panel.set_meta("rent_label", rent)
+	panel.set_meta("score_bar", sbar)
+	panel.set_meta("score_label", score)
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)

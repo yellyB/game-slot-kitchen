@@ -33,7 +33,8 @@ var _money_label: Label
 var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
-var _rent_label: Label
+var _score_bar: ProgressBar
+var _score_label: Label
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
@@ -291,7 +292,8 @@ func _build_top_bar() -> Control:
   var panel := UI.top_bar()
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
-  _rent_label = panel.get_meta("rent_label") as Label
+  _score_bar = panel.get_meta("score_bar") as ProgressBar
+  _score_label = panel.get_meta("score_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -1135,10 +1137,20 @@ func _dot(color: Color) -> Control:
   return wrap
 
 
+func _update_score_bar() -> void:
+  if _score_bar == null or _session == null:
+    return
+  var target := int(Levels.get_week(_session.day)["monthly_rent"])
+  _score_bar.max_value = maxi(1, target)
+  _score_bar.value = _session.month_score
+  _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
+
+
 func _on_cash_changed(cash: int) -> void:
   var delta := cash - _last_cash
   _last_cash = cash
   _money_label.text = UI.money(cash)
+  _update_score_bar()
   if delta > 0 and not _expect_fly:
     _pop_label(_money_label)
     Audio.play("coins")
@@ -1608,9 +1620,8 @@ func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
   _session.set_process(false)
   var _wk := Levels.get_week(day)
-  var _mr := int(_wk["monthly_rent"])
-  _rent_label.text = UI.money(_mr)
-  _rent_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
+  _update_score_bar()
+  _score_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()
   _last_countdown = 0
