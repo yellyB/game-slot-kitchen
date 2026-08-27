@@ -1940,7 +1940,12 @@ func _show_settlement(summary: Dictionary) -> void:
   var cr := _churn_row()
   if cr != null:
     m.add_row(cr)
+  var had_bonus := _settle_bonus > 0
   _add_settle_bonus_row(m)
+  if had_bonus:
+    var sp := Control.new()
+    sp.custom_minimum_size = Vector2(0, 30)
+    m.add_row(sp)
 
   var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
   var goal_row := _settle_icon_row("star", goal_lbl, 26)
@@ -1981,7 +1986,6 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   if check_btn.get_meta("opts_shown", false):
     return
   check_btn.set_meta("opts_shown", true)
-  check_btn.disabled = true
   Audio.play("disabled")
   Audio.vibrate(30)
   m.pin_top()
@@ -2014,6 +2018,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   pay_btn.add_theme_stylebox_override("normal", UI.chip(Palette.DANGER))
   pay_btn.add_theme_stylebox_override("hover", UI.chip(Palette.DANGER.lightened(0.08)))
   pay_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.DANGER.darkened(0.1)))
+  pay_btn.add_theme_stylebox_override("disabled", UI.chip(Palette.COCOA_400))
   pay_btn.disabled = _session.cash < fee
   pay_btn.pressed.connect(func():
     if _session.cash < fee:
