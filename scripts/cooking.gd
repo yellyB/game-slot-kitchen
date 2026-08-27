@@ -154,13 +154,13 @@ func _entry(id: String) -> Button:
 	return entry
 
 
-## 가격 표시 — 동전 손그림 + 금액.
+## 점수 표시 — 별 손그림 + 점수(가격÷100).
 func _coin(amount: int) -> Control:
 	var box := HBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 4)
-	box.add_child(UI.ui_icon("coin", 18))
-	box.add_child(UI.label(UI.money(amount), 18, Palette.COCOA_800, true))
+	box.add_child(UI.ui_icon("star", 18))
+	box.add_child(UI.label(str(int(round(amount / 100.0))), 18, Palette.COCOA_800, true))
 	return box
 
 ## 항목 내 세로 구분선 — 메뉴 | 재료 | 시간 구획.
