@@ -65,11 +65,12 @@ func _fit_wrap() -> void:
 	var avail := _wrap.size
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
-	var target := Vector2(maxf(_content_min.x, avail.x), maxf(_content_min.y, avail.y))
+	var cmin_x := minf(_content_min.x, avail.x)
+	var target := Vector2(maxf(cmin_x, avail.x), maxf(_content_min.y, avail.y))
 	_holder.size = target
 	_holder.position = (avail - target) * 0.5
 	_holder.pivot_offset = target * 0.5
-	var raw := minf(avail.x / _content_min.x, avail.y / _content_min.y)
+	var raw := minf(avail.x / cmin_x, avail.y / _content_min.y)
 	var s := minf(1.0, raw * _FIT_MARGIN)
 	_holder.scale = Vector2(s, s)
 
