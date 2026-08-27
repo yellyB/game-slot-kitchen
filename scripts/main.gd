@@ -1042,13 +1042,19 @@ func _on_day_closing(s: Session) -> void:
     "cash": s.cash,
     "rent": s.rent,
   }
-  var bonus := Buffs.day_end_bonus(ctx)
-  if bonus > 0:
-    _settle_bonus = bonus
+  var db := Buffs.day_end_bonus(ctx)
+  var score_g := int(db["score"])
+  var money_g := int(db["money"])
+  var total := score_g + money_g
+  if total != 0:
+    _settle_bonus = total
     _expect_fly = true
-    s.earn(bonus)
+    if score_g != 0:
+      s.earn(score_g, true)
+    if money_g != 0:
+      s.earn(money_g, false)
     _expect_fly = false
-    _money_label.text = UI.money(_last_cash - bonus)
+    _money_label.text = UI.money(_last_cash - total)
 
 
 func _detach_and_fade(card: Control) -> void:

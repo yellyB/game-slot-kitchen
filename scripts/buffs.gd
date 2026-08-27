@@ -375,8 +375,9 @@ func day_start_bonus(cash: int) -> int:
 			g += int(round(float(e["pct"]) * sqrt(c * float(Config.CASH_BONUS_REF))))
 	return g
 
-func day_end_bonus(ctx: Dictionary) -> int:
-	var g := 0
+func day_end_bonus(ctx: Dictionary) -> Dictionary:
+	var score_g := 0
+	var money_g := 0
 	var served := int(ctx.get("served", 0))
 	var missed := int(ctx.get("missed", 0))
 	var visited := int(ctx.get("visited", 0))
@@ -393,17 +394,17 @@ func day_end_bonus(ctx: Dictionary) -> int:
 			match st.get("kind", ""):
 				"served":
 					if served_ratio >= float(st["threshold"]):
-						g += int(round(float(day_rev) * float(st["pct"])))
+						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"samemenu":
 					if same_ratio >= float(st["threshold"]):
-						g += int(round(float(day_rev) * float(st["pct"])))
+						score_g += int(round(float(day_rev) * float(st["pct"])))
 				"leave":
 					if leave_ratio >= float(st["threshold"]):
-						g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
+						money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
-			g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
-	return g
+			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
+	return {"score": score_g, "money": money_g}
 
 func discard(id: String) -> void:
 	_owned.erase(id)
