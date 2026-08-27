@@ -1932,7 +1932,6 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
 
 
 func _show_settlement(summary: Dictionary) -> void:
-  var rent: int = summary["rent"]
   var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
 
   var sr := _sales_rows()
@@ -1943,17 +1942,8 @@ func _show_settlement(summary: Dictionary) -> void:
     m.add_row(cr)
   _add_settle_bonus_row(m)
 
-  var receipt_name := "receipt" if ResourceLoader.exists("res://assets/art/ui/receipt.png") else "bill"
-  var icon_box := CenterContainer.new()
-  icon_box.custom_minimum_size = Vector2(112, 112)
-  icon_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  icon_box.add_child(UI.ui_icon(receipt_name, 112))
-  m.add_row(icon_box)
-
-  var amount := UI.label(UI.money(rent), 26, Palette.DANGER, true)
-  var amount_row := _settle_icon_row("coin", amount, 26)
-  amount_row.modulate.a = 1.0
-  m.add_row(amount_row)
+  var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
+  m.add_row(_settle_icon_row("star", goal_lbl, 26))
 
   var check_btn := Button.new()
   check_btn.text = Loc.t("check_score")
@@ -1968,7 +1958,7 @@ func _show_settlement(summary: Dictionary) -> void:
   check_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
   check_btn.modulate.a = 0.0
   check_btn.disabled = true
-  check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn, icon_box, amount_row))
+  check_btn.pressed.connect(func(): _on_check_score(summary, m, check_btn))
   Audio.attach_click(check_btn)
   m.add_row(check_btn)
 
@@ -1979,10 +1969,10 @@ func _show_settlement(summary: Dictionary) -> void:
     create_tween().tween_property(check_btn, "modulate:a", 1.0, 0.2))
 
 
-func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box: Control, amount_row: Control) -> void:
+func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   var goal: int = int(summary["rent"])
   if int(summary["month_score"]) >= goal:
-    _settle_pass(summary, m, check_btn, icon_box, amount_row)
+    _settle_pass(summary, m, check_btn)
     return
   if check_btn.get_meta("opts_shown", false):
     return
@@ -2001,9 +1991,18 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
   wrap.modulate.a = 0.0
 
   var pay_btn := Button.new()
-  pay_btn.icon = load("res://assets/art/ui/coin.png")
-  pay_btn.add_theme_constant_override("icon_max_width", 20)
-  pay_btn.text = Loc.t("pay_fee") % UI.money(fee)
+  var pay_row := HBoxContainer.new()
+  pay_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  pay_row.alignment = BoxContainer.ALIGNMENT_CENTER
+  pay_row.add_theme_constant_override("separation", 5)
+  pay_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  var pay_coin := UI.ui_icon("coin", 20)
+  pay_coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  pay_row.add_child(pay_coin)
+  var pay_lbl := UI.label(Loc.t("pay_fee") % UI.money(fee), 18, Palette.WHITE, true)
+  pay_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+  pay_row.add_child(pay_lbl)
+  pay_btn.add_child(pay_row)
   pay_btn.custom_minimum_size = Vector2(0, 48)
   pay_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   pay_btn.add_theme_font_size_override("font_size", 18)
@@ -2018,7 +2017,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
     if _session.cash < fee:
       return
     _session.add_cash(-fee)
-    _settle_pass(summary, m, wrap, icon_box, amount_row))
+    _settle_pass(summary, m, wrap))
   Audio.attach_click(pay_btn)
   wrap.add_child(pay_btn)
 
@@ -2031,18 +2030,11 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button, icon_box:
   create_tween().tween_property(wrap, "modulate:a", 1.0, 0.28)
 
 
-func _settle_pass(summary: Dictionary, m: Modal, action_node: Control, icon_box: Control, amount_row: Control) -> void:
+func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()
 
-  var at := create_tween()
-  at.tween_property(amount_row, "modulate:a", 0.0, 0.15)
-  at.tween_callback(func(): amount_row.visible = false)
-
-  var px: float = icon_box.custom_minimum_size.y
-  for ch in icon_box.get_children():
-    ch.visible = false
-    ch.queue_free()
+  var px := 112.0
   var mark := UI.label("✅", int(px * 0.8), Palette.SUCCESS, true)
   mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -2050,7 +2042,10 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control, icon_box:
   mark.pivot_offset = Vector2(px, px) * 0.5
   mark.modulate.a = 0.0
   mark.scale = Vector2(0.5, 0.5)
-  icon_box.add_child(mark)
+  var mark_box := CenterContainer.new()
+  mark_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  mark_box.add_child(mark)
+  m.add_row(mark_box)
   var pt := create_tween()
   pt.tween_property(mark, "modulate:a", 1.0, 0.12)
   pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
