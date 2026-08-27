@@ -128,12 +128,13 @@ func spend_time(seconds: float) -> void:
 
 
 ## 서빙 매출.
-## as_score=false면 돈만(점수/매출 채널 X) — 방치·경제 버프(취소수수료·손절 등)용.
+## as_score=true=점수 채널(cash X), false=돈 채널(cash).
 func earn(amount: int, as_score := true) -> void:
-	cash += amount
 	if as_score:
 		day_revenue += amount
 		month_score += amount
+	else:
+		cash += amount
 	cash_changed.emit(cash)
 
 

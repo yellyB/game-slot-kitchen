@@ -59,7 +59,7 @@ func _ready() -> void:
   _cash_label = bar.get_meta("money_label") as Label
   var slabel := bar.get_meta("score_label") as Label
   var target := int(nx["monthly_rent"])
-  slabel.text = "%d/%d" % [int(round(session.month_score / 100.0)), int(round(target / 100.0))]
+  slabel.text = "%s/%s" % [UI.money(session.month_score), UI.money(target)]
   slabel.add_theme_color_override("font_color", Palette.DANGER if nx["is_month_end"] else Palette.COCOA_800)
   var home := bar.get_meta("home_btn") as Button
   home.pressed.connect(func(): go_home.emit())

@@ -888,7 +888,7 @@ func _show_gain_breakdown(breakdown: Array) -> void:
     if not is_inside_tree():
       return
     var feel := _gain_feel(total_gain)
-    _pop_label(_money_label)
+    _pop_label(_score_label)
     Audio.play("coins", feel["pitch"])
     # (서빙 보상 화면 흔들림 제거 — 플레이 중 산만함. 흔들림은 막판 카운트다운에서만.)
     if is_instance_valid(menu_icon):   # 버프 없던 서빙(페이드 안 탄 경우) 메뉴 이미지 정리
@@ -896,7 +896,7 @@ func _show_gain_breakdown(breakdown: Array) -> void:
       mo.tween_property(menu_icon, "modulate:a", 0.0, 0.3)
       mo.tween_callback(menu_icon.queue_free)
     if is_instance_valid(total_l):
-      _coin_burst(total_l.position + total_l.size * 0.5, total_gain)   # 코인이 보유금으로 우르르
+      _coin_burst(total_l.position + total_l.size * 0.5, total_gain, 116, _score_label, "star")
       total_l.scale = Vector2(feel["slam"], feel["slam"])   # 크게 나타났다 임팩트 있게 축소
       var slam := create_tween()
       slam.tween_property(total_l, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -924,13 +924,14 @@ func _gain_feel(total: int) -> Dictionary:
 
 
 ## 코인 파티클 — from 지점에서 여러 코인이 보유금 라벨로 날아가며 사라짐(금액 클수록 많이).
-func _coin_burst(from: Vector2, amount: int, z := 116) -> void:
+func _coin_burst(from: Vector2, amount: int, z := 116, target_node: Control = null, icon := "coin") -> void:
   if not is_inside_tree():
     return
+  var tgt: Control = target_node if target_node != null else _money_label
   var n := clampi(3 + int(float(amount) / 1500.0), 3, 14)
-  var target := _money_label.global_position + _money_label.size * 0.5
+  var target := tgt.global_position + tgt.size * 0.5
   for i in n:
-    var coin := UI.ui_icon("coin", 20)
+    var coin := UI.ui_icon(icon, 20)
     coin.z_index = z
     coin.pivot_offset = Vector2(10, 10)
     coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1144,18 +1145,16 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])   # 정산3형제·콩고물 = 점수
   var money_g := int(db["money"])   # 손절 = 돈
-  var total := score_g + money_g
-  if total != 0:
-    # 즉시 팝/동전음은 억제(_expect_fly)하고 표시금액도 증가 전으로 되돌린다.
-    # 정산 팝업이 뜰 때 코인 연출과 함께 촤르륵 올린다(_add_settle_bonus_row).
-    _settle_bonus = total
+  if score_g != 0 or money_g != 0:
+    _settle_bonus = money_g   # 코인 연출은 돈만(점수는 라벨만 갱신)
+
     _expect_fly = true
     if score_g != 0:
       s.earn(score_g, true)
     if money_g != 0:
       s.earn(money_g, false)
     _expect_fly = false
-    _money_label.text = UI.money(_last_cash - total)
+    _money_label.text = UI.money(_last_cash - money_g)
 
 
 ## 이탈 연출 — 카드를 부모(슬롯/큐)에서 떼어내 제자리에서 쪼그라들며 페이드아웃 후 제거.
@@ -1255,12 +1254,12 @@ func _dot(color: Color) -> Control:
 
 
 # ── 세션 반응 ─────────────────────────────────────────────
-## 실적 갱신 — "현재/목표" 점수(÷100). 목표 = 이달 가게세.
+## 실적 라벨 갱신 — 현재/목표(목표=이달 가게세).
 func _update_score_bar() -> void:
   if _score_label == null or _session == null:
     return
   var target := int(Levels.get_week(_session.day)["monthly_rent"])
-  _score_label.text = "%d/%d" % [int(round(_session.month_score / 100.0)), int(round(target / 100.0))]
+  _score_label.text = "%s/%s" % [UI.money(_session.month_score), UI.money(target)]
 
 
 func _on_cash_changed(cash: int) -> void:
