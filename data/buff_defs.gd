@@ -98,6 +98,7 @@ const ALL := {
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.69}},
 
 	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 1.3}},
+	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.25, "money": 1}},
 
 	# ── 자동화(59~62) ──
 	"auto_serve": {"card": 59, "icon": "🤖", "blocked": true},
@@ -144,11 +145,11 @@ const _CAT_OVERRIDE := {
 	"patience": "time", "day_len": "time", "pat_extend": "time", "pat_down": "time",
 	"wh_chance": "time", "wh_fast": "time",
 	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
-	"no_buy": "money", "sale_cash": "money", "onlost_pay": "money", "settle_leave": "money",
-	"settle_100": "money", "settle_90": "money", "settle_same": "money",
+	"no_buy": "money", "onlost_pay": "money", "settle_leave": "money", "serve_tip": "money",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
-	"accum_sale": "growth",
+	"accum_sale": "growth", "sale_cash": "growth",
+	"settle_100": "growth", "settle_90": "growth", "settle_same": "growth",
 	"prob_x2": "luck", "prob_bonus": "luck", "sale_risk": "luck", "onlost_x2": "luck",
 }
 

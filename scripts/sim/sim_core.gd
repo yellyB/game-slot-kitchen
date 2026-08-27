@@ -267,6 +267,9 @@ func _serve() -> void:
 		var ctx := _sale_ctx(o, dishes[di])
 		var res := Buffs.sale_amount(rid, ctx)
 		session.earn(int(res["amount"]))
+		var tip := Buffs.serve_tip()
+		if tip > 0:
+			session.earn(tip, false)
 		if int(res.get("penalty", 0)) != 0:
 			session.add_cash(-int(res["penalty"]))
 		if res.get("discard", "") != "":
@@ -295,6 +298,9 @@ func _serve_one() -> bool:
 		var ctx := _sale_ctx(o, dishes[di])
 		var res := Buffs.sale_amount(rid, ctx)
 		session.earn(int(res["amount"]))
+		var tip := Buffs.serve_tip()
+		if tip > 0:
+			session.earn(tip, false)
 		if int(res.get("penalty", 0)) != 0:
 			session.add_cash(-int(res["penalty"]))
 		if res.get("discard", "") != "":

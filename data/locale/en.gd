@@ -138,6 +138,7 @@ const S := {
 	"b.sale_fast.name": "Fast Food", "b.sale_fast.label": "Complete within 6s of taking order: score +52%",
 	"b.sale_addon.name": "Puff Up", "b.sale_addon.label": "Gain +69% of buff-added score",
 	"b.mult_all.name": "Golden Touch", "b.mult_all.label": "Each serve: score Mult ×1.3",
+	"b.serve_tip.name": "Jingle", "b.serve_tip.label": "Each serve: 25% chance to earn a +1 tip",
 	"b.auto_serve.name": "Telepathy", "b.auto_serve.label": "50% chance auto serve (WIP)",
 	"b.auto_cook.name": "Meal Prep", "b.auto_cook.label": "Auto cook when order taken (WIP)",
 	"b.inst_order.name": "Instant Order", "b.inst_order.label": "After 8th serve, next order becomes an instant dish",

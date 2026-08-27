@@ -364,6 +364,17 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 func _add_ramp(recipe_id: String, inc: int) -> void:
 	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
 
+## 서빙 시 팁(76 짤랑이) — 확률 적중 시 즉시 획득할 돈(원). 미보유/미적중이면 0.
+func serve_tip() -> int:
+	var g := 0
+	for id in _owned:
+		var t: Dictionary = BuffDefs.get_def(id).get("tip", {})
+		if t.is_empty():
+			continue
+		if randf() < float(t.get("chance", 0.0)):
+			g += int(t.get("money", 0))
+	return g
+
 ## 조리 시작 시 호출 — 61(6번째마다 즉시완료)이면 true.
 func on_cook_start() -> bool:
 	_cook_count += 1

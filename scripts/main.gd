@@ -1000,6 +1000,9 @@ func _on_served(order: OrderCard, dish: DishCard) -> void:
   _expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
   _session.earn(amount)
   _expect_fly = false
+  var tip := Buffs.serve_tip()
+  if tip > 0:
+    _session.earn(tip, false)
   # 리스크(56 등) 패널티: 소지금 차감(매출 집계 X)
   var penalty := int(res.get("penalty", 0))
   if penalty != 0:

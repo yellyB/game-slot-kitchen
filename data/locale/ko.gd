@@ -138,6 +138,7 @@ const S := {
 	"b.sale_fast.name": "패스트푸드", "b.sale_fast.label": "주문 받은 후로부터 6초 이내 주문 완료시 점수 +52%",
 	"b.sale_addon.name": "뻥튀기", "b.sale_addon.label": "판매 시, 점수 제외한 추가 점수의 +69%",
 	"b.mult_all.name": "황금손", "b.mult_all.label": "서빙 시 점수 배수 ×1.3",
+	"b.serve_tip.name": "짤랑이", "b.serve_tip.label": "서빙할 때마다 25% 확률로 팁 +1원",
 	"b.auto_serve.name": "이심전심", "b.auto_serve.label": "조리 완료 시, 50% 확률로 맞는 주문서가 슬롯에 있으면 자동 서빙",
 	"b.auto_cook.name": "밀프랩", "b.auto_cook.label": "주문 접수 시 재료·도구 있으면 그 주문의 메뉴 자동 조리 시작",
 	"b.inst_order.name": "즉시 주문", "b.inst_order.label": "8번째 서빙을 하면, 다음 주문서를 받았을때 서빙까지 즉시 완료",
