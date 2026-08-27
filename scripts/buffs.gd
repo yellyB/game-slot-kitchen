@@ -15,6 +15,7 @@ var _serve_times: Array[float] = []  # 최근 서빙 시각 (44)
 var _accum := 0                    # 적립 누적액(원) (45)
 var _double_next := false          # 다음 획득 2배 (72)
 var _instant_order := false        # 다음 주문 즉시완료 대기 (60)
+var _mature_age := {}              # 만기 적금(78) — 버프별 획득 후 경과 주
 
 
 func clear() -> void:
@@ -28,6 +29,7 @@ func clear() -> void:
 	_accum = 0
 	_double_next = false
 	_instant_order = false
+	_mature_age.clear()
 
 
 ## 하루 시작 시 호출 — 하루 스코프 리셋. #45 적립이 런 내내 누적돼 폭주하는 것 방지(매일 초기화).
@@ -39,6 +41,8 @@ func add(id: String) -> void:
 	if _owned.size() >= Config.MAX_BUFFS + buff_slot_bonus():
 		return
 	_owned.append(id)
+	if BuffDefs.get_def(id).has("matures"):
+		_mature_age[id] = 0
 	Codex.discover(id)   # 획득 시 도감 발견 기록(영구 저장)
 
 
@@ -452,7 +456,20 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
 			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
-	return {"score": score_g, "money": money_g}
+	# 만기 적금(78 곗돈) — 얻고 N주 경과 시 파괴되며 정액 지급. 파괴 대상은 destroy로 반환.
+	var destroy_ids: Array = []
+	for id in _owned:
+		var mt: Dictionary = BuffDefs.get_def(id).get("matures", {})
+		if mt.is_empty():
+			continue
+		_mature_age[id] = int(_mature_age.get(id, 0)) + 1
+		if _mature_age[id] >= int(mt.get("weeks", 0)):
+			money_g += int(mt.get("money", 0))
+			destroy_ids.append(id)
+	for id in destroy_ids:
+		_owned.erase(id)
+		_mature_age.erase(id)
+	return {"score": score_g, "money": money_g, "destroy": destroy_ids}
 
 ## 폐기(48) — 소유 목록에서 제거.
 func discard(id: String) -> void:
