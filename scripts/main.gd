@@ -1373,10 +1373,10 @@ func _month_track(week: int) -> Control:
     var conn := UI.label("─", 16, Color(1, 1, 1, 0.45), true)
     conn.mouse_filter = Control.MOUSE_FILTER_IGNORE
     row.add_child(conn)
-  # 끝 = 납부 노드(청구서 아이콘만 — 금액은 상단바에 있음)
-  var bill := UI.ui_icon("bill", 28)
-  bill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  row.add_child(bill)
+  # 끝 = 심사 노드(별 아이콘 — 실적 심사)
+  var goal := UI.ui_icon("star", 28)
+  goal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  row.add_child(goal)
   v.add_child(row)
 
   var msg := "이번 주 실적 심사!" if is_end else (str(int(wk["weeks_left"]) + 1) + "주 후 실적 심사")
