@@ -5,6 +5,7 @@ var _style: StyleBoxFlat
 var _wrap: Control
 var _holder: Control
 var _content_min := Vector2.ZERO
+var _scale_to_width := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -65,7 +66,7 @@ func _fit_wrap() -> void:
 	var avail := _wrap.size
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
-	var cmin_x := minf(_content_min.x, avail.x)
+	var cmin_x := _content_min.x if _scale_to_width else minf(_content_min.x, avail.x)
 	var target := Vector2(maxf(cmin_x, avail.x), maxf(_content_min.y, avail.y))
 	_holder.size = target
 	_holder.position = (avail - target) * 0.5
