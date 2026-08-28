@@ -79,8 +79,8 @@ func _ready() -> void:
   # 상품 3칸 — 슬롯확장권(1회용 쿠폰) + 버프팩(카드깡). 확장 여지만큼 쿠폰 배치(최대 2),
   # 나머지는 버프팩. 슬롯 만렙이면 쿠폰 0 → 버프팩 3개.
   var coupon_n := clampi(Config.MAX_SLOTS - session.slots, 0, 2)
-  for _i in coupon_n:
-    _add_slot_coupon(body)
+  for i in coupon_n:
+    _add_slot_coupon(body, i)
   for _i in (3 - coupon_n):
     _add_buff_pack(body)
 
@@ -192,9 +192,9 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
 
 
 ## 슬롯확장권 카드 1칸 — 탭하면 슬롯 +1(escalating 가격), 그 칸은 SOLD OUT(1회용).
-func _add_slot_coupon(parent: Node) -> void:
+func _add_slot_coupon(parent: Node, offset: int) -> void:
   var st := {"kind": "coupon", "done": false}
-  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS + offset)
   st["btn"] = _product(parent, UI.ui_icon("slot_expand", 72), price, Loc.t("shop_buy"), Palette.SUB, func(): _on_buy_coupon(st))
   st["card"] = _last_card
   st["price_label"] = _last_price_label
@@ -591,23 +591,26 @@ func _refresh() -> void:
   _cash_label.text = UI.money(session.cash)
 
   # 상품 3칸 — 슬롯쿠폰/버프팩 각 칸 상태 갱신.
-  var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  var bought := session.slots - Config.START_SLOTS
+  var coupon_k := 0   # 미구매 쿠폰 순번 — 위 칸=0(다음 확장가), 아래 칸=1(그 확장 이후 가격)
   for st in _products:
     var btn: Button = st["btn"]
     var sold := false
     if st["kind"] == "coupon":
-      # 쿠폰 가격은 구매 수에 따라 급증 — 옆 칸을 사면 다음 칸 값도 갱신.
-      (st["price_label"] as Label).text = UI.money(slot_price)
       if st["done"] or session.slots >= Config.MAX_SLOTS:
         sold = true
         btn.text = Loc.t("sold_out")
         btn.disabled = true
         btn.modulate = Color.WHITE
       else:
+        var price := Config.slot_price(session.day, bought + coupon_k)
+        (st["price_label"] as Label).text = UI.money(price)
+        # 위 칸부터 순차 구매 — 그래야 표시가(marginal)=실제 지불가가 일치.
+        var buyable := coupon_k == 0 and session.cash >= price
+        coupon_k += 1
         btn.text = Loc.t("shop_buy")
-        var can_slot := session.cash >= slot_price
-        btn.disabled = not can_slot
-        btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+        btn.disabled = not buyable
+        btn.modulate = Color.WHITE if buyable else Color(1, 1, 1, 0.5)
     else:
       # 버프팩 — 그 칸을 이미 개봉했으면 SOLD OUT(가득 차도 개봉은 허용 — 선택 시 판매 요구).
       if st["done"]:
