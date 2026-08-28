@@ -1048,7 +1048,7 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])
   var money_g := int(db["money"])
-  money_g += Config.WEEK_REWARD_BASE + _served_today * Config.WEEK_REWARD_PER_SERVE
+  money_g += Config.week_reward(_session.day, _served_today)
   if score_g != 0 or money_g != 0:
     _settle_bonus = money_g
 

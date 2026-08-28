@@ -28,8 +28,12 @@ const SLOT_PRICE_STEP_LATE := 1.2
 const SLOT_PRICE_KNEE := 3
 const MAX_BUFFS := 5
 const RAMP_CAP_MULT := 30
-const WEEK_REWARD_BASE := 5
+const WEEK_REWARD_BASE := 4
+const WEEK_REWARD_STEP := 1
 const WEEK_REWARD_PER_SERVE := 0
+
+static func week_reward(day: int, served: int) -> int:
+	return WEEK_REWARD_BASE + WEEK_REWARD_STEP * maxi(0, day - 1) + served * WEEK_REWARD_PER_SERVE
 const BUFF_SELL_RATIO := 0.2
 const MONEY_ABBR_AT := 100000
 const SCORE_GATE_FEE_DIV := 100
