@@ -2238,11 +2238,8 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()   # [실적확인] 또는 [지불/파산] 묶음 제거
 
-  var px := 112.0
-  var mark := UI.label("✅", int(px * 0.8), Palette.SUCCESS, true)
-  mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  mark.custom_minimum_size = Vector2(px, px)
+  var px := 38.0
+  var mark := UI.ui_icon("pass_check", int(px))
   mark.pivot_offset = Vector2(px, px) * 0.5
   mark.modulate.a = 0.0
   mark.scale = Vector2(0.5, 0.5)
@@ -2291,10 +2288,10 @@ func _show_run_failed(day: int) -> void:
   badge_wrap.add_child(badge)
   m.add_row(badge_wrap)
   # ❌ 크게(지금과 동일한 실패 마크)
-  var x := UI.label("❌", 80, Palette.DANGER, true)
-  x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  m.add_row(x)
+  var x_box := CenterContainer.new()
+  x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  x_box.add_child(UI.ui_icon("fail_x", 32))
+  m.add_row(x_box)
   # 홈 이미지 버튼 → 타이틀(홈)로
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
