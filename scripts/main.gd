@@ -1302,11 +1302,11 @@ func _dot(color: Color) -> Control:
 
 
 # ── 세션 반응 ─────────────────────────────────────────────
-## 실적 라벨 갱신 — 현재/목표(목표=이달 가게세).
+## 실적 라벨 갱신 — 현재 누적/이번 주 관문.
 func _update_score_bar() -> void:
   if _score_label == null or _session == null:
     return
-  var target := int(Levels.get_week(_session.day)["monthly_rent"])
+  var target := int(Levels.get_week(_session.day)["target"])
   _score_label.text = "%s/%s" % [UI.money(_session.month_score), UI.money(target)]
 
 
@@ -1428,7 +1428,7 @@ func _month_track(week: int) -> Control:
   row.add_child(goal)
   v.add_child(row)
 
-  var msg := "이번 주 실적 심사!" if is_end else (str(int(wk["weeks_left"]) + 1) + "주 후 실적 심사")
+  var msg := "이번 주 실적 심사!"
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -2008,37 +2008,7 @@ func _on_day_ended(summary: Dictionary) -> void:
       var bt := create_tween()
       bt.tween_property(banner, "modulate:a", 0.0, 0.22)
       bt.tween_callback(banner.queue_free)
-    if int(summary.get("rent", 0)) > 0:
-      _show_settlement(summary)      # 월말 — 실적확인(점수 판정) 팝업
-    else:
-      _show_week_closed(summary)   # 평주 — 월세 없음, 매출만 보고 상점으로
-
-
-## 평주 마감 팝업 — 월세 없는 주. 이번 주 매출만 보여주고 바로 [상점으로]. (월말은 _show_settlement)
-func _show_week_closed(summary: Dictionary) -> void:
-  var m := Modal.open(self).title(Loc.t("day_closed") % summary["day"])
-  var sr := _sales_rows()
-  if sr != null:
-    m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
-  else:
-    var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
-    m.add_row(_settle_icon_row("star", rev, 26))
-  var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
-  if cr != null:
-    m.add_row(cr)
-  _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
-  var go := Button.new()
-  go.text = Loc.t("to_shop")
-  go.custom_minimum_size = Vector2(0, 48)
-  go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  go.add_theme_font_size_override("font_size", 18)
-  go.add_theme_color_override("font_color", Palette.WHITE)
-  go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
-  go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
-  go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-  go.pressed.connect(func(): m.queue_free(); _open_shop())
-  Audio.attach_click(go)
-  m.add_row(go)
+    _show_settlement(summary)      # 매주 — 실적확인(점수 판정) 팝업
 
 
 ## 하루 정산 팝업 — 영수증(빌지) 이미지 + 가게세 액수 → [가게세 지불] 버튼.
@@ -2212,7 +2182,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   Audio.vibrate(30)
   m.pin_top()   # 팝업 위치 고정 → 실적확인 버튼은 두고 아래로만 버튼 추가
 
-  var fee: int = int(goal / Config.SCORE_GATE_FEE_DIV)   # 목표점수의 1/N 만큼 코인 지불로 통과
+  var fee: int = maxi(1, int(goal / Config.SCORE_GATE_FEE_DIV))   # 목표점수의 1/N 만큼 코인 지불로 통과(최소 1)
   var wrap := VBoxContainer.new()
   wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   wrap.add_theme_constant_override("separation", 8)

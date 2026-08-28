@@ -1,7 +1,8 @@
 class_name Levels
 extends RefCounted
-## 시간 단위: 1라운드 = 1주, 4주 = 1개월(WEEKS_PER_MONTH). 월세는 월말(4주차)에만 지불.
-## 1~3주차는 지불 없이 벌어서 누적 → 월말에 월세 이상 보유해야 통과(아니면 폐업).
+## 시간 단위: 1라운드 = 1주, 4주 = 1개월(WEEKS_PER_MONTH).
+## 매주 마감마다 누적 점수(month_score) ≥ 이번 주 관문이어야 통과. 미달이면 돈으로 통과(정산 팝업).
+## 점수는 월초 리셋 → 한 달 누적. 주 관문은 볼록 증가(첫주 최소→월말 최대), 월말(4주차) 관문 = 그 달 목표(monthly_rent).
 ## **진행에 끝 없음(무한).** 정의된 MONTHS 이후는 공식으로 월세·손님이 계속 escalating.
 ##   승리 조건 없음 — 월세를 못 내는 순간까지 무한 플레이. (엔딩 컷오프는 나중에.)
 ## 보스(계약 갱신): 분기(3개월)마다 월말 심사 — 보스데이.md, 아직 미구현.
@@ -20,6 +21,9 @@ const RENT_ACCEL := 2.50    # 후반 가속 항 복리(볼록) — 시뮬: 강�
 const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
 const WAVE_STEP := 1        # 정의 구간 이후 손님 수 월당 증가
 const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 한계
+# 주 관문 = 월 목표의 누적 분배(볼록: 첫주 최소→월말 최대). 증가분 비중, 누적합이 그 주 관문·전체합이 월 목표.
+# 항목 수 = WEEKS_PER_MONTH. 예) [1,2,3,4] → 누적 관문 0.1·0.3·0.6·1.0 (월말 = 월 목표).
+const WEEK_TARGET_WEIGHTS := [1, 2, 3, 4]
 
 # waves(주차별 손님 수)만 정의 — 월세는 공식(_monthly_rent). 정의 이후는 마지막 달 waves 연장.
 const MONTHS := [
@@ -54,7 +58,20 @@ static func _waves(mi: int, wi: int) -> int:
 	var base := int((MONTHS[MONTHS.size() - 1]["waves"] as Array)[wi])
 	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
 
-## 주차(1-base) 정보. per_wave·month·week_in_month·is_month_end·monthly_rent·rent(월말만>0)·weeks_left.
+## 이번 주(0-base wi) 누적 관문 — 월 목표 mr을 WEEK_TARGET_WEIGHTS로 볼록 분배. 월말은 정확히 mr.
+static func _week_gate(mr: int, wi: int) -> int:
+	if wi >= WEEKS_PER_MONTH - 1:
+		return mr
+	var total := 0
+	for x in WEEK_TARGET_WEIGHTS:
+		total += int(x)
+	var cum := 0
+	for i in wi + 1:
+		cum += int(WEEK_TARGET_WEIGHTS[i])
+	return int(round(float(mr) * float(cum) / float(total)))
+
+
+## 주차(1-base) 정보. per_wave·month·week_in_month·is_month_end·monthly_rent·target·rent(주 관문)·weeks_left.
 static func get_week(week: int) -> Dictionary:
 	var w := maxi(0, week - 1)
 	var mi := w / WEEKS_PER_MONTH
@@ -68,13 +85,15 @@ static func get_week(week: int) -> Dictionary:
 			pw = int(round(float(pw) * mult))
 	if OS.has_environment("SIM_RENT"):
 		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
+	var gate := _week_gate(mr, wi)
 	return {
 		"per_wave": pw,
 		"month": mi + 1,
 		"week_in_month": wi + 1,
 		"is_month_end": is_end,
 		"monthly_rent": mr,
-		"rent": mr if is_end else 0,
+		"target": gate,
+		"rent": gate,
 		"weeks_left": (WEEKS_PER_MONTH - 1) - wi,
 	}
 
