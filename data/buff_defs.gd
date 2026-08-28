@@ -65,11 +65,11 @@ const ALL := {
 
 	# ── 판매금: 슬롯/버프 공간 빌드(31~41) ──
 	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.30}},
-	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "count", "per": "buff", "base": 2.4, "step": 1.0}},
-	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 0.0, "step": 0.4}},
-	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "count", "per": "filled", "base": 1.3, "step": 0.3}},
+	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "base": 3.4, "step": 1.0}},
+	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "step": 0.4}},
+	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "base": 2.3, "step": 0.3}},
 	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.25}},
-	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "count", "per": "empty", "base": 1.7, "step": 0.6}},
+	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "base": 2.7, "step": 0.6}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 1.4, "when": "board_full"}},
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.8}},

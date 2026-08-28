@@ -252,10 +252,11 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 				if mok:
 					mult *= float(s["value"])
 					mult_id = id
-			"mult_count":                 # 개수 비례 배수 — 대상 1개당 step만큼 배수↑
+			"mult_count":                 # 최종점수축 배수 — base + step×개수 를 최종에 곱함(base 없으면 1.0)
 				var mc := _ctx_count(s.get("per", ""), ctx)
-				if mc > 0:
-					mult *= 1.0 + float(s["step"]) * float(mc)
+				var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
+				if mf != 1.0:
+					mult *= mf
 					mult_id = id
 		# 이 버프의 기여금 — 누적 %로 증분 반올림(합이 총 보너스와 정확히 일치)
 		var contrib := 0
