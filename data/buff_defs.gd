@@ -56,12 +56,12 @@ static var ALL := {
 	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 9.0}},
 
 	# ── 메뉴가격 성장(램프) 25~30 ──
-	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 2.1}},
-	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 2.1}},
-	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 2.1}},
-	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 2.1}},
-	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 4.5}},
-	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 5.5}},
+	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 1.0}},
+	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 1.0}},
+	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 1.0}},
+	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 1.0}},
+	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 2.0}},
+	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 2.5}},
 
 	# ── 판매금: 슬롯/버프 공간 빌드(31~41) ──
 	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.30}},
@@ -78,9 +78,9 @@ static var ALL := {
 
 	# ── 판매금: 콤보/연속/확률(42~52) ──
 	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
-	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 6.5}},
-	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 2.3}},
-	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 4.5, "window": 3.0}},
+	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 3.0}},
+	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 1.0}},
+	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.0, "window": 3.0}},
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.02}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 3.4}},
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.20, "pct": 12.0}},
