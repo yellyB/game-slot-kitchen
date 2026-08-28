@@ -49,7 +49,11 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 	for b in buff_loadout:
 		Buffs.add(b)
 
-	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0}
+	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0, "score": 0}
+	# 레버리지 측정용: SIM_MAXDAY까지 죽지 않고 진행하며 총 매출(점수) 누적(SIM_NOFAIL).
+	var max_day := int(OS.get_environment("SIM_MAXDAY")) if OS.has_environment("SIM_MAXDAY") else 0
+	var no_fail := OS.has_environment("SIM_NOFAIL")
+	var total_score := 0
 	var safety := 0
 	while true:
 		_reset_day_consumables()
@@ -59,13 +63,16 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 			if safety > 5_000_000:
 				break
 		result["days"] = session.day
+		total_score += int(_last.get("revenue", 0))
 		if OS.has_environment("SIM_TRACE") and run_seed < int(OS.get_environment("SIM_TRACE")):
 			print("[TRACE] d%d m%d/w%d  served=%d miss=%d  slots=%d buffs=%d(%s)  score=%d/%d  pass=%s" % [
 				session.day, int(Levels.get_day(session.day).get("month", 0)), int(Levels.get_day(session.day).get("week_in_month", 0)),
 				_served_today, _missed_today, session.slots, Buffs.owned().size(), ",".join(Buffs.owned()),
 				session.month_score, session.rent if session.rent > 0 else int(round(Buffs.mod("rent_mult", float(Levels.get_day(session.day).get("monthly_rent", 0))))),
 				str(_last.get("passed", false))])
-		if not _last.get("passed", false):
+		if max_day > 0 and session.day >= max_day:
+			break
+		if not no_fail and not _last.get("passed", false):
 			break
 		if _last.get("won", false):
 			result["won"] = true
@@ -74,6 +81,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 			_shop()                      # 벌어서 슬롯/버프 재투자
 		session.advance_day()
 
+	result["score"] = total_score
 	result["cash"] = session.cash
 	result["served"] = _served
 	result["lost"] = _lost

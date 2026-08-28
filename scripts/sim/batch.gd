@@ -12,6 +12,7 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 	var days := 0
 	var slots := 0
 	var buffs := 0
+	var score := 0
 	for i in n:
 		var sim := SimCore.new()
 		var r := sim.run(buff_loadout, i, shop_enabled)
@@ -23,11 +24,13 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 		days += int(r["days"])
 		slots += int(r.get("slots", 0))
 		buffs += int(r.get("buffs", 0))
+		score += int(r.get("score", 0))
 	var nf := float(maxi(n, 1))
 	return {
 		"runs": n,
 		"loadout": buff_loadout,
 		"win_rate": float(wins) / nf,
+		"avg_score": float(score) / nf,
 		"avg_cash": float(cash) / nf,
 		"avg_served": float(served) / nf,
 		"avg_lost": float(lost) / nf,

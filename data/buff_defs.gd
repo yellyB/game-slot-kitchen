@@ -19,7 +19,7 @@ extends RefCounted
 ##  rent_skip                   : 가게세 1회 통과 (9)
 ##  blocked:true                : v1 시뮬 미지원(등록만, 무효과) — 사유는 버프.md '시뮬 미지원' 표
 
-const ALL := {
+static var ALL := {
 	# ── 전역 도움(유틸) ──
 	# name/label은 로케일 파일(b.<slug>.name/label)로 이동 — display_name/display_label로 조회.
 	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.71}},
