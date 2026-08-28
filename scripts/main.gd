@@ -1981,7 +1981,7 @@ func _show_week_closed(summary: Dictionary) -> void:
     m.add_row(sr)   # 오늘 판매 내역(메뉴별 + 합계)
   else:
     var rev := UI.label("+" + UI.money(int(summary.get("revenue", 0))), 26, Palette.SUCCESS, true)
-    m.add_row(_settle_icon_row("coin", rev, 26))
+    m.add_row(_settle_icon_row("star", rev, 26))
   var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
   if cr != null:
     m.add_row(cr)
@@ -2026,7 +2026,7 @@ func _sales_rows() -> Control:
     var gap := Control.new()
     gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     row.add_child(gap)
-    row.add_child(UI.ui_icon("coin", 16))
+    row.add_child(UI.ui_icon("star", 16))
     row.add_child(UI.label(UI.money(line_total), 15, Palette.COCOA_800, true))
     if bonus > 0:
       row.add_child(UI.label("  +" + UI.money(bonus), 13, Palette.MAIN))
@@ -2042,7 +2042,7 @@ func _sales_rows() -> Control:
   var tgap := Control.new()
   tgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   trow.add_child(tgap)
-  trow.add_child(UI.ui_icon("coin", 16))
+  trow.add_child(UI.ui_icon("star", 16))
   trow.add_child(UI.label(UI.money(sum_total), 16, Palette.COCOA_800, true))
   if sum_bonus > 0:
     trow.add_child(UI.label("  +" + UI.money(sum_bonus), 13, Palette.MAIN))
