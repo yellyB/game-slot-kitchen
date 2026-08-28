@@ -402,6 +402,10 @@ func on_cook_start() -> bool:
 			return true
 	return false
 
+## 60: 다음 주문 즉시완료 대기 여부(소비 안 함 — 놓을 자리 확인 후 소비하려고 분리).
+func has_instant_order() -> bool:
+	return _instant_order
+
 ## 60: 다음 주문 즉시완료 대기 소비.
 func consume_instant_order() -> bool:
 	if _instant_order:

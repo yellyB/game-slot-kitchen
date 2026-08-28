@@ -740,25 +740,27 @@ func _on_confirm_order(customer: Customer) -> void:
   _fly_order_to_slot(order, slot, from_pos)
   _reflow_queue(others, oldp)   # 남은 손님이 새 자리로 슬라이드(즉시 점프 방지)
   _accepted_today += 1
-  # 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략).
-  if Buffs.consume_instant_order():
-    _produce_dish(rid)
+  # 카드60: N번째 주문마다 즉시 완성품 생성(재료·조리 생략). 놓을 자리 있을 때만 발동 소비(없으면 다음 주문 재시도).
+  if Buffs.has_instant_order() and _produce_dish(rid):
+    Buffs.consume_instant_order()
   _refresh_warehouse()
 
 
 ## 완성품을 즉시 생성해 보드에 올림(카드60 즉시완료 등). 유휴 도구석 우선, 없으면 빈 슬롯.
-func _produce_dish(rid: String) -> void:
+## 놓을 자리(도구석·슬롯)가 없으면 false 반환 — 호출측이 발동을 소비하지 않고 유지한다.
+func _produce_dish(rid: String) -> bool:
   for t in _board.tools:
     if t.is_idle():
       t.produce_instant(rid)
-      return
+      return true
   var s := _board.first_empty_slot()
   if s == null:
-    return
+    return false
   var dish := DishCard.new()
   dish.setup(rid)
   dish.born = _session.now()
   s.place_card(dish)
+  return true
 
 
 ## 인내심 임박 재촉 — 카드 위에 💢 팝(카드 흔들림은 카드가 자체 처리).
