@@ -9,6 +9,7 @@ const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
 const WAVE_STEP := 1
 const WAVE_CAP := 18
+const WEEK_TARGET_WEIGHTS := [1, 2, 3, 4]
 
 const MONTHS := [
 	{"waves": [11, 12, 13, 14]},
@@ -39,6 +40,18 @@ static func _waves(mi: int, wi: int) -> int:
 	var base := int((MONTHS[MONTHS.size() - 1]["waves"] as Array)[wi])
 	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
 
+static func _week_gate(mr: int, wi: int) -> int:
+	if wi >= WEEKS_PER_MONTH - 1:
+		return mr
+	var total := 0
+	for x in WEEK_TARGET_WEIGHTS:
+		total += int(x)
+	var cum := 0
+	for i in wi + 1:
+		cum += int(WEEK_TARGET_WEIGHTS[i])
+	return int(round(float(mr) * float(cum) / float(total)))
+
+
 static func get_week(week: int) -> Dictionary:
 	var w := maxi(0, week - 1)
 	var mi := w / WEEKS_PER_MONTH
@@ -52,13 +65,15 @@ static func get_week(week: int) -> Dictionary:
 			pw = int(round(float(pw) * mult))
 	if OS.has_environment("SIM_RENT"):
 		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
+	var gate := _week_gate(mr, wi)
 	return {
 		"per_wave": pw,
 		"month": mi + 1,
 		"week_in_month": wi + 1,
 		"is_month_end": is_end,
 		"monthly_rent": mr,
-		"rent": mr if is_end else 0,
+		"target": gate,
+		"rent": gate,
 		"weeks_left": (WEEKS_PER_MONTH - 1) - wi,
 	}
 
