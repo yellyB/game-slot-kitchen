@@ -86,7 +86,7 @@ const S := {
 	"b.day_len.name": "연장영업", "b.day_len.label": "영업시간 +29%",
 	"b.wh_chance.name": "순간이동", "b.wh_chance.label": "창고 나갈때 86%확률로 시간이 소요되지 않음",
 	"b.wh_fast.name": "헤르메스의 발걸음", "b.wh_fast.label": "창고 나갈 때 시간 소모 -92%",
-	"b.rent_down.name": "가게세 할인", "b.rent_down.label": "가게세 -23%",
+	"b.rent_down.name": "목표 완화", "b.rent_down.label": "목표 점수 -23%",
 	"b.shop_disc.name": "바겐세일", "b.shop_disc.label": "상점 할인 -10%",
 	"b.pack_more.name": "후보확장", "b.pack_more.label": "카드팩 오픈 시 나오는 카드 개수 +1개",
 	"b.rent_skip.name": "한번은 봐준다", "b.rent_skip.label": "목표 미달 시 이번 주는 통과. 사용 시 파괴됨",

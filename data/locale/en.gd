@@ -86,7 +86,7 @@ const S := {
 	"b.day_len.name": "Overtime", "b.day_len.label": "Open hours +29%",
 	"b.wh_chance.name": "Teleport", "b.wh_chance.label": "86% chance pantry trip costs no time",
 	"b.wh_fast.name": "Hermes' Boots", "b.wh_fast.label": "Pantry exit time -92%",
-	"b.rent_down.name": "Rent Cut", "b.rent_down.label": "Rent -23%",
+	"b.rent_down.name": "Lower Bar", "b.rent_down.label": "Target score -23%",
 	"b.shop_disc.name": "Bargain Sale", "b.shop_disc.label": "Shop prices -10% (WIP)",
 	"b.pack_more.name": "Extra Card", "b.pack_more.label": "Buff pack +1 choice (WIP)",
 	"b.rent_skip.name": "Get Out of Jail", "b.rent_skip.label": "Miss the target once and still pass this week. Consumed on use",
