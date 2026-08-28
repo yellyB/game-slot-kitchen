@@ -174,6 +174,43 @@ func _ready() -> void:
     SimBatch.new().buff_report(bn)
     get_tree().quit()
 
+  if "--simtier" in OS.get_cmdline_user_args():
+    var tn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
+    var mults := PackedFloat32Array()
+    if OS.has_environment("SIM_MULTS"):
+      for s in OS.get_environment("SIM_MULTS").split(","):
+        mults.append(float(s))
+    else:
+      mults = PackedFloat32Array([2.0, 3.0, 5.0, 9.0])
+    var cards := ["sale_t12", "sale_t34", "sale_t56"]
+    var b := SimBatch.new()
+    var base := b.run(tn, [], false)
+    var bscore := float(base.get("avg_score", 0.0))
+    print("[SIMTIER] base(버프0)  점수 %.1f  일수 %.2f  (n=%d, SIM_RENT=%s, SIM_MAXDAY=%s)" % [
+      bscore, base["avg_days"], tn,
+      OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1",
+      OS.get_environment("SIM_MAXDAY") if OS.has_environment("SIM_MAXDAY") else "-"])
+    if OS.has_environment("SIM_CURVE"):
+      var cv := OS.get_environment("SIM_CURVE").split(",")
+      for i in cards.size():
+        var cid: String = cards[i]
+        var m := float(cv[i])
+        BuffDefs.ALL[cid]["sale"]["pct"] = m
+        var r := b.run(tn, [cid], false)
+        var sc := float(r.get("avg_score", 0.0))
+        print("[SIMTIER] %-10s ×%-4.1f  점수 %9.1f  Δ%+9.1f  (×base %.2f)" % [
+          cid, m, sc, sc - bscore, sc / maxf(bscore, 1.0)])
+      get_tree().quit()
+      return
+    for m in mults:
+      for cid in cards:
+        BuffDefs.ALL[cid]["sale"]["pct"] = float(m)
+        var r := b.run(tn, [cid], false)
+        var sc := float(r.get("avg_score", 0.0))
+        print("[SIMTIER] %-10s ×%-4.1f  점수 %9.1f  Δ%+9.1f  (×base %.2f)" % [
+          cid, m, sc, sc - bscore, sc / maxf(bscore, 1.0)])
+    get_tree().quit()
+
 
 func _on_home_pressed() -> void:
   _set_world_paused(true)

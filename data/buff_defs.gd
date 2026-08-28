@@ -1,7 +1,7 @@
 class_name BuffDefs
 extends RefCounted
 
-const ALL := {
+static var ALL := {
 	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.71}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.35}},
 	"day_len":    {"card": 3, "icon": "🕒", "mult": {"stat": "day_mult", "value": 1.29}},
