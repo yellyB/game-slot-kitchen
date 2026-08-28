@@ -178,117 +178,119 @@ static func _buff_icon(id: String) -> String:
 	return str(BuffDefs.get_def(id).get("icon", "✨"))
 
 
+## 슬롯 배치 순서로 정렬된 보유 버프 id 리스트. 위치 있는 것 먼저(슬롯 인덱스 오름차순),
+## 위치 없는(-1) 것은 뒤에 기존 _owned 순서 유지. 순차 점수 모델의 적용 순서.
+func _sale_order() -> Array:
+	var positioned: Array = []
+	var loose: Array = []
+	for id in _owned:
+		if slot_pos(id) >= 0:
+			positioned.append(id)
+		else:
+			loose.append(id)
+	positioned.sort_custom(func(a, b): return slot_pos(a) < slot_pos(b))
+	positioned.append_array(loose)
+	return positioned
+
+
 func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var mp := menu_price(recipe_id)
 	var tier := int(Recipes.get_def(recipe_id).get("tier", 0))
-	var pct := 0.0          # 메뉴가격에 곱할 추가 %(합연산)
-	var flat := 0           # 정액 추가금(원)
-	var addon_pct := 0.0    # 앰프(57): 추가금 재증폭
-	var do_double := false  # 41 확률 2배
-	var accum_pct := 0.0    # 45 이번 판매 적립율
+	var running := float(mp)   # 누적 점수 — 슬롯 순서대로 버프를 즉시 적용
 	var penalty := 0
 	var discard := ""
-	var addon_id := ""
+	var mult := 1.0            # 표시용: 곱셈 카드들의 누적 배수
+	var mult_id := ""
+	var accum_pct := 0.0       # 45 이번 판매 적립율
 	var accum_id := ""
-	var double_id := ""
-	var mult := 1.0         # 배수 축(곱연산) — "mult" 타입 카드·대박·보복이 곱해서 쌓음(실수)
-	var mult_id := ""       # 배수 기여 대표 버프(표시용)
-	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]   # 기본가(메뉴 아이콘) 먼저
+	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]
 
-	for id in _owned:
+	for id in _sale_order():
 		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
 		if s.is_empty():
 			continue
-		var dpct := 0.0
-		var dflat := 0
+		var before := running
 		match s.get("type", ""):
 			"flat":
-				dpct = float(s["pct"]) - 1.0
+				running *= float(s["pct"])
 			"tier":
 				if tier in s.get("tiers", []):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"count":
-				dpct = float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx))
+				running += float(mp) * (float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx)))
 			"full":
 				if int(ctx.get("empty", -1)) == 0:
-					dpct = float(s["pct"])
+					running *= float(s["value"] if s.has("value") else s["pct"])
 			"prob_double":
 				if randf() < float(s.get("chance", 0.0)):
-					do_double = true
-					double_id = id
+					running *= 2.0
+					mult *= 2.0
+					mult_id = id
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"risk":
-				dpct = float(s["pct"]) - 1.0
+				running *= float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
 					discard = id
 					penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
 			"fresh":
 				if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"fast_order":
 				if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"late":
 				if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"consumed":
-				dpct = (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0)))
+				running *= (1.0 + (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0))))
 			"critical":
 				if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
-					dpct = float(s["pct"]) - 1.0
-			"addon":
-				addon_pct += float(s["pct"])
-				addon_id = id
+					running *= float(s["pct"])
+			"addon":                      # 57: 지금까지 버프로 늘어난 몫을 재증폭
+				running += (running - float(mp)) * float(s["pct"])
 			"accum":
 				accum_pct += float(s["pct"])
 				accum_id = id
-			"mult":                       # 배수(곱연산) — 조건 충족 시 실수 배수를 곱함
+			"mult":
 				var mok := true
 				match s.get("when", ""):
 					"board_full": mok = int(ctx.get("empty", -1)) == 0
 					"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
 				if mok:
+					running *= float(s["value"])
 					mult *= float(s["value"])
 					mult_id = id
-			"mult_count":                 # 최종점수축 배수 — base + step×개수 를 최종에 곱함(base 없으면 1.0)
+			"mult_count":                 # base + step×개수 (base 없으면 1.0)
 				var mc := _ctx_count(s.get("per", ""), ctx)
 				var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
 				if mf != 1.0:
+					running *= mf
 					mult *= mf
 					mult_id = id
-		# 이 버프의 기여금 — 누적 %로 증분 반올림(합이 총 보너스와 정확히 일치)
-		var contrib := 0
-		if dpct != 0.0:
-			var new_pct := pct + dpct
-			contrib += int(round(float(mp) * new_pct)) - int(round(float(mp) * pct))
-			pct = new_pct
-		if dflat != 0:
-			contrib += dflat
-			flat += dflat
-		if contrib != 0:
-			breakdown.append({"src": id, "amount": contrib, "buff": id, "icon": _buff_icon(id)})
+			"exp_count":                  # 지수형: (1+rate)^개수
+				var ec := _ctx_count(s.get("per", ""), ctx)
+				var ef := pow(1.0 + float(s.get("rate", 0.0)), float(ec))
+				if ef != 1.0:
+					running *= ef
+					mult *= ef
+					mult_id = id
+		var delta := int(round(running)) - int(round(before))
+		if delta != 0:
+			breakdown.append({"src": id, "amount": delta, "buff": id, "icon": _buff_icon(id)})
 
-	var bonus := int(round(float(mp) * pct)) + flat
-	if addon_pct > 0.0:
-		var add := int(round(float(bonus) * addon_pct))   # 57: 추가금 재증폭
-		bonus += add
-		if add != 0:
-			breakdown.append({"src": "addon", "amount": add, "buff": addon_id, "icon": _buff_icon(addon_id)})
-	var amount := mp + bonus
-	if do_double:
-		mult *= 2.0
-		if mult_id == "":
-			mult_id = double_id
-	if _double_next:                                     # 72
+	if _double_next:                                     # 72 보복 예약분
+		var before2 := running
+		running *= 2.0
 		mult *= 2.0
 		_double_next = false
-	if mult > 1.0:
-		var before := amount
-		amount = int(round(float(amount) * mult))   # 실수 배수 → 반올림
-		breakdown.append({"src": "double", "amount": amount - before, "buff": mult_id, "icon": _buff_icon(mult_id)})
-	if accum_pct > 0.0:                                  # 45: 현재 적립분 획득 후, 이번 판매금의 %만 누적(복리 차단)
+		var d2 := int(round(running)) - int(round(before2))
+		if d2 != 0:
+			breakdown.append({"src": "double", "amount": d2, "buff": mult_id, "icon": _buff_icon(mult_id)})
+
+	var amount := int(round(running))
+	if accum_pct > 0.0:                                  # 45: 적립분 지급 후 이번 판매금의 %만 누적(복리 차단)
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
 		amount += payout
