@@ -69,8 +69,8 @@ func _ready() -> void:
   scroll.add_child(body)
 
   var coupon_n := clampi(Config.MAX_SLOTS - session.slots, 0, 2)
-  for _i in coupon_n:
-    _add_slot_coupon(body)
+  for i in coupon_n:
+    _add_slot_coupon(body, i)
   for _i in (3 - coupon_n):
     _add_buff_pack(body)
 
@@ -173,9 +173,9 @@ func _product(parent: Node, icon: Control, price: int, btn_text: String, btn_col
   return btn
 
 
-func _add_slot_coupon(parent: Node) -> void:
+func _add_slot_coupon(parent: Node, offset: int) -> void:
   var st := {"kind": "coupon", "done": false}
-  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  var price := Config.slot_price(session.day, session.slots - Config.START_SLOTS + offset)
   st["btn"] = _product(parent, UI.ui_icon("slot_expand", 72), price, Loc.t("shop_buy"), Palette.SUB, func(): _on_buy_coupon(st))
   st["card"] = _last_card
   st["price_label"] = _last_price_label
@@ -544,22 +544,25 @@ func _pop_buff_btn() -> void:
 func _refresh() -> void:
   _cash_label.text = UI.money(session.cash)
 
-  var slot_price := Config.slot_price(session.day, session.slots - Config.START_SLOTS)
+  var bought := session.slots - Config.START_SLOTS
+  var coupon_k := 0
   for st in _products:
     var btn: Button = st["btn"]
     var sold := false
     if st["kind"] == "coupon":
-      (st["price_label"] as Label).text = UI.money(slot_price)
       if st["done"] or session.slots >= Config.MAX_SLOTS:
         sold = true
         btn.text = Loc.t("sold_out")
         btn.disabled = true
         btn.modulate = Color.WHITE
       else:
+        var price := Config.slot_price(session.day, bought + coupon_k)
+        (st["price_label"] as Label).text = UI.money(price)
+        var buyable := coupon_k == 0 and session.cash >= price
+        coupon_k += 1
         btn.text = Loc.t("shop_buy")
-        var can_slot := session.cash >= slot_price
-        btn.disabled = not can_slot
-        btn.modulate = Color.WHITE if can_slot else Color(1, 1, 1, 0.5)
+        btn.disabled = not buyable
+        btn.modulate = Color.WHITE if buyable else Color(1, 1, 1, 0.5)
     else:
       if st["done"]:
         sold = true
