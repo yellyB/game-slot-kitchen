@@ -156,69 +156,76 @@ static func _buff_icon(id: String) -> String:
 	return str(BuffDefs.get_def(id).get("icon", "✨"))
 
 
+func _sale_order() -> Array:
+	var positioned: Array = []
+	var loose: Array = []
+	for id in _owned:
+		if slot_pos(id) >= 0:
+			positioned.append(id)
+		else:
+			loose.append(id)
+	positioned.sort_custom(func(a, b): return slot_pos(a) < slot_pos(b))
+	positioned.append_array(loose)
+	return positioned
+
+
 func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 	var mp := menu_price(recipe_id)
 	var tier := int(Recipes.get_def(recipe_id).get("tier", 0))
-	var pct := 0.0
-	var flat := 0
-	var addon_pct := 0.0
-	var do_double := false
-	var accum_pct := 0.0
+	var running := float(mp)
 	var penalty := 0
 	var discard := ""
-	var addon_id := ""
-	var accum_id := ""
-	var double_id := ""
 	var mult := 1.0
 	var mult_id := ""
+	var accum_pct := 0.0
+	var accum_id := ""
 	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]
 
-	for id in _owned:
+	for id in _sale_order():
 		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
 		if s.is_empty():
 			continue
-		var dpct := 0.0
-		var dflat := 0
+		var before := running
 		match s.get("type", ""):
 			"flat":
-				dpct = float(s["pct"]) - 1.0
+				running *= float(s["pct"])
 			"tier":
 				if tier in s.get("tiers", []):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"count":
-				dpct = float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx))
+				running += float(mp) * (float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx)))
 			"full":
 				if int(ctx.get("empty", -1)) == 0:
-					dpct = float(s["pct"])
+					running *= float(s["value"] if s.has("value") else s["pct"])
 			"prob_double":
 				if randf() < float(s.get("chance", 0.0)):
-					do_double = true
-					double_id = id
+					running *= 2.0
+					mult *= 2.0
+					mult_id = id
 			"prob_pct":
 				if randf() < float(s.get("chance", 0.0)):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"risk":
-				dpct = float(s["pct"]) - 1.0
+				running *= float(s["pct"])
 				if randf() < float(s.get("chance", 0.0)):
 					discard = id
 					penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
 			"fresh":
 				if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"fast_order":
 				if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"late":
 				if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"consumed":
-				dpct = (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0)))
+				running *= (1.0 + (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0))))
 			"critical":
 				if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
-					dpct = float(s["pct"]) - 1.0
+					running *= float(s["pct"])
 			"addon":
-				addon_pct += float(s["pct"])
-				addon_id = id
+				running += (running - float(mp)) * float(s["pct"])
 			"accum":
 				accum_pct += float(s["pct"])
 				accum_id = id
@@ -228,43 +235,37 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 					"board_full": mok = int(ctx.get("empty", -1)) == 0
 					"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
 				if mok:
+					running *= float(s["value"])
 					mult *= float(s["value"])
 					mult_id = id
 			"mult_count":
 				var mc := _ctx_count(s.get("per", ""), ctx)
 				var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
 				if mf != 1.0:
+					running *= mf
 					mult *= mf
 					mult_id = id
-		var contrib := 0
-		if dpct != 0.0:
-			var new_pct := pct + dpct
-			contrib += int(round(float(mp) * new_pct)) - int(round(float(mp) * pct))
-			pct = new_pct
-		if dflat != 0:
-			contrib += dflat
-			flat += dflat
-		if contrib != 0:
-			breakdown.append({"src": id, "amount": contrib, "buff": id, "icon": _buff_icon(id)})
+			"exp_count":
+				var ec := _ctx_count(s.get("per", ""), ctx)
+				var ef := pow(1.0 + float(s.get("rate", 0.0)), float(ec))
+				if ef != 1.0:
+					running *= ef
+					mult *= ef
+					mult_id = id
+		var delta := int(round(running)) - int(round(before))
+		if delta != 0:
+			breakdown.append({"src": id, "amount": delta, "buff": id, "icon": _buff_icon(id)})
 
-	var bonus := int(round(float(mp) * pct)) + flat
-	if addon_pct > 0.0:
-		var add := int(round(float(bonus) * addon_pct))
-		bonus += add
-		if add != 0:
-			breakdown.append({"src": "addon", "amount": add, "buff": addon_id, "icon": _buff_icon(addon_id)})
-	var amount := mp + bonus
-	if do_double:
-		mult *= 2.0
-		if mult_id == "":
-			mult_id = double_id
 	if _double_next:
+		var before2 := running
+		running *= 2.0
 		mult *= 2.0
 		_double_next = false
-	if mult > 1.0:
-		var before := amount
-		amount = int(round(float(amount) * mult))
-		breakdown.append({"src": "double", "amount": amount - before, "buff": mult_id, "icon": _buff_icon(mult_id)})
+		var d2 := int(round(running)) - int(round(before2))
+		if d2 != 0:
+			breakdown.append({"src": "double", "amount": d2, "buff": mult_id, "icon": _buff_icon(mult_id)})
+
+	var amount := int(round(running))
 	if accum_pct > 0.0:
 		var payout := _accum
 		_accum += int(round(float(amount) * accum_pct))
