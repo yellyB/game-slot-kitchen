@@ -675,23 +675,24 @@ func _on_confirm_order(customer: Customer) -> void:
   _fly_order_to_slot(order, slot, from_pos)
   _reflow_queue(others, oldp)
   _accepted_today += 1
-  if Buffs.consume_instant_order():
-    _produce_dish(rid)
+  if Buffs.has_instant_order() and _produce_dish(rid):
+    Buffs.consume_instant_order()
   _refresh_warehouse()
 
 
-func _produce_dish(rid: String) -> void:
+func _produce_dish(rid: String) -> bool:
   for t in _board.tools:
     if t.is_idle():
       t.produce_instant(rid)
-      return
+      return true
   var s := _board.first_empty_slot()
   if s == null:
-    return
+    return false
   var dish := DishCard.new()
   dish.setup(rid)
   dish.born = _session.now()
   s.place_card(dish)
+  return true
 
 
 func _on_urged(card: Control) -> void:

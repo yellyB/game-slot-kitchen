@@ -371,6 +371,9 @@ func on_cook_start() -> bool:
 			return true
 	return false
 
+func has_instant_order() -> bool:
+	return _instant_order
+
 func consume_instant_order() -> bool:
 	if _instant_order:
 		_instant_order = false
