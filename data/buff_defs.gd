@@ -90,9 +90,9 @@ static var ALL := {
 	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 2.9}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
 	# ── 판매금: 조건부/앰프(53~58) ──
-	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 8.6}},
-	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 4.0}},
-	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 9.0}},
+	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 5.0}},
+	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 2.5}},
+	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 3.0}},
 	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 3.4}},
 	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 5.2}},
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.69}},
