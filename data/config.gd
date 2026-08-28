@@ -41,8 +41,13 @@ const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절
 # 램프(판매 누적) 상한 — 메뉴별 누적 인상액 ≤ 기본점수 × 이 배수. 무한 복리 폭주 차단.
 const RAMP_CAP_MULT := 30
 # 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만 들어옴. 소액.
-const WEEK_REWARD_BASE := 5
+const WEEK_REWARD_BASE := 4       # 첫 주 완료 보상(돈)
+const WEEK_REWARD_STEP := 1       # 주마다 증가분(1~2 권장) — 작다가 점점 증가
 const WEEK_REWARD_PER_SERVE := 0
+
+## 주 완료 보상 = 기본 + 주당 증가 × (경과 주-1) + 서빙당 보너스. day=1-base 주차.
+static func week_reward(day: int, served: int) -> int:
+	return WEEK_REWARD_BASE + WEEK_REWARD_STEP * maxi(0, day - 1) + served * WEEK_REWARD_PER_SERVE
 const BUFF_SELL_RATIO := 0.2  # 보유 버프 판매 환급률 (버프팩 가격의 20% = 500→100원)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 const SCORE_GATE_FEE_DIV := 100  # 실적(점수) 미달 시 목표점수의 1/이 값 만큼 코인 지불로 통과

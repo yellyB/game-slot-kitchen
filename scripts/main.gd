@@ -1149,7 +1149,7 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])   # 정산3형제·콩고물 = 점수
   var money_g := int(db["money"])   # 손절 = 돈
-  money_g += Config.WEEK_REWARD_BASE + _served_today * Config.WEEK_REWARD_PER_SERVE   # 주 클리어 보상
+  money_g += Config.week_reward(_session.day, _served_today)   # 주 클리어 보상(주마다 증가)
   if score_g != 0 or money_g != 0:
     _settle_bonus = money_g   # 코인 연출은 돈만(점수는 라벨만 갱신)
 
