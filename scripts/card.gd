@@ -8,6 +8,9 @@ var _style: StyleBoxFlat
 var _wrap: Control     # 카드 내용영역을 꽉 채우는 래퍼(full-rect)
 var _holder: Control   # 내용을 담는 안쪽 홀더 — 자연 크기로 중앙 배치 후 통째 축소(균등 여백)
 var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 전 측정) — fit 기준
+## 내용이 아이콘 행(고정 폭)인 카드는 true — 좁아지면 폭 기준으로도 축소해 오른쪽 넘침을 막는다.
+## false(기본)는 자동 줄바꿈 라벨 보호용(넓은 1줄 폭으로 과축소 방지).
+var _scale_to_width := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -85,7 +88,8 @@ func _fit_wrap() -> void:
 		return
 	# 자동 줄바꿈 라벨은 측정 시 '한 줄로 편' 넓은 min-width를 보고 → 축소 강제로 내용이 과소해짐.
 	# 가로 최소치를 카드 폭으로 클램프(넓은 텍스트는 축소 대신 줄바꿈, 축소는 세로 기준만).
-	var cmin_x := minf(_content_min.x, avail.x)
+	# 단 아이콘 행 카드(_scale_to_width)는 클램프하지 않고 실제 폭으로 축소 → 오른쪽 넘침 방지.
+	var cmin_x := _content_min.x if _scale_to_width else minf(_content_min.x, avail.x)
 	# 홀더 크기 = max(자연 크기, 내용영역) — 넘칠 땐 자연 크기(대칭), 넉넉할 땐 내용영역(꽉 참).
 	var target := Vector2(maxf(cmin_x, avail.x), maxf(_content_min.y, avail.y))
 	_holder.size = target
