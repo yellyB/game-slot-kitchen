@@ -26,6 +26,20 @@
 
 체크: 이름을 바꾸면 ②의 name과 ③의 문서 이름이 같은지, 수치를 바꾸면 ①·②·③·④가 같은 값인지 커밋 전 대조한다. (카드번호↔slug는 `buff_defs.gd`의 `card` 필드로 매핑.)
 
+## 시뮬 하네스 (밸런스 검증)
+
+밸런스 수치를 바꾸기 전/후엔 헤드리스 시뮬로 근거를 잡는다. 실행: `godot4 --headless res://scenes/Main.tscn -- <모드>` (진입점 `scripts/main.gd`).
+
+- `--sim` : 생존 시뮬(상점 ON, 빈 로드아웃으로 스스로 성장). 승률·현금·생존일수 집계.
+- `--simbuffs` : 버프 1개씩 단독으로 base 대비 Δ승률·Δ현금 측정(상점 OFF로 순효과 격리).
+- `--simtier` : 등급판매(53~55) 배수 곡선 탐색. `SIM_MULTS`로 세 카드에 같은 배수를 스윕해 카드별 레버리지를 재고, `SIM_CURVE=고수,장인,명장`로 개별 곡선을 검증한다.
+
+환경변수(가혹도·지평선 조절): `SIM_N`(판수) · `SIM_RENT`(월세 배수, 가혹도) · `SIM_MULTS`(콤마 배수 목록) · `SIM_CURVE`(카드별 배수) · `SIM_MAXDAY`(이 일수까지만 진행, 고정 지평선) · `SIM_NOFAIL`(월세 실패해도 계속 진행 — 순수 점수 누적용, 후반 날에 무한루프 주의) · `SIM_TRACE=<seed수>`(그 시드까지 일자별 추적 출력) · `SIM_GROWTH`·`SIM_ACCEL`(월세 곡선) · `SIM_LOAD`(손님 수 배수) · `SIM_HANDLE`·`SIM_MISS`·`SIM_TRIP`.
+
+예) 균형 곡선 검증: `SIM_MAXDAY=4 SIM_N=500 SIM_CURVE=5,2.5,3 godot4 --headless res://scenes/Main.tscn -- --simtier`
+
+주의: 점수 카드는 shop-off·무한생존 모드에서 승률이 항상 0%가 되므로(승리조건 도달 불가) 변별엔 생존일수나 `SIM_MAXDAY` 고정 지평선의 누적 점수를 쓴다. 시뮬 실행이 겹치면 이전 godot 프로세스가 CPU를 물고 있어 느려지니 `pkill -f Main.tscn`로 정리 후 돌린다.
+
 ## 커밋 규칙 (중요)
 
 여러 작업 에이전트가 항상 동시에 이 저장소를 편집한다. 그냥 `git add -A`/`git add .`/`git commit -a`로 막 커밋하면 **다른 에이전트가 작업 중인 변경분까지 섞여 들어간다.**
