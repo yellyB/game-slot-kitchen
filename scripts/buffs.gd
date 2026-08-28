@@ -350,7 +350,8 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 			_instant_order = true
 
 func _add_ramp(recipe_id: String, inc: int) -> void:
-	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
+	var cap := int(round(float(Recipes.get_def(recipe_id).get("price", 0)) * Config.RAMP_CAP_MULT))
+	_ramp_bonus[recipe_id] = mini(cap, int(_ramp_bonus.get(recipe_id, 0)) + inc)
 
 func serve_tip() -> int:
 	var g := 0

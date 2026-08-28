@@ -2,8 +2,8 @@ class_name Levels
 extends RefCounted
 
 const WEEKS_PER_MONTH := 4
-const RENT_BASE := 6300
-const RENT_ONBOARD := [300, 1500, 5000, 12000, 20000, 32000]
+const RENT_BASE := 4000
+const RENT_ONBOARD := [300, 1200, 3500, 7000, 13000, 22000]
 const RENT_GROWTH := 1.25
 const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
