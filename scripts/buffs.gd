@@ -232,8 +232,9 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 					mult_id = id
 			"mult_count":
 				var mc := _ctx_count(s.get("per", ""), ctx)
-				if mc > 0:
-					mult *= 1.0 + float(s["step"]) * float(mc)
+				var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
+				if mf != 1.0:
+					mult *= mf
 					mult_id = id
 		var contrib := 0
 		if dpct != 0.0:
