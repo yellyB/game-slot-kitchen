@@ -79,7 +79,7 @@ static var ALL := {
 	# ── 판매금: 콤보/연속/확률(42~52) ──
 	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
 	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 3.0}},
-	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 1.0}},
+	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 2.0}},
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.0, "window": 3.0}},
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.02}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 3.4}},
