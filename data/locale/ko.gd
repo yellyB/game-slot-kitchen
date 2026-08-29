@@ -124,7 +124,7 @@ const S := {
 	"b.sc_ingr.name": "준비는철저히", "b.sc_ingr.label": "슬롯 재료카드 1개당 점수 +1.2배",
 	"b.prob_x2.name": "대박", "b.prob_x2.label": "메뉴 서빙 시 40% 확률로 점수 두배",
 	"b.rt_streak3.name": "연속성장", "b.rt_streak3.label": "같은 메뉴를 3연속 팔면 그 메뉴 기본 점수의 3배씩 영구 증가",
-	"b.rt_every7.name": "럭키세븐", "b.rt_every7.label": "7번째 제공마다 그 메뉴 기본 점수의 1배씩 영구 증가",
+	"b.rt_every7.name": "럭키세븐", "b.rt_every7.label": "7번째 제공마다 그 메뉴 점수에 기본 점수만큼 영구히 더함(발동마다 누적)",
 	"b.rt_fast3.name": "빠른처리", "b.rt_fast3.label": "3초 내 3개를 처리하면 마지막 메뉴 기본 점수의 2배씩 영구 증가",
 	"b.accum_sale.name": "적립", "b.accum_sale.label": "서빙마다 점수의 2% 누적 획득. 재료 버리거나 이번 턴 끝나면 초기화",
 	"b.sale_flat3.name": "기초체력", "b.sale_flat3.label": "점수 ×3.4",
