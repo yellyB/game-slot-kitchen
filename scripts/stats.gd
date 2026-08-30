@@ -4,16 +4,17 @@ extends RefCounted
 ## 버프 존재 확인·적용은 오직 여기(또는 Buffs 훅). 손님·주문·조리·서빙 등은 이 수치만 바라본다.
 
 static func order_patience() -> float:
-	return Buffs.mod("patience_mult", Config.PATIENCE_ORDER) + Buffs.patience_flat()
+	return (Buffs.mod("patience_mult", Config.PATIENCE_ORDER) + Buffs.patience_flat()) * Boss.patience_mult()
 
 static func dish_patience() -> float:
-	return Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()
+	return (Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()) * Boss.patience_mult()
 
 ## 조리시간 — 카드1(cook_mult) + 카드38(깨끗한 주방). filled=보드에 놓인 카드 수.
 ## 카드38은 filled가 적을수록 빠름(최대 -40%, 카드 1개당 완화). 확장-중립(빈칸 안 셈).
 static func cook_time(recipe_id: String, filled := 999) -> float:
 	var t := Buffs.mod("cook_mult", float(Recipes.get_def(recipe_id).get("cook_time", 5.0)))
 	t *= maxf(0.1, 1.0 - Buffs.cook_clean_reduction(filled))
+	t *= Boss.cook_mult()   # 보스: 불 약한 화구 조리 지연
 	return maxf(0.1, t)
 
 static func day_length() -> float:

@@ -28,6 +28,8 @@ const S := {
 	"boss.small_kitchen": "좁은 주방",
 	"boss.time_short": "런치 러시",
 	"boss.pricey_trip": "비싼 발품",
+	"boss.slow_cook": "불 약한 화구",
+	"boss.impatient": "인내심 바닥",
 
 	# 게임 — 상단바 / 토스트
 	"day_n": "%d주차",

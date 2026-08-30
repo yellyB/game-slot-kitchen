@@ -9,6 +9,8 @@ const POOL := [
 	{"type": "small_kitchen", "icon": "🔒", "value": 3},    # 슬롯 3칸 잠금(작업공간 압박)
 	{"type": "time_short",    "icon": "⏱️", "value": 0.6},   # 영업시간 ×0.6(런치 러시)
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},   # 창고 트립 비용 ×2(비싼 발품)
+	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},   # 조리시간 ×1.4(불 약한 화구)
+	{"type": "impatient",     "icon": "🏃", "value": 0.6},   # 손님 인내심 ×0.6(인내심 바닥)
 ]
 
 static var _pending: Dictionary = {}   # 다음날 예약된 제약
@@ -65,6 +67,18 @@ static func locked_slots() -> int:
 	if kind() == "small_kitchen":
 		return int(active.get("value", 0))
 	return 0
+
+## 조리시간 배수(불 약한 화구). 일반날/미해당 = 1.0.
+static func cook_mult() -> float:
+	if kind() == "slow_cook":
+		return float(active.get("value", 1.0))
+	return 1.0
+
+## 손님 인내심 배수(인내심 바닥). 일반날/미해당 = 1.0.
+static func patience_mult() -> float:
+	if kind() == "impatient":
+		return float(active.get("value", 1.0))
+	return 1.0
 
 ## 현재 제약의 현지화 이름.
 static func label() -> String:
