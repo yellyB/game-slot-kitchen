@@ -27,6 +27,7 @@ var _max_mult_today := 1.0
 var _served_by_menu := {}
 var _sales_by_menu := {}
 var _settle_bonus := 0
+var _week_reward := 0
 
 var _day_num: Label
 var _money_label: Label
@@ -1120,7 +1121,7 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])
   var money_g := int(db["money"])
-  money_g += Config.week_reward(_session.day, _served_today)
+  _week_reward = Config.week_reward(_session.day, _served_today)
   if score_g != 0 or money_g != 0:
     _settle_bonus = money_g
 
@@ -1722,6 +1723,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _served_by_menu = {}
   _sales_by_menu = {}
   _settle_bonus = 0
+  _week_reward = 0
   Buffs.reset_day()
   Move.clear()
   _board.rebuild(_session.effective_slots() + Buffs.buff_slot_bonus())
@@ -1960,6 +1962,29 @@ func _add_settle_bonus_row(m: Modal) -> void:
   _animate_settle_bonus(amt_l, bonus)
 
 
+func _pay_week_reward(m: Modal) -> void:
+  if _week_reward <= 0:
+    return
+  var reward := _week_reward
+  _week_reward = 0
+  _expect_fly = true
+  _session.earn(reward, false)
+  _expect_fly = false
+  _money_label.text = UI.money(_last_cash - reward)
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  row.add_child(UI.ui_icon("coin", 16))
+  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
+  row.add_child(amt_l)
+  m.add_row(row)
+  _animate_settle_bonus(amt_l, reward)
+
+
 func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   await get_tree().process_frame
   if not is_instance_valid(amt_l) or not is_inside_tree():
@@ -2086,6 +2111,8 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
 func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()
+
+  _pay_week_reward(m)
 
   var px := 38.0
   var mark := UI.ui_icon("pass_check", int(px))

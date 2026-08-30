@@ -68,6 +68,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 		if _last.get("won", false):
 			result["won"] = true
 			break
+		if _last.get("passed", false):
+			session.earn(Config.week_reward(session.day, _served_today), false)
 		if shop_enabled:
 			_shop()
 		session.advance_day()
@@ -485,7 +487,7 @@ func _on_day_closing(s: Session) -> void:
 	var db := Buffs.day_end_bonus(ctx)
 	if int(db["score"]) != 0:
 		s.earn(int(db["score"]), true)
-	var money_g := int(db["money"]) + Config.week_reward(session.day, _served_today)
+	var money_g := int(db["money"])
 	if money_g != 0:
 		s.earn(money_g, false)
 
