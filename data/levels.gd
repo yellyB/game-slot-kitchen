@@ -3,13 +3,14 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 4000
-const RENT_ONBOARD := [300, 1200, 3500, 7000, 13000, 22000]
+const RENT_ONBOARD := [440, 1200, 3500, 7000, 13000, 22000]
 const RENT_GROWTH := 1.25
 const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
 const WAVE_STEP := 1
 const WAVE_CAP := 18
 const WEEK_TARGET_WEIGHTS := [1, 2, 3, 4]
+const ONBOARD_M1_WEIGHTS := [10, 12, 8, 14]
 
 const MONTHS := [
 	{"waves": [11, 12, 13, 14]},
@@ -40,15 +41,16 @@ static func _waves(mi: int, wi: int) -> int:
 	var base := int((MONTHS[MONTHS.size() - 1]["waves"] as Array)[wi])
 	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
 
-static func _week_gate(mr: int, wi: int) -> int:
+static func _week_gate(mr: int, wi: int, mi: int) -> int:
 	if wi >= WEEKS_PER_MONTH - 1:
 		return mr
+	var weights: Array = ONBOARD_M1_WEIGHTS if mi == 0 else WEEK_TARGET_WEIGHTS
 	var total := 0
-	for x in WEEK_TARGET_WEIGHTS:
+	for x in weights:
 		total += int(x)
 	var cum := 0
 	for i in wi + 1:
-		cum += int(WEEK_TARGET_WEIGHTS[i])
+		cum += int(weights[i])
 	return int(round(float(mr) * float(cum) / float(total)))
 
 
@@ -65,7 +67,7 @@ static func get_week(week: int) -> Dictionary:
 			pw = int(round(float(pw) * mult))
 	if OS.has_environment("SIM_RENT"):
 		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
-	var gate := _week_gate(mr, wi)
+	var gate := _week_gate(mr, wi, mi)
 	return {
 		"per_wave": pw,
 		"month": mi + 1,
