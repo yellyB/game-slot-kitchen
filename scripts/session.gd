@@ -65,12 +65,13 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
-	Boss.begin_day()   # 예약된 보스 제약을 이번 날로 승격(없으면 일반날) — day_length 계산 전에
+	var wk := Levels.get_day(day)
+	Boss.begin_day(wk)   # 월말(4주차)=보스전 제약 자동 발동(디버그 예약 우선) — day_length 계산 전에
 	# 슬롯 = 기본(상점확장 포함) + 구조 버프(12)
-	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
+	rent = int(round(Buffs.mod("rent_mult", float(wk.get("rent", 0)))))
 	_rent_paid = false
 	day_revenue = 0
-	if int(Levels.get_day(day).get("week_in_month", 1)) == 1:
+	if int(wk.get("week_in_month", 1)) == 1:
 		month_score = 0
 	_elapsed = 0.0
 	_next_idx = 0

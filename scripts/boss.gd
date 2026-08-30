@@ -22,10 +22,20 @@ static func queue_random() -> Dictionary:
 static func has_pending() -> bool:
 	return not _pending.is_empty()
 
-## 하루 시작 시 1회 호출 — 예약분을 이번 날 active로 승격(1일 한정). 예약 없으면 일반날.
-static func begin_day() -> void:
-	active = _pending
-	_pending = {}
+## 이번 주가 월말(4주차=보스전)이면 걸 제약 1개 — 월별로 POOL 순환. 아니면 빈(일반날).
+static func for_week(week_info: Dictionary) -> Dictionary:
+	if not bool(week_info.get("is_month_end", false)):
+		return {}
+	var month := int(week_info.get("month", 1))
+	return POOL[(month - 1) % POOL.size()].duplicate()
+
+## 하루 시작 시 1회 호출 — 디버그 예약이 있으면 그걸, 없으면 월말(4주차)마다 제약 1개 자동 발동.
+static func begin_day(week_info := {}) -> void:
+	if not _pending.is_empty():
+		active = _pending
+		_pending = {}
+	else:
+		active = for_week(week_info)
 
 ## 새 런/타이틀 복귀 시 초기화 — 예약이 다음 판으로 새는 것 방지.
 static func reset() -> void:
