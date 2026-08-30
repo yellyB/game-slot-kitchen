@@ -10,6 +10,7 @@ var tools: Array = []
 var dishes: Array = []
 var ingredients: Array = []
 
+var force_menu := ""
 var _busy := 0.0
 var _handle := 0.0
 var _miss := 0.0
@@ -204,7 +205,7 @@ func _on_spawn() -> void:
 		_lost += 1
 		_missed_today += 1
 		return
-	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
+	queue.append({"id": force_menu if force_menu != "" else Stats.random_recipe(), "pat": Stats.order_patience()})
 
 
 func _decay_patience() -> void:
