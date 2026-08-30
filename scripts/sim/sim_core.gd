@@ -17,6 +17,7 @@ var tools: Array = []       # 도구: [{id, t}]
 var dishes: Array = []      # 완성품(미서빙): [{id, born}]
 var ingredients: Array = [] # 보드 위 재료 카드(멀티셋): [ingredient_id, ...]
 
+var force_menu := ""        # 세팅 시 모든 손님이 이 메뉴만 주문(메뉴별 효율 측정용)
 var _busy := 0.0            # 창고 트립·손동작(핸들링) 등으로 플레이어가 묶인 시간(초)
 var _handle := 0.0          # >0이면 현실 모드: 한 스텝에 한 동작 + 동작당 핸들링 타임(SIM_HANDLE)
 var _miss := 0.0            # 사람 놓침 확률(현실 모드, SIM_MISS)
@@ -223,7 +224,7 @@ func _on_spawn() -> void:
 		_lost += 1
 		_missed_today += 1
 		return
-	queue.append({"id": Stats.random_recipe(), "pat": Stats.order_patience()})
+	queue.append({"id": force_menu if force_menu != "" else Stats.random_recipe(), "pat": Stats.order_patience()})
 
 
 func _decay_patience() -> void:

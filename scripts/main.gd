@@ -230,6 +230,43 @@ func _ready() -> void:
           cid, m, sc, sc - bscore, sc / maxf(bscore, 1.0)])
     get_tree().quit()
 
+  # 메뉴별 효율: 손님이 한 메뉴만 주문하도록 강제해 처리량(점수/일)을 측정.
+  # 재료 수(트립·배치 시간)·조리시간(도구 점유)·서빙점수가 처리량에 녹아든다. 상점·버프 OFF로 격리.
+  # SIM_N=<판수> SIM_MAXDAY=<일> SIM_HANDLE=<손속도> godot4 ... -- --simmenu
+  if "--simmenu" in OS.get_cmdline_user_args():
+    var mmn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 300
+    if not OS.has_environment("SIM_MAXDAY"): OS.set_environment("SIM_MAXDAY", "3")
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    OS.set_environment("SIM_NOFAIL", "1")
+    var mdays := int(OS.get_environment("SIM_MAXDAY"))
+    print("\n[SIMMENU] ===== 메뉴별 효율 (단일메뉴 강제·상점OFF, n=%d, %d일, HANDLE=%s) =====" % [
+      mmn, mdays, OS.get_environment("SIM_HANDLE")])
+    var mrows := []
+    for rid in Recipes.all_ids():
+      var tot_score := 0
+      var tot_served := 0
+      for i in mmn:
+        var sim := SimCore.new()
+        sim.force_menu = rid
+        var r := sim.run([], i, false)
+        tot_score += int(r.get("score", 0))
+        tot_served += int(r.get("served", 0))
+      var d := Recipes.get_def(rid)
+      var ing_arr: Array = d.get("ingredients", [])
+      var denom := float(mmn * mdays)
+      mrows.append({
+        "name": d.get("name", rid), "ing": ing_arr.size(),
+        "cook": float(d.get("cook_time", 0.0)), "price": int(d.get("price", 0)),
+        "served": float(tot_served) / denom, "score": float(tot_score) / denom,
+      })
+    mrows.sort_custom(func(a, b): return a["score"] > b["score"])
+    print("[SIMMENU]  메뉴        재료  조리(s)  서빙점수   서빙/일   점수/일   점수/재료  점수/조리초")
+    for row in mrows:
+      print("[SIMMENU]  %-9s  %2d    %4.1f    %5d    %7.2f   %7.2f   %7.2f    %7.2f" % [
+        row["name"], row["ing"], row["cook"], row["price"], row["served"], row["score"],
+        row["score"] / maxf(1.0, float(row["ing"])), row["score"] / maxf(0.1, row["cook"])])
+    get_tree().quit()
+
 
 ## 홈 버튼 — 확인창(진행 중인 판이 사라짐).
 func _on_home_pressed() -> void:
