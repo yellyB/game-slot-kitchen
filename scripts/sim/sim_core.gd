@@ -78,6 +78,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 		if _last.get("won", false):
 			result["won"] = true
 			break
+		if _last.get("passed", false):
+			session.earn(Config.week_reward(session.day, _served_today), false)   # 실적검사 통과 후 주 클리어 보상
 		if shop_enabled:
 			_shop()                      # 벌어서 슬롯/버프 재투자
 		session.advance_day()
@@ -515,7 +517,7 @@ func _on_day_closing(s: Session) -> void:
 	var db := Buffs.day_end_bonus(ctx)
 	if int(db["score"]) != 0:
 		s.earn(int(db["score"]), true)
-	var money_g := int(db["money"]) + Config.week_reward(session.day, _served_today)
+	var money_g := int(db["money"])   # 주 클리어 보상은 실적검사 통과 후 지급(메인 루프) — 여기선 손절 등만
 	if money_g != 0:
 		s.earn(money_g, false)
 

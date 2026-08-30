@@ -43,6 +43,7 @@ const S := {
 	"win_days": "%d weeks cleared",
 	"day_closed": "Week %d closed",
 	"settle_bonus": "Close Bonus",
+	"week_reward": "Weekly Reward",
 	"settle_churn": "Walkout rate",
 	"score_pass": "Target met! Cleared",
 	"revenue": "Revenue  %s",

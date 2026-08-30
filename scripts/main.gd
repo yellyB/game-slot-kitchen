@@ -31,6 +31,7 @@ var _max_mult_today := 1.0  # OP 검사: 그날 최고 배수(곱연산)
 var _served_by_menu := {}   # 메뉴별 서빙 수 → 같은메뉴 최대(63·samemenu)
 var _sales_by_menu := {}    # 메뉴별 판매 집계(정산 팝업): rid → {count, base, bonus}
 var _settle_bonus := 0      # 마감 추가금(day_end_bonus) — day_closing에서 earn, 정산 팝업에서 연출
+var _week_reward := 0        # 주 클리어 보상 — 실적검사 통과 후(_settle_pass) 지급
 
 var _day_num: Label   # 일력 뱃지 위 날짜 숫자
 var _money_label: Label
@@ -1227,7 +1228,7 @@ func _on_day_closing(s: Session) -> void:
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])   # 정산3형제·콩고물 = 점수
   var money_g := int(db["money"])   # 손절 = 돈
-  money_g += Config.week_reward(_session.day, _served_today)   # 주 클리어 보상(주마다 증가)
+  _week_reward = Config.week_reward(_session.day, _served_today)   # 주 클리어 보상 — 지급은 실적검사 통과 후(_settle_pass)
   if score_g != 0 or money_g != 0:
     _settle_bonus = money_g   # 코인 연출은 돈만(점수는 라벨만 갱신)
 
@@ -1876,6 +1877,7 @@ func _on_day_started(day: int, rent: int) -> void:
   _served_by_menu = {}
   _sales_by_menu = {}
   _settle_bonus = 0
+  _week_reward = 0
   Buffs.reset_day()   # #45 적립 하루 리셋
   # 보드 재구성: 작업 슬롯 = 실효 슬롯(상점확장 + 구조버프12 slot_bonus).
   #   추가로 버프칸 보너스(11 buff_slot)만큼 슬롯을 더 둬서 그만큼 버프가 "공짜"로 얹히게 함
@@ -2138,6 +2140,30 @@ func _add_settle_bonus_row(m: Modal) -> void:
   _animate_settle_bonus(amt_l, bonus)
 
 
+## 주 클리어 보상 지급 — 실적검사 통과 시에만 호출. 지금 earn + "주간 보상 +N" 행 + 코인 연출.
+func _pay_week_reward(m: Modal) -> void:
+  if _week_reward <= 0:
+    return
+  var reward := _week_reward
+  _week_reward = 0
+  _expect_fly = true
+  _session.earn(reward, false)   # 통과 확정 후 실제 지급(연출은 아래 카운트업)
+  _expect_fly = false
+  _money_label.text = UI.money(_last_cash - reward)   # 롤백 후 카운트업으로 채움
+  var row := HBoxContainer.new()
+  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
+  var gap := Control.new()
+  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  row.add_child(gap)
+  row.add_child(UI.ui_icon("coin", 16))
+  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
+  row.add_child(amt_l)
+  m.add_row(row)
+  _animate_settle_bonus(amt_l, reward)
+
+
 ## 위 행의 등장 연출(비동기) — 팝업 +금액 카운트업 + 코인 버스트 + 상단 보유금 카운트업/팝.
 func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   await get_tree().process_frame   # 레이아웃 확정 후 위치 사용
@@ -2274,6 +2300,8 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
 func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()   # [실적확인] 또는 [지불/파산] 묶음 제거
+
+  _pay_week_reward(m)   # 주 클리어 보상 — 통과가 확정된 지금 지급(점수통과·지불통과 공용)
 
   var px := 38.0
   var mark := UI.ui_icon("pass_check", int(px))

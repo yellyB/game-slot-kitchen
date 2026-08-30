@@ -43,6 +43,7 @@ const S := {
 	"win_days": "%d주 완주",
 	"day_closed": "%d주차 마감",
 	"settle_bonus": "마감 보너스",
+	"week_reward": "주간 보상",
 	"settle_churn": "이탈율",
 	"score_pass": "실적 달성! 통과",
 	"revenue": "매출  %s",
