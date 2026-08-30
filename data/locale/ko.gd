@@ -130,7 +130,7 @@ const S := {
 	"b.rt_fast3.name": "빠른처리", "b.rt_fast3.label": "3초 내 3개를 처리하면 마지막 메뉴 기본 점수의 2배씩 영구 증가",
 	"b.accum_sale.name": "적립", "b.accum_sale.label": "서빙마다 점수의 2% 누적 획득. 재료 버리거나 이번 턴 끝나면 초기화",
 	"b.sale_flat3.name": "기초체력", "b.sale_flat3.label": "점수 ×3.4",
-	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "20% 확률로 점수 ×12",
+	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "20% 확률로 획득 점수 ×12",
 	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 점수 ×4.2. 5% 확률로 이 카드 폐기",
 	"b.no_buy.name": "절약", "b.no_buy.label": "상점에서 아무것도 안 사면 다음 턴 모든 점수 +5%",
 	"b.sale_cash.name": "콩고물", "b.sale_cash.label": "마감 시 이번 턴 점수의 10% 추가",
