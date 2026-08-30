@@ -27,6 +27,8 @@ const S := {
 	"boss.pricey_trip": "Pricey Trips",
 
 	"day_n": "Week %d",
+	"week_review": "Weekly Review!",
+	"month_audit": "HQ Audit!",
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",
 

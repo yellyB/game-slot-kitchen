@@ -1304,7 +1304,7 @@ func _month_track(week: int) -> Control:
   row.add_child(goal)
   v.add_child(row)
 
-  var msg := "이번 주 실적 심사!"
+  var msg := Loc.t("month_audit") if is_end else Loc.t("week_review")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
