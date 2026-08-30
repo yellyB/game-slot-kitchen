@@ -3,14 +3,23 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 4000
-const RENT_ONBOARD := [440, 1200, 3500, 7000, 13000, 22000]
+const ONBOARD_GATES := [
+	[100, 220, 300, 440],
+	[350, 690, 1350, 2700],
+	[910, 1790, 3500, 7000],
+	[1890, 3710, 7250, 14500],
+	[3380, 6660, 13000, 26000],
+	[5460, 10750, 21000, 42000],
+	[7930, 15620, 30500, 61000],
+	[11050, 21760, 42500, 85000],
+]
+const PRE_BOSS_MULT := 0.92
 const RENT_GROWTH := 1.25
 const RENT_ACCEL := 2.50
 const RENT_ACCEL_W := 0.02
 const WAVE_STEP := 1
 const WAVE_CAP := 18
 const WEEK_TARGET_WEIGHTS := [1, 2, 3, 4]
-const ONBOARD_M1_WEIGHTS := [10, 12, 8, 14]
 
 const MONTHS := [
 	{"waves": [11, 12, 13, 14]},
@@ -25,8 +34,8 @@ static func months() -> int:
 	return MONTHS.size()
 
 static func _monthly_rent(mi: int) -> int:
-	if mi < RENT_ONBOARD.size():
-		return int(RENT_ONBOARD[mi])
+	if mi < ONBOARD_GATES.size():
+		return int((ONBOARD_GATES[mi] as Array)[WEEKS_PER_MONTH - 1])
 	var g := RENT_GROWTH
 	if OS.has_environment("SIM_GROWTH"):
 		g = float(OS.get_environment("SIM_GROWTH"))
@@ -41,16 +50,15 @@ static func _waves(mi: int, wi: int) -> int:
 	var base := int((MONTHS[MONTHS.size() - 1]["waves"] as Array)[wi])
 	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
 
-static func _week_gate(mr: int, wi: int, mi: int) -> int:
+static func _week_gate(mr: int, wi: int) -> int:
 	if wi >= WEEKS_PER_MONTH - 1:
 		return mr
-	var weights: Array = ONBOARD_M1_WEIGHTS if mi == 0 else WEEK_TARGET_WEIGHTS
 	var total := 0
-	for x in weights:
+	for x in WEEK_TARGET_WEIGHTS:
 		total += int(x)
 	var cum := 0
 	for i in wi + 1:
-		cum += int(weights[i])
+		cum += int(WEEK_TARGET_WEIGHTS[i])
 	return int(round(float(mr) * float(cum) / float(total)))
 
 
@@ -61,13 +69,17 @@ static func get_week(week: int) -> Dictionary:
 	var is_end := wi == WEEKS_PER_MONTH - 1
 	var pw := _waves(mi, wi)
 	var mr := _monthly_rent(mi)
+	var gate := int((ONBOARD_GATES[mi] as Array)[wi]) if mi < ONBOARD_GATES.size() else _week_gate(mr, wi)
+	if not is_end:
+		gate = int(round(float(gate) * PRE_BOSS_MULT))
 	if OS.has_environment("SIM_LOAD"):
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
 			pw = int(round(float(pw) * mult))
 	if OS.has_environment("SIM_RENT"):
-		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
-	var gate := _week_gate(mr, wi, mi)
+		var rmult := float(OS.get_environment("SIM_RENT"))
+		mr = int(round(float(mr) * rmult))
+		gate = int(round(float(gate) * rmult))
 	return {
 		"per_wave": pw,
 		"month": mi + 1,
