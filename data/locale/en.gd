@@ -31,6 +31,8 @@ const S := {
 
 	# Game — top bar / toast
 	"day_n": "Week %d",
+	"week_review": "Weekly Review!",
+	"month_audit": "HQ Audit!",
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",
 

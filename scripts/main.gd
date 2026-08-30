@@ -1396,7 +1396,7 @@ func _show_day_banner(day: int) -> void:
 ## 큰 중앙 배너 화면 — 딤(어두운 배경) + 이미지(달/해) 크게 + 텍스트(CLOSE/OPEN) + 하단 "click ▸" 힌트.
 ## 자동 페이드 안 함(탭 대기 동안 유지). 딤·내용·힌트를 담은 루트 Control 반환(탭 시 통째로 페이드).
 ## OPEN 배너용 월 진행 트랙 — 주차 노드(●◉○) ─ … ─ [🧾 월세]. 끝의 청구서=이번 달 납부 목표.
-## 월말 주면 금액 빨강+점멸 + "이번 주 납부!" 문구. 그 외엔 "N주 후 월세 납부".
+## 월말 주(4주차)면 빨강+점멸 + "본사 감사" 문구. 그 외엔 "이번 주 실적 심사".
 func _month_track(week: int) -> Control:
   var wk := Levels.get_week(week)
   var wim := int(wk["week_in_month"])       # 1..4 (이번 달 몇 주차)
@@ -1428,7 +1428,7 @@ func _month_track(week: int) -> Control:
   row.add_child(goal)
   v.add_child(row)
 
-  var msg := "이번 주 실적 심사!"
+  var msg := Loc.t("month_audit") if is_end else Loc.t("week_review")
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)

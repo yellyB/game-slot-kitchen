@@ -31,6 +31,8 @@ const S := {
 
 	# 게임 — 상단바 / 토스트
 	"day_n": "%d주차",
+	"week_review": "이번 주 실적 심사!",
+	"month_audit": "본사 감사!",
 	"no_empty_slot": "빈 칸 없음",
 	"orders_full": "주문 꽉 참",
 
