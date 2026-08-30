@@ -17,9 +17,18 @@ static func queue_random() -> Dictionary:
 static func has_pending() -> bool:
 	return not _pending.is_empty()
 
-static func begin_day() -> void:
-	active = _pending
-	_pending = {}
+static func for_week(week_info: Dictionary) -> Dictionary:
+	if not bool(week_info.get("is_month_end", false)):
+		return {}
+	var month := int(week_info.get("month", 1))
+	return POOL[(month - 1) % POOL.size()].duplicate()
+
+static func begin_day(week_info := {}) -> void:
+	if not _pending.is_empty():
+		active = _pending
+		_pending = {}
+	else:
+		active = for_week(week_info)
 
 static func reset() -> void:
 	active = {}

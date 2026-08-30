@@ -61,11 +61,12 @@ func advance_day() -> void:
 
 
 func start_day() -> void:
-	Boss.begin_day()
-	rent = int(round(Buffs.mod("rent_mult", float(Levels.get_day(day).get("rent", 0)))))
+	var wk := Levels.get_day(day)
+	Boss.begin_day(wk)
+	rent = int(round(Buffs.mod("rent_mult", float(wk.get("rent", 0)))))
 	_rent_paid = false
 	day_revenue = 0
-	if int(Levels.get_day(day).get("week_in_month", 1)) == 1:
+	if int(wk.get("week_in_month", 1)) == 1:
 		month_score = 0
 	_elapsed = 0.0
 	_next_idx = 0
