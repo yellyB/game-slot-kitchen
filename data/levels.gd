@@ -15,7 +15,7 @@ const WEEKS_PER_MONTH := 4
 const RENT_BASE := 4000    # 곡선 기준값(mi>=onboarding 스케일). 초반은 RENT_ONBOARD로 별도.
 # 1~6개월차 목표점수 — 점수제(÷100·×10, 램프 상한으로 점수 정체). 7개월차+는 아래 곡선 공식.
 #   램프 정체 구간(~1만~1.5만)을 관통하며 상향 → 약빌드 m3, 강/숙련 m6~7 탈락.
-const RENT_ONBOARD := [300, 1200, 3500, 7000, 13000, 22000]
+const RENT_ONBOARD := [440, 1200, 3500, 7000, 13000, 22000]
 const RENT_GROWTH := 1.25   # 기본 복리 — 초반 월세 상향(2개월차 여유 축소). 강빌드 12개월 지점은 ACCEL이 결정
 const RENT_ACCEL := 2.50    # 후반 가속 항 복리(볼록) — 시뮬: 강빌드 ~12개월 겨우 통과 후 탈락
 const RENT_ACCEL_W := 0.02  # 가속 항 가중(초반 미미 → 후반 지배)
@@ -24,6 +24,8 @@ const WAVE_CAP := 18        # 손님 수(per_wave) 상한 — 처리량/화면 �
 # 주 관문 = 월 목표의 누적 분배(볼록: 첫주 최소→월말 최대). 증가분 비중, 누적합이 그 주 관문·전체합이 월 목표.
 # 항목 수 = WEEKS_PER_MONTH. 예) [1,2,3,4] → 누적 관문 0.1·0.3·0.6·1.0 (월말 = 월 목표).
 const WEEK_TARGET_WEIGHTS := [1, 2, 3, 4]
+# 1개월차(온보딩) 전용 주 가중치 — 실플레이 실측(106/226/308/459)에 맞춘 누적 관문 100·220·300·440.
+const ONBOARD_M1_WEIGHTS := [10, 12, 8, 14]
 
 # waves(주차별 손님 수)만 정의 — 월세는 공식(_monthly_rent). 정의 이후는 마지막 달 waves 연장.
 const MONTHS := [
@@ -59,15 +61,16 @@ static func _waves(mi: int, wi: int) -> int:
 	return mini(base + WAVE_STEP * (mi - (MONTHS.size() - 1)), WAVE_CAP)
 
 ## 이번 주(0-base wi) 누적 관문 — 월 목표 mr을 WEEK_TARGET_WEIGHTS로 볼록 분배. 월말은 정확히 mr.
-static func _week_gate(mr: int, wi: int) -> int:
+static func _week_gate(mr: int, wi: int, mi: int) -> int:
 	if wi >= WEEKS_PER_MONTH - 1:
 		return mr
+	var weights: Array = ONBOARD_M1_WEIGHTS if mi == 0 else WEEK_TARGET_WEIGHTS
 	var total := 0
-	for x in WEEK_TARGET_WEIGHTS:
+	for x in weights:
 		total += int(x)
 	var cum := 0
 	for i in wi + 1:
-		cum += int(WEEK_TARGET_WEIGHTS[i])
+		cum += int(weights[i])
 	return int(round(float(mr) * float(cum) / float(total)))
 
 
@@ -85,7 +88,7 @@ static func get_week(week: int) -> Dictionary:
 			pw = int(round(float(pw) * mult))
 	if OS.has_environment("SIM_RENT"):
 		mr = int(round(float(mr) * float(OS.get_environment("SIM_RENT"))))
-	var gate := _week_gate(mr, wi)
+	var gate := _week_gate(mr, wi, mi)
 	return {
 		"per_wave": pw,
 		"month": mi + 1,
