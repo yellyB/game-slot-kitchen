@@ -132,7 +132,7 @@ const S := {
 	"b.rt_fast3.name": "Blitz Growth", "b.rt_fast3.label": "Sell 3 within 3s permanently raises last menu's base score by 2×",
 	"b.accum_sale.name": "Savings", "b.accum_sale.label": "Bank 2% of each score → paid out on next serve",
 	"b.sale_flat3.name": "Bread & Butter", "b.sale_flat3.label": "All score ×3.4",
-	"b.prob_bonus.name": "Lucky", "b.prob_bonus.label": "20% chance earned score ×12",
+	"b.prob_bonus.name": "Lucky", "b.prob_bonus.label": "10% chance earned score ×5",
 	"b.sale_risk.name": "Gamble", "b.sale_risk.label": "Score ×4.2, but 5% chance: this card is destroyed",
 	"b.no_buy.name": "Thrift", "b.no_buy.label": "Buy nothing this turn: next turn all score +5% (WIP)",
 	"b.sale_cash.name": "Kickback", "b.sale_cash.label": "At close: +10% of this turn's score",
