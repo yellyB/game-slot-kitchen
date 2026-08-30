@@ -5,6 +5,8 @@ const POOL := [
 	{"type": "small_kitchen", "icon": "🔒", "value": 3},
 	{"type": "time_short",    "icon": "⏱️", "value": 0.6},
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},
+	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},
+	{"type": "impatient",     "icon": "🏃", "value": 0.6},
 ]
 
 static var _pending: Dictionary = {}
@@ -54,6 +56,16 @@ static func locked_slots() -> int:
 	if kind() == "small_kitchen":
 		return int(active.get("value", 0))
 	return 0
+
+static func cook_mult() -> float:
+	if kind() == "slow_cook":
+		return float(active.get("value", 1.0))
+	return 1.0
+
+static func patience_mult() -> float:
+	if kind() == "impatient":
+		return float(active.get("value", 1.0))
+	return 1.0
 
 static func label() -> String:
 	return Loc.t("boss." + kind())
