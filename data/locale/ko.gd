@@ -126,7 +126,7 @@ const S := {
 	"b.sc_order.name": "주문폭주", "b.sc_order.label": "슬롯 주문카드 1개당 점수 +0.8배",
 	"b.sc_dish.name": "쇼케이스", "b.sc_dish.label": "슬롯에 있는 완성품 1개당 배수 ×+0.3",
 	"b.sc_ingr.name": "준비는철저히", "b.sc_ingr.label": "슬롯 재료카드 1개당 점수 +1.2배",
-	"b.prob_x2.name": "대박", "b.prob_x2.label": "메뉴 서빙 시 40% 확률로 점수 두배",
+	"b.prob_x2.name": "대박", "b.prob_x2.label": "메뉴 서빙 시 18% 확률로 점수 두배",
 	"b.rt_streak3.name": "연속성장", "b.rt_streak3.label": "같은 메뉴를 3연속 팔면 그 메뉴 기본 점수의 3배씩 영구 증가",
 	"b.rt_every7.name": "럭키세븐", "b.rt_every7.label": "7번째 제공마다 해당 메뉴 기본 점수의 2배가 메뉴 점수에 추가",
 	"b.rt_fast3.name": "빠른처리", "b.rt_fast3.label": "3초 내 3개를 처리하면 마지막 메뉴 기본 점수의 2배씩 영구 증가",

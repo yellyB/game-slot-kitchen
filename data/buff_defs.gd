@@ -77,7 +77,7 @@ static var ALL := {
 	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 1.2}},
 
 	# ── 판매금: 콤보/연속/확률(42~52) ──
-	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
+	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.18}},
 	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 3.0}},
 	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 2.0}},
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.0, "window": 3.0}},

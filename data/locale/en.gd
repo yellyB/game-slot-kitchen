@@ -126,7 +126,7 @@ const S := {
 	"b.sc_order.name": "Order Rush", "b.sc_order.label": "Score +0.8× per order card on board",
 	"b.sc_dish.name": "Showcase", "b.sc_dish.label": "Mult ×+0.3 per dish on board",
 	"b.sc_ingr.name": "Well Prepped", "b.sc_ingr.label": "Score +1.2× per ingredient on board",
-	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% chance to double the score",
+	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "18% chance to double the score",
 	"b.rt_streak3.name": "Streak Growth", "b.rt_streak3.label": "Sell same menu 3× in a row: its base score +3× (permanent)",
 	"b.rt_every7.name": "Lucky Seven", "b.rt_every7.label": "Every 7th serve adds 2× that menu's base score to its score",
 	"b.rt_fast3.name": "Blitz Growth", "b.rt_fast3.label": "Sell 3 within 3s permanently raises last menu's base score by 2×",
