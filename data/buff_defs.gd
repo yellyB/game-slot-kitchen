@@ -83,7 +83,7 @@ static var ALL := {
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.0, "window": 3.0}},
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.02}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 3.4}},
-	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.10, "pct": 5.0}},
+	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.05, "pct": 10.0}},
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 4.2, "chance": 0.05}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
 	"sale_cash":  {"card": 51, "icon": "🏦", "settle": {"kind": "served", "threshold": 0.0, "pct": 0.10}},
