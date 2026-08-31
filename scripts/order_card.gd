@@ -82,7 +82,15 @@ func _build_content() -> void:
 	for iid in def.get("ingredients", []):
 		reqs.add_child(Ingredients.icon_node(iid, 22))
 
-	# 음식 대기 인내심 게이지
+	# 인내심 바는 스케일되는 내용(_holder) 밖, 카드 하단에 고정 좌표로 앵커(_add_gauge).
+	# 내용에 넣으면 슬롯이 작아질수록 카드 고정 모서리(반경) 밖으로 바 양끝이 삐져나옴.
+	call_deferred("_add_gauge")
+
+
+## 인내심 바를 카드 하단에 앵커 — 좌우/아래 여백을 모서리 반경 이상으로 둬 둥근 모서리 밖으로 안 나감.
+func _add_gauge() -> void:
+	if _gauge != null or _wrap == null or not is_instance_valid(_wrap):
+		return
 	_gauge = ProgressBar.new()
 	_gauge.min_value = 0
 	_max = Stats.dish_patience()
@@ -90,11 +98,15 @@ func _build_content() -> void:
 	_gauge.max_value = _max
 	_gauge.value = _max
 	_gauge.show_percentage = false
-	_gauge.custom_minimum_size = Vector2(0, 6)
 	_gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_gauge.add_theme_stylebox_override("background", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	_gauge.add_theme_stylebox_override("fill", UI.chip(_fill))
-	v.add_child(_gauge)
+	_gauge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_gauge.offset_left = 8
+	_gauge.offset_right = -8
+	_gauge.offset_top = -13
+	_gauge.offset_bottom = -5
+	_wrap.add_child(_gauge)
 
 
 ## 매칭 완성품이 보드에 있으면 초록 테두리 + 은은한 펄스로 "지금 서빙 가능" 표시.
@@ -175,7 +187,7 @@ func force_expire() -> void:
 
 
 func _process(delta: float) -> void:
-	if _done:
+	if _done or _gauge == null:
 		return
 	_time_left -= delta
 	_gauge.value = _time_left
