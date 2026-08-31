@@ -122,7 +122,7 @@ const S := {
 	"b.sc_fill_b.name": "채움의 미+", "b.sc_fill_b.label": "최종 점수 ×(1.13^찬슬롯)",
 	"b.sc_empt_a.name": "여백의 미", "b.sc_empt_a.label": "최종 점수 ×(1 + 0.18×빈슬롯)",
 	"b.sc_empt_b.name": "여백의 미+", "b.sc_empt_b.label": "최종 점수 ×(1.13^빈슬롯)",
-	"b.sale_full.name": "맛집인가봐", "b.sale_full.label": "슬롯이 모두 채워진 상태에서 서빙하면 배수 ×1.4",
+	"b.sale_full.name": "맛집인가봐", "b.sale_full.label": "슬롯이 모두 채워진 상태에서 서빙하면 획득 점수 3배",
 	"b.cook_empty.name": "깨끗한주방", "b.cook_empty.label": "조리시간 -40%, 하지만 찬 슬롯 1개당 +5%",
 	"b.sc_order.name": "주문폭주", "b.sc_order.label": "슬롯 주문카드 1개당 점수 +0.8배",
 	"b.sc_dish.name": "쇼케이스", "b.sc_dish.label": "슬롯에 있는 완성품 1개당 배수 ×+0.3",

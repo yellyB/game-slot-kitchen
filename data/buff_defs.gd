@@ -70,7 +70,7 @@ static var ALL := {
 	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "exp_count", "per": "filled", "rate": 0.13}},
 	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.18}},
 	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.13}},
-	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 2.0, "when": "board_full"}},
+	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 3.0, "when": "board_full"}},
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.8}},
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.3}},
