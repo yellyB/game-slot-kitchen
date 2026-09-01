@@ -21,7 +21,8 @@ static func buff_shard(n: int, start: int, count: int) -> void:
 static func surv_shard(n: int, start: int, count: int) -> void:
 	var batch := SimBatch.new()
 	var ids := BuffDefs.ids()
-	var base := batch.run(n, [], true, true)
+	var so := not OS.has_environment("SIM_FULLSHOP")
+	var base := batch.run(n, [], true, so)
 	if start == 0:
 		print("[SURV-BASE]\t%.3f\t%.1f\t%d" % [base["avg_days"], base["win_rate"] * 100.0, n])
 	var stop := mini(start + count, ids.size())
@@ -29,6 +30,6 @@ static func surv_shard(n: int, start: int, count: int) -> void:
 		var id: String = ids[i]
 		if BuffDefs.get_def(id).get("blocked", false):
 			continue
-		var r := batch.run(n, [id], true, true)
+		var r := batch.run(n, [id], true, so)
 		print("[SURV-ROW]\t%.3f\t%s\t%.3f\t%.1f" % [
 			r["avg_days"] - base["avg_days"], id, r["avg_days"], r["win_rate"] * 100.0])

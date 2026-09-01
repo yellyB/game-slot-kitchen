@@ -113,16 +113,15 @@ func _shop(slots_only := false) -> void:
 
 
 func _pick_buff(pack: Array) -> String:
-	var best := ""
-	var best_score := -999
+	var cands: Array = []
 	for id in pack:
-		if Buffs.owned().has(id):
-			continue
-		var s := _buff_score(id)
-		if s > best_score:
-			best_score = s
-			best = id
-	return best
+		if not Buffs.owned().has(id):
+			cands.append({"id": id, "s": _buff_score(id)})
+	if cands.is_empty():
+		return ""
+	cands.sort_custom(func(a, b): return a["s"] > b["s"])
+	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 1
+	return cands[mini(rank - 1, cands.size() - 1)]["id"]
 
 func _buff_score(id: String) -> int:
 	var d := BuffDefs.get_def(id)
