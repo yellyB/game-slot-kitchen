@@ -4,7 +4,7 @@ extends RefCounted
 ## 실행: godot4 --headless res://scenes/Main.tscn -- --sim
 
 ## n판 실행(시드 0..n-1). buff_loadout=보유 버프 id 배열.
-func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
+func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := false) -> Dictionary:
 	var wins := 0
 	var cash := 0
 	var served := 0
@@ -19,7 +19,7 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 	var score := 0
 	for i in n:
 		var sim := SimCore.new()
-		var r := sim.run(buff_loadout, i, shop_enabled)
+		var r := sim.run(buff_loadout, i, shop_enabled, slots_only)
 		if r["won"]:
 			wins += 1
 		cash += int(r["cash"])

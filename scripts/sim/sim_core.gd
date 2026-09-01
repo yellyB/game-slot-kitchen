@@ -40,7 +40,7 @@ var _served_by_menu := {}
 
 
 ## shop_enabled: 하루 사이 상점(슬롯/버프 구매) 활성. 통제된 로드아웃 비교 땐 false로.
-func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
+func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_only := false) -> Dictionary:
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
@@ -85,7 +85,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 		if _last.get("passed", false):
 			session.earn(Config.week_reward(session.day, _served_today), false)   # 실적검사 통과 후 주 클리어 보상
 		if shop_enabled:
-			_shop()                      # 벌어서 슬롯/버프 재투자
+			_shop(slots_only)            # 벌어서 슬롯/버프 재투자(slots_only=버프 안 삼, 단독 카드 측정용)
 		session.advance_day()
 
 	result["score"] = total_score
@@ -104,7 +104,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 
 ## 하루 사이 상점 — 돈은 상점 전용(가게세는 점수로 통과)이라 예비금 없이 다 투자.
 ## 실플레이 관측: 현금 항상 바닥, 버프칸 가득까지 채움. 슬롯·버프를 살 수 있는 만큼 교대로 산다.
-func _shop() -> void:
+func _shop(slots_only := false) -> void:
 	var progressed := true
 	while progressed:
 		progressed = false
@@ -112,6 +112,8 @@ func _shop() -> void:
 				and session.cash >= Config.slot_price(session.day, session.slots - Config.START_SLOTS):
 			if session.buy_slot():
 				progressed = true
+		if slots_only:
+			continue                     # 단독 카드 측정: 슬롯만 성장, 버프 스택 노이즈 배제
 		# 버프도 슬롯을 점유 → 주문 처리공간(최소 MAX_ORDERS)이 남을 때만 추가.
 		if not Buffs.is_full() and session.slots - Buffs.owned().size() > Config.MAX_ORDERS \
 				and session.cash >= Config.BUFF_PACK_PRICE:
