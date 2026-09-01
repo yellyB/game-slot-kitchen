@@ -163,11 +163,20 @@ func _ready() -> void:
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
     var n := 200
-    print("\n[SIM] ===== 생존 시뮬 (무한 진행·주 단위, %d회, 상점 ON) — 일수=생존 주 =====" % n)
+    print("\n[SIM] ===== 생존 시뮬 (실패 중지·12주(3개월) 캡, %d회, 상점 ON) — 일수=생존 주 =====" % n)
     var s := batch.run(n, [], true)
     print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
       s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
+    get_tree().quit()
+
+  if "--simcount" in OS.get_cmdline_user_args():
+    print("[SIMCOUNT] %d" % BuffDefs.ids().size())
+    get_tree().quit()
+  if "--simshard" in OS.get_cmdline_user_args():
+    var sa := OS.get_cmdline_user_args()
+    var si := sa.find("--simshard")
+    SimShard.buff_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
     get_tree().quit()
 
   if "--simbuffs" in OS.get_cmdline_user_args():

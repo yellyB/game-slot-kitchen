@@ -42,7 +42,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 		Buffs.add(b)
 
 	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0, "score": 0}
-	var max_day := int(OS.get_environment("SIM_MAXDAY")) if OS.has_environment("SIM_MAXDAY") else 0
+	var max_day := int(OS.get_environment("SIM_MAXDAY")) if OS.has_environment("SIM_MAXDAY") else 12
 	var no_fail := OS.has_environment("SIM_NOFAIL")
 	var total_score := 0
 	var safety := 0
