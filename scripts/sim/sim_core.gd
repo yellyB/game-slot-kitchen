@@ -21,6 +21,7 @@ var force_menu := ""        # 세팅 시 모든 손님이 이 메뉴만 주문(�
 var _busy := 0.0            # 창고 트립·손동작(핸들링) 등으로 플레이어가 묶인 시간(초)
 var _handle := 0.0          # >0이면 현실 모드: 한 스텝에 한 동작 + 동작당 핸들링 타임(SIM_HANDLE)
 var _miss := 0.0            # 사람 놓침 확률(현실 모드, SIM_MISS)
+var _fumble := 0.0          # 반응/주의 누락 확률(현실 모드, SIM_FUMBLE) — 매 동작 기회에 이 확률로 아무것도 안 함(사람은 매 순간 최적 못 침)
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -44,6 +45,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
+	_fumble = float(OS.get_environment("SIM_FUMBLE")) if OS.has_environment("SIM_FUMBLE") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -67,6 +69,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 			safety += 1
 			if safety > 5_000_000:
 				break
+		session.pay_rent()   # 현금 통과(점수 미달·현금≥월세) 시 실제로 현금 차감 — 경제 카드가 의미 갖게
 		result["days"] = session.day
 		total_score += int(_last.get("revenue", 0))
 		if OS.has_environment("SIM_TRACE") and run_seed < int(OS.get_environment("SIM_TRACE")):
@@ -195,6 +198,8 @@ func _step_realistic() -> void:
 	if _busy > 0.0:
 		_busy -= DT
 		return
+	if _fumble > 0.0 and randf() < _fumble:
+		return                       # 반응/주의 누락 — 사람은 매 순간 최적 행동을 못 함
 	if _serve_one():
 		_busy = Config.SIM_HANDLE_SERVE * _handle
 		return
