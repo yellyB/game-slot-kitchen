@@ -307,15 +307,14 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 
 
 func _ctx_count(per: String, ctx: Dictionary) -> int:
-	var n := 0
 	match per:
-		"buff": n = int(ctx.get("buffs", 0))
-		"filled": n = int(ctx.get("filled", 0))
-		"empty": n = int(ctx.get("empty", 0))
-		"orders": n = int(ctx.get("orders", 0))
-		"dishes": n = int(ctx.get("dishes", 0))
-		"ingr": n = int(ctx.get("ingr", 0))
-	return mini(n, Config.COUNT_CAP)   # 보드 커질수록 폭주 방지
+		"buff": return int(ctx.get("buffs", 0))
+		"filled": return int(ctx.get("filled", 0))
+		"empty": return int(ctx.get("empty", 0))
+		"orders": return int(ctx.get("orders", 0))
+		"dishes": return int(ctx.get("dishes", 0))
+		"ingr": return int(ctx.get("ingr", 0))
+	return 0
 
 
 # ── 재료 fetch(v2): 필요 재료 필터(13,14) / 트립 무료 확률(4) ──
@@ -390,8 +389,7 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 			_instant_order = true
 
 func _add_ramp(recipe_id: String, inc: int) -> void:
-	var cap := int(Recipes.get_def(recipe_id).get("price", 0)) * Config.RAMP_CAP_MULT   # 무한 누적 방지
-	_ramp_bonus[recipe_id] = mini(int(_ramp_bonus.get(recipe_id, 0)) + inc, cap)
+	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
 
 ## 서빙 시 팁(76 짤랑이) — 확률 적중 시 즉시 획득할 돈(원). 미보유/미적중이면 0.
 func serve_tip() -> int:
