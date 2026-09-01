@@ -178,7 +178,10 @@ func _ready() -> void:
   if "--simshard" in OS.get_cmdline_user_args():
     var sa := OS.get_cmdline_user_args()
     var si := sa.find("--simshard")
-    SimShard.buff_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
+    if sa.size() > si + 4 and sa[si + 4] == "surv":
+      SimShard.surv_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
+    else:
+      SimShard.buff_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
     get_tree().quit()
 
   if "--simsyn" in OS.get_cmdline_user_args():

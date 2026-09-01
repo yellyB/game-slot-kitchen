@@ -31,7 +31,7 @@ var _missed_today := 0
 var _served_by_menu := {}
 
 
-func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dictionary:
+func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_only := false) -> Dictionary:
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
@@ -75,7 +75,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 		if _last.get("passed", false):
 			session.earn(Config.week_reward(session.day, _served_today), false)
 		if shop_enabled:
-			_shop()
+			_shop(slots_only)
 		session.advance_day()
 
 	result["score"] = total_score
@@ -92,7 +92,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 	return result
 
 
-func _shop() -> void:
+func _shop(slots_only := false) -> void:
 	var progressed := true
 	while progressed:
 		progressed = false
@@ -100,6 +100,8 @@ func _shop() -> void:
 				and session.cash >= Config.slot_price(session.day, session.slots - Config.START_SLOTS):
 			if session.buy_slot():
 				progressed = true
+		if slots_only:
+			continue
 		if not Buffs.is_full() and session.slots - Buffs.owned().size() > Config.MAX_ORDERS \
 				and session.cash >= Config.BUFF_PACK_PRICE:
 			var pack: Array = session.buy_buff_pack()
