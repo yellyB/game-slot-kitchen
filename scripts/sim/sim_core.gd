@@ -125,18 +125,17 @@ func _shop(slots_only := false) -> void:
 				progressed = true
 
 
-## 팩 3장 중 슬롯값을 가장 잘 하는 카드 선택(시뮬 발견 기반 우선순위 휴리스틱).
+## 팩에서 카드 선택. 기본=최고(_buff_score 1위). SIM_PICK_RANK=k면 k번째로 좋은 걸 고름(현실 플레이어 모델).
 func _pick_buff(pack: Array) -> String:
-	var best := ""
-	var best_score := -999
+	var cands: Array = []
 	for id in pack:
-		if Buffs.owned().has(id):
-			continue
-		var s := _buff_score(id)
-		if s > best_score:
-			best_score = s
-			best = id
-	return best
+		if not Buffs.owned().has(id):
+			cands.append({"id": id, "s": _buff_score(id)})
+	if cands.is_empty():
+		return ""
+	cands.sort_custom(func(a, b): return a["s"] > b["s"])
+	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 1
+	return cands[mini(rank - 1, cands.size() - 1)]["id"]   # k번째(1=최고). 팩이 그보다 적으면 맨 끝(제일 나쁜) 선택
 
 func _buff_score(id: String) -> int:
 	var d := BuffDefs.get_def(id)
