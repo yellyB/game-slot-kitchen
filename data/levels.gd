@@ -3,6 +3,7 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 4000
+const GATE_MULT := 1.15
 const ONBOARD_GATES := [
 	[100, 220, 300, 440],
 	[350, 690, 1350, 2700],
@@ -72,6 +73,8 @@ static func get_week(week: int) -> Dictionary:
 	var gate := int((ONBOARD_GATES[mi] as Array)[wi]) if mi < ONBOARD_GATES.size() else _week_gate(mr, wi)
 	if not is_end:
 		gate = int(round(float(gate) * PRE_BOSS_MULT))
+	mr = int(round(float(mr) * GATE_MULT))
+	gate = int(round(float(gate) * GATE_MULT))
 	if OS.has_environment("SIM_LOAD"):
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
