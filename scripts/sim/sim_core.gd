@@ -14,6 +14,7 @@ var force_menu := ""
 var _busy := 0.0
 var _handle := 0.0
 var _miss := 0.0
+var _fumble := 0.0
 var _now := 0.0
 var _served := 0
 var _lost := 0
@@ -35,6 +36,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	seed(run_seed)
 	_handle = float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.0
 	_miss = float(OS.get_environment("SIM_MISS")) if OS.has_environment("SIM_MISS") else 0.0
+	_fumble = float(OS.get_environment("SIM_FUMBLE")) if OS.has_environment("SIM_FUMBLE") else 0.0
 	session = Session.new()
 	session.spawn_requested.connect(_on_spawn)
 	session.day_closing.connect(_on_day_closing)
@@ -57,6 +59,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 			safety += 1
 			if safety > 5_000_000:
 				break
+		session.pay_rent()
 		result["days"] = session.day
 		total_score += int(_last.get("revenue", 0))
 		if OS.has_environment("SIM_TRACE") and run_seed < int(OS.get_environment("SIM_TRACE")):
@@ -174,6 +177,8 @@ func _step() -> void:
 func _step_realistic() -> void:
 	if _busy > 0.0:
 		_busy -= DT
+		return
+	if _fumble > 0.0 and randf() < _fumble:
 		return
 	if _serve_one():
 		_busy = Config.SIM_HANDLE_SERVE * _handle
