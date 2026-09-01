@@ -17,6 +17,10 @@ var _miss := 0.0
 var _now := 0.0
 var _served := 0
 var _lost := 0
+var _lost_miss := 0
+var _lost_queue := 0
+var _lost_order := 0
+var _lost_qfull := 0
 var _last := {}
 
 var _visited_today := 0
@@ -78,6 +82,10 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 	result["cash"] = session.cash
 	result["served"] = _served
 	result["lost"] = _lost
+	result["lost_miss"] = _lost_miss
+	result["lost_queue"] = _lost_queue
+	result["lost_order"] = _lost_order
+	result["lost_qfull"] = _lost_qfull
 	result["slots"] = session.slots
 	result["buffs"] = Buffs.owned().size()
 	session.free()
@@ -201,10 +209,12 @@ func _step_realistic() -> void:
 
 func _on_spawn() -> void:
 	if queue.size() >= Config.MAX_QUEUE:
+		_lost_qfull += 1
 		return
 	_visited_today += 1
 	if _miss > 0.0 and randf() < _miss:
 		_lost += 1
+		_lost_miss += 1
 		_missed_today += 1
 		return
 	queue.append({"id": force_menu if force_menu != "" else Stats.random_recipe(), "pat": Stats.order_patience()})
@@ -216,6 +226,7 @@ func _decay_patience() -> void:
 		if queue[i]["pat"] <= 0.0:
 			queue.remove_at(i)
 			_lost += 1
+			_lost_queue += 1
 			_missed_today += 1
 	for i in range(orders.size() - 1, -1, -1):
 		orders[i]["pat"] -= DT
@@ -223,6 +234,7 @@ func _decay_patience() -> void:
 			var rid: String = orders[i]["id"]
 			orders.remove_at(i)
 			_lost += 1
+			_lost_order += 1
 			_order_lost_today += 1
 			_missed_today += 1
 			var gain := Buffs.on_lost(rid)
