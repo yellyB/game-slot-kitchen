@@ -13,6 +13,7 @@ const WEEKS_PER_MONTH := 4
 ## 중후반은 가파르게 올라 스노우볼을 오래 압박. 실로그(중간빌드 월매출)에 맞춰 튜닝. SIM_GROWTH로 스윕.
 ##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
 const RENT_BASE := 4000    # 곡선 기준값(mi>=onboarding 스케일). 온보딩(1~6개월차)은 ONBOARD_GATES로 별도.
+const GATE_MULT := 1.15    # 전역 난이도 — 모든 관문(월목표·주관문)에 곱. >1=더 어렵게. 시뮬로 튜닝.
 # 1~8개월차 주차별 누적 관문 [주1,주2,주3,주4]; 주4=월 목표. m1~m2 실측, m3~m8 추정. 9개월차+는 공식.
 const ONBOARD_GATES := [
 	[100, 220, 300, 440],
@@ -92,6 +93,8 @@ static func get_week(week: int) -> Dictionary:
 	var gate := int((ONBOARD_GATES[mi] as Array)[wi]) if mi < ONBOARD_GATES.size() else _week_gate(mr, wi)
 	if not is_end:
 		gate = int(round(float(gate) * PRE_BOSS_MULT))
+	mr = int(round(float(mr) * GATE_MULT))     # 전역 난이도
+	gate = int(round(float(gate) * GATE_MULT))
 	if OS.has_environment("SIM_LOAD"):
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
