@@ -184,6 +184,8 @@ func _ready() -> void:
     print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
       s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
+    print("[SIM] 손실원인/판  큐만료(접수병목) %.1f  주문만료(조리/서빙병목) %.1f  주의력 %.1f  큐꽉참 %.1f" % [
+      s["avg_lost_queue"], s["avg_lost_order"], s["avg_lost_miss"], s["avg_lost_qfull"]])
     get_tree().quit()
 
   # 병렬 샤딩 워커/카운트(tools/sim_parallel.sh 전용) — 버프 순위를 코어 수만큼 쪼개 실행.

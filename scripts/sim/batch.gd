@@ -9,6 +9,10 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 	var cash := 0
 	var served := 0
 	var lost := 0
+	var l_miss := 0
+	var l_queue := 0
+	var l_order := 0
+	var l_qfull := 0
 	var days := 0
 	var slots := 0
 	var buffs := 0
@@ -21,6 +25,10 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 		cash += int(r["cash"])
 		served += int(r["served"])
 		lost += int(r["lost"])
+		l_miss += int(r.get("lost_miss", 0))
+		l_queue += int(r.get("lost_queue", 0))
+		l_order += int(r.get("lost_order", 0))
+		l_qfull += int(r.get("lost_qfull", 0))
 		days += int(r["days"])
 		slots += int(r.get("slots", 0))
 		buffs += int(r.get("buffs", 0))
@@ -34,6 +42,10 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true) -> Dictionary:
 		"avg_cash": float(cash) / nf,
 		"avg_served": float(served) / nf,
 		"avg_lost": float(lost) / nf,
+		"avg_lost_miss": float(l_miss) / nf,
+		"avg_lost_queue": float(l_queue) / nf,
+		"avg_lost_order": float(l_order) / nf,
+		"avg_lost_qfull": float(l_qfull) / nf,
 		"avg_days": float(days) / nf,
 		"avg_slots": float(slots) / nf,
 		"avg_buffs": float(buffs) / nf,
