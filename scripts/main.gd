@@ -181,6 +181,11 @@ func _ready() -> void:
     SimShard.buff_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
     get_tree().quit()
 
+  if "--simsyn" in OS.get_cmdline_user_args():
+    var yn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
+    SimSynergy.run_report(yn)
+    get_tree().quit()
+
   if "--simbuffs" in OS.get_cmdline_user_args():
     var bn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
     SimBatch.new().buff_report(bn)
