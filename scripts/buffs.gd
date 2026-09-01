@@ -194,88 +194,95 @@ func _sale_order() -> Array:
 
 
 func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
-	var mp := menu_price(recipe_id)
-	var tier := int(Recipes.get_def(recipe_id).get("tier", 0))
-	var running := float(mp)   # 누적 점수 — 슬롯 순서대로 버프를 즉시 적용
+	var rdef := Recipes.get_def(recipe_id)
+	var mp := float(rdef.get("price", 0)) + float(ramp_bonus(recipe_id))   # 기본가(+램프). 가격%는 판매%와 같은 합누적 풀에서 처리(곱 아님)
+	var tier := int(rdef.get("tier", 0))
+	var running := mp   # 누적 점수 — 슬롯 순서대로 %는 합누적, 명시적 배수만 곱
 	var penalty := 0
 	var discard := ""
 	var mult := 1.0            # 표시용: 곱셈 카드들의 누적 배수
 	var mult_id := ""
 	var accum_pct := 0.0       # 45 이번 판매 적립율
 	var accum_id := ""
-	var breakdown: Array = [{"src": "base", "amount": mp, "recipe": recipe_id, "icon": str(Recipes.get_def(recipe_id).get("icon", "?"))}]
+	var breakdown: Array = [{"src": "base", "amount": int(round(mp)), "recipe": recipe_id, "icon": str(rdef.get("icon", "?"))}]
 
+	# %-계열(판매·가격·티어…)은 기본가 대비 합누적(running += mp*(f-1)) → 같은 티어 곱연산 폭발 제거.
+	# 명시적 배수 카드(mult/prob_double/mult_count/exp_count/risk)만 진짜 곱으로 유지.
 	for id in _sale_order():
-		var s: Dictionary = BuffDefs.get_def(id).get("sale", {})
-		if s.is_empty():
-			continue
+		var def_b: Dictionary = BuffDefs.get_def(id)
 		var before := running
-		match s.get("type", ""):
-			"flat":
-				running *= float(s["pct"])
-			"tier":
-				if tier in s.get("tiers", []):
+		var mpd: Dictionary = def_b.get("menu_price", {})
+		if not mpd.is_empty():                            # 21~24 가격% — 판매%와 동일 합누적 풀
+			if tier in mpd.get("tiers", []):
+				running += mp * (float(mpd.get("pct", 1.0)) - 1.0)
+		else:
+			var s: Dictionary = def_b.get("sale", {})
+			match s.get("type", ""):
+				"flat":
+					running += mp * (float(s["pct"]) - 1.0)
+				"tier":
+					if tier in s.get("tiers", []):
+						running += mp * (float(s["pct"]) - 1.0)
+				"count":
+					running += mp * (float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx)))
+				"full":
+					if int(ctx.get("empty", -1)) == 0:
+						running += mp * (float(s["value"] if s.has("value") else s["pct"]) - 1.0)
+				"prob_double":
+					if randf() < float(s.get("chance", 0.0)):
+						running *= 2.0
+						mult *= 2.0
+						mult_id = id
+				"prob_pct":
+					if randf() < float(s.get("chance", 0.0)):
+						running += mp * (float(s["pct"]) - 1.0)
+				"risk":
 					running *= float(s["pct"])
-			"count":
-				running += float(mp) * (float(s.get("base", 0.0)) + float(s.get("step", 0.0)) * float(_ctx_count(s.get("per", ""), ctx)))
-			"full":
-				if int(ctx.get("empty", -1)) == 0:
-					running *= float(s["value"] if s.has("value") else s["pct"])
-			"prob_double":
-				if randf() < float(s.get("chance", 0.0)):
-					running *= 2.0
-					mult *= 2.0
-					mult_id = id
-			"prob_pct":
-				if randf() < float(s.get("chance", 0.0)):
-					running *= float(s["pct"])
-			"risk":
-				running *= float(s["pct"])
-				if randf() < float(s.get("chance", 0.0)):
-					discard = id
-					penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
-			"fresh":
-				if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
-					running *= float(s["pct"])
-			"fast_order":
-				if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
-					running *= float(s["pct"])
-			"late":
-				if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
-					running *= float(s["pct"])
-			"consumed":
-				running *= (1.0 + (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0))))
-			"critical":
-				if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
-					running *= float(s["pct"])
-			"addon":                      # 57: 지금까지 버프로 늘어난 몫을 재증폭
-				running += (running - float(mp)) * float(s["pct"])
-			"accum":
-				accum_pct += float(s["pct"])
-				accum_id = id
-			"mult":
-				var mok := true
-				match s.get("when", ""):
-					"board_full": mok = int(ctx.get("empty", -1)) == 0
-					"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
-				if mok:
-					running *= float(s["value"])
-					mult *= float(s["value"])
-					mult_id = id
-			"mult_count":                 # base + step×개수 (base 없으면 1.0)
-				var mc := _ctx_count(s.get("per", ""), ctx)
-				var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
-				if mf != 1.0:
-					running *= mf
-					mult *= mf
-					mult_id = id
-			"exp_count":                  # 지수형: (1+rate)^개수
-				var ec := _ctx_count(s.get("per", ""), ctx)
-				var ef := pow(1.0 + float(s.get("rate", 0.0)), float(ec))
-				if ef != 1.0:
-					running *= ef
-					mult *= ef
-					mult_id = id
+					if randf() < float(s.get("chance", 0.0)):
+						discard = id
+						penalty += int(round(float(ctx.get("day_revenue", 0)) * float(s.get("penalty_pct", 0.0))))
+				"fresh":
+					if float(ctx.get("dish_age", 1e9)) <= float(s["within"]):
+						running += mp * (float(s["pct"]) - 1.0)
+				"fast_order":
+					if float(ctx.get("order_age", 1e9)) <= float(s["within"]):
+						running += mp * (float(s["pct"]) - 1.0)
+				"late":
+					if float(ctx.get("order_age", 0.0)) >= float(s["after"]):
+						running += mp * (float(s["pct"]) - 1.0)
+				"consumed":
+					running += mp * (float(s["pct"]) - 1.0) * (1.0 - float(ctx.get("pat_frac", 1.0)))
+				"critical":
+					if float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC:
+						running += mp * (float(s["pct"]) - 1.0)
+				"addon":                      # 57: 지금까지 합누적된 보너스 몫을 재증폭
+					running += (running - mp) * float(s["pct"])
+				"accum":
+					accum_pct += float(s["pct"])
+					accum_id = id
+				"mult":
+					var mok := true
+					match s.get("when", ""):
+						"board_full": mok = int(ctx.get("empty", -1)) == 0
+						"critical": mok = float(ctx.get("pat_frac", 1.0)) <= Config.PATIENCE_LOW_FRAC
+					if mok:
+						running *= float(s["value"])
+						mult *= float(s["value"])
+						mult_id = id
+				"mult_count":                 # base + step×개수 (base 없으면 1.0)
+					var mc := _ctx_count(s.get("per", ""), ctx)
+					var mf := float(s.get("base", 1.0)) + float(s["step"]) * float(mc)
+					if mf != 1.0:
+						running *= mf
+						mult *= mf
+						mult_id = id
+				"exp_count":                  # 지수형: (1+rate)^개수
+					var ec := _ctx_count(s.get("per", ""), ctx)
+					var ef := pow(1.0 + float(s.get("rate", 0.0)), float(ec))
+					if ef != 1.0:
+						running *= ef
+						mult *= ef
+						mult_id = id
 		var delta := int(round(running)) - int(round(before))
 		if delta != 0:
 			breakdown.append({"src": id, "amount": delta, "buff": id, "icon": _buff_icon(id)})
