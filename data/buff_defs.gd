@@ -74,7 +74,7 @@ static var ALL := {
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 1}},
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.3}},
-	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 2}},
+	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 1}},
 
 	# ── 판매금: 콤보/연속/확률(42~52) ──
 	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.18}},
@@ -117,7 +117,7 @@ static var ALL := {
 	# ── 벼랑끝(67~70) ──
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
 	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 6.9}},
-	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 5}},
+	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 3}},
 	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 5.2}},
 
 	# ── 방치(71~74) ──

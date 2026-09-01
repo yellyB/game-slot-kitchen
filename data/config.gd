@@ -38,6 +38,8 @@ const SLOT_PRICE_STEP_EARLY := 1.7   # 슬롯 확장 배수 — 무릎(KNEE) 전
 const SLOT_PRICE_STEP_LATE := 1.2    # 슬롯 확장 배수 — 무릎 후 후반 완만
 const SLOT_PRICE_KNEE := 3           # 이 구매 횟수까지 EARLY 배수, 이후 LATE 배수
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
+const RAMP_CAP_MULT := 3    # 램프·트리거 누적 상한 = 메뉴 기본가 ×이 값 (무한 누적 폭주 방지)
+const COUNT_CAP := 3        # 카운트형 점수카드가 세는 최대 개수 (보드 커질수록 폭주 방지)
 # 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만 들어옴. 소액.
 const WEEK_REWARD_BASE := 4       # 첫 주 완료 보상(돈)
 const WEEK_REWARD_STEP := 1       # 주마다 증가분(1~2 권장) — 작다가 점점 증가
