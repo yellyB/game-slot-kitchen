@@ -1,10 +1,15 @@
 class_name SimSynergy
 extends RefCounted
 
+static func _val(batch: SimBatch, n: int, loadout: Array) -> float:
+	if OS.has_environment("SIM_SYN_SURV"):
+		return float(batch.run(n, loadout, true, true).get("avg_days", 0.0))
+	return float(batch.run(n, loadout, false).get("avg_score", 0.0))
+
 static func run_report(n: int) -> void:
 	var batch := SimBatch.new()
-	var base := batch.run(n, [], false)
-	var bscore := float(base.get("avg_score", 0.0))
+	var surv := OS.has_environment("SIM_SYN_SURV")
+	var bscore := _val(batch, n, [])
 	var k := int(OS.get_environment("SIM_SYN_K")) if OS.has_environment("SIM_SYN_K") else 8
 
 	var cands: Array = []
@@ -19,7 +24,7 @@ static func run_report(n: int) -> void:
 		for id in BuffDefs.ids():
 			if BuffDefs.get_def(id).get("blocked", false):
 				continue
-			var d := float(batch.run(n, [id], false).get("avg_score", 0.0)) - bscore
+			var d := _val(batch, n, [id]) - bscore
 			solo[id] = d
 			scored.append({"id": id, "d": d})
 		scored.sort_custom(func(a, b): return a["d"] > b["d"])
@@ -28,16 +33,16 @@ static func run_report(n: int) -> void:
 
 	for id in cands:
 		if not solo.has(id):
-			solo[id] = float(batch.run(n, [id], false).get("avg_score", 0.0)) - bscore
+			solo[id] = _val(batch, n, [id]) - bscore
 
-	print("[SYN] base 점수 %.1f  후보 %d개  n=%d  (시너지 = 조합Δ − 단독합; +시너지 / −안티시너지)" % [
-		bscore, cands.size(), n])
+	print("[SYN] base %.2f (%s)  후보 %d개  n=%d  (시너지 = 조합Δ − 단독합; +시너지 / −안티)" % [
+		bscore, "생존주수" if surv else "점수", cands.size(), n])
 	var rows: Array = []
 	for i in cands.size():
 		for j in range(i + 1, cands.size()):
 			var a: String = cands[i]
 			var b: String = cands[j]
-			var pd := float(batch.run(n, [a, b], false).get("avg_score", 0.0)) - bscore
+			var pd := _val(batch, n, [a, b]) - bscore
 			rows.append({"a": a, "b": b, "pair": pd, "syn": pd - float(solo[a]) - float(solo[b])})
 	rows.sort_custom(func(x, y): return x["syn"] > y["syn"])
 	for r in rows:
