@@ -179,11 +179,21 @@ func _ready() -> void:
   if "--sim" in OS.get_cmdline_user_args():
     var batch := SimBatch.new()
     var n := 200
-    print("\n[SIM] ===== 생존 시뮬 (무한 진행·주 단위, %d회, 상점 ON) — 일수=생존 주 =====" % n)
+    print("\n[SIM] ===== 생존 시뮬 (실패 중지·12주(3개월) 캡, %d회, 상점 ON) — 일수=생존 주 =====" % n)
     var s := batch.run(n, [], true)   # 빈 로드아웃 = 상점으로 스스로 성장
     print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
       s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
+    get_tree().quit()
+
+  # 병렬 샤딩 워커/카운트(tools/sim_parallel.sh 전용) — 버프 순위를 코어 수만큼 쪼개 실행.
+  if "--simcount" in OS.get_cmdline_user_args():
+    print("[SIMCOUNT] %d" % BuffDefs.ids().size())
+    get_tree().quit()
+  if "--simshard" in OS.get_cmdline_user_args():
+    var sa := OS.get_cmdline_user_args()
+    var si := sa.find("--simshard")   # 뒤 3인자: <n> <start> <count>
+    SimShard.buff_shard(int(sa[si + 1]), int(sa[si + 2]), int(sa[si + 3]))
     get_tree().quit()
 
   # 버프 효과 측정: SIM_RENT=<배수> SIM_N=<판수> godot4 ... -- --simbuffs

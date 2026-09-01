@@ -52,7 +52,7 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true) -> Dicti
 
 	var result := {"won": false, "days": 0, "cash": 0, "served": 0, "lost": 0, "slots": 0, "buffs": 0, "score": 0}
 	# 레버리지 측정용: SIM_MAXDAY까지 죽지 않고 진행하며 총 매출(점수) 누적(SIM_NOFAIL).
-	var max_day := int(OS.get_environment("SIM_MAXDAY")) if OS.has_environment("SIM_MAXDAY") else 0
+	var max_day := int(OS.get_environment("SIM_MAXDAY")) if OS.has_environment("SIM_MAXDAY") else 12   # 기본 지평선=3개월(12주). 실패 주엔 중지(SIM_NOFAIL 미설정 시)
 	var no_fail := OS.has_environment("SIM_NOFAIL")
 	var total_score := 0
 	var safety := 0
