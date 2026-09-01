@@ -137,31 +137,13 @@ func _pick_buff(pack: Array) -> String:
 	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 1
 	return cands[mini(rank - 1, cands.size() - 1)]["id"]   # k번째(1=최고). 팩이 그보다 적으면 맨 끝(제일 나쁜) 선택
 
+# 실측 카드 효율(Δ생존주수×100, 풀샵 레짐) — 봇 픽 우선순위. 측정→반영 루프로 갱신.
+const EFF := {"ramp_t1": 489, "sale_t12": 465, "ramp_t2": 459, "mp_t12": 442, "sale_pat": 441, "sc_buff_b": 423, "sc_buff_a": 400, "sc_order": 391, "mult_all": 383, "sale_flat3": 377, "sc_ingr": 370, "rt_every7": 369, "ramp_t4": 366, "sale_t34": 364, "sale_fresh": 362, "mp_t34": 362, "wh_chance": 347, "ramp_t3": 323, "sale_risk": 312, "sc_fill_b": 312, "sale_burn": 312, "sc_fill_a": 310, "wh_fast": 303, "mp_t56": 292, "sale_t56": 291, "ramp_t5": 287, "sale_full": 278, "sc_dish": 156, "rt_streak3": 152, "prob_bonus": 130, "rent_skip": 68, "prob_x2": 65, "settle_90": 53, "tool_slot": 52, "opt_flour": 46, "rt_fast3": 37, "inst_order": 34, "day_len": 8, "rent_down": 3, "dmd_t56": -6, "settle_100": -8, "dmd_cream": -19, "buff_slot": -27, "dmd_t34": -40, "opt_egg": -54, "sale_late": -62, "sale_cash": -62, "dmd_choco": -72, "sale_crit": -78, "inst_cook": -82, "settle_perfect": -82, "sale_fast": -83, "serve_tip": -108, "opt_bean": -110, "cook": -116, "sc_empt_a": -120, "sc_empt_b": -127, "nest_egg": -132, "onlost_x2": -133, "cook_empty": -150, "onlost_pay": -151, "ramp_t6": -167, "settle_leave": -172, "settle_same": -173, "accum_sale": -175, "interest": -180, "sale_addon": -182, "pat_extend": -182, "patience": -184, "pat_down": -200, "dmd_bean": -248, "dmd_t12": -289}
+
 func _buff_score(id: String) -> int:
-	var d := BuffDefs.get_def(id)
-	if d.get("blocked", false):
-		return -100
-	if d.has("structure"):                       # 슬롯/도구/버프칸 = 용량(최우선)
-		return 100
-	if d.has("trip_free") or d.get("mult", {}).get("stat", "") == "warehouse_mult":
-		return 90                                # fetch 감소
-	if d.has("settle"):
-		return 80
-	if d.has("ramp") or d.has("trigger"):
-		return 70                                # 성장
-	if d.has("economy"):
-		return 60
-	if d.has("sale"):
-		return 50
-	if d.has("menu_price"):
-		return 45
-	if d.has("demand"):
-		return 40
-	if d.get("mult", {}).get("stat", "") == "cook_mult":
-		return 30
-	if d.get("mult", {}).get("stat", "") == "patience_mult":
-		return 10                                # 약함(이 모델)
-	return 20
+	if BuffDefs.get_def(id).get("blocked", false):
+		return -9999
+	return int(EFF.get(id, 0))   # 실측 효율. 미측정 카드는 0(중립)
 
 
 func _rebuild_tools() -> void:
