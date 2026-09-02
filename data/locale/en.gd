@@ -144,7 +144,7 @@ const S := {
 	"b.sale_t34.name": "Craftsman", "b.sale_t34.label": "T3-4 menu score ×3",
 	"b.sale_t56.name": "Master", "b.sale_t56.label": "T5-6 menu score ×4",
 	"b.sale_fresh.name": "Piping Hot", "b.sale_fresh.label": "Serve within 2s of cooking: score ×2",
-	"b.sale_fast.name": "Fast Food", "b.sale_fast.label": "Complete within 6s of taking order: score ×5.2",
+	"b.sale_fast.name": "Fast Food", "b.sale_fast.label": "Complete within 6s of taking order: score ×3.0",
 	"b.sale_addon.name": "Puff Up", "b.sale_addon.label": "Gain +69% of buff-added score",
 	"b.mult_all.name": "Golden Touch", "b.mult_all.label": "Each serve: score Mult ×2",
 	"b.serve_tip.name": "Jingle", "b.serve_tip.label": "Each serve: 8% chance to earn a +1 tip",

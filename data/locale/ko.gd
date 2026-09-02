@@ -144,7 +144,7 @@ const S := {
 	"b.sale_t34.name": "장인", "b.sale_t34.label": "글레이즈드·초코도넛 점수 ×3",
 	"b.sale_t56.name": "명장", "b.sale_t56.label": "티라미수·초코케이크 점수 ×4",
 	"b.sale_fresh.name": "따끈해요", "b.sale_fresh.label": "신선한 상태(조리 완료 후 2초 이내)로 서빙 시 점수 ×2",
-	"b.sale_fast.name": "패스트푸드", "b.sale_fast.label": "주문 받은 후 6초 이내 완료 시 점수 ×5.2",
+	"b.sale_fast.name": "패스트푸드", "b.sale_fast.label": "주문 받은 후 6초 이내 완료 시 점수 ×3.0",
 	"b.sale_addon.name": "뻥튀기", "b.sale_addon.label": "판매 시, 점수 제외한 추가 점수의 +69%",
 	"b.mult_all.name": "황금손", "b.mult_all.label": "서빙 시 점수 배수 ×2",
 	"b.serve_tip.name": "짤랑이", "b.serve_tip.label": "서빙할 때마다 8% 확률로 팁 +1원",
