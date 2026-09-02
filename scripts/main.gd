@@ -1911,12 +1911,9 @@ func _pop_clear_slots() -> void:
 
 func _on_day_ended(summary: Dictionary) -> void:
   _log_day(summary)
-  if _warehouse.visible:
-    _warehouse.slide_close()
-  if _cooking.visible:
-    _cooking.slide_close()
-  if _buff_sheet.visible:
-    _buff_sheet.slide_close()
+  _warehouse.force_close()
+  _cooking.force_close()
+  _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
     _session.pay_rent()

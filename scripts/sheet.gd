@@ -75,6 +75,16 @@ func slide_close() -> void:
 		offset_bottom = rb)
 
 
+func force_close() -> void:
+	_kill_slide()
+	visible = false
+	if _rest_captured:
+		offset_top = _rest_top
+		offset_bottom = _rest_bottom
+		offset_left = _rest_left
+		offset_right = _rest_right
+
+
 func slide_open_side() -> void:
 	_capture_rest()
 	_kill_slide()

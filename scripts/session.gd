@@ -77,6 +77,7 @@ func start_day() -> void:
 		cash_changed.emit(cash)
 	_build_schedule()
 	_running = true
+	_paused = false
 	day_started.emit(day, rent)
 	progress.emit(0.0)
 
