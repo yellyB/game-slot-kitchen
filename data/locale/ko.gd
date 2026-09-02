@@ -30,6 +30,7 @@ const S := {
 	"boss.pricey_trip": "비싼 발품",
 	"boss.slow_cook": "불 약한 화구",
 	"boss.impatient": "인내심 바닥",
+	"boss.broken_tool": "설비 고장",
 
 	# 게임 — 상단바 / 토스트
 	"day_n": "%d주차",

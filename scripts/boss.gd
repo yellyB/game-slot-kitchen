@@ -11,6 +11,7 @@ const POOL := [
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},   # 창고 트립 비용 ×2(비싼 발품)
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},   # 조리시간 ×1.4(불 약한 화구)
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},   # 손님 인내심 ×0.6(인내심 바닥)
+	{"type": "broken_tool",   "icon": "🔧", "value": 1},     # 도구석 -1(설비 고장 — 조리 병목)
 ]
 
 static var _pending: Dictionary = {}   # 다음날 예약된 제약
@@ -33,6 +34,9 @@ static func for_week(week_info: Dictionary) -> Dictionary:
 
 ## 하루 시작 시 1회 호출 — 디버그 예약이 있으면 그걸, 없으면 월말(4주차)마다 제약 1개 자동 발동.
 static func begin_day(week_info := {}) -> void:
+	if OS.has_environment("SIM_BOSS"):        # 시뮬 측정용: 매일 이 보스 강제(예: broken_tool)
+		active = {"type": OS.get_environment("SIM_BOSS")}
+		return
 	if not _pending.is_empty():
 		active = _pending
 		_pending = {}
@@ -66,6 +70,12 @@ static func warehouse_mult() -> float:
 static func locked_slots() -> int:
 	if kind() == "small_kitchen":
 		return int(active.get("value", 0))
+	return 0
+
+## 도구석 증감(설비 고장). 일반날/미해당 = 0. broken_tool이면 -value(도구 감소, 조리 병목).
+static func tool_delta() -> int:
+	if kind() == "broken_tool":
+		return -int(active.get("value", 1))
 	return 0
 
 ## 조리시간 배수(불 약한 화구). 일반날/미해당 = 1.0.
