@@ -26,7 +26,7 @@ const S := {
 	"boss.title": "Lease Renewal",
 	"boss.hint": "Secure %s by close",
 	"boss.small_kitchen": "Small Kitchen",
-	"boss.time_short": "Lunch Rush",
+	"boss.time_short": "Short Hours",
 	"boss.pricey_trip": "Pricey Trips",
 	"boss.slow_cook": "Weak Burner",
 	"boss.impatient": "Short Fuse",

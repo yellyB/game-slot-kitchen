@@ -26,7 +26,7 @@ const S := {
 	"boss.title": "계약 갱신 심사",
 	"boss.hint": "마감까지 %s 확보",
 	"boss.small_kitchen": "좁은 주방",
-	"boss.time_short": "런치 러시",
+	"boss.time_short": "단축 영업",
 	"boss.pricey_trip": "비싼 발품",
 	"boss.slow_cook": "불 약한 화구",
 	"boss.impatient": "인내심 바닥",

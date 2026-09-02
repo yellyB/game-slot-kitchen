@@ -18,7 +18,7 @@ static func cook_time(recipe_id: String, filled := 999) -> float:
 	return maxf(0.1, t)
 
 static func day_length() -> float:
-	return Buffs.mod("day_mult", Config.DAY_LENGTH) * Boss.day_length_mult()   # 보스: 런치 러시 단축
+	return Buffs.mod("day_mult", Config.DAY_LENGTH) * Boss.day_length_mult()   # 보스: 단축 영업
 
 ## 메뉴가격(base + 램프누적 + 등급별 %인상). 판매금 보너스는 Buffs.sale_amount에서.
 static func sell_price(recipe_id: String) -> int:

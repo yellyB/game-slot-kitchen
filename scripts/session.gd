@@ -203,10 +203,10 @@ func _end_day() -> void:
 
 
 ## 손님 등장 시각을 하루에 균등 분포(우르르 X). 첫 손님 일찍, 마감 전까지 골고루.
-## 총 손님 = per_wave × WAVES (난이도 수치는 그대로, 배치만 균등).
+## 총 손님 = per_wave × WAVES × 보스 영업배수 — 단축 영업이면 영업시간과 함께 손님 수도 그만큼 감소(밀도 유지).
 func _build_schedule() -> void:
 	_spawn_times.clear()
-	var total := int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES
+	var total := int(round(float(int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES) * Boss.day_length_mult()))
 	if total <= 0:
 		return
 	var first := Config.SPAWN_FIRST

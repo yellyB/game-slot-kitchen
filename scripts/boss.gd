@@ -7,7 +7,7 @@ extends RefCounted
 # 제약 풀(우선 3종). value = 제약별 파라미터.
 const POOL := [
 	{"type": "small_kitchen", "icon": "🔒", "value": 3},    # 슬롯 3칸 잠금(작업공간 압박)
-	{"type": "time_short",    "icon": "⏱️", "value": 0.6},   # 영업시간 ×0.6(런치 러시)
+	{"type": "time_short",    "icon": "⏱️", "value": 0.6},   # 영업시간 ×0.6 + 손님 ×0.6(단축 영업)
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},   # 창고 트립 비용 ×2(비싼 발품)
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},   # 조리시간 ×1.4(불 약한 화구)
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},   # 손님 인내심 ×0.6(인내심 바닥)
@@ -33,8 +33,12 @@ static func for_week(week_info: Dictionary) -> Dictionary:
 
 ## 하루 시작 시 1회 호출 — 디버그 예약이 있으면 그걸, 없으면 월말(4주차)마다 제약 1개 자동 발동.
 static func begin_day(week_info := {}) -> void:
-	if OS.has_environment("SIM_BOSS"):        # 시뮬 측정용: 매일 이 보스 강제(예: broken_tool)
-		active = {"type": OS.get_environment("SIM_BOSS")}
+	if OS.has_environment("SIM_BOSS"):        # 시뮬 측정용: 매일 이 보스 강제(예: time_short)
+		var bt := OS.get_environment("SIM_BOSS")
+		active = {"type": bt}
+		for p in POOL:                        # POOL에서 value/icon까지 끌어와야 효과가 실제로 적용됨
+			if p["type"] == bt:
+				active = p.duplicate()
 		return
 	if not _pending.is_empty():
 		active = _pending
@@ -53,7 +57,7 @@ static func is_active() -> bool:
 static func kind() -> String:
 	return str(active.get("type", ""))
 
-## 영업시간 배수(런치 러시). 일반날/미해당 = 1.0.
+## 영업시간 배수(단축 영업). 일반날/미해당 = 1.0. 손님 수도 이 배수로 스케일(session._build_schedule).
 static func day_length_mult() -> float:
 	if kind() == "time_short":
 		return float(active.get("value", 1.0))
