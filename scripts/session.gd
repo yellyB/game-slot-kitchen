@@ -186,7 +186,7 @@ func _end_day() -> void:
 
 func _build_schedule() -> void:
 	_spawn_times.clear()
-	var total := int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES
+	var total := int(round(float(int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES) * Boss.day_length_mult()))
 	if total <= 0:
 		return
 	var first := Config.SPAWN_FIRST

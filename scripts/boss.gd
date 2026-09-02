@@ -27,7 +27,11 @@ static func for_week(week_info: Dictionary) -> Dictionary:
 
 static func begin_day(week_info := {}) -> void:
 	if OS.has_environment("SIM_BOSS"):
-		active = {"type": OS.get_environment("SIM_BOSS")}
+		var bt := OS.get_environment("SIM_BOSS")
+		active = {"type": bt}
+		for p in POOL:
+			if p["type"] == bt:
+				active = p.duplicate()
 		return
 	if not _pending.is_empty():
 		active = _pending
