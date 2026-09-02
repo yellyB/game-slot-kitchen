@@ -6,6 +6,7 @@ var _wrap: Control
 var _holder: Control
 var _content_min := Vector2.ZERO
 var _scale_to_width := false
+var _fit_bottom_reserve := 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -63,7 +64,7 @@ func _fit_wrap() -> void:
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	var avail := _wrap.size
+	var avail := _wrap.size - Vector2(0, _fit_bottom_reserve)
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
 	var cmin_x := _content_min.x if _scale_to_width else minf(_content_min.x, avail.x)

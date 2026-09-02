@@ -36,6 +36,7 @@ func _preview_icon() -> Control:
 
 func _build_content() -> void:
 	_scale_to_width = true
+	_fit_bottom_reserve = 15.0
 	_style.bg_color = Palette.TICKET
 	_style.border_color = Palette.ACCENT
 
