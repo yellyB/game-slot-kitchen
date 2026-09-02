@@ -17,9 +17,11 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 	var slots := 0
 	var buffs := 0
 	var score := 0
+	var days_list: Array = []   # 판별 생존주 — 분포(바이모달) 확인용
 	for i in n:
 		var sim := SimCore.new()
 		var r := sim.run(buff_loadout, i, shop_enabled, slots_only)
+		days_list.append(int(r["days"]))
 		if r["won"]:
 			wins += 1
 		cash += int(r["cash"])
@@ -49,6 +51,7 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 		"avg_days": float(days) / nf,
 		"avg_slots": float(slots) / nf,
 		"avg_buffs": float(buffs) / nf,
+		"days_list": days_list,
 	}
 
 

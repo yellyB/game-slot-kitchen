@@ -141,24 +141,47 @@ func _ready() -> void:
   add_child(_title)
 
   if "--replay" in OS.get_cmdline_user_args():
-    var full := ["ramp_t3", "sc_fill_a", "settle_90", "sale_cash", "settle_100"]
-    var bw := [[], full.slice(0, 1), full.slice(0, 2), full.slice(0, 3), full.slice(0, 4),
-      full, full, full, full, full, full, full, full, full, full, full]
-    var slots := [9, 12, 13, 14, 14, 15, 16, 18, 18, 19, 19, 20, 20, 21, 21, 21]
-    var log_served := [22, 18, 18, 20, 21, 21, 20, 21, 20, 23, 23, 21, 24, 23, 19, 22]
-    var log_rev := [12700, 12278, 13026, 40232, 27162, 81585, 97068, 58163, 98179, 83390, 220993, 228375, 369779, 353730, 310290, 443576]
+    # 실로그 A판(run 2026-08-30#1813, 11주) — 주차별 보유버프/슬롯을 주입해 서빙·점수 재현 대조.
+    # 주8은 실제로 보스 time_short(서빙 13)였음: 리플레이는 보스 미주입이라 그 주만 크게 벗어남(정상).
+    var bw := [
+      [], [], ["ramp_t3"], ["ramp_t3", "tool_slot"],
+      ["ramp_t3", "tool_slot", "ramp_t1"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+    ]
+    var slots := [9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13]
+    var log_served := [21, 20, 22, 21, 23, 21, 23, 13, 22, 24, 21]
+    var log_rev := [124, 96, 111, 115, 224, 538, 1590, 1772, 3727, 2222, 4941]   # day_score(=day_revenue)
     var script := []
     for wi in bw.size():
       script.append({"buffs": bw[wi], "slots": slots[wi]})
     var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.6
-    var res: Array = SimCore.new().run_replay(script, 0, h)
-    print("[REPLAY] handle=%.1f  주 | 서빙(sim/log) | 매출(sim/log)  Δ%%" % h)
-    for i in res.size():
-      var r: Dictionary = res[i]
+    var reps := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 30   # 레시피 RNG 평활용 시드 평균
+    var sum_served := []
+    var sum_rev := []
+    for _i in bw.size():
+      sum_served.append(0.0)
+      sum_rev.append(0.0)
+    for s in reps:
+      var res: Array = SimCore.new().run_replay(script, s, h)
+      for i in res.size():
+        sum_served[i] += float(res[i]["served"])
+        sum_rev[i] += float(res[i]["revenue"])
+    print("[REPLAY] handle=%.1f  n=%d  주 | 서빙(sim/log) | 점수(sim/log)  Δ%%" % [h, reps])
+    var tot_d := 0.0
+    for i in bw.size():
+      var sv := float(sum_served[i]) / float(reps)
+      var rv := float(sum_rev[i]) / float(reps)
       var lr: int = log_rev[i]
-      var d := (float(r["revenue"]) - lr) / maxf(1.0, lr) * 100.0
-      print("[REPLAY] %2d | %2d / %2d | %10d / %10d  %+5.0f%%%s" % [
-        r["week"], r["served"], log_served[i], r["revenue"], lr, d, "" if r["passed"] else "  ← 사망"])
+      var d := (rv - lr) / maxf(1.0, lr) * 100.0
+      tot_d += absf(d)
+      print("[REPLAY] %2d | %4.1f / %2d | %8.0f / %8d  %+5.0f%%%s" % [
+        i + 1, sv, log_served[i], rv, lr, d, "  ← 주8=보스(제외)" if i == 7 else ""])
+    print("[REPLAY] 평균 |Δ점수| = %.0f%% (주8 보스 포함)" % (tot_d / float(bw.size())))
     get_tree().quit()
 
   # 개발용 테스트 하니스 (릴리스엔 영향 없음): godot4 ... -- --test
@@ -177,15 +200,20 @@ func _ready() -> void:
 
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
   if "--sim" in OS.get_cmdline_user_args():
+    # 기본을 현실 플레이어 모델로 — 초인(handle=0)이 아니라 사람 손속도/놓침이 걸려야 실측 중앙값에 붙는다.
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")   # 실측 응대율 높음(accepted≈visited) → 놓침 낮게
     var batch := SimBatch.new()
-    var n := 200
-    print("\n[SIM] ===== 생존 시뮬 (실패 중지·12주(3개월) 캡, %d회, 상점 ON) — 일수=생존 주 =====" % n)
+    var n := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
+    print("\n[SIM] ===== 생존 시뮬 (실패 중지·12주(3개월) 캡, %d회, 상점 ON, handle=%s miss=%s) — 일수=생존 주 =====" % [
+      n, OS.get_environment("SIM_HANDLE"), OS.get_environment("SIM_MISS")])
     var s := batch.run(n, [], true)   # 빈 로드아웃 = 상점으로 스스로 성장
     print("[SIM] 승률 %.1f%%  최종현금 %.0f  서빙 %.1f  놓침 %.1f  슬롯 %.1f  버프 %.1f  일수 %.1f" % [
       s["win_rate"] * 100.0, s["avg_cash"], s["avg_served"], s["avg_lost"],
       s["avg_slots"], s["avg_buffs"], s["avg_days"]])
     print("[SIM] 손실원인/판  큐만료(접수병목) %.1f  주문만료(조리/서빙병목) %.1f  주의력 %.1f  큐꽉참 %.1f" % [
       s["avg_lost_queue"], s["avg_lost_order"], s["avg_lost_miss"], s["avg_lost_qfull"]])
+    _print_survival_dist(s["days_list"], n)
     get_tree().quit()
 
   # 병렬 샤딩 워커/카운트(tools/sim_parallel.sh 전용) — 버프 순위를 코어 수만큼 쪼개 실행.
@@ -288,6 +316,31 @@ func _ready() -> void:
         row["name"], row["ing"], row["cook"], row["price"], row["served"], row["score"],
         row["score"] / maxf(1.0, float(row["ing"])), row["score"] / maxf(0.1, row["cook"])])
     get_tree().quit()
+
+
+## 생존주 분포 — 실플레이 바이모달(사망 4~6주 vs 승리 11+)이 시뮬에 나타나는지 본다.
+## 월 경계(1개월=4주): 월2 도달=≥5주, 월3 도달=≥9주, 완주=12주.
+func _print_survival_dist(days_list: Array, n: int) -> void:
+  var counts := {}
+  var reach2 := 0
+  var reach3 := 0
+  var full := 0
+  for d in days_list:
+    var w := int(d)
+    counts[w] = int(counts.get(w, 0)) + 1
+    if w >= 5: reach2 += 1
+    if w >= 9: reach3 += 1
+    if w >= 12: full += 1
+  var nf := float(maxi(n, 1))
+  print("[SIM] 도달률  월2(≥5주) %.0f%%  월3(≥9주) %.0f%%  완주(12주) %.0f%%" % [
+    reach2 / nf * 100.0, reach3 / nf * 100.0, full / nf * 100.0])
+  var line := ""
+  for w in range(1, 13):
+    var c := int(counts.get(w, 0))
+    line += "%2d주:%-3d " % [w, c]
+    if w == 4 or w == 8:
+      line += "| "
+  print("[SIM] 분포  %s" % line)
 
 
 ## 홈 버튼 — 확인창(진행 중인 판이 사라짐).

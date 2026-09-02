@@ -586,8 +586,7 @@ func run_replay(script: Array, seed_v := 0, handle := 0.6) -> Array:
 			"cash": session.cash, "rent": int(_last.get("rent", 0)),
 			"passed": bool(_last.get("passed", false)),
 		})
-		if not _last.get("passed", false):
-			break
+		# 빌드는 로그에서 고정 주입 → 시뮬 쪽 점수 미달로 중단하지 않고 전 주를 끝까지 재현(대조용).
 		if wi + 1 < script.size():
 			session.advance_day()
 	session.free()
