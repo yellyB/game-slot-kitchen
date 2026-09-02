@@ -1367,6 +1367,8 @@ func _update_score_bar() -> void:
     return
   var target := int(Levels.get_week(_session.day)["target"])
   _score_label.text = "%s/%s" % [UI.money(_session.month_score), UI.money(target)]
+  _score_label.add_theme_color_override("font_color",
+    Palette.SUCCESS if _session.month_score >= target else Palette.DANGER)
 
 
 func _on_cash_changed(cash: int) -> void:
@@ -1875,9 +1877,7 @@ func _on_day_started(day: int, rent: int) -> void:
   # 하루 시작 홀드 — 게임플레이(시계·스폰) 정지. 인트로(딤+OPEN 배너)는 함수 끝에서 즉시 표시.
   # (예전엔 DAY_INTRO_DELAY 뒤에 떠서 그 사이 딤 없는 빈 화면이 보였음 → 진입 즉시 딤으로 변경)
   _session.set_process(false)
-  var _wk := Levels.get_week(day)
   _update_score_bar()
-  _score_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()   # 새 하루 — 바 색·펄스 초기화
   _last_countdown = 0  # 카운트다운 상태 리셋
