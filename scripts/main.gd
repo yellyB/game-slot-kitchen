@@ -2083,13 +2083,11 @@ func _pop_clear_slots() -> void:
 
 func _on_day_ended(summary: Dictionary) -> void:
   _log_day(summary)   # 실플레이 지표 기록(카운터 리셋 전)
-  # 창고/조리 시트가 열린 채 마감되면 내려서 상점에 안 남게 (트립 비용 없이).
-  if _warehouse.visible:
-    _warehouse.slide_close()
-  if _cooking.visible:
-    _cooking.slide_close()
-  if _buff_sheet.visible:
-    _buff_sheet.slide_close()
+  # 창고/조리 시트가 열린 채 마감되면 즉시 치워 상점·다음날에 안 남게 (트립 비용 없이).
+  # force_close: 슬라이드 트윈이 끊겨 열린 채 남는 버그 방지.
+  _warehouse.force_close()
+  _cooking.force_close()
+  _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)

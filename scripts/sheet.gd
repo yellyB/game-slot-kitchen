@@ -85,6 +85,18 @@ func slide_close() -> void:
 		offset_bottom = rb)
 
 
+## 즉시 닫기(애니메이션·콜백 없음). 하루 마감처럼 다음 상태 전에 시트를 확실히 치워야 할 때.
+## slide_close 트윈이 끊겨 열린 채 남는 것을 방지(visible=false + rest offset 복원).
+func force_close() -> void:
+	_kill_slide()
+	visible = false
+	if _rest_captured:
+		offset_top = _rest_top
+		offset_bottom = _rest_bottom
+		offset_left = _rest_left
+		offset_right = _rest_right
+
+
 ## 오른쪽 화면 밖 → 왼쪽으로 슬라이드 인(서랍). 우측 앵커 시트용.
 func slide_open_side() -> void:
 	_capture_rest()

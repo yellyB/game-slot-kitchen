@@ -83,6 +83,7 @@ func start_day() -> void:
 		cash_changed.emit(cash)
 	_build_schedule()
 	_running = true
+	_paused = false   # 새 하루는 항상 시계 진행 상태로 시작(시트 열린 채 마감돼도 다음날 안 멈춤)
 	day_started.emit(day, rent)
 	progress.emit(0.0)
 
