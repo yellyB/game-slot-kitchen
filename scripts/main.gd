@@ -1246,6 +1246,8 @@ func _update_score_bar() -> void:
     return
   var target := int(Levels.get_week(_session.day)["target"])
   _score_label.text = "%s/%s" % [UI.money(_session.month_score), UI.money(target)]
+  _score_label.add_theme_color_override("font_color",
+    Palette.SUCCESS if _session.month_score >= target else Palette.DANGER)
 
 
 func _on_cash_changed(cash: int) -> void:
@@ -1721,9 +1723,7 @@ func _reset_hours_bar() -> void:
 func _on_day_started(day: int, rent: int) -> void:
   _day_num.text = str(day)
   _session.set_process(false)
-  var _wk := Levels.get_week(day)
   _update_score_bar()
-  _score_label.add_theme_color_override("font_color", Palette.DANGER if _wk["is_month_end"] else Palette.COCOA_800)
   _hours_bar.value = 0
   _reset_hours_bar()
   _last_countdown = 0
