@@ -551,8 +551,6 @@ func run_replay(script: Array, seed_v := 0, handle := 0.6) -> Array:
 			"cash": session.cash, "rent": int(_last.get("rent", 0)),
 			"passed": bool(_last.get("passed", false)),
 		})
-		if not _last.get("passed", false):
-			break
 		if wi + 1 < script.size():
 			session.advance_day()
 	session.free()
