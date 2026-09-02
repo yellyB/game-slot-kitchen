@@ -3,7 +3,9 @@ extends RefCounted
 
 const WEEKS_PER_MONTH := 4
 const RENT_BASE := 4000
-const GATE_MULT := 1.15
+const GATE_MULT_MIN := 1.0
+const GATE_MULT_MAX := 1.15
+const GATE_MULT_RAMP := 3
 const ONBOARD_GATES := [
 	[100, 220, 300, 440],
 	[350, 690, 1350, 2700],
@@ -33,6 +35,11 @@ static func count() -> int:
 
 static func months() -> int:
 	return MONTHS.size()
+
+static func _gate_mult(mi: int) -> float:
+	if mi >= GATE_MULT_RAMP:
+		return GATE_MULT_MAX
+	return GATE_MULT_MIN + (GATE_MULT_MAX - GATE_MULT_MIN) * float(mi) / float(GATE_MULT_RAMP)
 
 static func _monthly_rent(mi: int) -> int:
 	if mi < ONBOARD_GATES.size():
@@ -73,8 +80,9 @@ static func get_week(week: int) -> Dictionary:
 	var gate := int((ONBOARD_GATES[mi] as Array)[wi]) if mi < ONBOARD_GATES.size() else _week_gate(mr, wi)
 	if not is_end:
 		gate = int(round(float(gate) * PRE_BOSS_MULT))
-	mr = int(round(float(mr) * GATE_MULT))
-	gate = int(round(float(gate) * GATE_MULT))
+	var gm := _gate_mult(mi)
+	mr = int(round(float(mr) * gm))
+	gate = int(round(float(gate) * gm))
 	if OS.has_environment("SIM_LOAD"):
 		var mult := float(OS.get_environment("SIM_LOAD"))
 		if mult > 1.0:
