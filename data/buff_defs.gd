@@ -68,8 +68,8 @@ static var ALL := {
 	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.20}},
 	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "step": 0.1}},
 	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "exp_count", "per": "filled", "rate": 0.08}},
-	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.18}},
-	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.13}},
+	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.22}},
+	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.16}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 2, "when": "board_full"}},
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
 	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.25}},
@@ -81,7 +81,7 @@ static var ALL := {
 	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 1.5}},
 	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 0.7}},
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.5, "window": 3.0}},
-	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.02}},
+	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.06}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 2}},
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.05, "pct": 10.0}},
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 4.2, "chance": 0.05}},
@@ -95,7 +95,7 @@ static var ALL := {
 	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 4}},
 	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 2}},
 	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 3.0}},
-	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 0.69}},
+	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 1.3}},
 
 	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 2}},
 	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.08, "money": 1}},
@@ -116,9 +116,9 @@ static var ALL := {
 
 	# ── 벼랑끝(67~70) ──
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
-	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 6.9}},
+	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 4.5}},
 	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 3}},
-	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 5.2}},
+	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 4.0}},
 
 	# ── 방치(71~74) ──
 	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
