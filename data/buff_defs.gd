@@ -84,7 +84,7 @@ static var ALL := {
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.06}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 2}},
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.05, "pct": 10.0}},
-	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 4.2, "chance": 0.05}},
+	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 2.0, "chance": 0.03}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
 	"sale_cash":  {"card": 51, "icon": "🏦", "settle": {"kind": "served", "threshold": 0.0, "pct": 0.10}},
 	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 2}, "mult": {"stat": "patience_mult", "value": 0.80}},

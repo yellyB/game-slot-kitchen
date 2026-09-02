@@ -135,7 +135,7 @@ const S := {
 	"b.accum_sale.name": "Savings", "b.accum_sale.label": "Bank 6% of each score → paid out on next serve",
 	"b.sale_flat3.name": "Bread & Butter", "b.sale_flat3.label": "All score ×2",
 	"b.prob_bonus.name": "Lucky", "b.prob_bonus.label": "5% chance earned score ×10",
-	"b.sale_risk.name": "Gamble", "b.sale_risk.label": "Score ×4.2, but 5% chance: this card is destroyed",
+	"b.sale_risk.name": "Gamble", "b.sale_risk.label": "Score ×2.0, but 3% chance: this card is destroyed",
 	"b.no_buy.name": "Thrift", "b.no_buy.label": "Buy nothing this turn: next turn all score +5% (WIP)",
 	"b.sale_cash.name": "Kickback", "b.sale_cash.label": "At close: +10% of this turn's score",
 	"b.sale_pat.name": "Volume Sale", "b.sale_pat.label": "Score ×2, but customer patience -20%",

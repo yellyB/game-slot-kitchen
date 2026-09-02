@@ -135,7 +135,7 @@ const S := {
 	"b.accum_sale.name": "적립", "b.accum_sale.label": "서빙마다 점수의 6% 누적 획득. 재료 버리거나 이번 턴 끝나면 초기화",
 	"b.sale_flat3.name": "기초체력", "b.sale_flat3.label": "점수 ×2",
 	"b.prob_bonus.name": "행운", "b.prob_bonus.label": "5% 확률로 획득 점수 ×10",
-	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 점수 ×4.2. 5% 확률로 이 카드 폐기",
+	"b.sale_risk.name": "도박", "b.sale_risk.label": "메뉴 제공 시 점수 ×2.0. 3% 확률로 이 카드 폐기",
 	"b.no_buy.name": "절약", "b.no_buy.label": "상점에서 아무것도 안 사면 다음 턴 모든 점수 +5%",
 	"b.sale_cash.name": "콩고물", "b.sale_cash.label": "마감 시 이번 턴 점수의 10% 추가",
 	"b.sale_pat.name": "박리다매", "b.sale_pat.label": "점수 ×2 / 인내심 -20%",
