@@ -2216,10 +2216,11 @@ func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
   Audio.play("fail")
   Audio.vibrate(60)
   m.queue_free()
-  _show_run_failed(int(summary["day"]))
+  _show_run_failed(summary)
 
 
-func _show_run_failed(day: int) -> void:
+func _show_run_failed(summary: Dictionary) -> void:
+  var day := int(summary["day"])
   var m := Modal.open(self).title(Loc.t("run_failed"))
   var badge := UI.day_badge(64)
   (badge.get_meta("num") as Label).text = str(day)
@@ -2230,6 +2231,16 @@ func _show_run_failed(day: int) -> void:
   x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   x_box.add_child(UI.ui_icon("fail_x", 32))
   m.add_row(x_box)
+  var got := int(summary["month_score"])
+  var goal := int(summary["rent"])
+  var score_row := HBoxContainer.new()
+  score_row.alignment = BoxContainer.ALIGNMENT_CENTER
+  score_row.add_theme_constant_override("separation", 6)
+  score_row.add_child(UI.ui_icon("star", 22))
+  score_row.add_child(UI.label(UI.money(got) + " / " + UI.money(goal), 22, Palette.COCOA_800, true))
+  if goal > got:
+    score_row.add_child(UI.label("−" + UI.money(goal - got), 18, Palette.DANGER, true))
+  m.add_row(score_row)
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
   home.size_flags_horizontal = Control.SIZE_EXPAND_FILL

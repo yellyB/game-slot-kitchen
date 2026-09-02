@@ -7,7 +7,6 @@ const POOL := [
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},
-	{"type": "broken_tool",   "icon": "🔧", "value": 1},
 ]
 
 static var _pending: Dictionary = {}
@@ -59,11 +58,6 @@ static func warehouse_mult() -> float:
 static func locked_slots() -> int:
 	if kind() == "small_kitchen":
 		return int(active.get("value", 0))
-	return 0
-
-static func tool_delta() -> int:
-	if kind() == "broken_tool":
-		return -int(active.get("value", 1))
 	return 0
 
 static func cook_mult() -> float:

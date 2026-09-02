@@ -136,7 +136,7 @@ func _buff_score(id: String) -> int:
 
 func _rebuild_tools() -> void:
 	tools.clear()
-	for i in maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus() + Boss.tool_delta()):
+	for i in maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus()):
 		tools.append({"id": "", "t": 0.0})
 
 
