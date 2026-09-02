@@ -134,8 +134,8 @@ func demand_weight(recipe_id: String) -> float:
 	return w
 
 
-func ramp_bonus(recipe_id: String) -> int:
-	return int(_ramp_bonus.get(recipe_id, 0))
+func ramp_bonus(recipe_id: String) -> float:
+	return float(_ramp_bonus.get(recipe_id, 0.0))
 
 func menu_price(recipe_id: String) -> int:
 	var def := Recipes.get_def(recipe_id)
@@ -337,7 +337,7 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 		var d := BuffDefs.get_def(id)
 		var r: Dictionary = d.get("ramp", {})
 		if not r.is_empty() and int(r["tier"]) == tier:
-			_add_ramp(recipe_id, int(round(base * float(r["value"]))))
+			_add_ramp(recipe_id, base * float(r["value"]))
 		var t: Dictionary = d.get("trigger", {})
 		if not t.is_empty():
 			var inc := int(round(base * float(t["value"])))
@@ -356,8 +356,8 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 		if not ins.is_empty() and ins.get("kind", "") == "order" and _serve_count % int(ins["n"]) == 0:
 			_instant_order = true
 
-func _add_ramp(recipe_id: String, inc: int) -> void:
-	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
+func _add_ramp(recipe_id: String, inc: float) -> void:
+	_ramp_bonus[recipe_id] = float(_ramp_bonus.get(recipe_id, 0.0)) + inc
 
 func serve_tip() -> int:
 	var g := 0
