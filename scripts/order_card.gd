@@ -42,6 +42,7 @@ func _preview_icon() -> Control:
 
 func _build_content() -> void:
 	_scale_to_width = true   # 아이콘 행(말풍선+손님, 재료들)이 슬롯보다 넓으면 통째로 축소(오른쪽 넘침 방지)
+	_fit_bottom_reserve = 15.0   # 하단 인내심 바(_add_gauge) 밴드 예약 — 재료 아랫줄이 바에 안 가리게
 	# 주문 카드 느낌: 크림빛 배경 + 액센트 테두리
 	_style.bg_color = Palette.TICKET
 	_style.border_color = Palette.ACCENT

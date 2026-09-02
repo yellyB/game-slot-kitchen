@@ -11,6 +11,8 @@ var _content_min := Vector2.ZERO   # 내용 자연 크기(앵커 전 측정) —
 ## 내용이 아이콘 행(고정 폭)인 카드는 true — 좁아지면 폭 기준으로도 축소해 오른쪽 넘침을 막는다.
 ## false(기본)는 자동 줄바꿈 라벨 보호용(넓은 1줄 폭으로 과축소 방지).
 var _scale_to_width := false
+## 하단에 고정 밴드(예: 인내심 바)를 두는 카드는 그 픽셀만큼 예약 — 내용을 그 위 영역에 맞춰 겹침 방지.
+var _fit_bottom_reserve := 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -83,7 +85,7 @@ func _fit_wrap() -> void:
 		return
 	if _content_min.x <= 0.0 and _content_min.y <= 0.0:
 		return
-	var avail := _wrap.size   # 카드 내용영역(full-rect). deferred라 갱신 완료 상태.
+	var avail := _wrap.size - Vector2(0, _fit_bottom_reserve)   # 하단 고정 밴드(인내심 바) 제외
 	if avail.x <= 0.0 or avail.y <= 0.0:
 		return
 	# 자동 줄바꿈 라벨은 측정 시 '한 줄로 편' 넓은 min-width를 보고 → 축소 강제로 내용이 과소해짐.
