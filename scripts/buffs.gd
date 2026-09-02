@@ -7,7 +7,7 @@ var _owned: Array[String] = []
 var _slot_pos: Dictionary = {}   # buff_id → 마지막 배치 슬롯 인덱스. 하루 리빌드 때 이 칸으로 복원(런 스코프).
 
 # 런 스코프 상태(clear에서 리셋)
-var _ramp_bonus: Dictionary = {}   # recipe_id → 메뉴가격 누적(원, 정수). 24~29·42~44.
+var _ramp_bonus: Dictionary = {}   # recipe_id → 메뉴가격 누적(실수). 24~29·42~44.
 var _serve_count := 0              # 누적 서빙 수 (43·60)
 var _cook_count := 0               # 누적 조리 시작 수 (61)
 var _streak_id := ""               # 연속 같은메뉴 (42)
@@ -152,8 +152,8 @@ func demand_weight(recipe_id: String) -> float:
 
 
 # ── 메뉴가격(base + 램프누적 + 등급별%인상) ───────────────
-func ramp_bonus(recipe_id: String) -> int:
-	return int(_ramp_bonus.get(recipe_id, 0))
+func ramp_bonus(recipe_id: String) -> float:
+	return float(_ramp_bonus.get(recipe_id, 0.0))
 
 func menu_price(recipe_id: String) -> int:
 	var def := Recipes.get_def(recipe_id)
@@ -369,7 +369,7 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 		var d := BuffDefs.get_def(id)
 		var r: Dictionary = d.get("ramp", {})
 		if not r.is_empty() and int(r["tier"]) == tier:
-			_add_ramp(recipe_id, int(round(base * float(r["value"]))))
+			_add_ramp(recipe_id, base * float(r["value"]))
 		var t: Dictionary = d.get("trigger", {})
 		if not t.is_empty():
 			var inc := int(round(base * float(t["value"])))
@@ -388,8 +388,8 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 		if not ins.is_empty() and ins.get("kind", "") == "order" and _serve_count % int(ins["n"]) == 0:
 			_instant_order = true
 
-func _add_ramp(recipe_id: String, inc: int) -> void:
-	_ramp_bonus[recipe_id] = int(_ramp_bonus.get(recipe_id, 0)) + inc
+func _add_ramp(recipe_id: String, inc: float) -> void:
+	_ramp_bonus[recipe_id] = float(_ramp_bonus.get(recipe_id, 0.0)) + inc
 
 ## 서빙 시 팁(76 짤랑이) — 확률 적중 시 즉시 획득할 돈(원). 미보유/미적중이면 0.
 func serve_tip() -> int:
