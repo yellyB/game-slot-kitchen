@@ -37,7 +37,7 @@ func rebuild(slot_count: int) -> void:
 	tools.clear()
 	_shake_tw.clear()
 
-	var tool_count := Config.TOOL_COUNT + Buffs.tool_bonus()
+	var tool_count := maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus() + Boss.tool_delta())
 	var total := slot_count + tool_count
 	for i in total:
 		if i < slot_count:

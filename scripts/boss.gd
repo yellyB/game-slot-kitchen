@@ -7,6 +7,7 @@ const POOL := [
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},
+	{"type": "broken_tool",   "icon": "🔧", "value": 1},
 ]
 
 static var _pending: Dictionary = {}
@@ -26,6 +27,9 @@ static func for_week(week_info: Dictionary) -> Dictionary:
 	return POOL[(month - 1) % POOL.size()].duplicate()
 
 static func begin_day(week_info := {}) -> void:
+	if OS.has_environment("SIM_BOSS"):
+		active = {"type": OS.get_environment("SIM_BOSS")}
+		return
 	if not _pending.is_empty():
 		active = _pending
 		_pending = {}
@@ -55,6 +59,11 @@ static func warehouse_mult() -> float:
 static func locked_slots() -> int:
 	if kind() == "small_kitchen":
 		return int(active.get("value", 0))
+	return 0
+
+static func tool_delta() -> int:
+	if kind() == "broken_tool":
+		return -int(active.get("value", 1))
 	return 0
 
 static func cook_mult() -> float:

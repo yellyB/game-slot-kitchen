@@ -27,6 +27,7 @@ const S := {
 	"boss.pricey_trip": "Pricey Trips",
 	"boss.slow_cook": "Weak Burner",
 	"boss.impatient": "Short Fuse",
+	"boss.broken_tool": "Broken Station",
 
 	"day_n": "Week %d",
 	"week_review": "Weekly Review!",
