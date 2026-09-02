@@ -43,8 +43,8 @@ func rebuild(slot_count: int) -> void:
 	tools.clear()
 	_shake_tw.clear()   # 이전 슬롯(해제됨) 흔들림 트윈 참조 정리
 
-	# 도구석 수 = 기본 + 구조 버프(11: tool_bonus) + 보스(설비고장 -1). 슬롯 수는 호출 측이 effective_slots로 전달.
-	var tool_count := maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus() + Boss.tool_delta())
+	# 도구석 수 = 기본 + 구조 버프(11: tool_bonus). 슬롯 수는 호출 측이 effective_slots로 전달.
+	var tool_count := maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus())
 	var total := slot_count + tool_count
 	for i in total:
 		if i < slot_count:

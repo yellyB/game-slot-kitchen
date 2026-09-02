@@ -151,7 +151,7 @@ func _buff_score(id: String) -> int:
 
 func _rebuild_tools() -> void:
 	tools.clear()
-	for i in maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus() + Boss.tool_delta()):   # 보스 설비고장 반영, 최소 1
+	for i in maxi(1, Config.TOOL_COUNT + Buffs.tool_bonus()):
 		tools.append({"id": "", "t": 0.0})
 
 

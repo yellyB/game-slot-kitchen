@@ -2414,13 +2414,14 @@ func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
   Audio.play("fail")   # 폐업 스팅
   Audio.vibrate(60)    # 강한(긴) 에러 진동
   m.queue_free()
-  _show_run_failed(int(summary["day"]))
+  _show_run_failed(summary)
 
 
-## 파산(런 실패) 게임오버 — 'Run Failed' + 일력(n일차, 상단바식) + ❌ + 홈 이미지 버튼.
-func _show_run_failed(day: int) -> void:
+## 파산(런 실패) 게임오버 — 'Run Failed' + 일력(주차, 상단바식) + ❌ + 이달 점수 근접도 + 홈 버튼.
+func _show_run_failed(summary: Dictionary) -> void:
+  var day := int(summary["day"])
   var m := Modal.open(self).title(Loc.t("run_failed"))
-  # n일차 — 상단바처럼 일력 이미지 + 숫자
+  # 도달 주차 — 상단바처럼 일력 이미지 + 숫자
   var badge := UI.day_badge(64)
   (badge.get_meta("num") as Label).text = str(day)
   var badge_wrap := CenterContainer.new()
@@ -2431,6 +2432,17 @@ func _show_run_failed(day: int) -> void:
   x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   x_box.add_child(UI.ui_icon("fail_x", 32))
   m.add_row(x_box)
+  # 이달 점수 근접도 — ⭐ 모은점수 / 목표점수 (부족분 빨강). 통과는 month_score≥목표라 점수로 표시.
+  var got := int(summary["month_score"])
+  var goal := int(summary["rent"])
+  var score_row := HBoxContainer.new()
+  score_row.alignment = BoxContainer.ALIGNMENT_CENTER
+  score_row.add_theme_constant_override("separation", 6)
+  score_row.add_child(UI.ui_icon("star", 22))
+  score_row.add_child(UI.label(UI.money(got) + " / " + UI.money(goal), 22, Palette.COCOA_800, true))
+  if goal > got:
+    score_row.add_child(UI.label("−" + UI.money(goal - got), 18, Palette.DANGER, true))
+  m.add_row(score_row)
   # 홈 이미지 버튼 → 타이틀(홈)로
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
