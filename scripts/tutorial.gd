@@ -190,9 +190,6 @@ func _show_done() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 16)
 	center.add_child(box)
-	var emoji := UI.label("🎉", 64)
-	emoji.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(emoji)
 	var msg := UI.label(Loc.t("tut_done"), 22, Palette.WHITE, true)
 	msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(msg)

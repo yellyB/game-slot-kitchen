@@ -13,9 +13,9 @@ config_version=5
 config/name="Slot Kitchen"
 config/description="슬롯 키친 — 도넛 카페 슬롯 요리 게임 MVP"
 run/main_scene="res://scenes/Main.tscn"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
-config/quit_on_go_back=false
 
 [autoload]
 
@@ -35,3 +35,4 @@ window/handheld/orientation=1
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

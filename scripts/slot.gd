@@ -45,12 +45,17 @@ func lock() -> void:
     return
   locked = true
   add_theme_stylebox_override("panel", UI.card(Palette.COCOA_200, Palette.COCOA_400, 1))
-  var lbl := UI.label("🔒", 40, Palette.COCOA_800, true)
-  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  _holder.add_child(lbl)
+  # MarginContainer는 자식을 꽉 채우므로, 채움 박스 안에서 자물쇠를 분수 앵커로 중앙 60%만 차지시켜
+  # 메뉴카드 비율로 축소(슬롯 크기 바뀌어도 비례 유지).
+  var box := Control.new()
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  _holder.add_child(box)
+  var lbl := UI.ui_icon("slot_lock", 40)
+  lbl.anchor_left = 0.2
+  lbl.anchor_top = 0.2
+  lbl.anchor_right = 0.8
+  lbl.anchor_bottom = 0.8
+  box.add_child(lbl)
 
 
 ## 버프 카드가 이 슬롯에 안착하면 그 위치를 기억(다음 주 리빌드 때 같은 칸으로 복원).

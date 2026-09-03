@@ -204,7 +204,7 @@ func _add_slot_coupon(parent: Node, offset: int) -> void:
 ## 버프팩 카드 1칸 — 탭하면 3장 개봉(택1), 그 칸은 SOLD OUT.
 func _add_buff_pack(parent: Node) -> void:
   var st := {"kind": "pack", "done": false}
-  st["btn"] = _product(parent, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_draw"), Palette.MAIN, func(): _on_draw_pack(st))
+  st["btn"] = _product(parent, UI.ui_icon("card_pack", 72), Config.BUFF_PACK_PRICE, Loc.t("shop_buy"), Palette.MAIN, func(): _on_draw_pack(st))
   st["card"] = _last_card
   st["price_label"] = _last_price_label
   _products.append(st)
@@ -384,7 +384,14 @@ func _show_pack(pack: Array) -> void:
   reroll.add_theme_stylebox_override("pressed", UI.chip(Palette.SUB.darkened(0.1)))
   reroll.add_theme_stylebox_override("disabled", UI.chip(Palette.SUB))
   reroll.custom_minimum_size = Vector2(160, 40)
-  reroll.text = "🔄  " + UI.money(cost)
+  var rr := HBoxContainer.new()
+  rr.alignment = BoxContainer.ALIGNMENT_CENTER
+  rr.add_theme_constant_override("separation", 6)
+  rr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  rr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  rr.add_child(UI.ui_icon("reroll", 22))
+  rr.add_child(UI.label(UI.money(cost), 16, Palette.WHITE, true))
+  reroll.add_child(rr)
   reroll.disabled = not can
   reroll.modulate = Color.WHITE if can else Color(1, 1, 1, 0.5)
   reroll.pressed.connect(func(): _do_reroll(cost, overlay))
@@ -619,7 +626,7 @@ func _refresh() -> void:
         btn.disabled = true
         btn.modulate = Color.WHITE
       else:
-        btn.text = Loc.t("shop_draw")
+        btn.text = Loc.t("shop_buy")
         var can_draw := session.cash >= Config.BUFF_PACK_PRICE
         btn.disabled = not can_draw
         btn.modulate = Color.WHITE if can_draw else Color(1, 1, 1, 0.5)

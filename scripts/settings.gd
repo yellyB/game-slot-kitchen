@@ -51,10 +51,9 @@ func _build() -> void:
 		c.queue_free()
 	_lang_buttons.clear()
 
-	# 헤더: ⚙️ 설정 ─── ✕
+	# 헤더: 설정 ─── ✕
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 8)
-	header.add_child(UI.label("⚙️", 22))
 	header.add_child(UI.label(Loc.t("settings"), 22, Palette.COCOA_800, true))
 	var hgap := Control.new()
 	hgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
