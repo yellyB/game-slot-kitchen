@@ -159,7 +159,7 @@ func _ready() -> void:
     var script := []
     for wi in bw.size():
       script.append({"buffs": bw[wi], "slots": slots[wi]})
-    var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.6
+    var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.65
     var reps := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 30   # 레시피 RNG 평활용 시드 평균
     var sum_served := []
     var sum_rev := []
@@ -201,7 +201,7 @@ func _ready() -> void:
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
   if "--sim" in OS.get_cmdline_user_args():
     # 기본을 현실 플레이어 모델로 — 초인(handle=0)이 아니라 사람 손속도/놓침이 걸려야 실측 중앙값에 붙는다.
-    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")   # 실로그 보정: day-1 평균 110·즉사 44%가 실측(108/45%)에 일치
     if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")   # 실측 응대율 높음(accepted≈visited) → 놓침 낮게
     var batch := SimBatch.new()
     var n := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
@@ -286,7 +286,7 @@ func _ready() -> void:
   if "--simmenu" in OS.get_cmdline_user_args():
     var mmn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 300
     if not OS.has_environment("SIM_MAXDAY"): OS.set_environment("SIM_MAXDAY", "3")
-    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
     OS.set_environment("SIM_NOFAIL", "1")
     var mdays := int(OS.get_environment("SIM_MAXDAY"))
     print("\n[SIMMENU] ===== 메뉴별 효율 (단일메뉴 강제·상점OFF, n=%d, %d일, HANDLE=%s) =====" % [
