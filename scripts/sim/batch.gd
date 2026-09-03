@@ -69,19 +69,25 @@ func compare(n: int, loadouts: Array) -> Array:
 ## 상점 off로 두어 '그 버프만'의 순효과를 격리. 승률이 민감한 구간이 되도록 SIM_RENT로 가혹도 조절.
 func buff_report(n: int) -> void:
 	var base := run(n, [], false)
-	print("[BUFFRPT] base(버프0)  승률 %.0f%%  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s)" % [
-		base["win_rate"] * 100.0, base["avg_cash"], base["avg_days"], n,
-		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1"])
+	print("[BUFFRPT] base(버프0)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+		base["win_rate"] * 100.0, base["avg_score"], base["avg_cash"], base["avg_days"], n,
+		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1",
+		OS.get_environment("SIM_MAXDAY") if OS.has_environment("SIM_MAXDAY") else "-"])
+	var only: Array = []
+	if OS.has_environment("SIM_BUFF_ONLY"):
+		only = Array(OS.get_environment("SIM_BUFF_ONLY").split(","))
 	var rows := []
 	for id in BuffDefs.ids():
+		if not only.is_empty() and not (id in only):
+			continue
 		var r := run(n, [id], false)
 		rows.append({
 			"id": id,
-			"dwin": (r["win_rate"] - base["win_rate"]) * 100.0,
+			"dscore": r["avg_score"] - base["avg_score"],
 			"dcash": r["avg_cash"] - base["avg_cash"],
 			"win": r["win_rate"] * 100.0,
 		})
-	rows.sort_custom(func(a, b): return a["dcash"] > b["dcash"])
+	rows.sort_custom(func(a, b): return a["dscore"] > b["dscore"])
 	for row in rows:
-		print("[BUFFRPT] %-14s Δ승률 %+6.1f%%  Δ현금 %+9.0f  (승률 %.0f%%)" % [
-			row["id"], row["dwin"], row["dcash"], row["win"]])
+		print("[BUFFRPT] %-14s Δ점수 %+9.0f  Δ현금 %+9.0f  (승률 %.0f%%)" % [
+			row["id"], row["dscore"], row["dcash"], row["win"]])
