@@ -56,16 +56,16 @@ static var ALL := {
 	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 4}},
 
 	# ── 메뉴가격 성장(램프) 25~30 ──
-	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.35}},
-	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.35}},
-	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.17}},
-	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.2}},
-	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 0.33}},
-	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 2.5}},
+	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.5}},
+	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.8}},
+	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.5}},
+	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.7}},
+	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 1.5}},
+	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 3}},
 
 	# ── 판매금: 슬롯/버프 공간 빌드(31~41) ──
-	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.25}},
-	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.20}},
+	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.4}},
+	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.3}},
 	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "step": 0.1}},
 	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "exp_count", "per": "filled", "rate": 0.08}},
 	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.22}},
@@ -78,9 +78,9 @@ static var ALL := {
 
 	# ── 판매금: 콤보/연속/확률(42~52) ──
 	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
-	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 1.5}},
-	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 0.7}},
-	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.5, "window": 3.0}},
+	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 1}},
+	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 1}},
+	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 1, "window": 3.0}},
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.06}},
 	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 2}},
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.05, "pct": 10.0}},
