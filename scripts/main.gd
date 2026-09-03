@@ -2449,16 +2449,15 @@ func _show_run_failed(summary: Dictionary) -> void:
   x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   x_box.add_child(UI.ui_icon("fail_x", 32))
   m.add_row(x_box)
-  # 이달 점수 근접도 — ⭐ 모은점수 / 목표점수 (부족분 빨강). 통과는 month_score≥목표라 점수로 표시.
+  # 이달 점수 근접도 — ⭐ 모은점수(부족하면 빨강) / 목표점수.
   var got := int(summary["month_score"])
   var goal := int(summary["rent"])
   var score_row := HBoxContainer.new()
   score_row.alignment = BoxContainer.ALIGNMENT_CENTER
   score_row.add_theme_constant_override("separation", 6)
   score_row.add_child(UI.ui_icon("star", 22))
-  score_row.add_child(UI.label(UI.money(got) + " / " + UI.money(goal), 22, Palette.COCOA_800, true))
-  if goal > got:
-    score_row.add_child(UI.label("−" + UI.money(goal - got), 18, Palette.DANGER, true))
+  score_row.add_child(UI.label(UI.money(got), 22, Palette.DANGER if goal > got else Palette.COCOA_800, true))
+  score_row.add_child(UI.label(" / " + UI.money(goal), 22, Palette.COCOA_800, true))
   m.add_row(score_row)
   # 홈 이미지 버튼 → 타이틀(홈)로
   var home := Button.new()
