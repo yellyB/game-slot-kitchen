@@ -11,6 +11,7 @@ const POOL := [
 
 static var _pending: Dictionary = {}
 static var active: Dictionary = {}
+static var _month_roll: Dictionary = {}
 
 static func queue_random() -> Dictionary:
 	_pending = POOL[randi() % POOL.size()].duplicate()
@@ -19,11 +20,15 @@ static func queue_random() -> Dictionary:
 static func has_pending() -> bool:
 	return not _pending.is_empty()
 
+static func preview_for_month(month: int) -> Dictionary:
+	if not _month_roll.has(month):
+		_month_roll[month] = POOL[randi() % POOL.size()].duplicate()
+	return _month_roll[month].duplicate()
+
 static func for_week(week_info: Dictionary) -> Dictionary:
 	if not bool(week_info.get("is_month_end", false)):
 		return {}
-	var month := int(week_info.get("month", 1))
-	return POOL[(month - 1) % POOL.size()].duplicate()
+	return preview_for_month(int(week_info.get("month", 1)))
 
 static func begin_day(week_info := {}) -> void:
 	if OS.has_environment("SIM_BOSS"):
@@ -42,6 +47,7 @@ static func begin_day(week_info := {}) -> void:
 static func reset() -> void:
 	active = {}
 	_pending = {}
+	_month_roll.clear()
 
 static func is_active() -> bool:
 	return not active.is_empty()

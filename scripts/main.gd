@@ -1408,7 +1408,7 @@ func _month_track(week: int) -> Control:
   row.add_child(goal)
   v.add_child(row)
 
-  var msg := Loc.t("month_audit") if is_end else Loc.t("week_review")
+  var msg := Loc.t("month_audit") if is_end else Loc.t("boss_incoming") % int(wk["weeks_left"])
   var lbl := UI.label(msg, 18, Palette.DANGER if is_end else Palette.WHITE, true)
   lbl.add_theme_constant_override("outline_size", 4)
   lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
@@ -1420,6 +1420,14 @@ func _month_track(week: int) -> Control:
     var pt := create_tween().set_loops()
     pt.tween_property(lbl, "modulate:a", 0.4, 0.5).set_trans(Tween.TRANS_SINE)
     pt.tween_property(lbl, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+  else:
+    var pen := Boss.preview_for_month(int(wk["month"]))
+    var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
+    pen_lbl.add_theme_constant_override("outline_size", 3)
+    pen_lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+    pen_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    pen_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    v.add_child(pen_lbl)
   return v
 
 
@@ -1474,6 +1482,8 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Co
   if not is_instance_valid(root):
     return null
   var vp := get_viewport_rect().size
+  if extra != null:
+    center.offset_bottom = -vp.y * 0.14
   img.pivot_offset = img.size * 0.5
   l.pivot_offset = l.size * 0.5
   hint.position = Vector2((vp.x - hint.size.x) * 0.5, vp.y * 0.72 - 60.0)
@@ -1581,7 +1591,10 @@ func _make_boss_banner() -> Control:
   var chip := HBoxContainer.new()
   chip.alignment = BoxContainer.ALIGNMENT_CENTER
   chip.add_theme_constant_override("separation", 6)
-  chip.add_child(UI.label(Boss.icon(), 34))
+  if Boss.kind() == "time_short":
+    chip.add_child(UI.ui_icon("timer", 34))
+  else:
+    chip.add_child(UI.label(Boss.icon(), 34))
   chip.add_child(UI.label(Boss.label(), 26, Palette.WHITE, true))
   box.add_child(chip)
   var hint := UI.label(Loc.t("boss.hint") % UI.money(_session.rent), 20, Palette.WHITE, true)
