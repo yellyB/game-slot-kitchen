@@ -15,6 +15,7 @@ const POOL := [
 
 static var _pending: Dictionary = {}   # 다음날 예약된 제약
 static var active: Dictionary = {}      # 이번 날 적용 중인 제약(빈=일반날)
+static var _month_roll: Dictionary = {}  # month → 굴린 제약. 런 동안 고정(예고=실제 보장).
 
 ## 디버그: 다음날 보스 예약(랜덤 제약 1개).
 static func queue_random() -> Dictionary:
@@ -24,12 +25,17 @@ static func queue_random() -> Dictionary:
 static func has_pending() -> bool:
 	return not _pending.is_empty()
 
-## 이번 주가 월말(4주차=보스전)이면 걸 제약 1개 — 월별로 POOL 순환. 아니면 빈(일반날).
+## 그 달 월말에 걸릴 제약(예고·발동 공용) — 월별로 랜덤 1개, 런 동안 고정(예고=실제 보장). is_month_end 무관.
+static func preview_for_month(month: int) -> Dictionary:
+	if not _month_roll.has(month):
+		_month_roll[month] = POOL[randi() % POOL.size()].duplicate()
+	return _month_roll[month].duplicate()
+
+## 이번 주가 월말(4주차=보스전)이면 걸 제약 1개 — 월별 랜덤. 아니면 빈(일반날).
 static func for_week(week_info: Dictionary) -> Dictionary:
 	if not bool(week_info.get("is_month_end", false)):
 		return {}
-	var month := int(week_info.get("month", 1))
-	return POOL[(month - 1) % POOL.size()].duplicate()
+	return preview_for_month(int(week_info.get("month", 1)))
 
 ## 하루 시작 시 1회 호출 — 디버그 예약이 있으면 그걸, 없으면 월말(4주차)마다 제약 1개 자동 발동.
 static func begin_day(week_info := {}) -> void:
@@ -50,6 +56,7 @@ static func begin_day(week_info := {}) -> void:
 static func reset() -> void:
 	active = {}
 	_pending = {}
+	_month_roll.clear()
 
 static func is_active() -> bool:
 	return not active.is_empty()
