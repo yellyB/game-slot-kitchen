@@ -2331,7 +2331,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   Audio.vibrate(30)
   m.pin_top()   # 팝업 위치 고정 → 실적확인 버튼은 두고 아래로만 버튼 추가
 
-  var fee: int = maxi(1, int(goal / Config.SCORE_GATE_FEE_DIV))   # 목표점수의 1/N 만큼 코인 지불로 통과(최소 1)
+  var fee: int = maxi(maxi(1, int(goal / Config.SCORE_GATE_FEE_DIV)), _session.cash - Config.SCORE_GATE_FEE_KEEP)   # max(목표점수 1/N, 보유금-KEEP) — 부유하면 KEEP만 남기고 소진
   var wrap := VBoxContainer.new()
   wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   wrap.add_theme_constant_override("separation", 8)
