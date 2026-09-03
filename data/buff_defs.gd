@@ -2,11 +2,11 @@ class_name BuffDefs
 extends RefCounted
 
 static var ALL := {
-	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.71}},
+	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.60}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.35}},
 	"day_len":    {"card": 3, "icon": "🕒", "mult": {"stat": "day_mult", "value": 1.29}},
 	"wh_chance":  {"card": 4, "icon": "🍀", "trip_free": 0.86},
-	"wh_fast":    {"card": 5, "icon": "🏃", "mult": {"stat": "warehouse_mult", "value": 0.08}},
+	"wh_fast":    {"card": 5, "icon": "🏃", "mult": {"stat": "warehouse_mult", "value": 0.04}},
 	"rent_down":  {"card": 6, "icon": "🏠", "mult": {"stat": "rent_mult", "value": 0.77}},
 	"shop_disc":  {"card": 7, "icon": "🏷️", "blocked": true},
 	"pack_more":  {"card": 8, "icon": "🃏", "blocked": true},
@@ -50,7 +50,7 @@ static var ALL := {
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.3}},
 	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.5}},
 
-	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.18}},
+	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
 	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 1.5}},
 	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 0.7}},
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 2.5, "window": 3.0}},
@@ -65,7 +65,7 @@ static var ALL := {
 	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 7}},
 	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 3}},
 	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 4}},
-	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.0, "pct": 1.3}},
+	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.5, "pct": 1.9}},
 	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 3.0}},
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 1.3}},
 
@@ -85,7 +85,7 @@ static var ALL := {
 	"settle_same":{"card": 66, "icon": "🎯", "settle": {"kind": "samemenu", "threshold": 0.70, "pct": 0.20}},
 
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
-	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 25.0, "pct": 4.5}},
+	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 12.0, "pct": 4.5}},
 	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 3}},
 	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 4.0}},
 
