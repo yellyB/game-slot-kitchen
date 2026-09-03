@@ -153,7 +153,7 @@ const _CAT_OVERRIDE := {
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth", "sale_cash": "growth",
 	"settle_100": "growth", "settle_90": "growth", "settle_same": "growth",
-	"prob_x2": "luck", "prob_bonus": "luck", "sale_risk": "luck", "onlost_x2": "luck",
+	"prob_x2": "luck", "prob_bonus": "luck", "sale_risk": "luck",
 }
 
 static func category(id: String) -> String:
