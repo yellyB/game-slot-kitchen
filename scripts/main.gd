@@ -2136,7 +2136,7 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
   Audio.vibrate(30)
   m.pin_top()
 
-  var fee: int = maxi(1, int(goal / Config.SCORE_GATE_FEE_DIV))
+  var fee: int = maxi(maxi(1, int(goal / Config.SCORE_GATE_FEE_DIV)), _session.cash - Config.SCORE_GATE_FEE_KEEP)
   var wrap := VBoxContainer.new()
   wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   wrap.add_theme_constant_override("separation", 8)

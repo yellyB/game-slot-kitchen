@@ -36,6 +36,7 @@ static func week_reward(day: int, served: int) -> int:
 const BUFF_SELL_RATIO := 0.2
 const MONEY_ABBR_AT := 100000
 const SCORE_GATE_FEE_DIV := 100
+const SCORE_GATE_FEE_KEEP := 5
 
 const DAY_LENGTH := 90.0
 const DAY_INTRO_DELAY := 0.5
