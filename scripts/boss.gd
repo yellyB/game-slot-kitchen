@@ -3,7 +3,7 @@ extends RefCounted
 
 const POOL := [
 	{"type": "small_kitchen", "icon": "🔒", "value": 3},
-	{"type": "time_short",    "icon": "⏱️", "value": 0.6},
+	{"type": "time_short",    "icon": "⏱️", "value": 0.7},
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},
