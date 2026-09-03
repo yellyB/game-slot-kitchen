@@ -143,7 +143,7 @@ func _ready() -> void:
     var script := []
     for wi in bw.size():
       script.append({"buffs": bw[wi], "slots": slots[wi]})
-    var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.6
+    var h := float(OS.get_environment("SIM_HANDLE")) if OS.has_environment("SIM_HANDLE") else 0.65
     var reps := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 30
     var sum_served := []
     var sum_rev := []
@@ -182,7 +182,7 @@ func _ready() -> void:
     get_tree().quit()
 
   if "--sim" in OS.get_cmdline_user_args():
-    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
     if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")
     var batch := SimBatch.new()
     var n := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
@@ -259,7 +259,7 @@ func _ready() -> void:
   if "--simmenu" in OS.get_cmdline_user_args():
     var mmn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 300
     if not OS.has_environment("SIM_MAXDAY"): OS.set_environment("SIM_MAXDAY", "3")
-    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.6")
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
     OS.set_environment("SIM_NOFAIL", "1")
     var mdays := int(OS.get_environment("SIM_MAXDAY"))
     print("\n[SIMMENU] ===== 메뉴별 효율 (단일메뉴 강제·상점OFF, n=%d, %d일, HANDLE=%s) =====" % [

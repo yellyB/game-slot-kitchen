@@ -1,0 +1,39 @@
+{
+  "_note": "Real-play calibration targets distilled from real_playlog.jsonl (2026-08-30..09-02, coffee=1 monthly economy). 'day' in logs = 1 week; 4 weeks = 1 month. Used to check that --sim/--replay reproduce reality. See CLAUDE.md 시뮬 하네스.",
+  "balance_snapshot": {
+    "gate_mult": 1.15,
+    "note": "targets below reflect the PRE-improvement balance (day1 gate 106, month1 506, month2 3105). After 2026-09-03 improvements #1-#3 the gates changed (day1 92, month1 440, month2 curve [300,640,1200,2200]); re-collect play logs to re-verify."
+  },
+  "day1_no_buff": {
+    "scores": [130, 120, 70, 95, 114, 110, 102, 76, 137, 103, 134],
+    "n": 11,
+    "mean": 108.3,
+    "min": 70,
+    "max": 137,
+    "served_range": [19, 24],
+    "visited_range": [25, 29],
+    "loss_frac_approx": 0.17,
+    "gate_at_capture": 106,
+    "pass_rate_at_gate_106": 0.55,
+    "scale_note": "11 day-1 runs on the coffee=1 / gate-106 build (2026-09-02). Three earlier day-1 runs (124@gate92 on 08-30, 128/119@gate106 on 09-01) are in real_playlog.jsonl but excluded here to keep one consistent set.",
+    "comment": "gate 106 sat on the median -> ~45% instant day-1 death (6/11 passed). Sim day-1 score distribution must match mean~108, spread 70-137."
+  },
+  "month2_week1_entrants": {
+    "scores_vs_gate_370": [132, 206, 186, 155],
+    "all_failed": true,
+    "comment": "flat/weak-buff builds plateau (~130-206/week) while gate jumped 106->370. Sim must show flat builds PLATEAUING, not smoothly scaling."
+  },
+  "engine_run_bimodal": {
+    "run": "2026-08-30T21:15:33#1813",
+    "buffs_acquired_order": ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+    "weekly_day_score": [124, 96, 111, 115, 224, 538, 1590, 1772, 3727, 2222, 4941],
+    "comment": "the ONLY run that cleared month 2. mult_all(wk6)+mp_t34(wk7) ignited compounding: 224->538->1590. Sim survival distribution should be BIMODAL (engine vs no-engine), not a tight band."
+  },
+  "boss_on_monthend_spike": {
+    "comment": "month-1 week-4 often pairs a capacity-cutting boss (small_kitchen/broken_tool/pricey_trip) with the largest cumulative gate; boss-day score often DROPS (131->82, served 20->10) causing near-miss deaths.",
+    "examples": [
+      {"run": "2026-09-01T17:34:30#1038508", "wk4_boss": "small_kitchen", "wk4_score": 82, "month_score": 464, "gate": 506, "died": true},
+      {"run": "2026-09-02T18:07:29#3340556", "wk4_boss": "pricey_trip", "wk4_score": 140, "month_score": 487, "gate": 506, "died": true}
+    ]
+  }
+}
