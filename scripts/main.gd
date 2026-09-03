@@ -2252,9 +2252,8 @@ func _show_run_failed(summary: Dictionary) -> void:
   score_row.alignment = BoxContainer.ALIGNMENT_CENTER
   score_row.add_theme_constant_override("separation", 6)
   score_row.add_child(UI.ui_icon("star", 22))
-  score_row.add_child(UI.label(UI.money(got) + " / " + UI.money(goal), 22, Palette.COCOA_800, true))
-  if goal > got:
-    score_row.add_child(UI.label("−" + UI.money(goal - got), 18, Palette.DANGER, true))
+  score_row.add_child(UI.label(UI.money(got), 22, Palette.DANGER if goal > got else Palette.COCOA_800, true))
+  score_row.add_child(UI.label(" / " + UI.money(goal), 22, Palette.COCOA_800, true))
   m.add_row(score_row)
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
