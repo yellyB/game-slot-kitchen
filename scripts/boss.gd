@@ -7,7 +7,7 @@ extends RefCounted
 # 제약 풀(우선 3종). value = 제약별 파라미터.
 const POOL := [
 	{"type": "small_kitchen", "icon": "🔒", "value": 3},    # 슬롯 3칸 잠금(작업공간 압박)
-	{"type": "time_short",    "icon": "⏱️", "value": 0.6},   # 영업시간 ×0.6 + 손님 ×0.6(단축 영업)
+	{"type": "time_short",    "icon": "⏱️", "value": 0.7},   # 영업시간 ×0.7 + 손님 ×0.7(단축 영업)
 	{"type": "pricey_trip",   "icon": "🥾", "value": 2.0},   # 창고 트립 비용 ×2(비싼 발품)
 	{"type": "slow_cook",     "icon": "🐢", "value": 1.4},   # 조리시간 ×1.4(불 약한 화구)
 	{"type": "impatient",     "icon": "🏃", "value": 0.6},   # 손님 인내심 ×0.6(인내심 바닥)
