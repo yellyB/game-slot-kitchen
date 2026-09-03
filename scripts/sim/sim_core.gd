@@ -128,7 +128,7 @@ func _shop(slots_only := false) -> void:
 				progressed = true
 
 
-## 팩에서 카드 선택. 기본=최고(_buff_score 1위). SIM_PICK_RANK=k면 k번째로 좋은 걸 고름(현실 플레이어 모델).
+## 팩에서 카드 선택. 기본=2등 픽(실플레이 덱품질에 캘리 — 사람은 최적픽 안 함). SIM_PICK_RANK=k로 k번째 좋은 카드 강제(1=고수).
 func _pick_buff(pack: Array) -> String:
 	var cands: Array = []
 	for id in pack:
@@ -137,7 +137,7 @@ func _pick_buff(pack: Array) -> String:
 	if cands.is_empty():
 		return ""
 	cands.sort_custom(func(a, b): return a["s"] > b["s"])
-	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 1
+	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 2
 	return cands[mini(rank - 1, cands.size() - 1)]["id"]   # k번째(1=최고). 팩이 그보다 적으면 맨 끝(제일 나쁜) 선택
 
 # 실측 카드 효율(Δ점수, 12주 NOFAIL·상점off 단독) — 봇 픽 우선순위. --simbuffs 측정→반영.
