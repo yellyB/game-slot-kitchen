@@ -35,12 +35,15 @@ func lock() -> void:
     return
   locked = true
   add_theme_stylebox_override("panel", UI.card(Palette.COCOA_200, Palette.COCOA_400, 1))
-  var lbl := UI.label("🔒", 40, Palette.COCOA_800, true)
-  lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-  lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-  lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  _holder.add_child(lbl)
+  var box := Control.new()
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  _holder.add_child(box)
+  var lbl := UI.ui_icon("slot_lock", 40)
+  lbl.anchor_left = 0.2
+  lbl.anchor_top = 0.2
+  lbl.anchor_right = 0.8
+  lbl.anchor_bottom = 0.8
+  box.add_child(lbl)
 
 
 func _remember_buff_pos(card: Card) -> void:

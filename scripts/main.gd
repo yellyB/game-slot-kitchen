@@ -854,7 +854,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _expect_fly = true
     _session.earn(gain, false)
     _expect_fly = false
-    _show_gain_breakdown([{"src": "buff", "amount": gain, "icon": "✨"}])
+    _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
   _spawn_pop("😠", order.global_position + order.size * 0.5)
@@ -1653,9 +1653,14 @@ func _show_trip_cost(cost: float, before_v: float, after_v: float) -> void:
   var st := create_tween()
   st.tween_property(seg, "modulate:a", 0.0, 0.55).set_ease(Tween.EASE_IN)
   st.chain().tween_callback(seg.queue_free)
-  var l := UI.label("⏱ -%.1f초" % cost, 40, Palette.DANGER, true)
-  l.add_theme_constant_override("outline_size", 6)
-  l.add_theme_color_override("font_outline_color", Palette.WHITE)
+  var l := HBoxContainer.new()
+  l.alignment = BoxContainer.ALIGNMENT_CENTER
+  l.add_theme_constant_override("separation", 6)
+  l.add_child(UI.ui_icon("timer", 40))
+  var amt := UI.label("-%.1f초" % cost, 40, Palette.DANGER, true)
+  amt.add_theme_constant_override("outline_size", 6)
+  amt.add_theme_color_override("font_outline_color", Palette.WHITE)
+  l.add_child(amt)
   l.z_index = 200
   l.mouse_filter = Control.MOUSE_FILTER_IGNORE
   add_child(l)
