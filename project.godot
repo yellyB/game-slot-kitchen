@@ -31,6 +31,10 @@ window/size/viewport_height=844
 window/stretch/mode="canvas_items"
 window/handheld/orientation=1
 
+[gui]
+
+theme/custom_font="res://assets/fonts/NotoSansCJKkr-Subset.otf"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

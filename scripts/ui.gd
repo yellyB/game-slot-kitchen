@@ -19,7 +19,7 @@ static func label(text: String, size: int, color: Color = Palette.COCOA_800, bol
 static func _bold_font() -> FontVariation:
 	if _bold == null:
 		_bold = FontVariation.new()
-		_bold.base_font = ThemeDB.fallback_font
+		_bold.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")   # CJK 포함(전역 폰트와 동일 base) — bold도 한·중·일 안 깨지게
 		_bold.variation_embolden = 0.55
 	return _bold
 

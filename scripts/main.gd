@@ -52,6 +52,7 @@ const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
 
 
 func _ready() -> void:
+  Loc.init()   # 저장된 언어 선택 로드, 없으면 기기 언어로 자동 선택(첫 실행)
   # 배경(빵 패턴) — 빈 곳 클릭 시 선택 해제 캐처. 화면 흔들림 때 가장자리 빈틈 안 보이게 여유 확장.
   var bg := TextureRect.new()
   bg.texture = load("res://assets/art/bg/play_bg.jpg")
