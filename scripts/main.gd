@@ -437,9 +437,10 @@ func _build_top_bar() -> Control:
   home.pressed.connect(_on_home_pressed)
   Audio.attach_click(home)
 
-  var coin := panel.get_meta("coin_box") as HBoxContainer
-  coin.mouse_filter = Control.MOUSE_FILTER_STOP
-  coin.gui_input.connect(_on_cash_clicked)
+  if OS.is_debug_build():
+    var coin := panel.get_meta("coin_box") as HBoxContainer
+    coin.mouse_filter = Control.MOUSE_FILTER_STOP
+    coin.gui_input.connect(_on_cash_clicked)
 
   return panel
 
