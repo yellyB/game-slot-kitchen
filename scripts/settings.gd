@@ -68,8 +68,10 @@ func _build() -> void:
 	lang_title.add_child(UI.ui_icon("language", 18))
 	lang_title.add_child(_section_title(Loc.t("language")))
 	_col.add_child(lang_title)
-	var langs := HBoxContainer.new()
-	langs.add_theme_constant_override("separation", 8)
+	var langs := GridContainer.new()
+	langs.columns = 2
+	langs.add_theme_constant_override("h_separation", 8)
+	langs.add_theme_constant_override("v_separation", 8)
 	for code in Loc.LOCALES:
 		langs.add_child(_lang_chip(code))
 	_col.add_child(langs)
@@ -157,7 +159,7 @@ func _lang_chip(code: String) -> Button:
 	b.set_meta("code", code)
 	b.pressed.connect(func():
 		if Loc.locale != code:
-			Loc.locale = code
+			Loc.set_locale(code)
 			_build())
 	Audio.attach_click(b)
 	_lang_buttons.append(b)
@@ -169,6 +171,11 @@ func _lang_label(code: String) -> String:
 		"ko": return "한국어"
 		"en": return "English"
 		"ja": return "日本語"
+		"zh": return "简体中文"
+		"de": return "Deutsch"
+		"pt": return "Português"
+		"fr": return "Français"
+		"es": return "Español"
 	return code
 
 

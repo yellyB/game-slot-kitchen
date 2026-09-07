@@ -48,6 +48,7 @@ const COUNTDOWN_FROM := 5
 
 
 func _ready() -> void:
+  Loc.init()
   var bg := TextureRect.new()
   bg.texture = load("res://assets/art/bg/play_bg.jpg")
   bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

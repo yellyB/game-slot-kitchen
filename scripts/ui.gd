@@ -16,7 +16,7 @@ static func label(text: String, size: int, color: Color = Palette.COCOA_800, bol
 static func _bold_font() -> FontVariation:
 	if _bold == null:
 		_bold = FontVariation.new()
-		_bold.base_font = ThemeDB.fallback_font
+		_bold.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")
 		_bold.variation_embolden = 0.55
 	return _bold
 
