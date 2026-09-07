@@ -476,10 +476,11 @@ func _build_top_bar() -> Control:
   home.pressed.connect(_on_home_pressed)
   Audio.attach_click(home)
 
-  # 보유금 5연속 클릭 = 디버그 바 토글(개발용).
-  var coin := panel.get_meta("coin_box") as HBoxContainer
-  coin.mouse_filter = Control.MOUSE_FILTER_STOP
-  coin.gui_input.connect(_on_cash_clicked)
+  # 보유금 5연속 클릭 = 디버그 바 토글(개발용). 릴리스(운영) 빌드엔 핸들러 자체를 안 붙인다.
+  if OS.is_debug_build():
+    var coin := panel.get_meta("coin_box") as HBoxContainer
+    coin.mouse_filter = Control.MOUSE_FILTER_STOP
+    coin.gui_input.connect(_on_cash_clicked)
 
   return panel
 
