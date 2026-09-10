@@ -7,7 +7,6 @@ signal tutorial_pressed
 const TITLE_TEXT := "Slot Kitchen"
 
 var _start_btn: Button
-var _tut_btn: Button
 var _codex_btn: Button
 
 func _ready() -> void:
@@ -50,20 +49,6 @@ func _ready() -> void:
 	start.pressed.connect(func(): start_pressed.emit())
 	Audio.attach_click(start)
 	v.add_child(start)
-
-	var tut := Button.new()
-	tut.text = Loc.t("tutorial")
-	_tut_btn = tut
-	tut.custom_minimum_size = Vector2(180, 48)
-	tut.add_theme_font_size_override("font_size", 18)
-	tut.add_theme_color_override("font_color", Palette.COCOA_800)
-	tut.add_theme_color_override("font_hover_color", Palette.COCOA_800)
-	tut.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	tut.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	tut.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	tut.pressed.connect(func(): tutorial_pressed.emit())
-	Audio.attach_click(tut)
-	v.add_child(tut)
 
 	var codex := Button.new()
 	codex.text = Loc.t("codex")
@@ -170,7 +155,5 @@ func _draw_play_triangle(btn: Button) -> void:
 
 
 func _refresh_texts() -> void:
-	if is_instance_valid(_tut_btn):
-		_tut_btn.text = Loc.t("tutorial")
 	if is_instance_valid(_codex_btn):
 		_codex_btn.text = Loc.t("codex")
