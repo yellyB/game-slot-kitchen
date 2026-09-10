@@ -515,7 +515,16 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))
   row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
+  row.add_child(_debug_btn("전체리셋", _debug_reset_all))
   return row
+
+
+func _debug_reset_all() -> void:
+  var dir := DirAccess.open("user://")
+  if dir != null:
+    for f in dir.get_files():
+      dir.remove(f)
+  get_tree().quit()
 
 
 func _debug_boss() -> void:
