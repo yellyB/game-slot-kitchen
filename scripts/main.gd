@@ -50,6 +50,7 @@ var _blackout: ColorRect    # 폐업 암전 오버레이
 var _countdown_edge: Panel  # 카운트다운 화면 가장자리 빨강 비네트(마감 임박 원인 구분·A안)
 var _last_countdown := 0    # 막판 카운트다운 마지막 표시 초(중복 방지)
 const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
+const TUTORIAL_FLAG := "user://tutorial.done"   # 최초 실행 시 튜토리얼 1회 재생 판별용 영구 플래그
 
 
 func _ready() -> void:
@@ -137,9 +138,9 @@ func _ready() -> void:
   # 완성품 나이(dish_age) 스탬프용 게임 클록을 세션 경과시간에 연결.
   _board.now_provider = _session.now
 
-  # 시작(타이틀) 화면 — 앱 실행 시 게임 위에 덮음. [시작] → 게임 시작.
+  # 시작(타이틀) 화면 — 앱 실행 시 게임 위에 덮음. [시작] → 최초 1회는 튜토리얼 후 게임.
   _title = TitleScreen.new()
-  _title.start_pressed.connect(_start_game)
+  _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
 
@@ -380,6 +381,26 @@ func _go_home() -> void:
   _show_title()
 
 
+## [시작] 버튼 — 최초 실행(튜토리얼 미완료)이면 튜토리얼부터, 이후엔 바로 게임.
+func _on_start_pressed() -> void:
+  if _tutorial_seen():
+    _start_game()
+  else:
+    _start_tutorial("game")   # 튜토리얼 끝나면 _start_game() 자동 호출
+
+
+## 튜토리얼을 한 번이라도 끝냈는지(영구 플래그 파일 존재 여부).
+func _tutorial_seen() -> bool:
+  return FileAccess.file_exists(TUTORIAL_FLAG)
+
+
+func _mark_tutorial_seen() -> void:
+  var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
+  if f != null:
+    f.store_8(1)
+    f.close()
+
+
 func _start_game() -> void:
   _celebrating = false           # 이전 승리 축포 예약 취소
   _clear_confetti()              # 남은 색종이 제거(축포 후 홈→시작 시 잔재 방지)
@@ -443,6 +464,7 @@ func _start_tutorial(after := "title") -> void:
       _tutorial.queue_free()
     _tutorial = null
     _exit_tutorial_state()
+    _mark_tutorial_seen()   # 완료했으면 다음 실행부터 [시작] 시 튜토리얼 자동재생 안 함
     if after == "game":
       _start_game()
     else:
