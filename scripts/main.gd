@@ -18,6 +18,7 @@ var _tutorial: Tutorial      # 게임 내 가이드 오버레이(실제 컴포�
 var _tutorial_active := false  # 튜토리얼 진행 중 — 시계·트립비용·인내심 타이머 억제
 
 var _queue_row: HBoxContainer
+var _margin: MarginContainer   # 플레이 HUD 루트 여백 — 세이프에어리어(노치·시스템 바) 인셋 반영
 
 # 하루 정산(day_end_bonus) 집계 — day_started에서 리셋. sim_core의 하루 스코프 카운터와 동치.
 var _visited_today := 0     # 등장 손님 수
@@ -67,12 +68,13 @@ func _ready() -> void:
   bg.gui_input.connect(_on_background_input)
   add_child(bg)
 
-  var margin := MarginContainer.new()
-  margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  for side in ["left", "right", "top", "bottom"]:
-    margin.add_theme_constant_override("margin_" + side, 12)
+  _margin = MarginContainer.new()
+  _margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var margin := _margin
   add_child(margin)
+  _apply_safe_area()
+  get_viewport().size_changed.connect(_apply_safe_area)
 
   var col := VBoxContainer.new()
   col.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -394,6 +396,27 @@ func _show_title() -> void:
   _clear_confetti()
   _clear_blackout()   # 게임오버 암전 잔재 제거(안 치우면 시작해도 검은 화면+입력 차단)
   _title.show()
+
+
+## 세이프에어리어(노치·시스템 바) 인셋을 HUD 루트 여백에 반영 — edge-to-edge에서 HUD가 바 밑에 깔리지 않게.
+## 안드로이드에서만 인셋 적용(데스크톱/에디터는 기본 여백만). stretch=canvas_items라 실화면 px를 캔버스 스케일로 환산.
+func _apply_safe_area() -> void:
+  var base := 12
+  for side in ["left", "right", "top", "bottom"]:
+    _margin.add_theme_constant_override("margin_" + side, base)
+  if OS.get_name() != "Android":
+    return
+  var win := DisplayServer.window_get_size()
+  if win.x <= 0 or win.y <= 0:
+    return
+  var safe := DisplayServer.get_display_safe_area()
+  var vp := get_viewport_rect().size
+  var sx := vp.x / float(win.x)
+  var sy := vp.y / float(win.y)
+  _margin.add_theme_constant_override("margin_left", base + int(round(maxf(0.0, safe.position.x) * sx)))
+  _margin.add_theme_constant_override("margin_top", base + int(round(maxf(0.0, safe.position.y) * sy)))
+  _margin.add_theme_constant_override("margin_right", base + int(round(maxf(0.0, win.x - (safe.position.x + safe.size.x)) * sx)))
+  _margin.add_theme_constant_override("margin_bottom", base + int(round(maxf(0.0, win.y - (safe.position.y + safe.size.y)) * sy)))
 
 
 ## 화면에 남은 축포(색종이) 일괄 제거.
