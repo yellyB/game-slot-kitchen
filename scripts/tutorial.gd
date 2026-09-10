@@ -39,22 +39,23 @@ func _ready() -> void:
 	_spot = TutorialSpotlight.new()
 	add_child(_spot)
 
-	# 나가기(X) — 스포트라이트 다음에 추가해 항상 최상단·클릭 가능
+	# 스킵(skip ») — 스포트라이트 다음에 추가해 항상 최상단·클릭 가능. 누르면 확인 팝업.
 	var exit := Button.new()
-	exit.text = "✕"
-	exit.add_theme_font_size_override("font_size", 16)
+	exit.text = "skip »"
+	exit.add_theme_font_size_override("font_size", 15)
 	exit.add_theme_color_override("font_color", Palette.COCOA_600)
+	exit.add_theme_color_override("font_hover_color", Palette.COCOA_600)
 	exit.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	exit.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	exit.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
 	exit.anchor_left = 1.0
 	exit.anchor_right = 1.0
-	exit.offset_left = -52
+	exit.offset_left = -92
 	exit.offset_right = -12
 	exit.offset_top = 12
 	exit.offset_bottom = 46
 	exit.z_index = 600
-	exit.pressed.connect(_finish)
+	exit.pressed.connect(_confirm_skip)
 	Audio.attach_click(exit)
 	add_child(exit)
 
@@ -193,17 +194,61 @@ func _show_done() -> void:
 	var msg := UI.label(Loc.t("tut_done"), 22, Palette.WHITE, true)
 	msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(msg)
-	var btn := Button.new()
-	btn.text = Loc.t("tut_to_menu")
-	btn.custom_minimum_size = Vector2(180, 52)
-	btn.add_theme_font_size_override("font_size", 18)
-	btn.add_theme_color_override("font_color", Palette.WHITE)
+	var btn := Button.new()   # 메인 [시작]과 동일한 ▶ 삼각형 버튼(텍스트 없음)
+	btn.custom_minimum_size = Vector2(180, 56)
 	btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
 	btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
 	btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+	btn.draw.connect(_draw_play_triangle.bind(btn))
 	btn.pressed.connect(_finish)
 	Audio.attach_click(btn)
 	box.add_child(btn)
+
+
+## 스킵 확인 팝업 — '튜토리얼을 건너뛰시겠습니까?' → 건너뛰기(바로 본게임) / 취소.
+func _confirm_skip() -> void:
+	var dim := ColorRect.new()
+	dim.color = Palette.DIM
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP   # 뒤 튜토리얼 입력 차단(모달)
+	dim.z_index = 650
+	add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.add_child(center)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 18)
+	center.add_child(box)
+	var msg := UI.label(Loc.t("tut_skip_confirm"), 20, Palette.WHITE, true)
+	msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(msg)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	var no := _confirm_btn(Loc.t("tut_skip_no"), Palette.COCOA_100, Palette.COCOA_200, Palette.COCOA_800)
+	no.pressed.connect(dim.queue_free)   # 취소 → 팝업만 닫고 튜토리얼 계속
+	row.add_child(no)
+	var yes := _confirm_btn(Loc.t("tut_skip_yes"), Palette.MAIN, Palette.MAIN, Palette.WHITE)
+	yes.pressed.connect(func():
+		dim.queue_free()
+		_finish())   # 건너뛰기 → 본게임으로
+	row.add_child(yes)
+
+
+func _confirm_btn(text: String, fill: Color, border: Color, fg: Color) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.custom_minimum_size = Vector2(120, 48)
+	b.add_theme_font_size_override("font_size", 17)
+	b.add_theme_color_override("font_color", fg)
+	b.add_theme_color_override("font_hover_color", fg)
+	b.add_theme_stylebox_override("normal", UI.chip(fill, border))
+	b.add_theme_stylebox_override("hover", UI.chip(fill.lightened(0.06), border))
+	b.add_theme_stylebox_override("pressed", UI.chip(fill.darkened(0.08), border))
+	Audio.attach_click(b)
+	return b
 
 
 func _finish() -> void:
@@ -211,3 +256,18 @@ func _finish() -> void:
 		Move.performed.disconnect(_on_move_performed)
 	Move.action_allowed = _prev_move_allowed  # 게이트 해제(본격 게임 동작 복원)
 	finished.emit()
+
+
+## 완료 버튼 위에 오른쪽 삼각형(재생 아이콘) — 타이틀 [시작]과 동일 스타일.
+func _draw_play_triangle(btn: Button) -> void:
+	var s := btn.size
+	var w := 22.0
+	var h := 24.0
+	var cx := s.x * 0.5 + w / 6.0
+	var cy := s.y * 0.5
+	var pts := PackedVector2Array([
+		Vector2(cx - w * 0.5, cy - h * 0.5),
+		Vector2(cx - w * 0.5, cy + h * 0.5),
+		Vector2(cx + w * 0.5, cy),
+	])
+	btn.draw_colored_polygon(pts, Palette.WHITE)

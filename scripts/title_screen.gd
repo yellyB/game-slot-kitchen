@@ -9,7 +9,6 @@ signal tutorial_pressed
 const TITLE_TEXT := "Slot Kitchen"   # 타이틀은 언어 무관 영어 로고로 고정
 
 var _start_btn: Button
-var _tut_btn: Button
 var _codex_btn: Button
 
 func _ready() -> void:
@@ -54,21 +53,6 @@ func _ready() -> void:
 	start.pressed.connect(func(): start_pressed.emit())
 	Audio.attach_click(start)   # 시작 버튼 클릭음
 	v.add_child(start)
-
-	# 튜토리얼(핵심 루프 1회 체험) — 본격 게임과 분리, 이 버튼으로만 진입
-	var tut := Button.new()
-	tut.text = Loc.t("tutorial")
-	_tut_btn = tut
-	tut.custom_minimum_size = Vector2(180, 48)
-	tut.add_theme_font_size_override("font_size", 18)
-	tut.add_theme_color_override("font_color", Palette.COCOA_800)
-	tut.add_theme_color_override("font_hover_color", Palette.COCOA_800)
-	tut.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-	tut.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	tut.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
-	tut.pressed.connect(func(): tutorial_pressed.emit())
-	Audio.attach_click(tut)   # 튜토리얼 버튼 클릭음
-	v.add_child(tut)
 
 	# 도감 — 발견(획득)한 버프 카드 모아보기
 	var codex := Button.new()
@@ -185,8 +169,6 @@ func _draw_play_triangle(btn: Button) -> void:
 
 
 func _refresh_texts() -> void:
-	# 시작 버튼은 아이콘(삼각형)이라 언어 무관 — 튜토리얼·도감 텍스트만 갱신
-	if is_instance_valid(_tut_btn):
-		_tut_btn.text = Loc.t("tutorial")
+	# 시작 버튼은 아이콘(삼각형)이라 언어 무관 — 도감 텍스트만 갱신
 	if is_instance_valid(_codex_btn):
 		_codex_btn.text = Loc.t("codex")
