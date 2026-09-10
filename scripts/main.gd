@@ -1580,6 +1580,7 @@ func _month_track(week: int) -> Control:
     var pt := create_tween().set_loops()
     pt.tween_property(lbl, "modulate:a", 0.4, 0.5).set_trans(Tween.TRANS_SINE)
     pt.tween_property(lbl, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+    lbl.tree_exiting.connect(pt.kill)   # 배너 제거 시 루핑 트윈 종료(free된 대상 step → 릴리스 무한루프 방지)
   else:   # 노란 줄 = 그 4주차에 걸릴 제약 미리보기
     var pen := Boss.preview_for_month(int(wk["month"]))
     var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
@@ -1676,6 +1677,9 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Co
   hp.set_loops()
   hp.tween_property(hint, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
   hp.tween_property(hint, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  # 루핑 트윈은 Main에 바인딩돼 있어 대상(hint)이 free돼도 계속 step → 릴리스에서 무한루프.
+  # 대상이 트리에서 빠질 때 트윈을 확실히 종료(디버그만 안전처리되던 엔진 버그 회피).
+  hint.tree_exiting.connect(hp.kill)
   return root
 
 
@@ -1691,6 +1695,15 @@ func _tap_to_continue() -> void:
   catcher.queue_free()
 
 
+## 인트로 배너 정리 — 탭 후 호출. 페이드아웃 후 제거.
+func _dismiss_banner(banner: Control) -> void:
+  if not is_instance_valid(banner):
+    return
+  var bt := create_tween()
+  bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+  bt.tween_callback(banner.queue_free)
+
+
 ## 하루 시작 인트로 — 해 + OPEN 배너 + 딤 → 유저 탭해야 게임(시계·스폰) 시작.
 ## (배너 등장 시엔 무음 — 소리는 아래 탭 시점의 개점음만)
 func _start_day_intro() -> void:
@@ -1701,12 +1714,9 @@ func _start_day_intro() -> void:
     return
   Audio.play("door_open")   # OPEN 화면 탭 = 가게 문 여는 개점 효과음
   Audio.play("day_start")   # + 어서오세요(개점) — door_open이 약해 함께 재생해 확실히 들리게
-  if is_instance_valid(banner):
-    var bt := create_tween()
-    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
-    bt.tween_callback(banner.queue_free)
   if is_instance_valid(_session):
     _session.set_process(true)   # 탭 후 게임플레이(시계·손님 스폰) 시작
+  _dismiss_banner(banner)
 
 
 ## 보스 하루 인트로 — 계약 갱신 심사 배너(제약 예고 + 재계약비 목표) → 탭 시 시작.
@@ -1718,12 +1728,9 @@ func _start_boss_intro() -> void:
     return
   Audio.play("door_open")
   Audio.play("day_start")
-  if is_instance_valid(banner):
-    var bt := create_tween()
-    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
-    bt.tween_callback(banner.queue_free)
   if is_instance_valid(_session):
     _session.set_process(true)
+  _dismiss_banner(banner)
 
 
 ## 계약 갱신 심사 배너 — 딤 + 📜 + 제목 + 제약(아이콘+이름) + 재계약비 목표 + click. 루트 반환.
