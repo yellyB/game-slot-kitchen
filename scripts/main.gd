@@ -561,7 +561,17 @@ func _build_debug() -> Control:
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))   # 폰: 클립보드로 빼기
   row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
+  row.add_child(_debug_btn("전체리셋", _debug_reset_all))   # 모든 저장 데이터 삭제 + 종료(튜토리얼 재생 확인용)
   return row
+
+
+## 디버그: 모든 영구 데이터(튜토리얼 플래그·언어·도감·로그) 삭제 후 앱 종료 → 재실행 시 완전 초기 상태.
+func _debug_reset_all() -> void:
+  var dir := DirAccess.open("user://")
+  if dir != null:
+    for f in dir.get_files():
+      dir.remove(f)
+  get_tree().quit()
 
 
 ## 디버그: 다음날을 보스전(계약 갱신 심사·랜덤 제약)으로 예약 + 오늘 즉시 마감(빠른 진입).
