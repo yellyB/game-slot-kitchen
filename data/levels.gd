@@ -7,7 +7,7 @@ const GATE_MULT_MIN := 1.0
 const GATE_MULT_MAX := 1.15
 const GATE_MULT_RAMP := 3
 const ONBOARD_GATES := [
-	[100, 220, 300, 440],
+	[87, 212, 300, 440],
 	[220, 480, 880, 1600],
 	[910, 1790, 3500, 7000],
 	[1890, 3710, 7250, 14500],
