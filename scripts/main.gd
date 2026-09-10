@@ -46,6 +46,7 @@ var _blackout: ColorRect
 var _countdown_edge: Panel
 var _last_countdown := 0
 const COUNTDOWN_FROM := 5
+const TUTORIAL_FLAG := "user://tutorial.done"
 
 
 func _ready() -> void:
@@ -125,7 +126,7 @@ func _ready() -> void:
   _board.now_provider = _session.now
 
   _title = TitleScreen.new()
-  _title.start_pressed.connect(_start_game)
+  _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
 
@@ -348,6 +349,24 @@ func _go_home() -> void:
   _show_title()
 
 
+func _on_start_pressed() -> void:
+  if _tutorial_seen():
+    _start_game()
+  else:
+    _start_tutorial("game")
+
+
+func _tutorial_seen() -> bool:
+  return FileAccess.file_exists(TUTORIAL_FLAG)
+
+
+func _mark_tutorial_seen() -> void:
+  var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
+  if f != null:
+    f.store_8(1)
+    f.close()
+
+
 func _start_game() -> void:
   _celebrating = false
   _clear_confetti()
@@ -405,6 +424,7 @@ func _start_tutorial(after := "title") -> void:
       _tutorial.queue_free()
     _tutorial = null
     _exit_tutorial_state()
+    _mark_tutorial_seen()
     if after == "game":
       _start_game()
     else:
