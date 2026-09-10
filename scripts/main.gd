@@ -1443,6 +1443,7 @@ func _month_track(week: int) -> Control:
     var pt := create_tween().set_loops()
     pt.tween_property(lbl, "modulate:a", 0.4, 0.5).set_trans(Tween.TRANS_SINE)
     pt.tween_property(lbl, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
+    lbl.tree_exiting.connect(pt.kill)
   else:
     var pen := Boss.preview_for_month(int(wk["month"]))
     var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
@@ -1537,6 +1538,7 @@ func _make_bigbanner(icon_name: String, text: String, dim_fade := 0.3, extra: Co
   hp.set_loops()
   hp.tween_property(hint, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
   hp.tween_property(hint, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  hint.tree_exiting.connect(hp.kill)
   return root
 
 
@@ -1551,6 +1553,14 @@ func _tap_to_continue() -> void:
   catcher.queue_free()
 
 
+func _dismiss_banner(banner: Control) -> void:
+  if not is_instance_valid(banner):
+    return
+  var bt := create_tween()
+  bt.tween_property(banner, "modulate:a", 0.0, 0.22)
+  bt.tween_callback(banner.queue_free)
+
+
 func _start_day_intro() -> void:
   var banner: Control = await _make_bigbanner("sun_big", "OPEN", 0.0, _month_track(_session.day))
   await _tap_to_continue()
@@ -1559,12 +1569,9 @@ func _start_day_intro() -> void:
     return
   Audio.play("door_open")
   Audio.play("day_start")
-  if is_instance_valid(banner):
-    var bt := create_tween()
-    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
-    bt.tween_callback(banner.queue_free)
   if is_instance_valid(_session):
     _session.set_process(true)
+  _dismiss_banner(banner)
 
 
 func _start_boss_intro() -> void:
@@ -1575,12 +1582,9 @@ func _start_boss_intro() -> void:
     return
   Audio.play("door_open")
   Audio.play("day_start")
-  if is_instance_valid(banner):
-    var bt := create_tween()
-    bt.tween_property(banner, "modulate:a", 0.0, 0.22)
-    bt.tween_callback(banner.queue_free)
   if is_instance_valid(_session):
     _session.set_process(true)
+  _dismiss_banner(banner)
 
 
 func _make_boss_banner() -> Control:
