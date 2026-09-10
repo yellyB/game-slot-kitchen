@@ -15,6 +15,7 @@ var _tutorial: Tutorial
 var _tutorial_active := false
 
 var _queue_row: HBoxContainer
+var _margin: MarginContainer
 
 var _visited_today := 0
 var _accepted_today := 0
@@ -62,12 +63,13 @@ func _ready() -> void:
   bg.gui_input.connect(_on_background_input)
   add_child(bg)
 
-  var margin := MarginContainer.new()
-  margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  for side in ["left", "right", "top", "bottom"]:
-    margin.add_theme_constant_override("margin_" + side, 12)
+  _margin = MarginContainer.new()
+  _margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  _margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var margin := _margin
   add_child(margin)
+  _apply_safe_area()
+  get_viewport().size_changed.connect(_apply_safe_area)
 
   var col := VBoxContainer.new()
   col.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -362,6 +364,25 @@ func _show_title() -> void:
   _clear_confetti()
   _clear_blackout()
   _title.show()
+
+
+func _apply_safe_area() -> void:
+  var base := 12
+  for side in ["left", "right", "top", "bottom"]:
+    _margin.add_theme_constant_override("margin_" + side, base)
+  if OS.get_name() != "Android":
+    return
+  var win := DisplayServer.window_get_size()
+  if win.x <= 0 or win.y <= 0:
+    return
+  var safe := DisplayServer.get_display_safe_area()
+  var vp := get_viewport_rect().size
+  var sx := vp.x / float(win.x)
+  var sy := vp.y / float(win.y)
+  _margin.add_theme_constant_override("margin_left", base + int(round(maxf(0.0, safe.position.x) * sx)))
+  _margin.add_theme_constant_override("margin_top", base + int(round(maxf(0.0, safe.position.y) * sy)))
+  _margin.add_theme_constant_override("margin_right", base + int(round(maxf(0.0, win.x - (safe.position.x + safe.size.x)) * sx)))
+  _margin.add_theme_constant_override("margin_bottom", base + int(round(maxf(0.0, win.y - (safe.position.y + safe.size.y)) * sy)))
 
 
 func _clear_confetti() -> void:
