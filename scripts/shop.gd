@@ -247,6 +247,7 @@ func _on_buy_coupon(st: Dictionary) -> void:
   if session.buy_slot():
     st["done"] = true
     Audio.play("coins")
+    Audio.play("purchase")
     _refresh()
 
 
