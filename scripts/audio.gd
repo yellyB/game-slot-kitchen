@@ -7,6 +7,7 @@ const SFX := {
 	"cook_start": preload("res://assets/audio/sfx/cook_start.wav"),
 	"serve": preload("res://assets/audio/sfx/serve.wav"),
 	"coins": preload("res://assets/audio/sfx/coins.wav"),
+	"purchase": preload("res://assets/audio/sfx/purchase.wav"),
 	"score_up": preload("res://assets/audio/sfx/star_rise.wav"),
 	"day_start": preload("res://assets/audio/sfx/day_start.mp3"),
 	"click": preload("res://assets/audio/sfx/click.wav"),
