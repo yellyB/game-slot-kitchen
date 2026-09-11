@@ -272,6 +272,7 @@ func _on_buy_coupon(st: Dictionary) -> void:
   if session.buy_slot():
     st["done"] = true   # 쿠폰 1회용 — 소진
     Audio.play("coins")   # 슬롯 구매(동전)
+    Audio.play("purchase")   # 확장 해금(상승 차임)
     _refresh()
 
 
