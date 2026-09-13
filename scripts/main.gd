@@ -1893,6 +1893,8 @@ func _on_day_started(day: int, rent: int) -> void:
 
 
 func _log_day(summary: Dictionary) -> void:
+  if not OS.is_debug_build():
+    return
   var wk := Levels.get_week(int(summary.get("day", 0)))
   PlayLog.append({
     "run": _run_id,
