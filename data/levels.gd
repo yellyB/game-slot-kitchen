@@ -2,7 +2,7 @@ class_name Levels
 extends RefCounted
 
 const WEEKS_PER_MONTH := 4
-const FINAL_MONTH := 4
+const FINAL_MONTH := 3
 const RENT_BASE := 4000
 const GATE_MULT_MIN := 1.0
 const GATE_MULT_MAX := 1.15
