@@ -2,6 +2,7 @@ class_name Levels
 extends RefCounted
 
 const WEEKS_PER_MONTH := 4
+const FINAL_MONTH := 4
 const RENT_BASE := 4000
 const GATE_MULT_MIN := 1.0
 const GATE_MULT_MAX := 1.15
@@ -31,7 +32,7 @@ const MONTHS := [
 ]
 
 static func count() -> int:
-	return 1_000_000
+	return FINAL_MONTH * WEEKS_PER_MONTH
 
 static func months() -> int:
 	return MONTHS.size()
