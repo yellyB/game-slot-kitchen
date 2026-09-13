@@ -3,12 +3,12 @@ extends RefCounted
 ## 시간 단위: 1라운드 = 1주, 4주 = 1개월(WEEKS_PER_MONTH).
 ## 매주 마감마다 누적 점수(month_score) ≥ 이번 주 관문이어야 통과. 미달이면 돈으로 통과(정산 팝업).
 ## 점수는 월초 리셋 → 한 달 누적. 주 관문은 볼록 증가(첫주 최소→월말 최대), 월말(4주차) 관문 = 그 달 목표(monthly_rent).
-## **종료: FINAL_MONTH(4개월차) 마지막 주 통과 = 런 승리.** 그 전에 관문 미달+미납이면 파산(실패).
+## **종료: FINAL_MONTH(3개월차) 마지막 주 통과 = 런 승리.** 그 전에 관문 미달+미납이면 파산(실패).
 ## 보스(계약 갱신): 분기(3개월)마다 월말 심사 — 보스데이.md, 아직 미구현.
 ## 밸런스 v1(월 구조 전환 첫 튜닝) — 실플레이/시뮬로 보정.
 
 const WEEKS_PER_MONTH := 4
-const FINAL_MONTH := 4    # 이 개월차 마지막 주(4주차) 통과 = 런 승리
+const FINAL_MONTH := 3    # 이 개월차 마지막 주(4주차) 통과 = 런 승리
 ## 월세 = 볼록 곡선(완만한 기본 복리 + 후반 가속 항). 초반은 거의 그대로(온보딩 보호),
 ## 중후반은 가파르게 올라 스노우볼을 오래 압박. 실로그(중간빌드 월매출)에 맞춰 튜닝. SIM_GROWTH로 스윕.
 ##   rent(mi) = BASE × ( GROWTH^mi + ACCEL_W × (ACCEL^mi − 1) )   (mi=0-base 개월)
@@ -46,7 +46,7 @@ const MONTHS := [
 	{"waves": [15, 16, 16, 17]},  # 3개월차
 ]
 
-## 최종 주차(승리 판정용) — 이 주(4개월차 4주차=16주) 통과 시 session의 day>=count()로 런 승리.
+## 최종 주차(승리 판정용) — 이 주(3개월차 4주차=12주) 통과 시 session의 day>=count()로 런 승리.
 static func count() -> int:
 	return FINAL_MONTH * WEEKS_PER_MONTH
 
