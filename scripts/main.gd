@@ -2070,6 +2070,8 @@ func _on_day_started(day: int, rent: int) -> void:
 
 ## 실플레이 로그 — 하루 마감 지표를 user://playlog.jsonl 에 1줄 추가(카운터 리셋 전 호출).
 func _log_day(summary: Dictionary) -> void:
+  if not OS.is_debug_build():   # 실플레이 로그는 개발·테스트(디버그) 빌드에서만 — 릴리스는 기록 안 함
+    return
   var wk := Levels.get_week(int(summary.get("day", 0)))
   PlayLog.append({
     "run": _run_id,
