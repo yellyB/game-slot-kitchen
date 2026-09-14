@@ -81,6 +81,10 @@ func open_for(tool: ToolStation) -> void:
 	slide_open()
 
 
+func _price_band(tier: int) -> String:
+	return "$".repeat(clampi((tier + 1) / 2, 1, 3))
+
+
 func _entry(id: String) -> Button:
 	var def := Recipes.get_def(id)
 	var entry := Button.new()
@@ -100,6 +104,10 @@ func _entry(id: String) -> Button:
 	entry.add_child(row)
 	var menu_node := Recipes.icon_node(id, ICON)
 	row.add_child(menu_node)
+	var band := UI.label(_price_band(int(def.get("tier", 0))), 18, Palette.SUCCESS, true)
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(band)
 	row.add_child(_col_divider())
 
 	var ing := HBoxContainer.new()
