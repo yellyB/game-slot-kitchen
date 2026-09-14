@@ -1995,7 +1995,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     _session.pay_rent()
     _clear_play_field()
     var win_modal := Modal.open(self) \
-      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
+      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15, 24)
     win_modal.sep()
     var used := Buffs.owned()
     if not used.is_empty():

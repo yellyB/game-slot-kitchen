@@ -61,8 +61,8 @@ func count_row(fmt: String, value: int, color := Palette.COCOA_800) -> Modal:
 	return self
 
 
-func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
-	var l := _centered(UI.label(text, 20, color, true))
+func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55, size := 20) -> Modal:
+	var l := _centered(UI.label(text, size, color, true))
 	_body.add_child(l)
 	l.modulate.a = 0.0
 	l.scale = Vector2(0.5, 0.5)
