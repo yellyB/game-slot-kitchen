@@ -2186,9 +2186,9 @@ func _on_day_ended(summary: Dictionary) -> void:
       for bid in used:
         var brow := HBoxContainer.new()
         brow.alignment = BoxContainer.ALIGNMENT_CENTER
-        brow.add_theme_constant_override("separation", 8)
-        brow.add_child(BuffDefs.icon_node(bid, 34))
-        brow.add_child(UI.label(BuffDefs.display_name(bid), 15, Palette.COCOA_800, true))
+        brow.add_theme_constant_override("separation", 6)
+        brow.add_child(BuffDefs.icon_node(bid, 27))
+        brow.add_child(UI.label(BuffDefs.display_name(bid), 12, Palette.COCOA_800, true))
         win_modal.add_row(brow)
       win_modal.sep()
     win_modal.add_row(_win_total_row("star", int(summary.get("run_score", 0))))   # 총 매출(⭐점수)
@@ -2579,9 +2579,9 @@ func _bankrupt_button() -> Button:
 func _win_total_row(icon: String, value: int) -> HBoxContainer:
   var row := HBoxContainer.new()
   row.alignment = BoxContainer.ALIGNMENT_CENTER
-  row.add_theme_constant_override("separation", 6)
-  row.add_child(UI.ui_icon(icon, 22))
-  row.add_child(UI.label(UI.money(value), 20, Palette.COCOA_800, true))
+  row.add_theme_constant_override("separation", 5)
+  row.add_child(UI.ui_icon(icon, 18))
+  row.add_child(UI.label(UI.money(value), 16, Palette.COCOA_800, true))
   return row
 
 
