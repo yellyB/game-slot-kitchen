@@ -2178,7 +2178,7 @@ func _on_day_ended(summary: Dictionary) -> void:
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)
     _clear_play_field()   # 마감 즉시 필드 비움
     var win_modal := Modal.open(self) \
-      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
+      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15, 24)
     win_modal.sep()
     var used := Buffs.owned()                       # 사용 버프 — 한 줄마다 [아이콘 + 이름]
     if not used.is_empty():
