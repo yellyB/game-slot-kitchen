@@ -2180,6 +2180,17 @@ func _on_day_ended(summary: Dictionary) -> void:
     var win_modal := Modal.open(self) \
       .title(Loc.t("win_title")) \
       .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
+    win_modal.add_row(_win_total_row("star", int(summary.get("run_score", 0))))   # 총 매출(⭐점수)
+    win_modal.add_row(_win_total_row("coin", int(summary.get("run_earned", 0))))  # 총 획득 코인(🪙)
+    var used := Buffs.owned()
+    if not used.is_empty():
+      var buff_row := HFlowContainer.new()
+      buff_row.alignment = FlowContainer.ALIGNMENT_CENTER
+      buff_row.add_theme_constant_override("h_separation", 4)
+      buff_row.add_theme_constant_override("v_separation", 4)
+      for bid in used:
+        buff_row.add_child(BuffDefs.icon_node(bid, 34))
+      win_modal.add_row(buff_row)
     var win_home := Button.new()
     win_home.custom_minimum_size = Vector2(0, 48)
     win_home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2560,6 +2571,16 @@ func _bankrupt_button() -> Button:
   b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
   b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
   return b
+
+
+## 승리 요약 행 — 아이콘(⭐/🪙) + 총액. 중앙 정렬, 바로 표시.
+func _win_total_row(icon: String, value: int) -> HBoxContainer:
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  row.add_theme_constant_override("separation", 6)
+  row.add_child(UI.ui_icon(icon, 22))
+  row.add_child(UI.label(UI.money(value), 20, Palette.COCOA_800, true))
+  return row
 
 
 ## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.
