@@ -31,12 +31,9 @@ static var ALL := {
 	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 3}},
 	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 4}},
 
-	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.5}},
-	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.8}},
-	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.5}},
-	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.7}},
-	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 1.5}},
-	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 3}},
+	"ramp_lo":    {"card": 25, "icon": "📈", "ramp": {"tiers": [1, 2], "value": 0.85}},
+	"ramp_mid":   {"card": 26, "icon": "📈", "ramp": {"tiers": [3, 4], "value": 0.47}},
+	"ramp_hi":    {"card": 27, "icon": "📈", "ramp": {"tiers": [5, 6], "value": 1.3}},
 
 	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.4}},
 	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.3}},

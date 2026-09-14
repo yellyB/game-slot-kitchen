@@ -132,14 +132,14 @@ func _ready() -> void:
 
   if "--replay" in OS.get_cmdline_user_args():
     var bw := [
-      [], [], ["ramp_t3"], ["ramp_t3", "tool_slot"],
-      ["ramp_t3", "tool_slot", "ramp_t1"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      [], [], ["ramp_mid"], ["ramp_mid", "tool_slot"],
+      ["ramp_mid", "tool_slot", "ramp_lo"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
     ]
     var slots := [9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13]
     var log_served := [21, 20, 22, 21, 23, 21, 23, 13, 22, 24, 21]
