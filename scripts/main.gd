@@ -2178,7 +2178,6 @@ func _on_day_ended(summary: Dictionary) -> void:
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)
     _clear_play_field()   # 마감 즉시 필드 비움
     var win_modal := Modal.open(self) \
-      .title(Loc.t("win_title")) \
       .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
     win_modal.sep()
     var used := Buffs.owned()                       # 사용 버프 — 한 줄마다 [아이콘 + 이름]
@@ -2187,8 +2186,8 @@ func _on_day_ended(summary: Dictionary) -> void:
         var brow := HBoxContainer.new()
         brow.alignment = BoxContainer.ALIGNMENT_CENTER
         brow.add_theme_constant_override("separation", 6)
-        brow.add_child(BuffDefs.icon_node(bid, 27))
-        brow.add_child(UI.label(BuffDefs.display_name(bid), 12, Palette.COCOA_800, true))
+        brow.add_child(BuffDefs.icon_node(bid, 26))
+        brow.add_child(UI.label(BuffDefs.display_name(bid), 11, Palette.COCOA_800, true))
         win_modal.add_row(brow)
       win_modal.sep()
     win_modal.add_row(_win_total_row("star", int(summary.get("run_score", 0))))   # 총 매출(⭐점수)
@@ -2580,8 +2579,8 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   var row := HBoxContainer.new()
   row.alignment = BoxContainer.ALIGNMENT_CENTER
   row.add_theme_constant_override("separation", 5)
-  row.add_child(UI.ui_icon(icon, 18))
-  row.add_child(UI.label(UI.money(value), 16, Palette.COCOA_800, true))
+  row.add_child(UI.ui_icon(icon, 17))
+  row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
   return row
 
 
