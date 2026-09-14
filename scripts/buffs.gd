@@ -58,9 +58,9 @@ func remove(id: String) -> bool:
 	_slot_pos.erase(id)   # 판 버프의 저장 위치도 제거 — 재구매 시 옛 칸으로 안 가게
 	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
 	if not r.is_empty():
-		var tier := int(r.get("tier", 0))
+		var tiers: Array = r.get("tiers", [])
 		for rid in Recipes.ALL:
-			if int(Recipes.ALL[rid].get("tier", -1)) == tier:
+			if int(Recipes.ALL[rid].get("tier", -1)) in tiers:
 				_ramp_bonus.erase(rid)
 	return true
 
@@ -368,7 +368,7 @@ func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 	for id in _owned:
 		var d := BuffDefs.get_def(id)
 		var r: Dictionary = d.get("ramp", {})
-		if not r.is_empty() and int(r["tier"]) == tier:
+		if not r.is_empty() and tier in r.get("tiers", []):
 			_add_ramp(recipe_id, base * float(r["value"]))
 		var t: Dictionary = d.get("trigger", {})
 		if not t.is_empty():

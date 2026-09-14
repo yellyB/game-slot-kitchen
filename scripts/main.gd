@@ -148,14 +148,14 @@ func _ready() -> void:
     # 실로그 A판(run 2026-08-30#1813, 11주) — 주차별 보유버프/슬롯을 주입해 서빙·점수 재현 대조.
     # 주8은 실제로 보스 time_short(서빙 13)였음: 리플레이는 보스 미주입이라 그 주만 크게 벗어남(정상).
     var bw := [
-      [], [], ["ramp_t3"], ["ramp_t3", "tool_slot"],
-      ["ramp_t3", "tool_slot", "ramp_t1"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      [], [], ["ramp_mid"], ["ramp_mid", "tool_slot"],
+      ["ramp_mid", "tool_slot", "ramp_lo"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
     ]
     var slots := [9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13]
     var log_served := [21, 20, 22, 21, 23, 21, 23, 13, 22, 24, 21]
