@@ -43,8 +43,9 @@ const S := {
 	"orders_full": "주문 꽉 참",
 
 	# 게임 — 결과 모달
-	"win_title": "승리! 🎉",
+	"win_title": "승리!",
 	"win_days": "%d주 완주",
+	"win_done": "런 완료",
 	"day_closed": "%d주차 마감",
 	"settle_bonus": "마감 보너스",
 	"week_reward": "주간 보상",
