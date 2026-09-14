@@ -1994,10 +1994,20 @@ func _on_day_ended(summary: Dictionary) -> void:
   if summary["won"]:
     _session.pay_rent()
     _clear_play_field()
-    Modal.open(self) \
+    var win_modal := Modal.open(self) \
       .title(Loc.t("win_title")) \
-      .stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
-      .button(Loc.t("to_title"), _show_title)
+      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
+    var win_home := Button.new()
+    win_home.custom_minimum_size = Vector2(56, 56)
+    win_home.add_child(UI.ui_btn_icon("house", 30))
+    win_home.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+    win_home.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+    win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+    win_home.pressed.connect(func(): win_modal.queue_free(); _show_title())
+    Audio.attach_click(win_home)
+    var win_home_wrap := CenterContainer.new()
+    win_home_wrap.add_child(win_home)
+    win_modal.add_row(win_home_wrap)
     _celebrating = true
     _spawn_confetti()
     get_tree().create_timer(6.0).timeout.connect(func():

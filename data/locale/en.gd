@@ -38,8 +38,9 @@ const S := {
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",
 
-	"win_title": "You Win! 🎉",
+	"win_title": "You Win!",
 	"win_days": "%d weeks cleared",
+	"win_done": "Run Complete",
 	"day_closed": "Week %d closed",
 	"settle_bonus": "Close Bonus",
 	"week_reward": "Weekly Reward",
