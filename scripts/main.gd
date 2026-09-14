@@ -1998,16 +1998,15 @@ func _on_day_ended(summary: Dictionary) -> void:
       .title(Loc.t("win_title")) \
       .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15)
     var win_home := Button.new()
-    win_home.custom_minimum_size = Vector2(56, 56)
-    win_home.add_child(UI.ui_btn_icon("house", 30))
-    win_home.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
-    win_home.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-    win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+    win_home.custom_minimum_size = Vector2(0, 48)
+    win_home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    win_home.add_child(UI.ui_btn_icon("house", 28))
+    win_home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+    win_home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+    win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
     win_home.pressed.connect(func(): win_modal.queue_free(); _show_title())
     Audio.attach_click(win_home)
-    var win_home_wrap := CenterContainer.new()
-    win_home_wrap.add_child(win_home)
-    win_modal.add_row(win_home_wrap)
+    win_modal.add_row(win_home)
     _celebrating = true
     _spawn_confetti()
     get_tree().create_timer(6.0).timeout.connect(func():
