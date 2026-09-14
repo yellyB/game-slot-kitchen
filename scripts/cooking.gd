@@ -88,6 +88,11 @@ func open_for(tool: ToolStation) -> void:
 	slide_open()   # Sheet 베이스 — 아래서 슬라이드 업
 
 
+## 가격대 표기 — 티어를 저/중/고 3밴드로 묶어 $ 개수로. (1~2=$, 3~4=$$, 5~6=$$$)
+func _price_band(tier: int) -> String:
+	return "$".repeat(clampi((tier + 1) / 2, 1, 3))
+
+
 ## 레시피 항목: [필요재료…] → [완성요리] … [⏱️n]. 탭 → 조리.
 ## 재료(입력)와 완성품(결과)을 화살표로 구분 — 요리를 재료로 착각 안 하게.
 func _entry(id: String) -> Button:
@@ -110,6 +115,10 @@ func _entry(id: String) -> Button:
 	entry.add_child(row)
 	var menu_node := Recipes.icon_node(id, ICON)          # 메뉴(완성 요리)
 	row.add_child(menu_node)
+	var band := UI.label(_price_band(int(def.get("tier", 0))), 18, Palette.SUCCESS, true)  # 가격대 $/$$/$$$
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(band)
 	row.add_child(_col_divider())                          # 완성품 | 재료 구분
 
 	# 재료(필요 입력) — 작게. 노드는 _refresh에서 보유여부에 따라 진하게/흐리게.
