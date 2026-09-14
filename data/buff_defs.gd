@@ -8,7 +8,7 @@ extends RefCounted
 ##  cook_clean{max,per}         : 조리시간 -(max - filled*per), filled=보드 작업카드수 (38)
 ##  patience_flat               : 인내심 초 가산 (67)
 ##  menu_price{tiers,pct}       : 메뉴가격(base) 배율 인상 (22~24)
-##  ramp{tier,value}            : 그 등급 판매 시 등급 기본가×value 메뉴가격 누적 (25~30)
+##  ramp{tiers,value}           : 그 가격대($) 판매 시 기본가×value 메뉴가격 누적 (25~27)
 ##  trigger{kind,value,window?} : 조건 발동 시 그 메뉴 기본가×value 누적 (43 streak3·44 every7·45 fast3)
 ##  sale{type,...}              : 판매금(추가금) 보너스. Buffs.sale_amount 파이프라인이 처리.
 ##  demand{tiers|ingredient,mult}: 손님 등장 가중 (16~21)

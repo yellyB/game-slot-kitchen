@@ -7,7 +7,7 @@ var _owned: Array[String] = []
 var _slot_pos: Dictionary = {}   # buff_id → 마지막 배치 슬롯 인덱스. 하루 리빌드 때 이 칸으로 복원(런 스코프).
 
 # 런 스코프 상태(clear에서 리셋)
-var _ramp_bonus: Dictionary = {}   # recipe_id → 메뉴가격 누적(실수). 24~29·42~44.
+var _ramp_bonus: Dictionary = {}   # recipe_id → 메뉴가격 누적(실수). 25~27·42~44.
 var _serve_count := 0              # 누적 서빙 수 (43·60)
 var _cook_count := 0               # 누적 조리 시작 수 (61)
 var _streak_id := ""               # 연속 같은메뉴 (42)
@@ -159,7 +159,7 @@ func menu_price(recipe_id: String) -> int:
 	var def := Recipes.get_def(recipe_id)
 	var base := float(def.get("price", 0))
 	var tier := int(def.get("tier", 0))
-	var mp := base + float(ramp_bonus(recipe_id))   # 24~29·42~44 누적
+	var mp := base + float(ramp_bonus(recipe_id))   # 25~27·42~44 누적
 	var tp := 0.0
 	for id in _owned:                                # 21~23 등급별 %인상
 		var m: Dictionary = BuffDefs.get_def(id).get("menu_price", {})
@@ -349,7 +349,7 @@ func trip_free_chance() -> float:
 
 
 # ── 서빙/조리 이벤트 훅 ───────────────────────────────────
-## 판매 직후 호출 — 램프(24~29)·트리거(42~44)·카운터 갱신. "판매 후 누적".
+## 판매 직후 호출 — 램프(25~27)·트리거(42~44)·카운터 갱신. "판매 후 누적".
 func on_serve(recipe_id: String, ctx: Dictionary) -> void:
 	var def := Recipes.get_def(recipe_id)
 	var tier := int(def.get("tier", 0))
