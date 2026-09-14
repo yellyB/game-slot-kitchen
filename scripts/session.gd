@@ -13,6 +13,8 @@ var day := 1
 var rent := 0
 var day_revenue := 0
 var month_score := 0
+var run_score := 0
+var run_earned := 0
 var slots := Config.START_SLOTS
 
 var _elapsed := 0.0
@@ -29,6 +31,8 @@ func start_run() -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
+	run_score = 0
+	run_earned = 0
 	_rent_skip_used = false
 	_paused = false
 	Buffs.clear()
@@ -74,6 +78,7 @@ func start_day() -> void:
 	var itr := Buffs.day_start_bonus(cash)
 	if itr != 0:
 		cash += itr
+		run_earned += maxi(0, itr)
 		cash_changed.emit(cash)
 	_build_schedule()
 	_running = true
@@ -123,8 +128,10 @@ func earn(amount: int, as_score := true) -> void:
 	if as_score:
 		day_revenue += amount
 		month_score += amount
+		run_score += amount
 	else:
 		cash += amount
+		run_earned += maxi(0, amount)
 	cash_changed.emit(cash)
 
 
@@ -174,6 +181,8 @@ func _end_day() -> void:
 		"passed": passed,
 		"passed_by_score": passed_by_score,
 		"month_score": month_score,
+		"run_score": run_score,
+		"run_earned": run_earned,
 		"won": false,
 		"skipped": _rent_skip_used and cash < rent,
 		"cash": cash,
