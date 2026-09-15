@@ -25,8 +25,7 @@ var _paused := false   # 시트(창고·조리) 열림 동안 시계 정지
 var _day_length := Config.DAY_LENGTH
 var _rent_skip_used := false
 var _rent_paid := false   # 오늘 가게세 이미 차감했는지(멱등 — 정산 연출/버튼 이중호출 방지)
-var _spawn_times: Array[float] = []
-var _next_idx := 0
+var _next_spawn := -1.0   # 다음 손님 등장 예정 시각(초). <0이면 더 없음(마감 여유 구간).
 
 
 func start_run() -> void:
@@ -78,7 +77,7 @@ func start_day() -> void:
 	if int(wk.get("week_in_month", 1)) == 1:
 		month_score = 0
 	_elapsed = 0.0
-	_next_idx = 0
+	_next_spawn = Config.SPAWN_FIRST   # 첫 손님은 문 열고 1초 뒤 고정
 	_day_length = Stats.day_length()
 	# 개장 이자(62)
 	var itr := Buffs.day_start_bonus(cash)
@@ -86,7 +85,6 @@ func start_day() -> void:
 		cash += itr
 		run_earned += maxi(0, itr)
 		cash_changed.emit(cash)
-	_build_schedule()
 	_running = true
 	_paused = false   # 새 하루는 항상 시계 진행 상태로 시작(시트 열린 채 마감돼도 다음날 안 멈춤)
 	day_started.emit(day, rent)
@@ -174,9 +172,12 @@ func tick(delta: float) -> void:
 		return
 	_elapsed += delta
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
-	while _next_idx < _spawn_times.size() and _spawn_times[_next_idx] <= _elapsed:
+	# 총량 캡 없이 랜덤 간격 등장 — 큐가 꽉 차면 main/sim이 알아서 드롭(봐줌). 마감 여유 구간엔 안 받음.
+	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_idx += 1
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX)
+		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
+			_next_spawn = -1.0   # 마감 임박 — 더 안 받음
 	if _elapsed >= _day_length:
 		_end_day()
 
@@ -209,20 +210,3 @@ func _end_day() -> void:
 		summary["won"] = day >= Levels.count()
 	summary["cash_after"] = cash if passed_by_score else ((cash - rent) if (passed and cash >= rent) else cash)
 	day_ended.emit(summary)
-
-
-## 손님 등장 시각을 하루에 균등 분포(우르르 X). 첫 손님 일찍, 마감 전까지 골고루.
-## 총 손님 = per_wave × WAVES × 보스 영업배수 — 단축 영업이면 영업시간과 함께 손님 수도 그만큼 감소(밀도 유지).
-func _build_schedule() -> void:
-	_spawn_times.clear()
-	var total := int(round(float(int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES) * Boss.day_length_mult()))
-	if total <= 0:
-		return
-	var first := Config.SPAWN_FIRST
-	var last := _day_length - Config.SPAWN_LAST_MARGIN
-	var span := maxf(1.0, last - first)
-	var denom := float(maxi(1, total - 1))   # 첫 손님=first, 마지막=last 포함 균등
-	for i in total:
-		var t := first + span * float(i) / denom
-		_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
-	_spawn_times.sort()

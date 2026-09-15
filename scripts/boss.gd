@@ -64,7 +64,7 @@ static func is_active() -> bool:
 static func kind() -> String:
 	return str(active.get("type", ""))
 
-## 영업시간 배수(단축 영업). 일반날/미해당 = 1.0. 손님 수도 이 배수로 스케일(session._build_schedule).
+## 영업시간 배수(단축 영업). 일반날/미해당 = 1.0. 영업시간이 짧으면 등장 구간도 줄어 손님 수 자연 감소.
 static func day_length_mult() -> float:
 	if kind() == "time_short":
 		return float(active.get("value", 1.0))
