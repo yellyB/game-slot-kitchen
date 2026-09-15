@@ -1,6 +1,8 @@
 class_name BuffDefs
 extends RefCounted
 
+static var current_shop := "donut"
+
 static var ALL := {
 	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.60}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.35}},
@@ -16,16 +18,16 @@ static var ALL := {
 	"buff_slot":  {"card": 11, "icon": "🧩", "structure": {"buff_slot": 1}},
 	"tool_slot":  {"card": 12, "icon": "🔥", "structure": {"tool": 1, "slot": 1}},
 
-	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg"},
-	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour"},
-	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean"},
+	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg", "shops": ["donut"]},
+	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour", "shops": ["donut"]},
+	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean", "shops": ["donut"]},
 
 	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 1.6}},
 	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 1.6}},
 	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 1.6}},
-	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
-	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}},
-	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}},
+	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}, "shops": ["donut"]},
 
 	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 7}},
 	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 3}},
@@ -97,6 +99,11 @@ static func ids() -> Array:
 
 static func get_def(id: String) -> Dictionary:
 	return ALL.get(id, {})
+
+static func in_shop(id: String, shop := "") -> bool:
+	var s := shop if shop != "" else current_shop
+	var shops: Array = get_def(id).get("shops", [])
+	return shops.is_empty() or s in shops
 
 static func display_name(id: String) -> String:
 	return Loc.t("b." + id + ".name")
@@ -196,6 +203,8 @@ static func random_pack(n := 3) -> Array:
 	var pool := []
 	for id in ALL.keys():
 		if ALL[id].get("blocked", false):
+			continue
+		if not in_shop(id):
 			continue
 		if id in owned:
 			continue
