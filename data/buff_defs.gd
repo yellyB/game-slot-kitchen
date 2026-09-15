@@ -18,6 +18,11 @@ extends RefCounted
 ##  structure{buff_slot?,tool?,slot?}: 슬롯/도구/버프칸 (11,12)
 ##  rent_skip                   : 가게세 1회 통과 (9)
 ##  blocked:true                : v1 시뮬 미지원(등록만, 무효과) — 사유는 버프.md '시뮬 미지원' 표
+##  shops:[id,...]              : 이 가게(들)에서만 팩에 등장. 없으면 전 가게 공용. current_shop 기준 필터.
+##                                여러 가게 공유는 리스트에 추가(예: ["donut","burger"]).
+
+## 현재 가게 — 런 시작 시 선택 반영 예정. 기본=도넛카페. random_pack이 이 값으로 shops 태그를 필터.
+static var current_shop := "donut"
 
 static var ALL := {
 	# ── 전역 도움(유틸) ──
@@ -38,17 +43,17 @@ static var ALL := {
 	"tool_slot":  {"card": 12, "icon": "🔥", "structure": {"tool": 1, "slot": 1}},
 
 	# ── 재료(v1 미지원) ──
-	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg"},
-	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour"},
-	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean"},
+	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg", "shops": ["donut"]},
+	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour", "shops": ["donut"]},
+	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean", "shops": ["donut"]},
 
 	# ── 등급/수요 ──
 	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 1.6}},
 	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 1.6}},
 	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 1.6}},
-	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
-	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}},
-	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}},
+	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}, "shops": ["donut"]},
 
 	# ── 메뉴가격 등급별 인상 ──
 	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 7}},
@@ -129,6 +134,12 @@ static func ids() -> Array:
 
 static func get_def(id: String) -> Dictionary:
 	return ALL.get(id, {})
+
+## 이 버프가 해당 가게에서 팩에 등장 가능한가. shops 태그 없으면 전 가게 공용.
+static func in_shop(id: String, shop := "") -> bool:
+	var s := shop if shop != "" else current_shop
+	var shops: Array = get_def(id).get("shops", [])
+	return shops.is_empty() or s in shops
 
 ## 현지화된 카드 이름/라벨 — 로케일 파일(b.<slug>.name/label)에서 조회.
 static func display_name(id: String) -> String:
@@ -235,6 +246,8 @@ static func random_pack(n := 3) -> Array:
 	for id in ALL.keys():
 		if ALL[id].get("blocked", false):
 			continue
+		if not in_shop(id):
+			continue   # 현재 가게에서 안 쓰는 버프(shops 태그) 제외
 		if id in owned:
 			continue   # 이미 보유한 버프는 후보에서 제외
 		pool.append(id)
