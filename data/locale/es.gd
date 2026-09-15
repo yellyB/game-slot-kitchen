@@ -149,7 +149,7 @@ const S := {
 	"b.nest_egg.name": "Cuenta de ahorro", "b.nest_egg.label": "Se destruye al cierre de la 4.ª semana por +15 de dinero",
 	"b.auto_serve.name": "Telepatía", "b.auto_serve.label": "50% de probabilidad de servir automáticamente (WIP)",
 	"b.auto_cook.name": "Preparación previa", "b.auto_cook.label": "Cocina automática al tomar el pedido (WIP)",
-	"b.inst_order.name": "Pedido instantáneo", "b.inst_order.label": "Cada 8.ª entrega: el próximo pedido genera su plato terminado al instante (aún lo sirves tú)",
+	"b.inst_order.name": "Autocompletar", "b.inst_order.label": "Tras 8 entregas, el próximo pedido tomado genera al instante su plato terminado",
 	"b.inst_cook.name": "Cocción instantánea", "b.inst_cook.label": "Cada 4.ª cocción es instantánea",
 	"b.interest.name": "Interés", "b.interest.label": "Al abrir: +10% de interés sobre el efectivo en mano",
 	"b.settle_100.name": "Cierre perfecto", "b.settle_100.label": "0% de abandonos este turno: +25% del puntaje del turno al cierre",

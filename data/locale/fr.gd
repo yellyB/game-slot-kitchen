@@ -149,7 +149,7 @@ const S := {
 	"b.nest_egg.name": "Compte épargne", "b.nest_egg.label": "Détruite à la clôture de la 4e semaine pour +15 pièces",
 	"b.auto_serve.name": "Télépathie", "b.auto_serve.label": "50% de chance de servir automatiquement (WIP)",
 	"b.auto_cook.name": "Batch cooking", "b.auto_cook.label": "Cuisson auto dès la commande prise (WIP)",
-	"b.inst_order.name": "Commande instantanée", "b.inst_order.label": "Chaque 8e service : la prochaine commande crée son plat fini (à vous de servir)",
+	"b.inst_order.name": "Auto-Complétion", "b.inst_order.label": "Après 8 services, la prochaine commande prise crée aussitôt son plat fini",
 	"b.inst_cook.name": "Cuisson instantanée", "b.inst_cook.label": "Chaque 4e cuisson est instantanée",
 	"b.interest.name": "Intérêts", "b.interest.label": "À l'ouverture : +10% d'intérêts sur le solde",
 	"b.settle_100.name": "Clôture parfaite", "b.settle_100.label": "0% de départ ce tour : +25% du score du tour à la clôture",

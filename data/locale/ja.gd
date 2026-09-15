@@ -149,7 +149,7 @@ const S := {
 	"b.nest_egg.name": "預金通帳", "b.nest_egg.label": "4週目の閉店で破壊され +15マネー",
 	"b.auto_serve.name": "テレパシー", "b.auto_serve.label": "50%の確率で自動提供 (WIP)",
 	"b.auto_cook.name": "作り置き", "b.auto_cook.label": "注文受付時に自動調理 (WIP)",
-	"b.inst_order.name": "即注文", "b.inst_order.label": "8回目の提供ごと：次の注文は完成品が即出現（提供は自分で）",
+	"b.inst_order.name": "自動完成", "b.inst_order.label": "8回提供すると、次の注文受付時に完成品が即生成",
 	"b.inst_cook.name": "即調理", "b.inst_cook.label": "4回目の調理ごとに即完成",
 	"b.interest.name": "利子", "b.interest.label": "開店時：所持金の10%利子",
 	"b.settle_100.name": "完璧精算", "b.settle_100.label": "今ターン離脱率0%：閉店時ターンスコアの +25%",

@@ -149,7 +149,7 @@ const S := {
 	"b.nest_egg.name": "储蓄账户", "b.nest_egg.label": "第 4 周打烊时被摧毁，换 +15 元",
 	"b.auto_serve.name": "心灵感应", "b.auto_serve.label": "50% 几率自动上菜（WIP）",
 	"b.auto_cook.name": "备餐", "b.auto_cook.label": "接单时自动烹饪（WIP）",
-	"b.inst_order.name": "即时订单", "b.inst_order.label": "每第 8 次上菜：下个订单直接生成成品（仍需你上菜）",
+	"b.inst_order.name": "自动完成", "b.inst_order.label": "上菜 8 次后，下个订单接单时直接生成成品",
 	"b.inst_cook.name": "即时烹饪", "b.inst_cook.label": "每第 4 次烹饪瞬间完成",
 	"b.interest.name": "利息", "b.interest.label": "开张时：持有现金 +10% 利息",
 	"b.settle_100.name": "完美结算", "b.settle_100.label": "本回合流失率 0%：打烊 +本回合分数的 25%",

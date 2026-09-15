@@ -149,7 +149,7 @@ const S := {
 	"b.nest_egg.name": "Sparkonto", "b.nest_egg.label": "Wird zum Schluss der 4. Woche zerstört für +15 Geld",
 	"b.auto_serve.name": "Telepathie", "b.auto_serve.label": "50% Chance auf Auto-Servieren (WIP)",
 	"b.auto_cook.name": "Meal Prep", "b.auto_cook.label": "Auto-Kochen bei Annahme (WIP)",
-	"b.inst_order.name": "Sofortbestellung", "b.inst_order.label": "Jede 8. Ausgabe: nächste Bestellung erzeugt sofort ihr fertiges Gericht (du servierst noch)",
+	"b.inst_order.name": "Auto-Fertig", "b.inst_order.label": "Nach 8 Ausgaben erzeugt die nächste angenommene Bestellung sofort ihr fertiges Gericht",
 	"b.inst_cook.name": "Sofortkochen", "b.inst_cook.label": "Jedes 4. Kochen ist sofort fertig",
 	"b.interest.name": "Zinsen", "b.interest.label": "Bei Öffnung: +10% Zinsen auf Guthaben",
 	"b.settle_100.name": "Perfekter Schluss", "b.settle_100.label": "0% Absprungrate diese Runde: +25% der Rundenpunkte bei Schluss",
