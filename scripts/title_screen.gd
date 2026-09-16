@@ -5,11 +5,13 @@ extends Control
 
 signal start_pressed
 signal tutorial_pressed
+signal dbg_lives_pressed   # 디버그(로컬/테스트빌드) 전용 — 목숨 시스템 해금 토글
 
 const TITLE_TEXT := "Slot Kitchen"   # 타이틀은 언어 무관 영어 로고로 고정
 
 var _start_btn: Button
 var _codex_btn: Button
+var _dbg_lives_btn: Button   # 디버그 빌드에서만 존재
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -68,6 +70,21 @@ func _ready() -> void:
 	codex.pressed.connect(_open_codex)
 	Audio.attach_click(codex)   # 도감 버튼 클릭음
 	v.add_child(codex)
+
+	# 디버그 전용(테스트 빌드·로컬) — 목숨 시스템 해금 토글. 릴리스 빌드엔 아예 없음.
+	if OS.is_debug_build():
+		var dbg := Button.new()
+		_dbg_lives_btn = dbg
+		dbg.custom_minimum_size = Vector2(180, 40)
+		dbg.add_theme_font_size_override("font_size", 14)
+		dbg.add_theme_color_override("font_color", Palette.COCOA_800)
+		dbg.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+		dbg.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+		dbg.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+		dbg.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+		dbg.pressed.connect(func(): dbg_lives_pressed.emit())
+		Audio.attach_click(dbg)
+		v.add_child(dbg)
 
 	# 우상단 설정 버튼(톱니 손그림) → 설정 오버레이
 	var gear := Button.new()
@@ -141,6 +158,12 @@ func _pulse(node: Control) -> void:
 	var t := create_tween().set_loops()
 	t.tween_property(node, "scale", Vector2(1.04, 1.04), 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(node, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+## 디버그 목숨 토글 버튼 라벨 갱신(main이 상태 넘김). 버튼 없으면(릴리스) 무시.
+func set_dbg_lives(on: bool) -> void:
+	if is_instance_valid(_dbg_lives_btn):
+		_dbg_lives_btn.text = "🐞 목숨 ON" if on else "🐞 목숨 OFF"
 
 
 func _open_codex() -> void:

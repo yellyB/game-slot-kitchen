@@ -147,6 +147,9 @@ func _ready() -> void:
   _title = TitleScreen.new()
   _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
+  if OS.is_debug_build():   # 목숨 해금 디버그 토글 — 다음 런부터 목숨 ON/OFF
+    _title.dbg_lives_pressed.connect(_on_dbg_lives_toggle)
+    _title.set_dbg_lives.call_deferred(_lives_unlocked())   # _ready 후 버튼 존재 시 라벨 세팅
   add_child(_title)
 
   # 가게 선택 화면 — 튜토리얼 완료 후 [시작] 시 표시. 가게 고르면 그 가게로 런 시작.
@@ -448,6 +451,17 @@ func _mark_cleared() -> void:
     f.close()
 
 
+## 디버그: 목숨 해금 토글(cleared.flag 생성/삭제) → 다음 런부터 반영. 라벨 즉시 갱신.
+func _on_dbg_lives_toggle() -> void:
+  if _lives_unlocked():
+    var d := DirAccess.open("user://")
+    if d != null and d.file_exists("cleared.flag"):
+      d.remove("cleared.flag")
+  else:
+    _mark_cleared()
+  _title.set_dbg_lives(_lives_unlocked())
+
+
 func _mark_tutorial_seen() -> void:
   var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
   if f != null:
@@ -471,6 +485,8 @@ func _show_title() -> void:
   _celebrating = false           # 타이틀 이동 → 예약된 2차 축포 취소
   _clear_confetti()
   _clear_blackout()   # 게임오버 암전 잔재 제거(안 치우면 시작해도 검은 화면+입력 차단)
+  if OS.is_debug_build():
+    _title.set_dbg_lives(_lives_unlocked())   # 실제 클리어 반영해 디버그 라벨 최신화
   _title.show()
 
 
