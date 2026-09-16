@@ -62,38 +62,20 @@ func _card(id: String) -> Button:
 	b.disabled = not unlocked
 	b.add_theme_stylebox_override("disabled", UI.card(Palette.COCOA_100, Palette.COCOA_200, 1))
 
+	# 이미지 하나만 가운데 — 이름·설명 없음. 잠금=자물쇠, 해금=가게 아이콘.
+	var cc := CenterContainer.new()
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(cc)
+
 	if not unlocked:
-		# 잠금 = 자물쇠 하나만 중앙(정체·상태 전부 미공개)
-		var cc := CenterContainer.new()
-		cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		cc.add_child(UI.ui_icon("slot_lock", 34))
-		b.add_child(cc)
 		return b
 
 	b.add_theme_stylebox_override("normal", UI.card(Palette.WHITE, Palette.MAIN, 2))
 	b.add_theme_stylebox_override("hover", UI.card(Palette.MAIN.lightened(0.85), Palette.MAIN, 2))
 	b.add_theme_stylebox_override("pressed", UI.card(Palette.MAIN.lightened(0.78), Palette.MAIN, 2))
-
-	var row := HBoxContainer.new()
-	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.offset_left = 16
-	row.offset_right = -16
-	row.add_theme_constant_override("separation", 12)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_child(row)
-
-	var icon := UI.label(Shops.icon_of(id), 40)
-	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(icon)
-
-	var texts := VBoxContainer.new()
-	texts.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(texts)
-	texts.add_child(UI.label(Shops.name_of(id), 20, Palette.COCOA_800, true))
-	texts.add_child(UI.label(Shops.desc_of(id), 13, Palette.COCOA_600))
-
+	cc.add_child(UI.label(Shops.icon_of(id), 48))   # 가게 이미지(아이콘)만
 	b.pressed.connect(func(): shop_selected.emit(id))
 	Audio.attach_click(b)
 	return b
