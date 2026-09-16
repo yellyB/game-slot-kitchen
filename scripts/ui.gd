@@ -119,12 +119,13 @@ static func top_bar() -> PanelContainer:
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
 	row1.add_child(home)
-	var lives_lbl := label("", 18, Palette.DANGER, true)   # ♥ 목숨 — 해금 시에만 노출(main이 갱신)
-	lives_lbl.visible = false
-	row1.add_child(lives_lbl)
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row1.add_child(gap)
+	# 오른쪽 그룹: [하트][점수][돈]. 하트는 해금 시에만 노출(main이 갱신, 간격은 텍스트 뒤 공백).
+	var lives_lbl := label("", 18, Palette.DANGER, true)
+	lives_lbl.visible = false
+	row1.add_child(lives_lbl)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	row1.add_child(ui_icon(star_name, 22))
 	var score := label("0", 18, Palette.COCOA_800, true)

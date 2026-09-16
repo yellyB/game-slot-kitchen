@@ -611,7 +611,7 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_label.visible = false
     return
   _lives_label.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives)) + "  "   # 뒤 공백=점수와 간격
 
 
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
