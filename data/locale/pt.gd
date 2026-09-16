@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "Menos é Mais+", "b.sc_empt_b.label": "Pontuação ×1,3 por espaço vazio (cumulativo)",
 	"b.sale_full.name": "Casa Cheia", "b.sale_full.label": "Sirva com o tabuleiro cheio (0 vazios): pontuação ganha ×2",
 	"b.cook_empty.name": "Cozinha Limpa", "b.cook_empty.label": "Tempo de preparo -40%, mas +5% por espaço cheio",
-	"b.sc_order.name": "Enxurrada de Pedidos", "b.sc_order.label": "Pontuação +0,6× por carta de pedido no tabuleiro",
+	"b.sc_order.name": "Enxurrada de Pedidos", "b.sc_order.label": "Pontuação +0,9× por carta de pedido no tabuleiro",
 	"b.sc_dish.name": "Vitrine", "b.sc_dish.label": "Mult ×+0,9 por prato no tabuleiro",
 	"b.sc_ingr.name": "Bem Preparado", "b.sc_ingr.label": "Pontuação +1,1× por ingrediente no tabuleiro",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% de chance de dobrar a pontuação",

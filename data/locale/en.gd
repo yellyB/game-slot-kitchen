@@ -132,7 +132,7 @@ const S := {
 	"b.sc_empt_b.name": "Less is More+", "b.sc_empt_b.label": "Score ×1.3 per empty slot (compounding)",
 	"b.sale_full.name": "Full House", "b.sale_full.label": "Serve while board is full (0 empty): earned score ×2",
 	"b.cook_empty.name": "Clean Kitchen", "b.cook_empty.label": "Cook time -40%, but +5% per filled slot",
-	"b.sc_order.name": "Order Rush", "b.sc_order.label": "Score +0.6× per order card on board",
+	"b.sc_order.name": "Order Rush", "b.sc_order.label": "Score +0.9× per order card on board",
 	"b.sc_dish.name": "Showcase", "b.sc_dish.label": "Mult ×+0.9 per dish on board",
 	"b.sc_ingr.name": "Well Prepped", "b.sc_ingr.label": "Score +1.1× per ingredient on board",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% chance to double the score",

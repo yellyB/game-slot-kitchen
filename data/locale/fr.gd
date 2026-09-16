@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "Moins c'est mieux+", "b.sc_empt_b.label": "Score ×1,3 par case vide (cumulatif)",
 	"b.sale_full.name": "Salle comble", "b.sale_full.label": "Servir plateau plein (0 vide) : score gagné ×2",
 	"b.cook_empty.name": "Cuisine propre", "b.cook_empty.label": "Temps de cuisson -40%, mais +5% par case remplie",
-	"b.sc_order.name": "Rush de commandes", "b.sc_order.label": "Score +0,6× par carte commande sur le plateau",
+	"b.sc_order.name": "Rush de commandes", "b.sc_order.label": "Score +0,9× par carte commande sur le plateau",
 	"b.sc_dish.name": "Vitrine", "b.sc_dish.label": "Mult ×+0,9 par plat sur le plateau",
 	"b.sc_ingr.name": "Bien préparé", "b.sc_ingr.label": "Score +1,1× par ingrédient sur le plateau",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% de chance de doubler le score",

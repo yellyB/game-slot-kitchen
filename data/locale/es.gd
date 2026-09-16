@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "Menos es más+", "b.sc_empt_b.label": "Puntaje ×1.3 por ranura vacía (acumulativo)",
 	"b.sale_full.name": "Local lleno", "b.sale_full.label": "Sirve con el tablero lleno (0 vacías): puntaje ganado ×2",
 	"b.cook_empty.name": "Cocina limpia", "b.cook_empty.label": "Tiempo de cocción -40%, pero +5% por ranura llena",
-	"b.sc_order.name": "Avalancha de pedidos", "b.sc_order.label": "Puntaje +0.6× por carta de pedido en el tablero",
+	"b.sc_order.name": "Avalancha de pedidos", "b.sc_order.label": "Puntaje +0.9× por carta de pedido en el tablero",
 	"b.sc_dish.name": "Vitrina", "b.sc_dish.label": "Mult ×+0.9 por plato en el tablero",
 	"b.sc_ingr.name": "Bien preparado", "b.sc_ingr.label": "Puntaje +1.1× por ingrediente en el tablero",
 	"b.prob_x2.name": "Premio gordo", "b.prob_x2.label": "40% de probabilidad de duplicar el puntaje",

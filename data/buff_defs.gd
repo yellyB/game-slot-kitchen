@@ -74,7 +74,7 @@ static var ALL := {
 	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.3}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 2, "when": "board_full"}},
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
-	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.6}},
+	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.9}},
 	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.9}},
 	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 1.1}},
 

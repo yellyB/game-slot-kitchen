@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "Weniger ist mehr+", "b.sc_empt_b.label": "Punkte ×1,3 pro leerem Slot (kumulierend)",
 	"b.sale_full.name": "Volles Haus", "b.sale_full.label": "Servieren bei vollem Brett (0 leer): erzielte Punkte ×2",
 	"b.cook_empty.name": "Saubere Küche", "b.cook_empty.label": "Kochzeit -40%, aber +5% pro gefülltem Slot",
-	"b.sc_order.name": "Bestell-Ansturm", "b.sc_order.label": "Punkte +0,6× pro Bestellkarte am Brett",
+	"b.sc_order.name": "Bestell-Ansturm", "b.sc_order.label": "Punkte +0,9× pro Bestellkarte am Brett",
 	"b.sc_dish.name": "Vitrine", "b.sc_dish.label": "Mult ×+0,9 pro Gericht am Brett",
 	"b.sc_ingr.name": "Gut vorbereitet", "b.sc_ingr.label": "Punkte +1,1× pro Zutat am Brett",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% Chance, die Punkte zu verdoppeln",

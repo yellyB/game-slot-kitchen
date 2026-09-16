@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "余白の美+", "b.sc_empt_b.label": "空きスロット1つごとにスコア ×1.3（複利）",
 	"b.sale_full.name": "人気店", "b.sale_full.label": "ボード満杯（空き0）で提供：獲得スコア ×2",
 	"b.cook_empty.name": "きれいな厨房", "b.cook_empty.label": "調理時間 -40%、埋まったスロット1つごとに +5%",
-	"b.sc_order.name": "注文殺到", "b.sc_order.label": "ボードの注文カード1つごとにスコア +0.6倍",
+	"b.sc_order.name": "注文殺到", "b.sc_order.label": "ボードの注文カード1つごとにスコア +0.9倍",
 	"b.sc_dish.name": "ショーケース", "b.sc_dish.label": "ボードの完成品1つごとに倍率 ×+0.9",
 	"b.sc_ingr.name": "準備万端", "b.sc_ingr.label": "ボードの材料1つごとにスコア +1.1倍",
 	"b.prob_x2.name": "大当たり", "b.prob_x2.label": "40%の確率でスコア2倍",

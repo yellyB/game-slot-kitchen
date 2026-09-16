@@ -123,7 +123,7 @@ const S := {
 	"b.sc_empt_b.name": "留白之美+", "b.sc_empt_b.label": "每个空槽位使分数 ×1.3（叠乘）",
 	"b.sale_full.name": "满堂彩", "b.sale_full.label": "棋盘全满（0 空槽）时上菜：所得分数 ×2",
 	"b.cook_empty.name": "整洁厨房", "b.cook_empty.label": "烹饪时间 -40%，但每个已占槽位 +5%",
-	"b.sc_order.name": "订单爆棚", "b.sc_order.label": "棋盘上每张订单卡使分数 +0.6×",
+	"b.sc_order.name": "订单爆棚", "b.sc_order.label": "棋盘上每张订单卡使分数 +0.9×",
 	"b.sc_dish.name": "展示柜", "b.sc_dish.label": "棋盘上每道成品使倍率 ×+0.9",
 	"b.sc_ingr.name": "备料充足", "b.sc_ingr.label": "棋盘上每份食材使分数 +1.1×",
 	"b.prob_x2.name": "中大奖", "b.prob_x2.label": "40% 几率分数翻倍",
