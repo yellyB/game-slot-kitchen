@@ -558,7 +558,7 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_label.visible = false
     return
   _lives_label.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives)) + "  "
 
 
 func _customer_missed() -> void:
