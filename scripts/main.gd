@@ -37,6 +37,8 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
+var _lives_label: Label
+var _run_over := false
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
@@ -48,6 +50,7 @@ var _countdown_edge: Panel
 var _last_countdown := 0
 const COUNTDOWN_FROM := 5
 const TUTORIAL_FLAG := "user://tutorial.done"
+const CLEARED_FLAG := "user://cleared.flag"
 
 
 func _ready() -> void:
@@ -122,6 +125,7 @@ func _ready() -> void:
   _session.day_started.connect(_on_day_started)
   _session.day_closing.connect(_on_day_closing)
   _session.day_ended.connect(_on_day_ended)
+  _session.lives_changed.connect(_on_lives_changed)
   add_child(_session)
 
   _board.now_provider = _session.now
@@ -390,6 +394,19 @@ func _tutorial_seen() -> bool:
   return FileAccess.file_exists(TUTORIAL_FLAG)
 
 
+func _lives_unlocked() -> bool:
+  return FileAccess.file_exists(CLEARED_FLAG)
+
+
+func _mark_cleared() -> void:
+  if FileAccess.file_exists(CLEARED_FLAG):
+    return
+  var f := FileAccess.open(CLEARED_FLAG, FileAccess.WRITE)
+  if f != null:
+    f.store_8(1)
+    f.close()
+
+
 func _mark_tutorial_seen() -> void:
   var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
   if f != null:
@@ -404,8 +421,9 @@ func _start_game() -> void:
   _money_label.text = UI.money(0)
   Boss.reset()
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())
+  _run_over = false
   _title.hide()
-  _session.start_run()
+  _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)
 
 
 func _show_title() -> void:
@@ -503,6 +521,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
+  _lives_label = panel.get_meta("lives_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -515,6 +534,38 @@ func _build_top_bar() -> Control:
     coin.gui_input.connect(_on_cash_clicked)
 
   return panel
+
+
+func _on_lives_changed(lives: int, lives_max: int) -> void:
+  if _lives_label == null:
+    return
+  if lives_max <= 0:
+    _lives_label.visible = false
+    return
+  _lives_label.visible = true
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+
+
+func _customer_missed() -> void:
+  if _run_over:
+    return
+  if _session.lose_life():
+    _lives_depleted()
+
+
+func _lives_depleted() -> void:
+  if _run_over:
+    return
+  _run_over = true
+  _session.set_paused(true)
+  _warehouse.force_close()
+  _cooking.force_close()
+  _buff_sheet.force_close()
+  _backdrop.visible = false
+  _clear_play_field()
+  Audio.play("fail")
+  Audio.vibrate(60)
+  _show_run_failed({"day": _session.day, "month_score": _session.month_score, "rent": _session.rent, "won": false})
 
 
 func _on_cash_clicked(event: InputEvent) -> void:
@@ -923,6 +974,7 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _missed_today += 1
+  _customer_missed()
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -938,6 +990,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
+  _customer_missed()
   _spawn_pop("😠", order.global_position + order.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -2021,6 +2074,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
+    _mark_cleared()
     _session.pay_rent()
     _clear_play_field()
     var win_modal := Modal.open(self) \

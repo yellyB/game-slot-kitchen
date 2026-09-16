@@ -7,6 +7,7 @@ signal spawn_requested
 signal day_started(day: int, rent: int)
 signal day_closing(s: Session)
 signal day_ended(summary: Dictionary)
+signal lives_changed(lives: int, lives_max: int)
 
 var cash := 0
 var day := 1
@@ -16,6 +17,9 @@ var month_score := 0
 var run_score := 0
 var run_earned := 0
 var slots := Config.START_SLOTS
+var lives := 0
+var lives_max := 0
+var _miss_accum := 0
 
 var _elapsed := 0.0
 var _running := false
@@ -26,17 +30,33 @@ var _rent_paid := false
 var _next_spawn := -1.0
 
 
-func start_run() -> void:
+func start_run(lives_max_v := 0) -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
 	run_score = 0
 	run_earned = 0
+	lives_max = lives_max_v
+	lives = lives_max_v
+	_miss_accum = 0
 	_rent_skip_used = false
 	_paused = false
 	Buffs.clear()
 	cash_changed.emit(cash)
+	lives_changed.emit(lives, lives_max)
 	start_day()
+
+
+func lose_life() -> bool:
+	if lives_max <= 0 or lives <= 0:
+		return false
+	_miss_accum += 1
+	if _miss_accum < Config.LIFE_LOSS_MISSES:
+		return false
+	_miss_accum = 0
+	lives = maxi(0, lives - 1)
+	lives_changed.emit(lives, lives_max)
+	return lives <= 0
 
 
 func buy_slot() -> bool:

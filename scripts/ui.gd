@@ -106,6 +106,9 @@ static func top_bar() -> PanelContainer:
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
 	row1.add_child(home)
+	var lives_lbl := label("", 18, Palette.DANGER, true)
+	lives_lbl.visible = false
+	row1.add_child(lives_lbl)
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row1.add_child(gap)
@@ -148,6 +151,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
+	panel.set_meta("lives_label", lives_lbl)
 	return panel
 
 static func _comma(a: int) -> String:
