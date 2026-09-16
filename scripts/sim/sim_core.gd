@@ -56,6 +56,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	session.day_ended.connect(func(s): _last = s)
 
 	session.start_run()   # 내부 Buffs.clear() → 버프는 이 뒤에 세팅
+	if OS.has_environment("SIM_SLOTS"):   # 상점off 측정 시 슬롯 기아 배제 — 실전 성장빌드 슬롯수 주입
+		session.slots = int(OS.get_environment("SIM_SLOTS"))
 	Buffs.clear()
 	for b in buff_loadout:
 		Buffs.add(b)

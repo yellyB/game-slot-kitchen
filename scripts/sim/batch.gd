@@ -72,11 +72,17 @@ func compare(n: int, loadouts: Array) -> Array:
 	return out
 
 
-## 버프 효과 측정 — 기준(버프0·상점off) vs 각 버프 1개(상점off)를 N판 비교, Δ 출력.
-## 상점 off로 두어 '그 버프만'의 순효과를 격리. 승률이 민감한 구간이 되도록 SIM_RENT로 가혹도 조절.
+## 버프 효과 측정 — 기준 vs 각 버프 1개(상점off)를 N판 비교, Δ 출력.
+## 기본 기준=버프0(순효과 격리). SIM_CTX=a,b,c 주면 그 맥락빌드에 얹었을 때의 한계 Δ(맥락 카드는
+##   가산형이 곱카드에 증폭되고 카운트 카드가 실제 보드상태를 봄 — 곱/가산/카운트 카드 실측용).
+## 상점 off. 승률 민감구간은 SIM_RENT, 고정지평선은 SIM_NOFAIL+SIM_MAXDAY.
 func buff_report(n: int) -> void:
-	var base := run(n, [], false)
-	print("[BUFFRPT] base(버프0)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+	var ctx: Array = []
+	if OS.has_environment("SIM_CTX"):
+		ctx = Array(OS.get_environment("SIM_CTX").split(","))
+	var base := run(n, ctx, false)
+	print("[BUFFRPT] base(맥락 %s)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+		str(ctx) if not ctx.is_empty() else "버프0",
 		base["win_rate"] * 100.0, base["avg_score"], base["avg_cash"], base["avg_days"], n,
 		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1",
 		OS.get_environment("SIM_MAXDAY") if OS.has_environment("SIM_MAXDAY") else "-"])
@@ -87,7 +93,9 @@ func buff_report(n: int) -> void:
 	for id in BuffDefs.ids():
 		if not only.is_empty() and not (id in only):
 			continue
-		var r := run(n, [id], false)
+		if id in ctx:
+			continue
+		var r := run(n, ctx + [id], false)
 		rows.append({
 			"id": id,
 			"dscore": r["avg_score"] - base["avg_score"],
