@@ -37,9 +37,9 @@ func _ready() -> void:
 		v.add_child(_card(id))
 
 	var back := Button.new()
-	back.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	back.offset_left = -64
-	back.offset_right = -16
+	back.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	back.offset_left = 16
+	back.offset_right = 64
 	back.offset_top = 44
 	back.offset_bottom = 92
 	back.add_child(UI.ui_btn_icon("house", 24))
