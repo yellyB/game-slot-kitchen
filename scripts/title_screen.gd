@@ -3,11 +3,13 @@ extends Control
 
 signal start_pressed
 signal tutorial_pressed
+signal dbg_lives_pressed
 
 const TITLE_TEXT := "Slot Kitchen"
 
 var _start_btn: Button
 var _codex_btn: Button
+var _dbg_lives_btn: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -63,6 +65,20 @@ func _ready() -> void:
 	codex.pressed.connect(_open_codex)
 	Audio.attach_click(codex)
 	v.add_child(codex)
+
+	if OS.is_debug_build():
+		var dbg := Button.new()
+		_dbg_lives_btn = dbg
+		dbg.custom_minimum_size = Vector2(180, 40)
+		dbg.add_theme_font_size_override("font_size", 14)
+		dbg.add_theme_color_override("font_color", Palette.COCOA_800)
+		dbg.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+		dbg.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
+		dbg.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
+		dbg.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+		dbg.pressed.connect(func(): dbg_lives_pressed.emit())
+		Audio.attach_click(dbg)
+		v.add_child(dbg)
 
 	var gear := Button.new()
 	gear.add_child(UI.ui_btn_icon("settings", 30))
@@ -128,6 +144,11 @@ func _pulse(node: Control) -> void:
 	var t := create_tween().set_loops()
 	t.tween_property(node, "scale", Vector2(1.04, 1.04), 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(node, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func set_dbg_lives(on: bool) -> void:
+	if is_instance_valid(_dbg_lives_btn):
+		_dbg_lives_btn.text = "🐞 목숨 ON" if on else "🐞 목숨 OFF"
 
 
 func _open_codex() -> void:

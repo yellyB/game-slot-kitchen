@@ -133,6 +133,9 @@ func _ready() -> void:
   _title = TitleScreen.new()
   _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
+  if OS.is_debug_build():
+    _title.dbg_lives_pressed.connect(_on_dbg_lives_toggle)
+    _title.set_dbg_lives.call_deferred(_lives_unlocked())
   add_child(_title)
 
   _shop_select = ShopSelect.new()
@@ -407,6 +410,16 @@ func _mark_cleared() -> void:
     f.close()
 
 
+func _on_dbg_lives_toggle() -> void:
+  if _lives_unlocked():
+    var d := DirAccess.open("user://")
+    if d != null and d.file_exists("cleared.flag"):
+      d.remove("cleared.flag")
+  else:
+    _mark_cleared()
+  _title.set_dbg_lives(_lives_unlocked())
+
+
 func _mark_tutorial_seen() -> void:
   var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
   if f != null:
@@ -430,6 +443,8 @@ func _show_title() -> void:
   _celebrating = false
   _clear_confetti()
   _clear_blackout()
+  if OS.is_debug_build():
+    _title.set_dbg_lives(_lives_unlocked())
   _title.show()
 
 
