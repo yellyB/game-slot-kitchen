@@ -81,15 +81,17 @@ func _card(id: String) -> Button:
 	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(texts)
 	texts.add_child(UI.label(Shops.name_of(id) if unlocked else "???", 20, Palette.COCOA_800 if unlocked else Palette.COCOA_600, true))
-	var desc := Shops.desc_of(id) if unlocked else Loc.t("shop_locked")
-	texts.add_child(UI.label(desc, 13, Palette.COCOA_600))
+	if unlocked:
+		texts.add_child(UI.label(Shops.desc_of(id), 13, Palette.COCOA_600))   # 잠금은 설명 없음(정체·상태 미공개)
 
 	if not unlocked:
 		var gap := Control.new()
 		gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(gap)
-		row.add_child(UI.label("🔒", 28))
+		var lock := UI.ui_icon("slot_lock", 30)
+		lock.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(lock)
 	else:
 		b.pressed.connect(func(): shop_selected.emit(id))
 		Audio.attach_click(b)
