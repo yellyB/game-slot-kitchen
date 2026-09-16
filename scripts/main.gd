@@ -224,6 +224,24 @@ func _ready() -> void:
     SimSynergy.run_report(yn)
     get_tree().quit()
 
+  if "--simstate" in OS.get_cmdline_user_args():
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
+    if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")
+    if not OS.has_environment("SIM_NOFAIL"): OS.set_environment("SIM_NOFAIL", "1")
+    if not OS.has_environment("SIM_MAXDAY"): OS.set_environment("SIM_MAXDAY", "8")
+    var stn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
+    var stlo: Array = []
+    if OS.has_environment("SIM_STATE_IDS"):
+      stlo = Array(OS.get_environment("SIM_STATE_IDS").split(","))
+    var str2 := SimBatch.new().run(stn, stlo, true)
+    var stc: Dictionary = str2["ctx"]
+    print("[SIMSTATE] n=%d loadout=%s  score=%.0f slots=%.1f buffs=%.1f served=%.1f (maxday=%s)" % [
+      stn, str(stlo), str2["avg_score"], str2["avg_slots"], str2["avg_buffs"], str2["avg_served"],
+      OS.get_environment("SIM_MAXDAY")])
+    print("[SIMSTATE] 서빙시점 평균보드  buffs(B)=%.2f filled(F)=%.2f empty(E)=%.2f dishes(D)=%.2f orders(O)=%.2f ingr(I)=%.2f" % [
+      stc["buffs"], stc["filled"], stc["empty"], stc["dishes"], stc["orders"], stc["ingr"]])
+    get_tree().quit()
+
   if "--simbuffs" in OS.get_cmdline_user_args():
     var bn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
     SimBatch.new().buff_report(bn)

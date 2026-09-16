@@ -31,6 +31,9 @@ var _order_lost_today := 0
 var _missed_today := 0
 var _served_by_menu := {}
 
+var _ctx_sum := {"filled": 0.0, "empty": 0.0, "orders": 0.0, "dishes": 0.0, "ingr": 0.0, "buffs": 0.0}
+var _ctx_n := 0
+
 
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_only := false) -> Dictionary:
 	seed(run_seed)
@@ -91,6 +94,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	result["lost_qfull"] = _lost_qfull
 	result["slots"] = session.slots
 	result["buffs"] = Buffs.owned().size()
+	for k in _ctx_sum:
+		result["ctx_" + k] = float(_ctx_sum[k]) / float(maxi(_ctx_n, 1))
 	session.free()
 	return result
 
@@ -343,7 +348,7 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 	var cap := _serve_cap()
 	var filled := orders.size() + dishes.size() + ingredients.size()
 	var mx := float(order.get("max", 1.0))
-	return {
+	var c := {
 		"filled": filled,
 		"empty": maxi(0, cap - filled),
 		"orders": orders.size(),
@@ -357,6 +362,10 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 		"cash": session.cash,
 		"day_revenue": session.day_revenue,
 	}
+	for k in _ctx_sum:
+		_ctx_sum[k] = float(_ctx_sum[k]) + float(c[k])
+	_ctx_n += 1
+	return c
 
 
 func _start_cooking() -> void:
