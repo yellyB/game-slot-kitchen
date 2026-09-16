@@ -37,15 +37,18 @@ func _ready() -> void:
 		v.add_child(_card(id))
 
 	var back := Button.new()
-	back.custom_minimum_size = Vector2(0, 44)
-	back.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	back.add_child(UI.ui_btn_icon("house", 26))
+	back.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	back.offset_left = -64
+	back.offset_right = -16
+	back.offset_top = 44
+	back.offset_bottom = 92
+	back.add_child(UI.ui_btn_icon("house", 24))
 	back.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100, Palette.COCOA_200))
 	back.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	back.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
 	back.pressed.connect(func(): back_pressed.emit())
 	Audio.attach_click(back)
-	v.add_child(back)
+	add_child(back)
 
 
 func _card(id: String) -> Button:
