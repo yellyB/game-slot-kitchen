@@ -70,7 +70,8 @@ func _card(id: String) -> Button:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(row)
 
-	var icon := UI.label(Shops.icon_of(id), 40)
+	# 잠금 = 정체 숨김("뭔가 온다" 정도만): 아이콘·이름 미공개.
+	var icon := UI.label(Shops.icon_of(id) if unlocked else "❓", 40)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.modulate.a = 1.0 if unlocked else 0.5
 	row.add_child(icon)
@@ -79,7 +80,7 @@ func _card(id: String) -> Button:
 	texts.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(texts)
-	texts.add_child(UI.label(Shops.name_of(id), 20, Palette.COCOA_800 if unlocked else Palette.COCOA_600, true))
+	texts.add_child(UI.label(Shops.name_of(id) if unlocked else "???", 20, Palette.COCOA_800 if unlocked else Palette.COCOA_600, true))
 	var desc := Shops.desc_of(id) if unlocked else Loc.t("shop_locked")
 	texts.add_child(UI.label(desc, 13, Palette.COCOA_600))
 
