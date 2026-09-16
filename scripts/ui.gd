@@ -94,7 +94,7 @@ static func ui_btn_icon(name: String, px: int) -> Control:
 
 
 ## 상단바 컴포넌트 — 게임·상점 공용. 1줄:[홈·실적바·점수·보유금] / 2줄:[날짜·시간바].
-## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box·lives_label.
+## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box·lives_label·lives_box.
 static func top_bar() -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", card(Palette.WHITE))
@@ -122,10 +122,18 @@ static func top_bar() -> PanelContainer:
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row1.add_child(gap)
-	# 오른쪽 그룹: [하트][점수][돈]. 하트는 해금 시에만 노출(main이 갱신, 간격은 텍스트 뒤 공백).
+	# 오른쪽 그룹: [하트 │ 점수 돈] — 하트는 경제(점수·돈)와 구분선으로 분리. 해금 시에만 박스째 노출.
+	var lives_box := HBoxContainer.new()
+	lives_box.add_theme_constant_override("separation", 8)
+	lives_box.visible = false
 	var lives_lbl := label("", 18, Palette.DANGER, true)
-	lives_lbl.visible = false
-	row1.add_child(lives_lbl)
+	lives_box.add_child(lives_lbl)
+	var div := ColorRect.new()
+	div.color = Palette.COCOA_200
+	div.custom_minimum_size = Vector2(2, 18)
+	div.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lives_box.add_child(div)
+	row1.add_child(lives_box)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	row1.add_child(ui_icon(star_name, 22))
 	var score := label("0", 18, Palette.COCOA_800, true)
@@ -167,6 +175,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
 	panel.set_meta("lives_label", lives_lbl)
+	panel.set_meta("lives_box", lives_box)
 	return panel
 
 ## 3자리 콤마 구분.

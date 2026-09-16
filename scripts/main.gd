@@ -41,7 +41,8 @@ var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클
 var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
 var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
 var _score_label: Label   # 이달 실적(점수) — "현재/목표"(÷100)
-var _lives_label: Label   # ♥ 목숨 HUD(해금 시에만 노출)
+var _lives_label: Label   # ♥ 목숨 HUD 텍스트
+var _lives_box: Control   # 하트+구분선 묶음(해금 시에만 노출)
 var _run_over := false     # 목숨 소진 런오버 진행 중 — 이탈 중복 트리거 방지
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
@@ -588,6 +589,7 @@ func _build_top_bar() -> Control:
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
   _lives_label = panel.get_meta("lives_label") as Label
+  _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -605,13 +607,13 @@ func _build_top_bar() -> Control:
 
 ## ♥ HUD 갱신 — 해금(lives_max>0) 시에만 노출. 남은=❤️, 잃은=🤍.
 func _on_lives_changed(lives: int, lives_max: int) -> void:
-  if _lives_label == null:
+  if _lives_box == null:
     return
   if lives_max <= 0:
-    _lives_label.visible = false
+    _lives_box.visible = false
     return
-  _lives_label.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives)) + "  "   # 뒤 공백=점수와 간격
+  _lives_box.visible = true
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
 
 
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
