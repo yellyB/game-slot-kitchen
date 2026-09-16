@@ -39,6 +39,10 @@ var _order_lost_today := 0
 var _missed_today := 0   # 놓친 손님(대기열+주문 이탈) — 완벽/우수정산 처리율 분모(main과 동치)
 var _served_by_menu := {}
 
+# 서빙 시점 보드상태 누적(run 전체) — 카운트/시너지 카드 밸런스용 평균(B/F/E/D/O/I). --simstate.
+var _ctx_sum := {"filled": 0.0, "empty": 0.0, "orders": 0.0, "dishes": 0.0, "ingr": 0.0, "buffs": 0.0}
+var _ctx_n := 0
+
 
 ## shop_enabled: 하루 사이 상점(슬롯/버프 구매) 활성. 통제된 로드아웃 비교 땐 false로.
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_only := false) -> Dictionary:
@@ -101,6 +105,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	result["lost_qfull"] = _lost_qfull
 	result["slots"] = session.slots
 	result["buffs"] = Buffs.owned().size()
+	for k in _ctx_sum:
+		result["ctx_" + k] = float(_ctx_sum[k]) / float(maxi(_ctx_n, 1))
 	session.free()
 	return result
 
@@ -366,7 +372,7 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 	var cap := _serve_cap()
 	var filled := orders.size() + dishes.size() + ingredients.size()
 	var mx := float(order.get("max", 1.0))
-	return {
+	var c := {
 		"filled": filled,
 		"empty": maxi(0, cap - filled),
 		"orders": orders.size(),
@@ -380,6 +386,10 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 		"cash": session.cash,
 		"day_revenue": session.day_revenue,
 	}
+	for k in _ctx_sum:                     # 서빙 시점 보드상태 평균 누적(--simstate)
+		_ctx_sum[k] = float(_ctx_sum[k]) + float(c[k])
+	_ctx_n += 1
+	return c
 
 
 ## 유휴 도구에 조리 시작 — 필요 재료가 보드에 다 있는 가장 급한 주문부터.

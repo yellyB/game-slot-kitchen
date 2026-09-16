@@ -18,10 +18,13 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 	var buffs := 0
 	var score := 0
 	var days_list: Array = []   # 판별 생존주 — 분포(바이모달) 확인용
+	var ctx := {"filled": 0.0, "empty": 0.0, "orders": 0.0, "dishes": 0.0, "ingr": 0.0, "buffs": 0.0}
 	for i in n:
 		var sim := SimCore.new()
 		var r := sim.run(buff_loadout, i, shop_enabled, slots_only)
 		days_list.append(int(r["days"]))
+		for k in ctx:
+			ctx[k] = float(ctx[k]) + float(r.get("ctx_" + k, 0.0))
 		if r["won"]:
 			wins += 1
 		cash += int(r["cash"])
@@ -36,9 +39,13 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 		buffs += int(r.get("buffs", 0))
 		score += int(r.get("score", 0))
 	var nf := float(maxi(n, 1))
+	var ctx_avg := {}
+	for k in ctx:
+		ctx_avg[k] = float(ctx[k]) / nf
 	return {
 		"runs": n,
 		"loadout": buff_loadout,
+		"ctx": ctx_avg,
 		"win_rate": float(wins) / nf,
 		"avg_score": float(score) / nf,
 		"avg_cash": float(cash) / nf,
