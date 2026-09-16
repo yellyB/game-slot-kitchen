@@ -6,6 +6,7 @@ var _cooking: Cooking
 var _backdrop: ColorRect
 var _session: Session
 var _title: TitleScreen
+var _shop_select: ShopSelect
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
@@ -129,6 +130,11 @@ func _ready() -> void:
   _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
+
+  _shop_select = ShopSelect.new()
+  _shop_select.shop_selected.connect(_on_shop_selected)
+  _shop_select.back_pressed.connect(func(): _shop_select.hide())
+  add_child(_shop_select)
 
   if "--replay" in OS.get_cmdline_user_args():
     var bw := [
@@ -351,9 +357,15 @@ func _go_home() -> void:
 
 func _on_start_pressed() -> void:
   if _tutorial_seen():
-    _start_game()
+    _shop_select.show()
   else:
     _start_tutorial("game")
+
+
+func _on_shop_selected(id: String) -> void:
+  BuffDefs.current_shop = id
+  _shop_select.hide()
+  _start_game()
 
 
 func _tutorial_seen() -> bool:
