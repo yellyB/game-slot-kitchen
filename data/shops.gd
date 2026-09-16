@@ -5,7 +5,7 @@ extends RefCounted
 ## 이름/설명은 로케일 키 shop.<id> / shop.<id>.desc.
 
 const ALL := {
-	"donut":  {"icon": "🍩", "unlocked": true},
+	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},   # art=완성품 손그림(assets/art/recipes)
 	"burger": {"icon": "🍔", "unlocked": false},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }

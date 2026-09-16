@@ -411,17 +411,18 @@ func _go_home() -> void:
 
 ## [시작] 버튼 — 최초 실행(튜토리얼 미완료)이면 튜토리얼부터, 이후엔 가게 선택 화면.
 func _on_start_pressed() -> void:
-  if _tutorial_seen():
-    _shop_select.show()   # 튜토리얼 완료 후엔 가게 선택 먼저
-  else:
-    _start_tutorial("game")   # 최초 실행: 도넛+튜토리얼 바로(선택창 생략), 끝나면 _start_game()
+  _shop_select.show()   # 항상 가게 선택 먼저(최초 플레이도) — 튜토리얼은 가게 입장 후
 
 
 ## 가게 선택 완료 — 그 가게로 런 시작. (버프 풀이 current_shop로 필터됨)
+## 최초 플레이면 입장 직후 튜토리얼(끝나면 _start_game), 아니면 바로 시작.
 func _on_shop_selected(id: String) -> void:
   BuffDefs.current_shop = id
   _shop_select.hide()
-  _start_game()
+  if _tutorial_seen():
+    _start_game()
+  else:
+    _start_tutorial("game")
 
 
 ## 튜토리얼을 한 번이라도 끝냈는지(영구 플래그 파일 존재 여부).
@@ -588,15 +589,14 @@ func _build_debug() -> Control:
   row.add_theme_constant_override("separation", 6)
   row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
   row.add_child(_debug_btn("+10만", func(): _session.add_cash(100000)))
-  row.add_child(_debug_btn("별+10만", func(): _session.earn(100000, true)))
+  row.add_child(_debug_btn("별+10", func(): _session.earn(100000, true)))
   row.add_child(_debug_btn("종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님-", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
-  row.add_child(_debug_btn("도감-", func(): Codex.reset()))
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))   # 폰: 클립보드로 빼기
   row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
-  row.add_child(_debug_btn("전체리셋", _debug_reset_all))   # 모든 저장 데이터 삭제 + 종료(튜토리얼 재생 확인용)
+  row.add_child(_debug_btn("리셋", _debug_reset_all))   # 모든 저장 데이터 삭제 + 종료(튜토리얼 재생 확인용)
   return row
 
 
