@@ -38,11 +38,11 @@ func _ready() -> void:
 	for id in Shops.ids():
 		v.add_child(_card(id))
 
-	# 홈(뒤로) — 우상단 고정
+	# 홈(뒤로) — 좌상단 고정
 	var back := Button.new()
-	back.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	back.offset_left = -64   # 버튼 48 + 우측 여백 16
-	back.offset_right = -16
+	back.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	back.offset_left = 16    # 좌측 여백
+	back.offset_right = 64   # 16 + 버튼 48
 	back.offset_top = 44     # 노치/상태바 여유
 	back.offset_bottom = 92
 	back.add_child(UI.ui_btn_icon("house", 24))
