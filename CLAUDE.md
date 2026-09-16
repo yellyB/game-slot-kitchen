@@ -4,6 +4,15 @@
 
 사용자가 "의견 줘 / 어떤 게 좋을까 / 어떻게 하는 게 나을까"처럼 **의견·조언을 구하는 질문**을 하면, 방향/후보만 제시하고 멈춘다. **명시적으로 "구현해줘 / 적용해줘 / 이걸로 해"라고 말하기 전까지는 코드로 옮기지 않는다.** (AskUserQuestion으로 옵션을 골라도 그건 선호 확인일 뿐, 별도 실행 지시가 없으면 구현 착수 금지.)
 
+## 테스트 빌드 (APK)
+
+사용자가 **"테스트 빌드"**(예: "테스트 빌드 ㄱㄱ")라고 하면 **디버그 APK를 자동으로 빌드**한다(따로 묻지 않음). 절차:
+1. `export_presets.cfg`의 `gradle_build/use_gradle_build`를 `false`→`true`로 임시 변경 (target SDK 36은 gradle 빌드 필요).
+2. `godot4 --headless --export-debug "Android" "/Users/oto/Workspace/apk/Slot Kitchen.apk"` 실행.
+3. **빌드 후 반드시 `use_gradle_build=false`로 되돌린다** (이 토글은 커밋하지 않는다).
+
+결과물: `/Users/oto/Workspace/apk/Slot Kitchen.apk`. 빌드 전 `--sim` 한 판 등으로 파싱/로드가 깨지지 않는지 먼저 확인한다.
+
 ## 주석 규칙
 
 **기본값은 무주석.** 코드는 주석 없이 쓰는 게 디폴트다. 주석을 달려면 먼저 이 관문을 통과해야 한다 — **"이 줄이 없으면 다음 사람이 함정에 빠지거나 의도를 오해하나?"** 아니면 지운다.

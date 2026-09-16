@@ -2,7 +2,7 @@ class_name Shops
 extends RefCounted
 
 const ALL := {
-	"donut":  {"icon": "🍩", "unlocked": true},
+	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},
 	"burger": {"icon": "🍔", "unlocked": false},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }

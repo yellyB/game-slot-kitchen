@@ -70,7 +70,11 @@ func _card(id: String) -> Button:
 	b.add_theme_stylebox_override("normal", UI.card(Palette.WHITE, Palette.MAIN, 2))
 	b.add_theme_stylebox_override("hover", UI.card(Palette.MAIN.lightened(0.85), Palette.MAIN, 2))
 	b.add_theme_stylebox_override("pressed", UI.card(Palette.MAIN.lightened(0.78), Palette.MAIN, 2))
-	cc.add_child(UI.label(Shops.icon_of(id), 48))
+	var art := str(Shops.get_def(id).get("art", ""))
+	if art != "":
+		cc.add_child(Recipes.icon_node(art, 60))
+	else:
+		cc.add_child(UI.label(Shops.icon_of(id), 48))
 	b.pressed.connect(func(): shop_selected.emit(id))
 	Audio.attach_click(b)
 	return b

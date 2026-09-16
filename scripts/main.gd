@@ -374,16 +374,16 @@ func _go_home() -> void:
 
 
 func _on_start_pressed() -> void:
-  if _tutorial_seen():
-    _shop_select.show()
-  else:
-    _start_tutorial("game")
+  _shop_select.show()
 
 
 func _on_shop_selected(id: String) -> void:
   BuffDefs.current_shop = id
   _shop_select.hide()
-  _start_game()
+  if _tutorial_seen():
+    _start_game()
+  else:
+    _start_tutorial("game")
 
 
 func _tutorial_seen() -> bool:
@@ -537,15 +537,14 @@ func _build_debug() -> Control:
   row.add_theme_constant_override("separation", 6)
   row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
   row.add_child(_debug_btn("+10만", func(): _session.add_cash(100000)))
-  row.add_child(_debug_btn("별+10만", func(): _session.earn(100000, true)))
+  row.add_child(_debug_btn("별+10", func(): _session.earn(100000, true)))
   row.add_child(_debug_btn("종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님-", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
-  row.add_child(_debug_btn("도감-", func(): Codex.reset()))
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))
   row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
-  row.add_child(_debug_btn("전체리셋", _debug_reset_all))
+  row.add_child(_debug_btn("리셋", _debug_reset_all))
   return row
 
 
