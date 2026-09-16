@@ -94,7 +94,7 @@ static func ui_btn_icon(name: String, px: int) -> Control:
 
 
 ## 상단바 컴포넌트 — 게임·상점 공용. 1줄:[홈·실적바·점수·보유금] / 2줄:[날짜·시간바].
-## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box.
+## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box·lives_label.
 static func top_bar() -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", card(Palette.WHITE))
@@ -119,6 +119,9 @@ static func top_bar() -> PanelContainer:
 	home.add_theme_stylebox_override("hover", chip(Palette.COCOA_200))
 	home.add_theme_stylebox_override("pressed", chip(Palette.COCOA_200))
 	row1.add_child(home)
+	var lives_lbl := label("", 18, Palette.DANGER, true)   # ♥ 목숨 — 해금 시에만 노출(main이 갱신)
+	lives_lbl.visible = false
+	row1.add_child(lives_lbl)
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row1.add_child(gap)
@@ -162,6 +165,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
+	panel.set_meta("lives_label", lives_lbl)
 	return panel
 
 ## 3자리 콤마 구분.

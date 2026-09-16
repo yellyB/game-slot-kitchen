@@ -41,6 +41,8 @@ var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클
 var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
 var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
 var _score_label: Label   # 이달 실적(점수) — "현재/목표"(÷100)
+var _lives_label: Label   # ♥ 목숨 HUD(해금 시에만 노출)
+var _run_over := false     # 목숨 소진 런오버 진행 중 — 이탈 중복 트리거 방지
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
@@ -52,6 +54,7 @@ var _countdown_edge: Panel  # 카운트다운 화면 가장자리 빨강 비네�
 var _last_countdown := 0    # 막판 카운트다운 마지막 표시 초(중복 방지)
 const COUNTDOWN_FROM := 5   # 마감 몇 초 전부터 카운트다운
 const TUTORIAL_FLAG := "user://tutorial.done"   # 최초 실행 시 튜토리얼 1회 재생 판별용 영구 플래그
+const CLEARED_FLAG := "user://cleared.flag"     # 도넛 첫 클리어 기록 — 존재 시 다음 런부터 목숨 시스템 ON
 
 
 func _ready() -> void:
@@ -134,6 +137,7 @@ func _ready() -> void:
   _session.day_started.connect(_on_day_started)
   _session.day_closing.connect(_on_day_closing)   # 마감 정산(63~65,73,50)
   _session.day_ended.connect(_on_day_ended)
+  _session.lives_changed.connect(_on_lives_changed)
   add_child(_session)
 
   # 완성품 나이(dish_age) 스탬프용 게임 클록을 세션 경과시간에 연결.
@@ -430,6 +434,20 @@ func _tutorial_seen() -> bool:
   return FileAccess.file_exists(TUTORIAL_FLAG)
 
 
+## 목숨 시스템 해금 여부 — 도넛을 한 번이라도 클리어했으면(다음 런부터 목숨 ON).
+func _lives_unlocked() -> bool:
+  return FileAccess.file_exists(CLEARED_FLAG)
+
+
+func _mark_cleared() -> void:
+  if FileAccess.file_exists(CLEARED_FLAG):
+    return
+  var f := FileAccess.open(CLEARED_FLAG, FileAccess.WRITE)
+  if f != null:
+    f.store_8(1)
+    f.close()
+
+
 func _mark_tutorial_seen() -> void:
   var f := FileAccess.open(TUTORIAL_FLAG, FileAccess.WRITE)
   if f != null:
@@ -444,8 +462,9 @@ func _start_game() -> void:
   _money_label.text = UI.money(0)
   Boss.reset()                   # 예약된 보스가 새 판으로 새지 않게
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())   # 판 고유 id
+  _run_over = false
   _title.hide()
-  _session.start_run()
+  _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)   # 해금 후에만 목숨 ON
 
 
 func _show_title() -> void:
@@ -552,6 +571,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
+  _lives_label = panel.get_meta("lives_label") as Label
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -565,6 +585,41 @@ func _build_top_bar() -> Control:
     coin.gui_input.connect(_on_cash_clicked)
 
   return panel
+
+
+## ♥ HUD 갱신 — 해금(lives_max>0) 시에만 노출. 남은=❤️, 잃은=🤍.
+func _on_lives_changed(lives: int, lives_max: int) -> void:
+  if _lives_label == null:
+    return
+  if lives_max <= 0:
+    _lives_label.visible = false
+    return
+  _lives_label.visible = true
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+
+
+## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
+func _customer_missed() -> void:
+  if _run_over:
+    return
+  if _session.lose_life():
+    _lives_depleted()
+
+
+## 목숨 소진 → 플레이 중 즉시 런오버(파산과 같은 실패 화면, 사유=서비스).
+func _lives_depleted() -> void:
+  if _run_over:
+    return
+  _run_over = true
+  _session.set_paused(true)   # 시계·스폰 정지(다음 start_run에서 자동 해제)
+  _warehouse.force_close()
+  _cooking.force_close()
+  _buff_sheet.force_close()
+  _backdrop.visible = false
+  _clear_play_field()          # 잔여 손님/주문 제거 → 이탈 재트리거 차단
+  Audio.play("fail")
+  Audio.vibrate(60)
+  _show_run_failed({"day": _session.day, "month_score": _session.month_score, "rent": _session.rent, "won": false})
 
 
 # ── 디버그 바 (개발용) ────────────────────────────────────
@@ -1015,6 +1070,7 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _missed_today += 1   # 대기열 이탈 = 놓친 손님(정산 처리율 분모)
+  _customer_missed()   # 목숨 −1(해금 시)
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
   Audio.vibrate(40)   # 손님 놓침 — 에러 진동
@@ -1032,6 +1088,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
   _missed_today += 1   # 주문 이탈 = 놓친 손님(정산 처리율 분모)
+  _customer_missed()   # 목숨 −1(해금 시)
   _spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
   Audio.play("customer_leave")   # 손님 떠남(왈왈)
   Audio.vibrate(40)   # 손님 놓침 — 에러 진동
@@ -2210,6 +2267,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
+    _mark_cleared()       # 도넛 클리어 기록 — 다음 런부터 목숨 시스템 ON
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)
     _clear_play_field()   # 마감 즉시 필드 비움
     var win_modal := Modal.open(self) \

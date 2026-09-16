@@ -9,6 +9,7 @@ signal spawn_requested                # 손님 하나 등장
 signal day_started(day: int, rent: int)
 signal day_closing(s: Session)        # 마감 정산 훅(가게세 차감 전) — 리스너가 earn/차감
 signal day_ended(summary: Dictionary) # {day, revenue, rent, cash_after, passed, won}
+signal lives_changed(lives: int, lives_max: int)   # 목숨 변동(HUD 갱신). lives_max=0이면 시스템 off
 
 var cash := 0
 var day := 1
@@ -18,6 +19,9 @@ var month_score := 0   # 이달 누적 매출(점수) — 월초 리셋, 지출�
 var run_score := 0     # 런 누적 매출(⭐점수) — 승리 요약용, start_run에서만 리셋
 var run_earned := 0    # 런 누적 획득 코인(🪙, 지출 차감 전 gross) — 승리 요약용
 var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장 + 구조 버프)
+var lives := 0         # 남은 목숨(런 스코프). lives_max=0이면 시스템 off(해금 전)
+var lives_max := 0     # 이번 런 최대 목숨(start_run에서 해금 시에만 채움)
+var _miss_accum := 0   # 목숨 손실 카운터 — LIFE_LOSS_MISSES명 이탈마다 −1
 
 var _elapsed := 0.0
 var _running := false
@@ -28,17 +32,36 @@ var _rent_paid := false   # 오늘 가게세 이미 차감했는지(멱등 — �
 var _next_spawn := -1.0   # 다음 손님 등장 예정 시각(초). <0이면 더 없음(마감 여유 구간).
 
 
-func start_run() -> void:
+## lives_max_v>0이면 이번 런에 목숨 시스템 ON(해금 시 main이 Config.MAX_LIVES 전달).
+func start_run(lives_max_v := 0) -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
 	run_score = 0
 	run_earned = 0
+	lives_max = lives_max_v
+	lives = lives_max_v
+	_miss_accum = 0
 	_rent_skip_used = false
 	_paused = false
 	Buffs.clear()
 	cash_changed.emit(cash)
+	lives_changed.emit(lives, lives_max)
 	start_day()
+
+
+## 손님 이탈 1건 — LIFE_LOSS_MISSES명마다 목숨 −1. 목숨이 방금 0이 되면 true(런오버 트리거).
+## 시스템 off(lives_max=0)면 아무것도 안 하고 false.
+func lose_life() -> bool:
+	if lives_max <= 0 or lives <= 0:
+		return false
+	_miss_accum += 1
+	if _miss_accum < Config.LIFE_LOSS_MISSES:
+		return false
+	_miss_accum = 0
+	lives = maxi(0, lives - 1)
+	lives_changed.emit(lives, lives_max)
+	return lives <= 0
 
 
 ## 상점: 슬롯 +1 구매. 성공 시 true(다음 세션부터 반영).
