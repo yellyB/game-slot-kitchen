@@ -109,9 +109,17 @@ static func top_bar() -> PanelContainer:
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row1.add_child(gap)
+	var lives_box := HBoxContainer.new()
+	lives_box.add_theme_constant_override("separation", 8)
+	lives_box.visible = false
 	var lives_lbl := label("", 18, Palette.DANGER, true)
-	lives_lbl.visible = false
-	row1.add_child(lives_lbl)
+	lives_box.add_child(lives_lbl)
+	var div := ColorRect.new()
+	div.color = Palette.COCOA_200
+	div.custom_minimum_size = Vector2(2, 18)
+	div.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lives_box.add_child(div)
+	row1.add_child(lives_box)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
 	row1.add_child(ui_icon(star_name, 22))
 	var score := label("0", 18, Palette.COCOA_800, true)
@@ -152,6 +160,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
 	panel.set_meta("lives_label", lives_lbl)
+	panel.set_meta("lives_box", lives_box)
 	return panel
 
 static func _comma(a: int) -> String:

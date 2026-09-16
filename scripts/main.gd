@@ -38,6 +38,7 @@ var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
 var _lives_label: Label
+var _lives_box: Control
 var _run_over := false
 var _last_cash := 0
 var _expect_fly := false
@@ -537,6 +538,7 @@ func _build_top_bar() -> Control:
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
   _lives_label = panel.get_meta("lives_label") as Label
+  _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -552,13 +554,13 @@ func _build_top_bar() -> Control:
 
 
 func _on_lives_changed(lives: int, lives_max: int) -> void:
-  if _lives_label == null:
+  if _lives_box == null:
     return
   if lives_max <= 0:
-    _lives_label.visible = false
+    _lives_box.visible = false
     return
-  _lives_label.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives)) + "  "
+  _lives_box.visible = true
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
 
 
 func _customer_missed() -> void:
