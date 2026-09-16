@@ -6,6 +6,12 @@ const S := {
 	# 타이틀 / 설정
 	"start": "시작",
 	"tutorial": "튜토리얼",
+	# 가게 선택
+	"shop_select_title": "가게 선택",
+	"shop_locked": "준비중",
+	"shop.donut": "도넛 카페", "shop.donut.desc": "여유로운 균형형",
+	"shop.burger": "버거 가게", "shop.burger.desc": "",
+	"shop.ramen": "라멘집", "shop.ramen.desc": "",
 	"codex": "도감",
 	"codex_hint": "카드를 눌러 설명 보기",
 	"tut_accept": "손님의 {order} 를 눌러 주문을 접수하세요",

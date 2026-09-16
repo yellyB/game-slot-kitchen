@@ -9,6 +9,7 @@ var _cooking: Cooking
 var _backdrop: ColorRect
 var _session: Session
 var _title: TitleScreen
+var _shop_select: ShopSelect
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
@@ -143,6 +144,12 @@ func _ready() -> void:
   _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
   add_child(_title)
+
+  # 가게 선택 화면 — 튜토리얼 완료 후 [시작] 시 표시. 가게 고르면 그 가게로 런 시작.
+  _shop_select = ShopSelect.new()
+  _shop_select.shop_selected.connect(_on_shop_selected)
+  _shop_select.back_pressed.connect(func(): _shop_select.hide())
+  add_child(_shop_select)
 
   if "--replay" in OS.get_cmdline_user_args():
     # 실로그 A판(run 2026-08-30#1813, 11주) — 주차별 보유버프/슬롯을 주입해 서빙·점수 재현 대조.
@@ -381,12 +388,19 @@ func _go_home() -> void:
   _show_title()
 
 
-## [시작] 버튼 — 최초 실행(튜토리얼 미완료)이면 튜토리얼부터, 이후엔 바로 게임.
+## [시작] 버튼 — 최초 실행(튜토리얼 미완료)이면 튜토리얼부터, 이후엔 가게 선택 화면.
 func _on_start_pressed() -> void:
   if _tutorial_seen():
-    _start_game()
+    _shop_select.show()   # 튜토리얼 완료 후엔 가게 선택 먼저
   else:
-    _start_tutorial("game")   # 튜토리얼 끝나면 _start_game() 자동 호출
+    _start_tutorial("game")   # 최초 실행: 도넛+튜토리얼 바로(선택창 생략), 끝나면 _start_game()
+
+
+## 가게 선택 완료 — 그 가게로 런 시작. (버프 풀이 current_shop로 필터됨)
+func _on_shop_selected(id: String) -> void:
+  BuffDefs.current_shop = id
+  _shop_select.hide()
+  _start_game()
 
 
 ## 튜토리얼을 한 번이라도 끝냈는지(영구 플래그 파일 존재 여부).

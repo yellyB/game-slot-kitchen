@@ -6,6 +6,12 @@ const S := {
 	# Title / Settings
 	"start": "Start",
 	"tutorial": "Tutorial",
+	# Shop select
+	"shop_select_title": "Choose a Shop",
+	"shop_locked": "Coming soon",
+	"shop.donut": "Donut Cafe", "shop.donut.desc": "Relaxed & balanced",
+	"shop.burger": "Burger Joint", "shop.burger.desc": "",
+	"shop.ramen": "Ramen Shop", "shop.ramen.desc": "",
 	"codex": "Codex",
 	"codex_hint": "Tap a card for details",
 	"tut_accept": "Tap the customer's {order} to take the order",
