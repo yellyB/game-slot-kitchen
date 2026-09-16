@@ -69,8 +69,12 @@ func compare(n: int, loadouts: Array) -> Array:
 
 
 func buff_report(n: int) -> void:
-	var base := run(n, [], false)
-	print("[BUFFRPT] base(버프0)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+	var ctx: Array = []
+	if OS.has_environment("SIM_CTX"):
+		ctx = Array(OS.get_environment("SIM_CTX").split(","))
+	var base := run(n, ctx, false)
+	print("[BUFFRPT] base(맥락 %s)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+		str(ctx) if not ctx.is_empty() else "버프0",
 		base["win_rate"] * 100.0, base["avg_score"], base["avg_cash"], base["avg_days"], n,
 		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1",
 		OS.get_environment("SIM_MAXDAY") if OS.has_environment("SIM_MAXDAY") else "-"])
@@ -81,7 +85,9 @@ func buff_report(n: int) -> void:
 	for id in BuffDefs.ids():
 		if not only.is_empty() and not (id in only):
 			continue
-		var r := run(n, [id], false)
+		if id in ctx:
+			continue
+		var r := run(n, ctx + [id], false)
 		rows.append({
 			"id": id,
 			"dscore": r["avg_score"] - base["avg_score"],

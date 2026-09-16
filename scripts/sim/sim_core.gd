@@ -46,6 +46,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	session.day_ended.connect(func(s): _last = s)
 
 	session.start_run()
+	if OS.has_environment("SIM_SLOTS"):
+		session.slots = int(OS.get_environment("SIM_SLOTS"))
 	Buffs.clear()
 	for b in buff_loadout:
 		Buffs.add(b)
