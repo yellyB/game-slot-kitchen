@@ -33,24 +33,21 @@ const START_MONEY := 0     # 시작 소지금
 # 현금비례 보너스(이자·부자세)의 기준잔액 — 보너스 = pct × √(현금 × 이 값).
 # 잔액이 이 값일 때 정확히 pct%로 동작하고, 그 이상은 이율이 체감(√)해 지수폭주를 차단.
 const CASH_BONUS_REF := 25000
-const SLOT_PRICE := 4         # 슬롯 +1 확장 기본가(소액 통화). 구간별 상승(초반 급→후반 완만): 4→7→12→20→24…
+const MONTH_SLOT_PRICES: Array[int] = [4, 7, 12]  # 슬롯 확장 월별 정액(1·2·3달). 한 달 안에선 개당 동일. 이후 달은 마지막값.
 const BUFF_PACK_PRICE := 2    # 버프 팩(카드깡) 고정가 — 최소 단위
 const BUFF_REROLL_BASE := 1   # 팩 개봉 중 리롤 기본가 — 리롤마다 ×2(1·2·4…), 방문마다 리셋
-const SLOT_PRICE_STEP_EARLY := 1.7   # 슬롯 확장 배수 — 무릎(KNEE) 전 초반 급경사
-const SLOT_PRICE_STEP_LATE := 1.2    # 슬롯 확장 배수 — 무릎 후 후반 완만
-const SLOT_PRICE_KNEE := 3           # 이 구매 횟수까지 EARLY 배수, 이후 LATE 배수
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
 # 목숨(♥) — 서비스실패 축(손님 미서빙 이탈). 도넛 첫 클리어 후 다음 런부터 적용(cleared.flag).
 const MAX_LIVES := 3        # 런당 목숨 수(런 스코프, 라운드 리셋 아님)
 const LIFE_LOSS_MISSES := 1 # 손님 이탈 N명당 목숨 −1 (1=이탈당 −1). 과하면 2~3으로
-# 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만 들어옴. 소액.
-const WEEK_REWARD_BASE := 4       # 첫 주 완료 보상(돈)
-const WEEK_REWARD_STEP := 1       # 주마다 증가분(1~2 권장) — 작다가 점점 증가
-const WEEK_REWARD_PER_SERVE := 0
+# 주 클리어 보상(돈 faucet) — 서빙=점수라 돈은 매주 클리어로만. 월 내 위치별 기본 + 달마다 증가.
+const WEEK_REWARD_POS: Array[int] = [5, 6, 7, 11]   # 위치별 기본(1주·2주·3주·보스4주) — 보스주가 가장 높음
+const WEEK_REWARD_MONTH_INC := 1          # 달마다 위치 보상 + (같은 위치는 달마다 이만큼 차이)
 
-## 주 완료 보상 = 기본 + 주당 증가 × (경과 주-1) + 서빙당 보너스. day=1-base 주차.
-static func week_reward(day: int, served: int) -> int:
-	return WEEK_REWARD_BASE + WEEK_REWARD_STEP * maxi(0, day - 1) + served * WEEK_REWARD_PER_SERVE
+## 주 완료 보상 = 위치 기본 + (경과 달 × 증가). day=1-base 주차, 4주=1달. served 미사용.
+static func week_reward(day: int, _served: int) -> int:
+	var w := maxi(1, day)
+	return WEEK_REWARD_POS[(w - 1) % 4] + ((w - 1) / 4) * WEEK_REWARD_MONTH_INC
 const BUFF_SELL_RATIO := 0.2  # 보유 버프 판매 환급률 (버프팩 가격의 20% = 500→100원)
 const MONEY_ABBR_AT := 100000  # 이 값 이상은 k/m 축약 표시(미만은 콤마) — UI.money
 const SCORE_GATE_FEE_DIV := 100  # 실적(점수) 미달 시 목표점수의 1/이 값 만큼 코인 지불로 통과
@@ -78,10 +75,8 @@ const SIM_HANDLE_SERVE := 0.6    # 완성품 드래그해 서빙
 const SIM_HANDLE_PLACE := 0.35   # 창고 재료 1개를 슬롯에 놓기
 
 
-## 슬롯 확장가 = 기본가 × 구간별 배수(bought=이미 확장한 수). 무릎(KNEE) 전은 EARLY 배수(급),
-## 후는 LATE 배수(완만) — 초반 가파르고 후반 완만한 concave 곡선. 날짜 인플레 없음(_day 미사용).
-static func slot_price(_day: int, bought: int) -> int:
-	var b := maxi(0, bought)
-	var early := mini(b, SLOT_PRICE_KNEE)
-	var late := maxi(0, b - SLOT_PRICE_KNEE)
-	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP_EARLY, early) * pow(SLOT_PRICE_STEP_LATE, late)))
+## 슬롯 확장가 = 그 달(day 기준)의 월별 정액. 한 달 안에선 몇 개를 사든 개당 동일(bought 무관).
+## day=1-base 주차, 4주=1달. 정의 이후 달은 마지막 정액 유지.
+static func slot_price(day: int, _bought: int) -> int:
+	var mi := (maxi(1, day) - 1) / 4   # 0-base 달
+	return MONTH_SLOT_PRICES[mini(mi, MONTH_SLOT_PRICES.size() - 1)]
