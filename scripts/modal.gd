@@ -3,6 +3,8 @@ extends Control
 ## 중앙 패널 모달 (딤 배경 + 입력 차단). 결과·게임오버·승리 공용.
 ## 대강 구현(기능 위주) — 디자인 확정 후 정리.
 
+const SECTION_GAP := 22   # 내용영역 ↔ 버튼영역 표준 간격(정산·마감·실패 팝업 공용)
+
 var _body: VBoxContainer
 var _panel: PanelContainer
 var _center: CenterContainer
@@ -44,8 +46,8 @@ func _ready() -> void:
 	pad.add_child(_body)
 
 
-func title(text: String) -> Modal:
-	_body.add_child(_centered(UI.label(text, 22, Palette.COCOA_800, true)))
+func title(text: String, color := Palette.COCOA_800, size := 22) -> Modal:
+	_body.add_child(_centered(UI.label(text, size, color, true)))
 	return self
 
 
@@ -89,6 +91,19 @@ func add_row(ctrl: Control) -> Modal:
 func gap(px: int) -> Modal:
 	_body.add_theme_constant_override("separation", px)
 	return self
+
+
+## 고정 높이 빈 간격 행.
+func space(px: int) -> Modal:
+	var s := Control.new()
+	s.custom_minimum_size = Vector2(0, px)
+	_body.add_child(s)
+	return self
+
+
+## 내용영역 ↔ 버튼영역 표준 간격 — 팝업 간 구조 통일용(SECTION_GAP 한 곳으로 관리).
+func section_gap() -> Modal:
+	return space(SECTION_GAP)
 
 
 ## 패널을 지금 위치에 고정 — 이후 add_row는 중앙 재정렬 없이 아래로만 높이가 늘어남.

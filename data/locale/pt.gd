@@ -46,6 +46,7 @@ const S := {
 	"day_closed": "Semana %d encerrada",
 	"settle_bonus": "Bônus de Fechamento",
 	"week_reward": "Recompensa Semanal",
+	"week_cleared": "Week %d Clear!",
 	"settle_churn": "Taxa de abandono",
 	"score_pass": "Meta batida! Passou",
 	"revenue": "Receita  %s",

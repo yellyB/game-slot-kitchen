@@ -2429,30 +2429,6 @@ func _add_settle_bonus_row(m: Modal) -> void:
   _animate_settle_bonus(amt_l, bonus)
 
 
-## 주 클리어 보상 지급 — 실적검사 통과 시에만 호출. 지금 earn + "주간 보상 +N" 행 + 코인 연출.
-func _pay_week_reward(m: Modal) -> void:
-  if _week_reward <= 0:
-    return
-  var reward := _week_reward
-  _week_reward = 0
-  _expect_fly = true
-  _session.earn(reward, false)   # 통과 확정 후 실제 지급(연출은 아래 카운트업)
-  _expect_fly = false
-  _money_label.text = UI.money(_last_cash - reward)   # 롤백 후 카운트업으로 채움
-  var row := HBoxContainer.new()
-  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_theme_constant_override("separation", 6)
-  row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_child(gap)
-  row.add_child(UI.ui_icon("coin", 16))
-  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
-  row.add_child(amt_l)
-  m.add_row(row)
-  _animate_settle_bonus(amt_l, reward)
-
-
 ## 위 행의 등장 연출(비동기) — 팝업 +금액 카운트업 + 코인 버스트 + 상단 보유금 카운트업/팝.
 func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   await get_tree().process_frame   # 레이아웃 확정 후 위치 사용
@@ -2491,6 +2467,7 @@ func _show_settlement(summary: Dictionary) -> void:
   goal_row.modulate.a = 1.0   # _settle_icon_row 기본 숨김(0) — 정적 표시라 바로 보이게
   m.add_row(goal_row)
 
+  m.section_gap()
   # '실적확인' 버튼(핵심 액션) — 처음 숨김 → 잠깐 뒤 등장. 클릭 시 점수로 통과 판정.
   var check_btn := Button.new()
   check_btn.text = Loc.t("check_score")
@@ -2589,27 +2566,41 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
 func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()   # [실적확인] 또는 [지불/파산] 묶음 제거
+  m.queue_free()               # 마감 정산 닫고 → 통과 보상 전용 창으로
+  _show_week_reward(summary)
 
-  _pay_week_reward(m)   # 주 클리어 보상 — 통과가 확정된 지금 지급(점수통과·지불통과 공용)
 
-  var px := 38.0
-  var mark := UI.ui_icon("pass_check", int(px))
-  mark.pivot_offset = Vector2(px, px) * 0.5
-  mark.modulate.a = 0.0
-  mark.scale = Vector2(0.5, 0.5)
-  var mark_box := CenterContainer.new()
-  mark_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  mark_box.add_child(mark)
-  m.add_row(mark_box)
-  var pt := create_tween()
-  pt.tween_property(mark, "modulate:a", 1.0, 0.12)
-  pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+## 주 클리어 보상 전용 창 — 통과 확정 후. 큰 통과 도장 + "N주차 클리어!" + 코인 셀레브레이션 → [상점으로].
+func _show_week_reward(summary: Dictionary) -> void:
+  var m := Modal.open(self).gap(14)
 
-  Audio.play("day_pass")   # 정산 통과음
-  Audio.vibrate(30)
+  # "Week N Clear!" 배너 — 이 창의 통과 표시
+  var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
+  banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  banner.scale = Vector2(0.6, 0.6)
+  banner.modulate.a = 0.0
+  m.add_row(banner)
 
-  # [상점으로] 버튼
+  # 주간 보상 행 — 코인 + "+N"(통과 후 지급). 이 창에서만 실제 earn.
+  var reward := _week_reward
+  _week_reward = 0
+  var amt_l: Label = null
+  var reward_row: Control = null
+  if reward > 0:
+    var row := HBoxContainer.new()
+    row.alignment = BoxContainer.ALIGNMENT_CENTER
+    row.add_theme_constant_override("separation", 6)
+    row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
+    row.add_child(UI.ui_icon("coin", 16))
+    amt_l = UI.label(UI.money(0), 16, Palette.MAIN, true)
+    row.add_child(amt_l)
+    row.modulate.a = 0.0
+    reward_row = row
+    m.add_row(row)
+
+  m.section_gap()
+  # [상점으로] — 셀레브레이션 뒤 등장
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -2619,9 +2610,55 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  go.modulate.a = 0.0
+  go.disabled = true
   go.pressed.connect(func(): m.queue_free(); _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
+
+  # ── 연출 시퀀스 ──
+  # 1) 통과음 + 배너 팝(0.08s 뒤 쾅)
+  var bt := create_tween()
+  bt.tween_interval(0.08)
+  bt.tween_callback(func():
+    Audio.play("day_pass")
+    Audio.vibrate(30)
+    banner.pivot_offset = banner.size * 0.5)
+  bt.tween_property(banner, "modulate:a", 1.0, 0.12)
+  bt.parallel().tween_property(banner, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  bt.tween_property(banner, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
+  # 2) 보상 코인 셀레브레이션(0.5s)
+  if amt_l != null:
+    var wt := create_tween()
+    wt.tween_interval(0.5)
+    wt.tween_property(reward_row, "modulate:a", 1.0, 0.14)
+    wt.tween_callback(func(): _play_week_reward_anim(amt_l, reward))
+
+  # 3) [상점으로] 등장(1.0s)
+  var gt := create_tween()
+  gt.tween_interval(1.0)
+  gt.tween_callback(func(): go.disabled = false)
+  gt.tween_property(go, "modulate:a", 1.0, 0.2)
+
+
+## 주간 보상 지급 연출 — 실제 earn + "+N" 카운트업 + 코인이 상단 지갑으로 + 지갑 팝.
+func _play_week_reward_anim(amt_l: Label, reward: int) -> void:
+  if not is_instance_valid(amt_l) or not is_inside_tree():
+    return
+  _expect_fly = true
+  _session.earn(reward, false)   # 통과 확정 후 실제 지급(연출은 카운트업)
+  _expect_fly = false
+  _money_label.text = UI.money(_last_cash - reward)   # 롤백 후 카운트업으로 채움
+  var cu := create_tween()
+  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(reward), 0.6) \
+    .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+  var from := amt_l.global_position + amt_l.size * 0.5
+  _coin_burst(from, reward, 350)   # z 350 — 모달 딤(300) 위로
+  var mc := create_tween()
+  mc.tween_method(_set_money_text.bind(_money_label), float(_last_cash - reward), float(_last_cash), 0.6)
+  mc.tween_callback(func(): _pop_label(_money_label))
+  Audio.play("coins", 1.1)
 
 
 ## 파산 신청 확정 — 정산 닫고 'Run Failed' 게임오버 화면.
@@ -2632,31 +2669,10 @@ func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
   _show_run_failed(summary)
 
 
-## 파산(런 실패) 게임오버 — 'Run Failed' + 일력(주차, 상단바식) + ❌ + 이달 점수 근접도 + 홈 버튼.
+## 파산(런 실패) 게임오버 — 'Run Failed'(빨강) + 홈 버튼.
 func _show_run_failed(summary: Dictionary) -> void:
-  var day := int(summary["day"])
-  var m := Modal.open(self).title(Loc.t("run_failed"))
-  # 도달 주차 — 상단바처럼 일력 이미지 + 숫자
-  var badge := UI.day_badge(64)
-  (badge.get_meta("num") as Label).text = str(day)
-  var badge_wrap := CenterContainer.new()
-  badge_wrap.add_child(badge)
-  m.add_row(badge_wrap)
-  # ❌ 크게(지금과 동일한 실패 마크)
-  var x_box := CenterContainer.new()
-  x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  x_box.add_child(UI.ui_icon("fail_x", 32))
-  m.add_row(x_box)
-  # 이달 점수 근접도 — ⭐ 모은점수(부족하면 빨강) / 목표점수.
-  var got := int(summary["month_score"])
-  var goal := int(summary["rent"])
-  var score_row := HBoxContainer.new()
-  score_row.alignment = BoxContainer.ALIGNMENT_CENTER
-  score_row.add_theme_constant_override("separation", 6)
-  score_row.add_child(UI.ui_icon("star", 22))
-  score_row.add_child(UI.label(UI.money(got), 22, Palette.DANGER if goal > got else Palette.COCOA_800, true))
-  score_row.add_child(UI.label(" / " + UI.money(goal), 22, Palette.COCOA_800, true))
-  m.add_row(score_row)
+  var m := Modal.open(self).title(Loc.t("run_failed"), Palette.DANGER, 26)
+  m.section_gap()
   # 홈 이미지 버튼 → 타이틀(홈)로
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)

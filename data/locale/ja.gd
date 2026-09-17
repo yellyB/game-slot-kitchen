@@ -46,6 +46,7 @@ const S := {
 	"day_closed": "%d週目 閉店",
 	"settle_bonus": "閉店ボーナス",
 	"week_reward": "週間報酬",
+	"week_cleared": "Week %d Clear!",
 	"settle_churn": "離脱率",
 	"score_pass": "実績達成！ 通過",
 	"revenue": "売上  %s",

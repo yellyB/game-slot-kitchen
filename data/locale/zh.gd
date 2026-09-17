@@ -46,6 +46,7 @@ const S := {
 	"day_closed": "第%d周打烊",
 	"settle_bonus": "打烊奖励",
 	"week_reward": "周奖励",
+	"week_cleared": "Week %d Clear!",
 	"settle_churn": "流失率",
 	"score_pass": "达成目标！通过",
 	"revenue": "营收  %s",
