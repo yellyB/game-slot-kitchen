@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "Bien préparé", "b.sc_ingr.label": "Score +1,1× par ingrédient sur le plateau",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% de chance de doubler le score",
 	"b.rt_streak3.name": "Série gagnante", "b.rt_streak3.label": "Vendre le même menu 3× de suite : son score de base +1× (permanent)",
-	"b.rt_every7.name": "Sept chanceux", "b.rt_every7.label": "Chaque 7e service ajoute 1× le score de base du menu à son score",
+	"b.rt_every7.name": "Sept chanceux", "b.rt_every7.label": "Chaque 7e service augmente définitivement le score de ce menu de 1× sa base pour toute la partie",
 	"b.rt_fast3.name": "Croissance éclair", "b.rt_fast3.label": "Vendre 3 en 3s augmente le score de base du dernier menu de 1× (permanent)",
 	"b.accum_sale.name": "Épargne", "b.accum_sale.label": "Met 6% de chaque score en réserve → versé au service suivant",
 	"b.sale_flat3.name": "Base solide", "b.sale_flat3.label": "Tout score ×4",

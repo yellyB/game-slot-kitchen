@@ -138,7 +138,7 @@ const S := {
 	"b.sc_ingr.name": "Well Prepped", "b.sc_ingr.label": "Score +1.1× per ingredient on board",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% chance to double the score",
 	"b.rt_streak3.name": "Streak Growth", "b.rt_streak3.label": "Sell same menu 3× in a row: its base score +1× (permanent)",
-	"b.rt_every7.name": "Lucky Seven", "b.rt_every7.label": "Every 7th serve adds 1× that menu's base score to its score",
+	"b.rt_every7.name": "Lucky Seven", "b.rt_every7.label": "Every 7th serve permanently raises that menu's score by 1× its base for the whole run",
 	"b.rt_fast3.name": "Blitz Growth", "b.rt_fast3.label": "Sell 3 within 3s permanently raises last menu's base score by 1×",
 	"b.accum_sale.name": "Savings", "b.accum_sale.label": "Bank 6% of each score → paid out on next serve",
 	"b.sale_flat3.name": "Bread & Butter", "b.sale_flat3.label": "All score ×4",

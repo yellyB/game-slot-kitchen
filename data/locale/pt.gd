@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "Bem Preparado", "b.sc_ingr.label": "Pontuação +1,1× por ingrediente no tabuleiro",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% de chance de dobrar a pontuação",
 	"b.rt_streak3.name": "Crescimento em Sequência", "b.rt_streak3.label": "Venda o mesmo menu 3× seguidas: pontuação-base +1× (permanente)",
-	"b.rt_every7.name": "Sete da Sorte", "b.rt_every7.label": "A cada 7ª entrega soma 1× a pontuação-base do menu à sua pontuação",
+	"b.rt_every7.name": "Sete da Sorte", "b.rt_every7.label": "A cada 7ª entrega, a pontuação desse menu sobe permanentemente 1× a base durante todo o run",
 	"b.rt_fast3.name": "Crescimento Relâmpago", "b.rt_fast3.label": "Venda 3 em 3s eleva permanentemente a pontuação-base do último menu em 1×",
 	"b.accum_sale.name": "Poupança", "b.accum_sale.label": "Guarda 6% de cada pontuação → pago na próxima entrega",
 	"b.sale_flat3.name": "Feijão com Arroz", "b.sale_flat3.label": "Toda pontuação ×4",

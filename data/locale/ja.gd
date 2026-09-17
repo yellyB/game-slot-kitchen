@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "準備万端", "b.sc_ingr.label": "ボードの材料1つごとにスコア +1.1倍",
 	"b.prob_x2.name": "大当たり", "b.prob_x2.label": "40%の確率でスコア2倍",
 	"b.rt_streak3.name": "連続成長", "b.rt_streak3.label": "同じメニューを3連続で売ると基本スコア +1倍（永続）",
-	"b.rt_every7.name": "ラッキーセブン", "b.rt_every7.label": "7回目の提供ごとにそのメニュー基本スコアの1倍を加算",
+	"b.rt_every7.name": "ラッキーセブン", "b.rt_every7.label": "7回目の提供ごとにそのメニューのスコアが基本スコアの1倍ずつラン中ずっと永続上昇",
 	"b.rt_fast3.name": "電光成長", "b.rt_fast3.label": "3秒以内に3個売ると最後のメニュー基本スコア +1倍（永続）",
 	"b.accum_sale.name": "積立", "b.accum_sale.label": "各スコアの6%を貯金→次の提供で払い出し",
 	"b.sale_flat3.name": "基礎体力", "b.sale_flat3.label": "全スコア ×4",

@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "备料充足", "b.sc_ingr.label": "棋盘上每份食材使分数 +1.1×",
 	"b.prob_x2.name": "中大奖", "b.prob_x2.label": "40% 几率分数翻倍",
 	"b.rt_streak3.name": "连续成长", "b.rt_streak3.label": "同一菜单连卖 3 次：其基础分 +1×（永久）",
-	"b.rt_every7.name": "幸运七", "b.rt_every7.label": "每第 7 次上菜，把该菜单基础分的 1× 加到其分数",
+	"b.rt_every7.name": "幸运七", "b.rt_every7.label": "每第 7 次上菜，该菜单分数按基础分的 1× 永久提升，整局持续",
 	"b.rt_fast3.name": "闪电成长", "b.rt_fast3.label": "3 秒内卖 3 份，永久提升最后菜单基础分 1×",
 	"b.accum_sale.name": "存钱罐", "b.accum_sale.label": "每次分数存入 6% → 下次上菜时兑现",
 	"b.sale_flat3.name": "看家本领", "b.sale_flat3.label": "所有分数 ×4",

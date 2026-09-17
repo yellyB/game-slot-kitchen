@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "Bien preparado", "b.sc_ingr.label": "Puntaje +1.1× por ingrediente en el tablero",
 	"b.prob_x2.name": "Premio gordo", "b.prob_x2.label": "40% de probabilidad de duplicar el puntaje",
 	"b.rt_streak3.name": "Crecimiento en racha", "b.rt_streak3.label": "Vende el mismo menú 3× seguidas: su puntaje base +1× (permanente)",
-	"b.rt_every7.name": "Siete de la suerte", "b.rt_every7.label": "Cada 7.ª entrega suma 1× el puntaje base de ese menú a su puntaje",
+	"b.rt_every7.name": "Siete de la suerte", "b.rt_every7.label": "Cada 7.ª entrega sube permanentemente el puntaje de ese menú en 1× su base durante toda la partida",
 	"b.rt_fast3.name": "Crecimiento relámpago", "b.rt_fast3.label": "Vender 3 en 3s sube +1× el puntaje base del último menú (permanente)",
 	"b.accum_sale.name": "Ahorro", "b.accum_sale.label": "Guarda 6% de cada puntaje → se paga en la próxima entrega",
 	"b.sale_flat3.name": "Pan de cada día", "b.sale_flat3.label": "Todo el puntaje ×4",

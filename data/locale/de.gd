@@ -129,7 +129,7 @@ const S := {
 	"b.sc_ingr.name": "Gut vorbereitet", "b.sc_ingr.label": "Punkte +1,1× pro Zutat am Brett",
 	"b.prob_x2.name": "Jackpot", "b.prob_x2.label": "40% Chance, die Punkte zu verdoppeln",
 	"b.rt_streak3.name": "Serien-Wachstum", "b.rt_streak3.label": "Gleiches Menü 3× in Folge verkaufen: seine Grundpunkte +1× (dauerhaft)",
-	"b.rt_every7.name": "Lucky Seven", "b.rt_every7.label": "Jede 7. Ausgabe gibt 1× der Grundpunkte des Menüs auf seine Punkte",
+	"b.rt_every7.name": "Lucky Seven", "b.rt_every7.label": "Jede 7. Ausgabe erhöht die Punkte des Menüs dauerhaft um 1× der Grundpunkte – den ganzen Run über",
 	"b.rt_fast3.name": "Blitz-Wachstum", "b.rt_fast3.label": "3 in 3s verkaufen erhöht die Grundpunkte des letzten Menüs dauerhaft um 1×",
 	"b.accum_sale.name": "Sparen", "b.accum_sale.label": "6% jeder Punktzahl anlegen → bei nächster Ausgabe ausgezahlt",
 	"b.sale_flat3.name": "Brot & Butter", "b.sale_flat3.label": "Alle Punkte ×4",
