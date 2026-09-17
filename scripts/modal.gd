@@ -1,6 +1,8 @@
 class_name Modal
 extends Control
 
+const SECTION_GAP := 22
+
 var _body: VBoxContainer
 var _panel: PanelContainer
 var _center: CenterContainer
@@ -42,8 +44,8 @@ func _ready() -> void:
 	pad.add_child(_body)
 
 
-func title(text: String) -> Modal:
-	_body.add_child(_centered(UI.label(text, 22, Palette.COCOA_800, true)))
+func title(text: String, color := Palette.COCOA_800, size := 22) -> Modal:
+	_body.add_child(_centered(UI.label(text, size, color, true)))
 	return self
 
 
@@ -83,6 +85,17 @@ func add_row(ctrl: Control) -> Modal:
 func gap(px: int) -> Modal:
 	_body.add_theme_constant_override("separation", px)
 	return self
+
+
+func space(px: int) -> Modal:
+	var s := Control.new()
+	s.custom_minimum_size = Vector2(0, px)
+	_body.add_child(s)
+	return self
+
+
+func section_gap() -> Modal:
+	return space(SECTION_GAP)
 
 
 func pin_top() -> void:

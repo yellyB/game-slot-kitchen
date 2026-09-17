@@ -2223,29 +2223,6 @@ func _add_settle_bonus_row(m: Modal) -> void:
   _animate_settle_bonus(amt_l, bonus)
 
 
-func _pay_week_reward(m: Modal) -> void:
-  if _week_reward <= 0:
-    return
-  var reward := _week_reward
-  _week_reward = 0
-  _expect_fly = true
-  _session.earn(reward, false)
-  _expect_fly = false
-  _money_label.text = UI.money(_last_cash - reward)
-  var row := HBoxContainer.new()
-  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_theme_constant_override("separation", 6)
-  row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_child(gap)
-  row.add_child(UI.ui_icon("coin", 16))
-  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
-  row.add_child(amt_l)
-  m.add_row(row)
-  _animate_settle_bonus(amt_l, reward)
-
-
 func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   await get_tree().process_frame
   if not is_instance_valid(amt_l) or not is_inside_tree():
@@ -2282,6 +2259,7 @@ func _show_settlement(summary: Dictionary) -> void:
   goal_row.modulate.a = 1.0
   m.add_row(goal_row)
 
+  m.section_gap()
   var check_btn := Button.new()
   check_btn.text = Loc.t("check_score")
   check_btn.custom_minimum_size = Vector2(0, 48)
@@ -2372,26 +2350,37 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
 func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()
+  m.queue_free()
+  _show_week_reward(summary)
 
-  _pay_week_reward(m)
 
-  var px := 38.0
-  var mark := UI.ui_icon("pass_check", int(px))
-  mark.pivot_offset = Vector2(px, px) * 0.5
-  mark.modulate.a = 0.0
-  mark.scale = Vector2(0.5, 0.5)
-  var mark_box := CenterContainer.new()
-  mark_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  mark_box.add_child(mark)
-  m.add_row(mark_box)
-  var pt := create_tween()
-  pt.tween_property(mark, "modulate:a", 1.0, 0.12)
-  pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+func _show_week_reward(summary: Dictionary) -> void:
+  var m := Modal.open(self).gap(14)
 
-  Audio.play("day_pass")
-  Audio.vibrate(30)
+  var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
+  banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  banner.scale = Vector2(0.6, 0.6)
+  banner.modulate.a = 0.0
+  m.add_row(banner)
 
+  var reward := _week_reward
+  _week_reward = 0
+  var amt_l: Label = null
+  var reward_row: Control = null
+  if reward > 0:
+    var row := HBoxContainer.new()
+    row.alignment = BoxContainer.ALIGNMENT_CENTER
+    row.add_theme_constant_override("separation", 6)
+    row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
+    row.add_child(UI.ui_icon("coin", 16))
+    amt_l = UI.label(UI.money(0), 16, Palette.MAIN, true)
+    row.add_child(amt_l)
+    row.modulate.a = 0.0
+    reward_row = row
+    m.add_row(row)
+
+  m.section_gap()
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -2401,9 +2390,50 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  go.modulate.a = 0.0
+  go.disabled = true
   go.pressed.connect(func(): m.queue_free(); _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
+
+  var bt := create_tween()
+  bt.tween_interval(0.08)
+  bt.tween_callback(func():
+    Audio.play("day_pass")
+    Audio.vibrate(30)
+    banner.pivot_offset = banner.size * 0.5)
+  bt.tween_property(banner, "modulate:a", 1.0, 0.12)
+  bt.parallel().tween_property(banner, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  bt.tween_property(banner, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
+  if amt_l != null:
+    var wt := create_tween()
+    wt.tween_interval(0.5)
+    wt.tween_property(reward_row, "modulate:a", 1.0, 0.14)
+    wt.tween_callback(func(): _play_week_reward_anim(amt_l, reward))
+
+  var gt := create_tween()
+  gt.tween_interval(1.0)
+  gt.tween_callback(func(): go.disabled = false)
+  gt.tween_property(go, "modulate:a", 1.0, 0.2)
+
+
+func _play_week_reward_anim(amt_l: Label, reward: int) -> void:
+  if not is_instance_valid(amt_l) or not is_inside_tree():
+    return
+  _expect_fly = true
+  _session.earn(reward, false)
+  _expect_fly = false
+  _money_label.text = UI.money(_last_cash - reward)
+  var cu := create_tween()
+  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(reward), 0.6) \
+    .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+  var from := amt_l.global_position + amt_l.size * 0.5
+  _coin_burst(from, reward, 350)
+  var mc := create_tween()
+  mc.tween_method(_set_money_text.bind(_money_label), float(_last_cash - reward), float(_last_cash), 0.6)
+  mc.tween_callback(func(): _pop_label(_money_label))
+  Audio.play("coins", 1.1)
 
 
 func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
@@ -2414,26 +2444,8 @@ func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
 
 
 func _show_run_failed(summary: Dictionary) -> void:
-  var day := int(summary["day"])
-  var m := Modal.open(self).title(Loc.t("run_failed"))
-  var badge := UI.day_badge(64)
-  (badge.get_meta("num") as Label).text = str(day)
-  var badge_wrap := CenterContainer.new()
-  badge_wrap.add_child(badge)
-  m.add_row(badge_wrap)
-  var x_box := CenterContainer.new()
-  x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  x_box.add_child(UI.ui_icon("fail_x", 32))
-  m.add_row(x_box)
-  var got := int(summary["month_score"])
-  var goal := int(summary["rent"])
-  var score_row := HBoxContainer.new()
-  score_row.alignment = BoxContainer.ALIGNMENT_CENTER
-  score_row.add_theme_constant_override("separation", 6)
-  score_row.add_child(UI.ui_icon("star", 22))
-  score_row.add_child(UI.label(UI.money(got), 22, Palette.DANGER if goal > got else Palette.COCOA_800, true))
-  score_row.add_child(UI.label(" / " + UI.money(goal), 22, Palette.COCOA_800, true))
-  m.add_row(score_row)
+  var m := Modal.open(self).title(Loc.t("run_failed"), Palette.DANGER, 26)
+  m.section_gap()
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
   home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
