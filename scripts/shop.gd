@@ -361,7 +361,7 @@ func _show_pack(pack: Array) -> void:
 
   # 가득 찬 채로 개봉 — 리롤 위에 [되팔기 +환급] 하나. 아무것도 안 받고 환급받고 종료.
   if Buffs.is_full():
-    var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
+    var refund := _sell_refund()
     var sell := Button.new()
     sell.add_theme_font_size_override("font_size", 16)
     sell.add_theme_color_override("font_color", Palette.WHITE)
@@ -498,7 +498,7 @@ func _sell_drawn(overlay: Control) -> void:
   _buff_btn.z_index = 0
   _buff_backdrop.z_index = 0
   _buff_sheet.z_index = 0
-  session.add_cash(int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO)))
+  session.add_cash(_sell_refund())
   Audio.play("coins")
   if is_instance_valid(overlay):
     var ot := create_tween()
@@ -649,12 +649,23 @@ func _set_card_sold(card: PanelContainer, sold: bool) -> void:
   card.modulate = Color.WHITE
 
 
-## 보유 버프 판매 확인 — 버프명 + 환급액(팩값의 30%). [+환급][취소].
+## 버프 판매 환급액 — 팩값×판매율, 최소 1원 보장(작은 통화에서 0으로 뭉개짐 방지).
+func _sell_refund() -> int:
+  return maxi(1, int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO)))
+
+
+## 보유 버프 판매 확인 — 버프명 + 환급액(+동전). [초록체크 판매][빨강X 취소].
 func _confirm_sell(id: String) -> void:
-  var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
+  var refund := _sell_refund()
+  var amt := HBoxContainer.new()
+  amt.alignment = BoxContainer.ALIGNMENT_CENTER
+  amt.add_theme_constant_override("separation", 4)
+  amt.add_child(UI.label("+", 20, Palette.MAIN, true))
+  amt.add_child(UI.ui_icon("coin", 20))
+  amt.add_child(UI.label(UI.money(refund), 20, Palette.MAIN, true))
   Modal.open(self) \
     .title(BuffDefs.display_name(id)) \
-    .row("+" + UI.money(refund), Palette.MAIN) \
+    .add_row(amt) \
     .icon_confirm(func(): _sell(id, refund))   # 초록체크=판매 / 빨강X=취소
 
 
