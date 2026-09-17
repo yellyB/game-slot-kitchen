@@ -52,9 +52,10 @@ func _ready() -> void:
 	var close := Button.new()
 	close.custom_minimum_size = Vector2(36, 36)
 	close.add_child(UI.ui_btn_icon("fail_x", 16))   # 텍스트 ✕ → 빨강 X 이미지(작게)
-	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
-	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	var empty := StyleBoxEmpty.new()   # 감싸는 칩 배경 제거 — X 이미지만
+	close.add_theme_stylebox_override("normal", empty)
+	close.add_theme_stylebox_override("hover", empty)
+	close.add_theme_stylebox_override("pressed", empty)
 	close.pressed.connect(queue_free)
 	Audio.attach_click(close)
 	header.add_child(close)
