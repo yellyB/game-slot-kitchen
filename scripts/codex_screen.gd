@@ -51,7 +51,7 @@ func _ready() -> void:
 	header.add_child(hgap)
 	var close := Button.new()
 	close.custom_minimum_size = Vector2(36, 36)
-	close.add_child(UI.ui_btn_icon("fail_x", 32))   # 텍스트 ✕ → 빨강 X 이미지(칩 크기만큼 꽉)
+	close.add_child(UI.ui_btn_icon("fail_x", 28))   # 텍스트 ✕ → 빨강 X 이미지
 	var empty := StyleBoxEmpty.new()   # 감싸는 칩 배경 제거 — X 이미지만
 	close.add_theme_stylebox_override("normal", empty)
 	close.add_theme_stylebox_override("hover", empty)
