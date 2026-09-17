@@ -50,11 +50,8 @@ func _ready() -> void:
 	hgap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(hgap)
 	var close := Button.new()
-	close.text = "✕"
 	close.custom_minimum_size = Vector2(36, 36)
-	close.add_theme_font_size_override("font_size", 16)
-	close.add_theme_color_override("font_color", Palette.COCOA_400)
-	close.add_theme_color_override("font_hover_color", Palette.COCOA_800)
+	close.add_child(UI.ui_btn_icon("fail_x", 16))   # 텍스트 ✕ → 빨강 X 이미지(작게)
 	close.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
 	close.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
 	close.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
