@@ -46,7 +46,7 @@ func _ready() -> void:
 	header.add_child(hgap)
 	var close := Button.new()
 	close.custom_minimum_size = Vector2(36, 36)
-	close.add_child(UI.ui_btn_icon("fail_x", 32))
+	close.add_child(UI.ui_btn_icon("fail_x", 28))
 	var empty := StyleBoxEmpty.new()
 	close.add_theme_stylebox_override("normal", empty)
 	close.add_theme_stylebox_override("hover", empty)
