@@ -601,8 +601,8 @@ func _confirm_sell(id: String) -> void:
   var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
   Modal.open(self) \
     .title(BuffDefs.display_name(id)) \
-    .button("+" + UI.money(refund), func(): _sell(id, refund)) \
-    .button(Loc.t("cancel"), func(): pass)
+    .row("+" + UI.money(refund), Palette.MAIN) \
+    .icon_confirm(func(): _sell(id, refund))
 
 
 func _sell(id: String, refund: int) -> void:
