@@ -21,21 +21,18 @@ const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
 const CASH_BONUS_REF := 25000
-const SLOT_PRICE := 4
+const MONTH_SLOT_PRICES: Array[int] = [4, 7, 12]
 const BUFF_PACK_PRICE := 2
 const BUFF_REROLL_BASE := 1
-const SLOT_PRICE_STEP_EARLY := 1.7
-const SLOT_PRICE_STEP_LATE := 1.2
-const SLOT_PRICE_KNEE := 3
 const MAX_BUFFS := 5
 const MAX_LIVES := 3
 const LIFE_LOSS_MISSES := 1
-const WEEK_REWARD_BASE := 4
-const WEEK_REWARD_STEP := 1
-const WEEK_REWARD_PER_SERVE := 0
+const WEEK_REWARD_POS: Array[int] = [5, 6, 7, 11]
+const WEEK_REWARD_MONTH_INC := 1
 
-static func week_reward(day: int, served: int) -> int:
-	return WEEK_REWARD_BASE + WEEK_REWARD_STEP * maxi(0, day - 1) + served * WEEK_REWARD_PER_SERVE
+static func week_reward(day: int, _served: int) -> int:
+	var w := maxi(1, day)
+	return WEEK_REWARD_POS[(w - 1) % 4] + ((w - 1) / 4) * WEEK_REWARD_MONTH_INC
 const BUFF_SELL_RATIO := 0.2
 const MONEY_ABBR_AT := 100000
 const SCORE_GATE_FEE_DIV := 100
@@ -55,8 +52,6 @@ const SIM_HANDLE_SERVE := 0.6
 const SIM_HANDLE_PLACE := 0.35
 
 
-static func slot_price(_day: int, bought: int) -> int:
-	var b := maxi(0, bought)
-	var early := mini(b, SLOT_PRICE_KNEE)
-	var late := maxi(0, b - SLOT_PRICE_KNEE)
-	return int(ceil(SLOT_PRICE * pow(SLOT_PRICE_STEP_EARLY, early) * pow(SLOT_PRICE_STEP_LATE, late)))
+static func slot_price(day: int, _bought: int) -> int:
+	var mi := (maxi(1, day) - 1) / 4
+	return MONTH_SLOT_PRICES[mini(mi, MONTH_SLOT_PRICES.size() - 1)]
