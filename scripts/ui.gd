@@ -138,9 +138,11 @@ static func top_bar() -> PanelContainer:
 	row1.add_child(ui_icon(star_name, 22))
 	var score := label("0", 18, Palette.COCOA_800, true)
 	row1.add_child(score)
-	var midgap := Control.new()
-	midgap.custom_minimum_size = Vector2(10, 0)
-	row1.add_child(midgap)
+	var div2 := ColorRect.new()   # 점수 │ 돈 구분선(하트 쪽과 동일)
+	div2.color = Palette.COCOA_200
+	div2.custom_minimum_size = Vector2(2, 18)
+	div2.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row1.add_child(div2)
 	var coin := HBoxContainer.new()
 	coin.add_theme_constant_override("separation", 4)
 	coin.add_child(ui_icon("coin", 22))
