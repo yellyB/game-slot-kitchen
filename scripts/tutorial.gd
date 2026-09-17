@@ -227,26 +227,25 @@ func _confirm_skip() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 12)
 	box.add_child(row)
-	var no := _confirm_btn(Loc.t("tut_skip_no"), Palette.COCOA_100, Palette.COCOA_200, Palette.COCOA_800)
+	var no := _confirm_btn("fail_x")      # 취소 = 빨강 X
 	no.pressed.connect(dim.queue_free)   # 취소 → 팝업만 닫고 튜토리얼 계속
 	row.add_child(no)
-	var yes := _confirm_btn(Loc.t("tut_skip_yes"), Palette.MAIN, Palette.MAIN, Palette.WHITE)
+	var yes := _confirm_btn("pass_check")  # 건너뛰기 = 초록 체크
 	yes.pressed.connect(func():
 		dim.queue_free()
 		_finish())   # 건너뛰기 → 본게임으로
 	row.add_child(yes)
 
 
-func _confirm_btn(text: String, fill: Color, border: Color, fg: Color) -> Button:
+## 확인창 아이콘 버튼(칩 배경 없음) — 초록체크=확인/빨강X=취소.
+func _confirm_btn(icon: String) -> Button:
 	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(120, 48)
-	b.add_theme_font_size_override("font_size", 17)
-	b.add_theme_color_override("font_color", fg)
-	b.add_theme_color_override("font_hover_color", fg)
-	b.add_theme_stylebox_override("normal", UI.chip(fill, border))
-	b.add_theme_stylebox_override("hover", UI.chip(fill.lightened(0.06), border))
-	b.add_theme_stylebox_override("pressed", UI.chip(fill.darkened(0.08), border))
+	b.custom_minimum_size = Vector2(64, 64)
+	b.add_child(UI.ui_btn_icon(icon, 48))
+	var empty := StyleBoxEmpty.new()
+	b.add_theme_stylebox_override("normal", empty)
+	b.add_theme_stylebox_override("hover", empty)
+	b.add_theme_stylebox_override("pressed", empty)
 	Audio.attach_click(b)
 	return b
 

@@ -389,8 +389,7 @@ func _on_home_pressed() -> void:
   var m := Modal.open(self) \
     .title(Loc.t("home_title")) \
     .row(Loc.t("home_warn"), Palette.COCOA_600) \
-    .button(Loc.t("go_home"), _go_home) \
-    .button(Loc.t("cancel"), func(): pass)
+    .icon_confirm(_go_home)   # 초록체크=홈으로 / 빨강X=취소
   # 모달 닫히면 재개 — 단 '홈으로'로 나가면(타이틀 표시) 유지.
   m.tree_exited.connect(func():
     if is_instance_valid(self) and not _title.visible:

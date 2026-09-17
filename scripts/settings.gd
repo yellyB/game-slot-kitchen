@@ -99,14 +99,12 @@ func _divider() -> Control:
 
 func _close_button() -> Button:
 	var b := Button.new()
-	b.text = "✕"
 	b.custom_minimum_size = Vector2(34, 34)
-	b.add_theme_font_size_override("font_size", 16)
-	b.add_theme_color_override("font_color", Palette.COCOA_400)
-	b.add_theme_color_override("font_hover_color", Palette.COCOA_800)
-	b.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_100))
-	b.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_200))
-	b.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_200))
+	b.add_child(UI.ui_btn_icon("fail_x", 28))   # ✕ → 빨강 X 이미지(칩 배경 없음)
+	var empty := StyleBoxEmpty.new()
+	b.add_theme_stylebox_override("normal", empty)
+	b.add_theme_stylebox_override("hover", empty)
+	b.add_theme_stylebox_override("pressed", empty)
 	b.pressed.connect(queue_free)
 	Audio.attach_click(b)   # X 닫기 클릭음
 	return b

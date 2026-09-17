@@ -654,8 +654,8 @@ func _confirm_sell(id: String) -> void:
   var refund := int(round(Config.BUFF_PACK_PRICE * Config.BUFF_SELL_RATIO))
   Modal.open(self) \
     .title(BuffDefs.display_name(id)) \
-    .button("+" + UI.money(refund), func(): _sell(id, refund)) \
-    .button(Loc.t("cancel"), func(): pass)
+    .row("+" + UI.money(refund), Palette.MAIN) \
+    .icon_confirm(func(): _sell(id, refund))   # 초록체크=판매 / 빨강X=취소
 
 
 ## 판매 확정 — 버프 제거(슬롯 회복) + 환급, 표시 갱신.

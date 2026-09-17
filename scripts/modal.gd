@@ -146,6 +146,34 @@ func button(text: String, cb: Callable) -> Modal:
 	return self
 
 
+## 확인창 아이콘 버튼 행 — [빨강X 취소][초록체크 확인] 나란히, 칩 배경 없음.
+## cancel_cb 생략 시 취소는 그냥 닫기.
+func icon_confirm(confirm_cb: Callable, cancel_cb := Callable()) -> Modal:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	row.add_child(_icon_btn("fail_x", cancel_cb))
+	row.add_child(_icon_btn("pass_check", confirm_cb))
+	_body.add_child(row)
+	return self
+
+
+func _icon_btn(icon: String, cb: Callable) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(64, 64)
+	b.add_child(UI.ui_btn_icon(icon, 44))
+	var empty := StyleBoxEmpty.new()
+	b.add_theme_stylebox_override("normal", empty)
+	b.add_theme_stylebox_override("hover", empty)
+	b.add_theme_stylebox_override("pressed", empty)
+	b.pressed.connect(func():
+		queue_free()
+		if cb.is_valid():
+			cb.call())
+	Audio.attach_click(b)
+	return b
+
+
 func _centered(l: Label) -> Label:
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
