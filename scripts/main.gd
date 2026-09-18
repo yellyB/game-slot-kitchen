@@ -1916,9 +1916,13 @@ func _make_boss_banner() -> Control:
   box.add_theme_constant_override("separation", 10)
   box.mouse_filter = Control.MOUSE_FILTER_IGNORE
   center.add_child(box)
-  # 📜 + 심사 제목
-  var seal := UI.label("📜", 84)
-  seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  # 계약 도장 + 심사 제목 (이미지 없으면 📜 폴백)
+  var seal: Control
+  if ResourceLoader.exists("res://assets/art/ui/boss_seal.png"):
+    seal = UI.ui_icon("boss_seal", 84)
+  else:
+    seal = UI.label("📜", 84)
+    seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(seal)
   var title := UI.label(Loc.t("boss.title"), 40, Palette.WHITE, true)
   title.add_theme_constant_override("outline_size", 8)
@@ -1929,8 +1933,9 @@ func _make_boss_banner() -> Control:
   var chip := HBoxContainer.new()
   chip.alignment = BoxContainer.ALIGNMENT_CENTER
   chip.add_theme_constant_override("separation", 6)
-  if Boss.kind() == "time_short":
-    chip.add_child(UI.ui_icon("timer", 34))
+  var chip_img := "res://assets/art/ui/%s.png" % Boss.img_name()
+  if ResourceLoader.exists(chip_img):
+    chip.add_child(UI.ui_icon(Boss.img_name(), 34))
   else:
     chip.add_child(UI.label(Boss.icon(), 34))
   chip.add_child(UI.label(Boss.label(), 26, Palette.WHITE, true))
