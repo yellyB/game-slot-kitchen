@@ -2246,17 +2246,7 @@ func _show_settlement(summary: Dictionary) -> void:
   var cr := _churn_row()
   if cr != null:
     m.add_row(cr)
-  var had_bonus := _settle_bonus > 0
   _add_settle_bonus_row(m)
-  if had_bonus:
-    var sp := Control.new()
-    sp.custom_minimum_size = Vector2(0, 30)
-    m.add_row(sp)
-
-  var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
-  var goal_row := _settle_icon_row("star", goal_lbl, 26)
-  goal_row.modulate.a = 1.0
-  m.add_row(goal_row)
 
   m.section_gap()
   var check_btn := Button.new()
@@ -2477,16 +2467,6 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   row.add_theme_constant_override("separation", 5)
   row.add_child(UI.ui_icon(icon, 17))
   row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
-  return row
-
-
-func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
-  var row := HBoxContainer.new()
-  row.alignment = BoxContainer.ALIGNMENT_CENTER
-  row.add_theme_constant_override("separation", 6)
-  row.modulate.a = 0.0
-  row.add_child(UI.ui_icon(icon, px))
-  row.add_child(value)
   return row
 
 

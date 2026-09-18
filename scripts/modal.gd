@@ -1,7 +1,7 @@
 class_name Modal
 extends Control
 
-const SECTION_GAP := 22
+const SECTION_GAP := 14
 
 var _body: VBoxContainer
 var _panel: PanelContainer
