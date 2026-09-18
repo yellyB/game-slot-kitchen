@@ -41,7 +41,7 @@ var _debug_bar: Control        # 디버그 바(숨김) — 보유금 5연속 클
 var _cash_clicks := 0          # 보유금 연속 클릭 수(간격 크면 리셋)
 var _last_cash_click := 0      # 마지막 보유금 클릭 시각(ms)
 var _score_label: Label   # 이달 실적(점수) — "현재/목표"(÷100)
-var _lives_label: Label   # ♥ 목숨 HUD 텍스트
+var _lives_hearts: Control   # ♥ 목숨 하트 아이콘 묶음(HBox)
 var _lives_box: Control   # 하트+구분선 묶음(해금 시에만 노출)
 var _run_over := false     # 목숨 소진 런오버 진행 중 — 이탈 중복 트리거 방지
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
@@ -589,7 +589,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
-  _lives_label = panel.get_meta("lives_label") as Label
+  _lives_hearts = panel.get_meta("lives_hearts") as Control
   _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
@@ -606,7 +606,7 @@ func _build_top_bar() -> Control:
   return panel
 
 
-## ♥ HUD 갱신 — 해금(lives_max>0) 시에만 노출. 남은=❤️, 잃은=🤍.
+## ♥ HUD 갱신 — 해금(lives_max>0) 시에만 노출. 남은=heart_full, 잃은=heart_empty.
 func _on_lives_changed(lives: int, lives_max: int) -> void:
   if _lives_box == null:
     return
@@ -614,7 +614,11 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_box.visible = false
     return
   _lives_box.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+  for c in _lives_hearts.get_children():
+    _lives_hearts.remove_child(c)
+    c.queue_free()
+  for i in range(lives_max):
+    _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
@@ -1724,14 +1728,29 @@ func _month_track(week: int) -> Control:
     pt.tween_property(lbl, "modulate:a", 0.4, 0.5).set_trans(Tween.TRANS_SINE)
     pt.tween_property(lbl, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)
     lbl.tree_exiting.connect(pt.kill)   # 배너 제거 시 루핑 트윈 종료(free된 대상 step → 릴리스 무한루프 방지)
-  else:   # 노란 줄 = 그 4주차에 걸릴 제약 미리보기
+  else:   # 노란 줄 = 그 4주차에 걸릴 제약 미리보기(아이콘 + 이름)
     var pen := Boss.preview_for_month(int(wk["month"]))
-    var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
+    var ptype := str(pen["type"])
+    var pen_row := HBoxContainer.new()
+    pen_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    pen_row.add_theme_constant_override("separation", 4)
+    pen_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    var pen_img := "res://assets/art/ui/%s.png" % Boss.img_name(ptype)
+    var pen_icon: Control                       # 이미지 있으면 아이콘, 아직 없으면 이모지 폴백
+    if ResourceLoader.exists(pen_img):
+      pen_icon = UI.ui_icon(Boss.img_name(ptype), 16)
+    else:
+      pen_icon = UI.label(str(pen["icon"]), 13, Palette.ACCENT, true)
+      pen_icon.add_theme_constant_override("outline_size", 3)
+      pen_icon.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+      pen_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    pen_row.add_child(pen_icon)
+    var pen_lbl := UI.label(Loc.t("boss." + ptype), 13, Palette.ACCENT, true)
     pen_lbl.add_theme_constant_override("outline_size", 3)
     pen_lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
-    pen_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     pen_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    v.add_child(pen_lbl)
+    pen_row.add_child(pen_lbl)
+    v.add_child(pen_row)
   return v
 
 

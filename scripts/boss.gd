@@ -100,3 +100,17 @@ static func label() -> String:
 
 static func icon() -> String:
 	return str(active.get("icon", "📜"))
+
+# 제약 타입 → 아이콘 이미지 파일명(res://assets/art/ui/<name>.png). 없는 타입/기본=계약 도장.
+const ICON_IMG := {
+	"small_kitchen": "boss_small_kitchen",
+	"time_short":    "boss_time_short",
+	"pricey_trip":   "boss_pricey_trip",
+	"slow_cook":     "boss_slow_cook",
+	"impatient":     "boss_impatient",
+}
+
+## 타입의 아이콘 이미지 파일명(기본=계약 도장 boss_seal). 파일 존재 여부는 호출부에서 확인.
+static func img_name(type := "") -> String:
+	var t := type if type != "" else kind()
+	return ICON_IMG.get(t, "boss_seal")

@@ -94,7 +94,7 @@ static func ui_btn_icon(name: String, px: int) -> Control:
 
 
 ## 상단바 컴포넌트 — 게임·상점 공용. 1줄:[홈·실적바·점수·보유금] / 2줄:[날짜·시간바].
-## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box·lives_label·lives_box.
+## meta: day_num·money_label·score_label·hours_bar·home_btn·coin_box·lives_hearts·lives_box.
 static func top_bar() -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", card(Palette.WHITE))
@@ -126,8 +126,9 @@ static func top_bar() -> PanelContainer:
 	var lives_box := HBoxContainer.new()
 	lives_box.add_theme_constant_override("separation", 8)
 	lives_box.visible = false
-	var lives_lbl := label("", 18, Palette.DANGER, true)
-	lives_box.add_child(lives_lbl)
+	var lives_hearts := HBoxContainer.new()   # 하트 아이콘 묶음(남은=heart_full·잃은=heart_empty)
+	lives_hearts.add_theme_constant_override("separation", 2)
+	lives_box.add_child(lives_hearts)
 	var div := ColorRect.new()
 	div.color = Palette.COCOA_200
 	div.custom_minimum_size = Vector2(2, 18)
@@ -176,7 +177,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
-	panel.set_meta("lives_label", lives_lbl)
+	panel.set_meta("lives_hearts", lives_hearts)
 	panel.set_meta("lives_box", lives_box)
 	return panel
 
