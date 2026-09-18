@@ -8,7 +8,7 @@ extends RefCounted
 const BOARD_COLS := 3
 const START_SLOTS := 9   # 시작 슬롯 수(도구석 제외). 버프도 슬롯 점유(온보드).
 const TOOL_COUNT := 2    # 도구석(🔥) 개수 — 그리드 마지막 칸들에 배치
-const MAX_SLOTS := 21    # 슬롯 확장 상한 (구매마다 가격 급증 → 실질 1~2회. 도달 시 SOLD OUT)
+const MAX_SLOTS := 21    # 슬롯 확장 상한(총 칸수). 확장가는 SLOT_PRICES 누적곡선 — 현금상 실질 ~10칸에서 막힘.
 
 # ── 손님 큐 / 스포너 ──────────────────────────────────────
 const MAX_QUEUE := 4          # 큐 최대 인원
@@ -33,7 +33,8 @@ const START_MONEY := 0     # 시작 소지금
 # 현금비례 보너스(이자·부자세)의 기준잔액 — 보너스 = pct × √(현금 × 이 값).
 # 잔액이 이 값일 때 정확히 pct%로 동작하고, 그 이상은 이율이 체감(√)해 지수폭주를 차단.
 const CASH_BONUS_REF := 25000
-const MONTH_SLOT_PRICES: Array[int] = [4, 7, 12]  # 슬롯 확장 월별 정액(1·2·3달). 한 달 안에선 개당 동일. 이후 달은 마지막값.
+# 슬롯 확장가 = 구매 누적수(bought)별 정가. day 무관. 인덱스 초과 시 마지막값 유지.
+const SLOT_PRICES: Array[int] = [4, 4, 5, 5, 6, 7, 8, 10, 12, 15, 15, 15]
 const BUFF_PACK_PRICE := 2    # 버프 팩(카드깡) 고정가 — 최소 단위
 const BUFF_REROLL_BASE := 1   # 팩 개봉 중 리롤 기본가 — 리롤마다 ×2(1·2·4…), 방문마다 리셋
 const MAX_BUFFS := 5        # 버프 보유 상한 (온보드 점유 — 판 절반 이상 못 줌)
@@ -75,8 +76,7 @@ const SIM_HANDLE_SERVE := 0.6    # 완성품 드래그해 서빙
 const SIM_HANDLE_PLACE := 0.35   # 창고 재료 1개를 슬롯에 놓기
 
 
-## 슬롯 확장가 = 그 달(day 기준)의 월별 정액. 한 달 안에선 몇 개를 사든 개당 동일(bought 무관).
-## day=1-base 주차, 4주=1달. 정의 이후 달은 마지막 정액 유지.
-static func slot_price(day: int, _bought: int) -> int:
-	var mi := (maxi(1, day) - 1) / 4   # 0-base 달
-	return MONTH_SLOT_PRICES[mini(mi, MONTH_SLOT_PRICES.size() - 1)]
+## 슬롯 확장가 = 구매 누적수(bought, 0-base)별 정가. day 무관.
+static func slot_price(_day: int, bought: int) -> int:
+	var b := clampi(bought, 0, SLOT_PRICES.size() - 1)
+	return SLOT_PRICES[b]
