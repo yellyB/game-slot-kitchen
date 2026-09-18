@@ -509,6 +509,8 @@ func _apply_safe_area() -> void:
   _margin.add_theme_constant_override("margin_top", base + int(round(maxf(0.0, safe.position.y) * sy)))
   _margin.add_theme_constant_override("margin_right", base + int(round(maxf(0.0, win.x - (safe.position.x + safe.size.x)) * sx)))
   _margin.add_theme_constant_override("margin_bottom", base + int(round(maxf(0.0, win.y - (safe.position.y + safe.size.y)) * sy)))
+  if _board != null:   # 인셋 변화로 보드 높이가 줄면 그리드도 다시 맞춘다(마지막 행 잘림 방지)
+    _board.refit.call_deferred()
 
 
 ## 화면에 남은 축포(색종이) 일괄 제거.

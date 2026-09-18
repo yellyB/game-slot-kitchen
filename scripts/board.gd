@@ -59,6 +59,14 @@ func rebuild(slot_count: int) -> void:
 			tools.append(tool)
 			_grid.add_child(tool)
 	_relayout()
+	# 세이프에어리어/부모 레이아웃이 이번 프레임 뒤에 보드를 더 줄일 수 있어(예: 하단
+	# 인셋 늦은 적용) 크기 확정 후 한 번 더 맞춘다 — 기기에서 마지막 행이 잘리던 원인.
+	_relayout.call_deferred()
+
+
+## 외부(main._apply_safe_area 등)에서 가용 공간이 바뀐 뒤 강제 재배치 요청.
+func refit() -> void:
+	_relayout()
 
 
 ## 가용 공간(남는 세로 + 가로)에 맞춰 열 수와 슬롯 한 변을 정한다.
