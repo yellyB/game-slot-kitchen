@@ -14,8 +14,8 @@ const MAX_SLOTS := 21    # 슬롯 확장 상한(총 칸수). 확장가는 SLOT_P
 const MAX_QUEUE := 4          # 큐 최대 인원
 const MAX_ORDERS := 6         # 동시 접수 주문 상한 — 나머지 슬롯은 재료/완성품용(조리 공간 확보)
 # 손님 등장: 총량 캡 없이 자리 있으면 무한 등장. 첫 손님만 고정, 이후 간격은 MIN~MAX 랜덤.
-const SPAWN_GAP_MIN := 1.5    # 다음 손님 최소 간격(초)
-const SPAWN_GAP_MAX := 4.0    # 다음 손님 최대 간격(초)
+const SPAWN_GAP_MIN := 1.0    # 다음 손님 최소 간격(초)
+const SPAWN_GAP_MAX := 2.5    # 다음 손님 최대 간격(초)
 const SPAWN_FIRST := 1.0      # 첫 손님 등장 시각(초) — 문 열고 1초 뒤 고정
 const SPAWN_LAST_MARGIN := 8.0  # 마지막 손님은 마감 이 시간(초) 전까지
 
