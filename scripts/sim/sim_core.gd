@@ -31,6 +31,9 @@ var _order_lost_today := 0
 var _missed_today := 0
 var _served_by_menu := {}
 
+var _ctx_sum := {"filled": 0.0, "empty": 0.0, "orders": 0.0, "dishes": 0.0, "ingr": 0.0, "buffs": 0.0}
+var _ctx_n := 0
+
 
 func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_only := false) -> Dictionary:
 	seed(run_seed)
@@ -43,6 +46,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	session.day_ended.connect(func(s): _last = s)
 
 	session.start_run()
+	if OS.has_environment("SIM_SLOTS"):
+		session.slots = int(OS.get_environment("SIM_SLOTS"))
 	Buffs.clear()
 	for b in buff_loadout:
 		Buffs.add(b)
@@ -91,6 +96,8 @@ func run(buff_loadout: Array = [], run_seed := 0, shop_enabled := true, slots_on
 	result["lost_qfull"] = _lost_qfull
 	result["slots"] = session.slots
 	result["buffs"] = Buffs.owned().size()
+	for k in _ctx_sum:
+		result["ctx_" + k] = float(_ctx_sum[k]) / float(maxi(_ctx_n, 1))
 	session.free()
 	return result
 
@@ -126,7 +133,7 @@ func _pick_buff(pack: Array) -> String:
 	var rank := int(OS.get_environment("SIM_PICK_RANK")) if OS.has_environment("SIM_PICK_RANK") else 2
 	return cands[mini(rank - 1, cands.size() - 1)]["id"]
 
-const EFF := {"ramp_t5": 3788, "ramp_t4": 2267, "rt_every7": 1916, "ramp_t3": 1870, "ramp_t2": 1509, "ramp_t6": 1506, "sc_ingr": 1486, "mp_t56": 1152, "sale_t56": 1152, "sc_order": 1023, "sale_pat": 966, "sale_flat3": 961, "mult_all": 961, "rt_fast3": 928, "ramp_t1": 919, "mp_t12": 871, "sale_t12": 871, "mp_t34": 865, "sale_t34": 865, "sale_fresh": 862, "sc_fill_b": 854, "sc_fill_a": 795, "sale_full": 778, "rt_streak3": 590, "sale_late": 548, "sale_burn": 496, "accum_sale": 431, "prob_bonus": 430, "prob_x2": 358, "sc_buff_a": 340, "sc_dish": 278, "sc_buff_b": 277, "settle_100": 184, "sale_risk": 160, "cook": 145, "tool_slot": 137, "day_len": 132, "settle_90": 124, "inst_cook": 111, "sale_fast": 104, "inst_order": 90, "sale_cash": 77, "wh_fast": 68, "wh_chance": 67, "dmd_t56": 52, "cook_empty": 45, "dmd_cream": 43, "sc_empt_a": 43, "opt_flour": 34, "sc_empt_b": 30, "dmd_choco": 9, "buff_slot": 0, "opt_egg": -5, "nest_egg": -8, "rent_skip": -15, "onlost_x2": -15, "sale_crit": -15, "dmd_t34": -18, "reveal": -21, "pack_more": -21, "shop_disc": -21, "rent_down": -21, "sale_addon": -21, "no_buy": -21, "settle_perfect": -21, "auto_serve": -21, "auto_cook": -21, "interest": -21, "pat_down": -21, "settle_same": -21, "settle_leave": -21, "onlost_pay": -22, "serve_tip": -23, "pat_extend": -24, "patience": -26, "dmd_bean": -90, "opt_bean": -120, "dmd_t12": -145}
+const EFF := {"ramp_lo": 11178, "ramp_mid": 11333, "ramp_hi": 13030, "rt_every7": 7164, "sc_ingr": 5221, "mp_t56": 5435, "sale_t56": 5435, "sc_order": 4401, "sale_pat": 4881, "sale_flat3": 4883, "mult_all": 4883, "rt_fast3": 928, "mp_t12": 3535, "sale_t12": 3535, "mp_t34": 4236, "sale_t34": 4236, "sale_fresh": 862, "sc_fill_b": 1490, "sc_fill_a": 1514, "sale_full": 778, "rt_streak3": 590, "sale_late": 548, "sale_burn": 496, "accum_sale": 431, "prob_bonus": 430, "prob_x2": 358, "sc_buff_a": 308, "sc_dish": 1420, "sc_buff_b": 161, "settle_100": 184, "sale_risk": 160, "cook": 145, "tool_slot": 137, "day_len": 132, "settle_90": 124, "inst_cook": 111, "sale_fast": 104, "inst_order": 90, "sale_cash": 77, "wh_fast": 68, "wh_chance": 67, "dmd_t56": 52, "cook_empty": 45, "dmd_cream": 43, "sc_empt_a": 1292, "opt_flour": 34, "sc_empt_b": 728, "dmd_choco": 9, "buff_slot": 0, "opt_egg": -5, "nest_egg": -8, "rent_skip": -15, "onlost_x2": -15, "sale_crit": -15, "dmd_t34": -18, "reveal": -21, "pack_more": -21, "shop_disc": -21, "rent_down": -21, "sale_addon": -21, "no_buy": -21, "settle_perfect": -21, "auto_serve": -21, "auto_cook": -21, "interest": -21, "pat_down": -21, "settle_same": -21, "settle_leave": -21, "onlost_pay": -22, "serve_tip": -23, "pat_extend": -24, "patience": -26, "dmd_bean": -90, "opt_bean": -120, "dmd_t12": -145}
 
 func _buff_score(id: String) -> int:
 	if BuffDefs.get_def(id).get("blocked", false):
@@ -343,7 +350,7 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 	var cap := _serve_cap()
 	var filled := orders.size() + dishes.size() + ingredients.size()
 	var mx := float(order.get("max", 1.0))
-	return {
+	var c := {
 		"filled": filled,
 		"empty": maxi(0, cap - filled),
 		"orders": orders.size(),
@@ -357,6 +364,10 @@ func _sale_ctx(order: Dictionary, dish: Dictionary) -> Dictionary:
 		"cash": session.cash,
 		"day_revenue": session.day_revenue,
 	}
+	for k in _ctx_sum:
+		_ctx_sum[k] = float(_ctx_sum[k]) + float(c[k])
+	_ctx_n += 1
+	return c
 
 
 func _start_cooking() -> void:

@@ -6,6 +6,7 @@ var _cooking: Cooking
 var _backdrop: ColorRect
 var _session: Session
 var _title: TitleScreen
+var _shop_select: ShopSelect
 
 var _warehouse_btn: Button
 var _trash_btn: TrashButton
@@ -36,6 +37,9 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
+var _lives_label: Label
+var _lives_box: Control
+var _run_over := false
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
@@ -47,6 +51,7 @@ var _countdown_edge: Panel
 var _last_countdown := 0
 const COUNTDOWN_FROM := 5
 const TUTORIAL_FLAG := "user://tutorial.done"
+const CLEARED_FLAG := "user://cleared.flag"
 
 
 func _ready() -> void:
@@ -121,6 +126,7 @@ func _ready() -> void:
   _session.day_started.connect(_on_day_started)
   _session.day_closing.connect(_on_day_closing)
   _session.day_ended.connect(_on_day_ended)
+  _session.lives_changed.connect(_on_lives_changed)
   add_child(_session)
 
   _board.now_provider = _session.now
@@ -128,18 +134,26 @@ func _ready() -> void:
   _title = TitleScreen.new()
   _title.start_pressed.connect(_on_start_pressed)
   _title.tutorial_pressed.connect(_start_tutorial)
+  if OS.is_debug_build():
+    _title.dbg_lives_pressed.connect(_on_dbg_lives_toggle)
+    _title.set_dbg_lives.call_deferred(_lives_unlocked())
   add_child(_title)
+
+  _shop_select = ShopSelect.new()
+  _shop_select.shop_selected.connect(_on_shop_selected)
+  _shop_select.back_pressed.connect(func(): _shop_select.hide())
+  add_child(_shop_select)
 
   if "--replay" in OS.get_cmdline_user_args():
     var bw := [
-      [], [], ["ramp_t3"], ["ramp_t3", "tool_slot"],
-      ["ramp_t3", "tool_slot", "ramp_t1"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
-      ["ramp_t3", "tool_slot", "ramp_t1", "mult_all", "mp_t34"],
+      [], [], ["ramp_mid"], ["ramp_mid", "tool_slot"],
+      ["ramp_mid", "tool_slot", "ramp_lo"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
+      ["ramp_mid", "tool_slot", "ramp_lo", "mult_all", "mp_t34"],
     ]
     var slots := [9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13]
     var log_served := [21, 20, 22, 21, 23, 21, 23, 13, 22, 24, 21]
@@ -216,6 +230,24 @@ func _ready() -> void:
   if "--simsyn" in OS.get_cmdline_user_args():
     var yn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 40
     SimSynergy.run_report(yn)
+    get_tree().quit()
+
+  if "--simstate" in OS.get_cmdline_user_args():
+    if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
+    if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")
+    if not OS.has_environment("SIM_NOFAIL"): OS.set_environment("SIM_NOFAIL", "1")
+    if not OS.has_environment("SIM_MAXDAY"): OS.set_environment("SIM_MAXDAY", "8")
+    var stn := int(OS.get_environment("SIM_N")) if OS.has_environment("SIM_N") else 200
+    var stlo: Array = []
+    if OS.has_environment("SIM_STATE_IDS"):
+      stlo = Array(OS.get_environment("SIM_STATE_IDS").split(","))
+    var str2 := SimBatch.new().run(stn, stlo, true)
+    var stc: Dictionary = str2["ctx"]
+    print("[SIMSTATE] n=%d loadout=%s  score=%.0f slots=%.1f buffs=%.1f served=%.1f (maxday=%s)" % [
+      stn, str(stlo), str2["avg_score"], str2["avg_slots"], str2["avg_buffs"], str2["avg_served"],
+      OS.get_environment("SIM_MAXDAY")])
+    print("[SIMSTATE] 서빙시점 평균보드  buffs(B)=%.2f filled(F)=%.2f empty(E)=%.2f dishes(D)=%.2f orders(O)=%.2f ingr(I)=%.2f" % [
+      stc["buffs"], stc["filled"], stc["empty"], stc["dishes"], stc["orders"], stc["ingr"]])
     get_tree().quit()
 
   if "--simbuffs" in OS.get_cmdline_user_args():
@@ -323,8 +355,7 @@ func _on_home_pressed() -> void:
   var m := Modal.open(self) \
     .title(Loc.t("home_title")) \
     .row(Loc.t("home_warn"), Palette.COCOA_600) \
-    .button(Loc.t("go_home"), _go_home) \
-    .button(Loc.t("cancel"), func(): pass)
+    .icon_confirm(_go_home)
   m.tree_exited.connect(func():
     if is_instance_valid(self) and not _title.visible:
       _set_world_paused(false))
@@ -350,6 +381,12 @@ func _go_home() -> void:
 
 
 func _on_start_pressed() -> void:
+  _shop_select.show()
+
+
+func _on_shop_selected(id: String) -> void:
+  BuffDefs.current_shop = id
+  _shop_select.hide()
   if _tutorial_seen():
     _start_game()
   else:
@@ -358,6 +395,29 @@ func _on_start_pressed() -> void:
 
 func _tutorial_seen() -> bool:
   return FileAccess.file_exists(TUTORIAL_FLAG)
+
+
+func _lives_unlocked() -> bool:
+  return FileAccess.file_exists(CLEARED_FLAG)
+
+
+func _mark_cleared() -> void:
+  if FileAccess.file_exists(CLEARED_FLAG):
+    return
+  var f := FileAccess.open(CLEARED_FLAG, FileAccess.WRITE)
+  if f != null:
+    f.store_8(1)
+    f.close()
+
+
+func _on_dbg_lives_toggle() -> void:
+  if _lives_unlocked():
+    var d := DirAccess.open("user://")
+    if d != null and d.file_exists("cleared.flag"):
+      d.remove("cleared.flag")
+  else:
+    _mark_cleared()
+  _title.set_dbg_lives(_lives_unlocked())
 
 
 func _mark_tutorial_seen() -> void:
@@ -374,14 +434,17 @@ func _start_game() -> void:
   _money_label.text = UI.money(0)
   Boss.reset()
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())
+  _run_over = false
   _title.hide()
-  _session.start_run()
+  _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)
 
 
 func _show_title() -> void:
   _celebrating = false
   _clear_confetti()
   _clear_blackout()
+  if OS.is_debug_build():
+    _title.set_dbg_lives(_lives_unlocked())
   _title.show()
 
 
@@ -402,6 +465,8 @@ func _apply_safe_area() -> void:
   _margin.add_theme_constant_override("margin_top", base + int(round(maxf(0.0, safe.position.y) * sy)))
   _margin.add_theme_constant_override("margin_right", base + int(round(maxf(0.0, win.x - (safe.position.x + safe.size.x)) * sx)))
   _margin.add_theme_constant_override("margin_bottom", base + int(round(maxf(0.0, win.y - (safe.position.y + safe.size.y)) * sy)))
+  if _board != null:
+    _board.refit.call_deferred()
 
 
 func _clear_confetti() -> void:
@@ -473,6 +538,8 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
+  _lives_label = panel.get_meta("lives_label") as Label
+  _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
   var home := panel.get_meta("home_btn") as Button
@@ -485,6 +552,38 @@ func _build_top_bar() -> Control:
     coin.gui_input.connect(_on_cash_clicked)
 
   return panel
+
+
+func _on_lives_changed(lives: int, lives_max: int) -> void:
+  if _lives_box == null:
+    return
+  if lives_max <= 0:
+    _lives_box.visible = false
+    return
+  _lives_box.visible = true
+  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+
+
+func _customer_missed() -> void:
+  if _run_over:
+    return
+  if _session.lose_life():
+    _lives_depleted()
+
+
+func _lives_depleted() -> void:
+  if _run_over:
+    return
+  _run_over = true
+  _session.set_paused(true)
+  _warehouse.force_close()
+  _cooking.force_close()
+  _buff_sheet.force_close()
+  _backdrop.visible = false
+  _clear_play_field()
+  Audio.play("fail")
+  Audio.vibrate(60)
+  _show_run_failed({"day": _session.day, "month_score": _session.month_score, "rent": _session.rent, "won": false})
 
 
 func _on_cash_clicked(event: InputEvent) -> void:
@@ -507,15 +606,14 @@ func _build_debug() -> Control:
   row.add_theme_constant_override("separation", 6)
   row.add_child(UI.label("🐞", 14, Palette.COCOA_400))
   row.add_child(_debug_btn("+10만", func(): _session.add_cash(100000)))
-  row.add_child(_debug_btn("별+10만", func(): _session.earn(100000, true)))
+  row.add_child(_debug_btn("별+10", func(): _session.earn(100000, true)))
   row.add_child(_debug_btn("종료", func(): _session.debug_end_soon(1.0)))
   row.add_child(_debug_btn("손님-", _debug_kick_customer))
   row.add_child(_debug_btn("버프", _debug_add_buff))
-  row.add_child(_debug_btn("도감-", func(): Codex.reset()))
   row.add_child(_debug_btn("보스", _debug_boss))
   row.add_child(_debug_btn("로그", func(): DisplayServer.clipboard_set(PlayLog.read_text())))
   row.add_child(_debug_btn("로그-", func(): PlayLog.clear()))
-  row.add_child(_debug_btn("전체리셋", _debug_reset_all))
+  row.add_child(_debug_btn("리셋", _debug_reset_all))
   return row
 
 
@@ -894,6 +992,7 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _missed_today += 1
+  _customer_missed()
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -909,6 +1008,7 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
+  _customer_missed()
   _spawn_pop("😠", order.global_position + order.size * 0.5)
   Audio.play("customer_leave")
   Audio.vibrate(40)
@@ -1893,6 +1993,8 @@ func _on_day_started(day: int, rent: int) -> void:
 
 
 func _log_day(summary: Dictionary) -> void:
+  if not OS.is_debug_build():
+    return
   var wk := Levels.get_week(int(summary.get("day", 0)))
   PlayLog.append({
     "run": _run_id,
@@ -1990,12 +2092,34 @@ func _on_day_ended(summary: Dictionary) -> void:
   _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
+    _mark_cleared()
     _session.pay_rent()
     _clear_play_field()
-    Modal.open(self) \
-      .title(Loc.t("win_title")) \
-      .stamp_row(Loc.t("win_days") % Levels.count(), Palette.SUCCESS, 0.15) \
-      .button(Loc.t("to_title"), _show_title)
+    var win_modal := Modal.open(self) \
+      .stamp_row(Loc.t("win_done"), Palette.SUCCESS, 0.15, 38)
+    win_modal.sep()
+    var used := Buffs.owned()
+    if not used.is_empty():
+      for bid in used:
+        var brow := HBoxContainer.new()
+        brow.alignment = BoxContainer.ALIGNMENT_CENTER
+        brow.add_theme_constant_override("separation", 6)
+        brow.add_child(BuffDefs.icon_node(bid, 26))
+        brow.add_child(UI.label(BuffDefs.display_name(bid), 11, Palette.COCOA_800, true))
+        win_modal.add_row(brow)
+      win_modal.sep()
+    win_modal.add_row(_win_total_row("star", int(summary.get("run_score", 0))))
+    win_modal.add_row(_win_total_row("coin", int(summary.get("run_earned", 0))))
+    var win_home := Button.new()
+    win_home.custom_minimum_size = Vector2(0, 48)
+    win_home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    win_home.add_child(UI.ui_btn_icon("house", 28))
+    win_home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+    win_home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+    win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+    win_home.pressed.connect(func(): win_modal.queue_free(); _show_title())
+    Audio.attach_click(win_home)
+    win_modal.add_row(win_home)
     _celebrating = true
     _spawn_confetti()
     get_tree().create_timer(6.0).timeout.connect(func():
@@ -2100,35 +2224,12 @@ func _add_settle_bonus_row(m: Modal) -> void:
   _animate_settle_bonus(amt_l, bonus)
 
 
-func _pay_week_reward(m: Modal) -> void:
-  if _week_reward <= 0:
-    return
-  var reward := _week_reward
-  _week_reward = 0
-  _expect_fly = true
-  _session.earn(reward, false)
-  _expect_fly = false
-  _money_label.text = UI.money(_last_cash - reward)
-  var row := HBoxContainer.new()
-  row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_theme_constant_override("separation", 6)
-  row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
-  var gap := Control.new()
-  gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  row.add_child(gap)
-  row.add_child(UI.ui_icon("coin", 16))
-  var amt_l := UI.label(UI.money(0), 16, Palette.MAIN, true)
-  row.add_child(amt_l)
-  m.add_row(row)
-  _animate_settle_bonus(amt_l, reward)
-
-
 func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   await get_tree().process_frame
   if not is_instance_valid(amt_l) or not is_inside_tree():
     return
   var cu := create_tween()
-  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
+  cu.tween_method(func(v: float): if is_instance_valid(amt_l): amt_l.text = UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
     .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   var from := amt_l.global_position + amt_l.size * 0.5
   _coin_burst(from, bonus, 350)
@@ -2147,18 +2248,9 @@ func _show_settlement(summary: Dictionary) -> void:
   var cr := _churn_row()
   if cr != null:
     m.add_row(cr)
-  var had_bonus := _settle_bonus > 0
   _add_settle_bonus_row(m)
-  if had_bonus:
-    var sp := Control.new()
-    sp.custom_minimum_size = Vector2(0, 30)
-    m.add_row(sp)
 
-  var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
-  var goal_row := _settle_icon_row("star", goal_lbl, 26)
-  goal_row.modulate.a = 1.0
-  m.add_row(goal_row)
-
+  m.section_gap()
   var check_btn := Button.new()
   check_btn.text = Loc.t("check_score")
   check_btn.custom_minimum_size = Vector2(0, 48)
@@ -2249,26 +2341,37 @@ func _on_check_score(summary: Dictionary, m: Modal, check_btn: Button) -> void:
 func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   if is_instance_valid(action_node):
     action_node.queue_free()
+  m.queue_free()
+  _show_week_reward(summary)
 
-  _pay_week_reward(m)
 
-  var px := 38.0
-  var mark := UI.ui_icon("pass_check", int(px))
-  mark.pivot_offset = Vector2(px, px) * 0.5
-  mark.modulate.a = 0.0
-  mark.scale = Vector2(0.5, 0.5)
-  var mark_box := CenterContainer.new()
-  mark_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  mark_box.add_child(mark)
-  m.add_row(mark_box)
-  var pt := create_tween()
-  pt.tween_property(mark, "modulate:a", 1.0, 0.12)
-  pt.parallel().tween_property(mark, "scale", Vector2(1.2, 1.2), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  pt.tween_property(mark, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+func _show_week_reward(summary: Dictionary) -> void:
+  var m := Modal.open(self).gap(14)
 
-  Audio.play("day_pass")
-  Audio.vibrate(30)
+  var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
+  banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  banner.scale = Vector2(0.6, 0.6)
+  banner.modulate.a = 0.0
+  m.add_row(banner)
 
+  var reward := _week_reward
+  _week_reward = 0
+  var amt_l: Label = null
+  var reward_row: Control = null
+  if reward > 0:
+    var row := HBoxContainer.new()
+    row.alignment = BoxContainer.ALIGNMENT_CENTER
+    row.add_theme_constant_override("separation", 6)
+    row.add_child(UI.label(Loc.t("week_reward"), 15, Palette.MAIN, true))
+    row.add_child(UI.ui_icon("coin", 16))
+    amt_l = UI.label(UI.money(0), 16, Palette.MAIN, true)
+    row.add_child(amt_l)
+    row.modulate.a = 0.0
+    reward_row = row
+    m.add_row(row)
+
+  m.section_gap()
   var go := Button.new()
   go.text = Loc.t("to_shop")
   go.custom_minimum_size = Vector2(0, 48)
@@ -2278,9 +2381,50 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
   go.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
   go.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+  go.modulate.a = 0.0
+  go.disabled = true
   go.pressed.connect(func(): m.queue_free(); _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
+
+  var bt := create_tween()
+  bt.tween_interval(0.08)
+  bt.tween_callback(func():
+    Audio.play("day_pass")
+    Audio.vibrate(30)
+    banner.pivot_offset = banner.size * 0.5)
+  bt.tween_property(banner, "modulate:a", 1.0, 0.12)
+  bt.parallel().tween_property(banner, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  bt.tween_property(banner, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK)
+
+  if amt_l != null:
+    var wt := create_tween()
+    wt.tween_interval(0.5)
+    wt.tween_property(reward_row, "modulate:a", 1.0, 0.14)
+    wt.tween_callback(func(): _play_week_reward_anim(amt_l, reward))
+
+  var gt := create_tween()
+  gt.tween_interval(1.0)
+  gt.tween_callback(func(): go.disabled = false)
+  gt.tween_property(go, "modulate:a", 1.0, 0.2)
+
+
+func _play_week_reward_anim(amt_l: Label, reward: int) -> void:
+  if not is_instance_valid(amt_l) or not is_inside_tree():
+    return
+  _expect_fly = true
+  _session.earn(reward, false)
+  _expect_fly = false
+  _money_label.text = UI.money(_last_cash - reward)
+  var cu := create_tween()
+  cu.tween_method(func(v: float): if is_instance_valid(amt_l): amt_l.text = UI.money(int(round(v))), 0.0, float(reward), 0.6) \
+    .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+  var from := amt_l.global_position + amt_l.size * 0.5
+  _coin_burst(from, reward, 350)
+  var mc := create_tween()
+  mc.tween_method(_set_money_text.bind(_money_label), float(_last_cash - reward), float(_last_cash), 0.6)
+  mc.tween_callback(func(): _pop_label(_money_label))
+  Audio.play("coins", 1.1)
 
 
 func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
@@ -2291,26 +2435,8 @@ func _settle_bankrupt(summary: Dictionary, m: Modal) -> void:
 
 
 func _show_run_failed(summary: Dictionary) -> void:
-  var day := int(summary["day"])
-  var m := Modal.open(self).title(Loc.t("run_failed"))
-  var badge := UI.day_badge(64)
-  (badge.get_meta("num") as Label).text = str(day)
-  var badge_wrap := CenterContainer.new()
-  badge_wrap.add_child(badge)
-  m.add_row(badge_wrap)
-  var x_box := CenterContainer.new()
-  x_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-  x_box.add_child(UI.ui_icon("fail_x", 32))
-  m.add_row(x_box)
-  var got := int(summary["month_score"])
-  var goal := int(summary["rent"])
-  var score_row := HBoxContainer.new()
-  score_row.alignment = BoxContainer.ALIGNMENT_CENTER
-  score_row.add_theme_constant_override("separation", 6)
-  score_row.add_child(UI.ui_icon("star", 22))
-  score_row.add_child(UI.label(UI.money(got), 22, Palette.DANGER if goal > got else Palette.COCOA_800, true))
-  score_row.add_child(UI.label(" / " + UI.money(goal), 22, Palette.COCOA_800, true))
-  m.add_row(score_row)
+  var m := Modal.open(self).title(Loc.t("run_failed"), Palette.DANGER, 26)
+  m.section_gap()
   var home := Button.new()
   home.custom_minimum_size = Vector2(0, 56)
   home.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2337,13 +2463,12 @@ func _bankrupt_button() -> Button:
   return b
 
 
-func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
+func _win_total_row(icon: String, value: int) -> HBoxContainer:
   var row := HBoxContainer.new()
   row.alignment = BoxContainer.ALIGNMENT_CENTER
-  row.add_theme_constant_override("separation", 6)
-  row.modulate.a = 0.0
-  row.add_child(UI.ui_icon(icon, px))
-  row.add_child(value)
+  row.add_theme_constant_override("separation", 5)
+  row.add_child(UI.ui_icon(icon, 17))
+  row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
   return row
 
 

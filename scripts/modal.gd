@@ -1,6 +1,8 @@
 class_name Modal
 extends Control
 
+const SECTION_GAP := 14
+
 var _body: VBoxContainer
 var _panel: PanelContainer
 var _center: CenterContainer
@@ -42,8 +44,8 @@ func _ready() -> void:
 	pad.add_child(_body)
 
 
-func title(text: String) -> Modal:
-	_body.add_child(_centered(UI.label(text, 22, Palette.COCOA_800, true)))
+func title(text: String, color := Palette.COCOA_800, size := 22) -> Modal:
+	_body.add_child(_centered(UI.label(text, size, color, true)))
 	return self
 
 
@@ -61,8 +63,8 @@ func count_row(fmt: String, value: int, color := Palette.COCOA_800) -> Modal:
 	return self
 
 
-func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55) -> Modal:
-	var l := _centered(UI.label(text, 20, color, true))
+func stamp_row(text: String, color := Palette.SUCCESS, delay := 0.55, size := 20) -> Modal:
+	var l := _centered(UI.label(text, size, color, true))
 	_body.add_child(l)
 	l.modulate.a = 0.0
 	l.scale = Vector2(0.5, 0.5)
@@ -83,6 +85,17 @@ func add_row(ctrl: Control) -> Modal:
 func gap(px: int) -> Modal:
 	_body.add_theme_constant_override("separation", px)
 	return self
+
+
+func space(px: int) -> Modal:
+	var s := Control.new()
+	s.custom_minimum_size = Vector2(0, px)
+	_body.add_child(s)
+	return self
+
+
+func section_gap() -> Modal:
+	return space(SECTION_GAP)
 
 
 func pin_top() -> void:
@@ -121,6 +134,32 @@ func button(text: String, cb: Callable) -> Modal:
 	Audio.attach_click(b)
 	_body.add_child(b)
 	return self
+
+
+func icon_confirm(confirm_cb: Callable, cancel_cb := Callable()) -> Modal:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	row.add_child(_icon_btn("fail_x", cancel_cb))
+	row.add_child(_icon_btn("pass_check", confirm_cb))
+	_body.add_child(row)
+	return self
+
+
+func _icon_btn(icon: String, cb: Callable) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(64, 64)
+	b.add_child(UI.ui_btn_icon(icon, 44))
+	var empty := StyleBoxEmpty.new()
+	b.add_theme_stylebox_override("normal", empty)
+	b.add_theme_stylebox_override("hover", empty)
+	b.add_theme_stylebox_override("pressed", empty)
+	b.pressed.connect(func():
+		queue_free()
+		if cb.is_valid():
+			cb.call())
+	Audio.attach_click(b)
+	return b
 
 
 func _centered(l: Label) -> Label:

@@ -15,10 +15,13 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 	var buffs := 0
 	var score := 0
 	var days_list: Array = []
+	var ctx := {"filled": 0.0, "empty": 0.0, "orders": 0.0, "dishes": 0.0, "ingr": 0.0, "buffs": 0.0}
 	for i in n:
 		var sim := SimCore.new()
 		var r := sim.run(buff_loadout, i, shop_enabled, slots_only)
 		days_list.append(int(r["days"]))
+		for k in ctx:
+			ctx[k] = float(ctx[k]) + float(r.get("ctx_" + k, 0.0))
 		if r["won"]:
 			wins += 1
 		cash += int(r["cash"])
@@ -33,9 +36,13 @@ func run(n: int, buff_loadout: Array = [], shop_enabled := true, slots_only := f
 		buffs += int(r.get("buffs", 0))
 		score += int(r.get("score", 0))
 	var nf := float(maxi(n, 1))
+	var ctx_avg := {}
+	for k in ctx:
+		ctx_avg[k] = float(ctx[k]) / nf
 	return {
 		"runs": n,
 		"loadout": buff_loadout,
+		"ctx": ctx_avg,
 		"win_rate": float(wins) / nf,
 		"avg_score": float(score) / nf,
 		"avg_cash": float(cash) / nf,
@@ -62,8 +69,12 @@ func compare(n: int, loadouts: Array) -> Array:
 
 
 func buff_report(n: int) -> void:
-	var base := run(n, [], false)
-	print("[BUFFRPT] base(버프0)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+	var ctx: Array = []
+	if OS.has_environment("SIM_CTX"):
+		ctx = Array(OS.get_environment("SIM_CTX").split(","))
+	var base := run(n, ctx, false)
+	print("[BUFFRPT] base(맥락 %s)  승률 %.0f%%  점수 %.0f  현금 %.0f  일수 %.2f  (n=%d, SIM_RENT=%s SIM_MAXDAY=%s)" % [
+		str(ctx) if not ctx.is_empty() else "버프0",
 		base["win_rate"] * 100.0, base["avg_score"], base["avg_cash"], base["avg_days"], n,
 		OS.get_environment("SIM_RENT") if OS.has_environment("SIM_RENT") else "1",
 		OS.get_environment("SIM_MAXDAY") if OS.has_environment("SIM_MAXDAY") else "-"])
@@ -74,7 +85,9 @@ func buff_report(n: int) -> void:
 	for id in BuffDefs.ids():
 		if not only.is_empty() and not (id in only):
 			continue
-		var r := run(n, [id], false)
+		if id in ctx:
+			continue
+		var r := run(n, ctx + [id], false)
 		rows.append({
 			"id": id,
 			"dscore": r["avg_score"] - base["avg_score"],

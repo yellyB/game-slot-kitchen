@@ -52,6 +52,11 @@ func rebuild(slot_count: int) -> void:
 			tools.append(tool)
 			_grid.add_child(tool)
 	_relayout()
+	_relayout.call_deferred()
+
+
+func refit() -> void:
+	_relayout()
 
 
 func _relayout() -> void:

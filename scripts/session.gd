@@ -7,13 +7,19 @@ signal spawn_requested
 signal day_started(day: int, rent: int)
 signal day_closing(s: Session)
 signal day_ended(summary: Dictionary)
+signal lives_changed(lives: int, lives_max: int)
 
 var cash := 0
 var day := 1
 var rent := 0
 var day_revenue := 0
 var month_score := 0
+var run_score := 0
+var run_earned := 0
 var slots := Config.START_SLOTS
+var lives := 0
+var lives_max := 0
+var _miss_accum := 0
 
 var _elapsed := 0.0
 var _running := false
@@ -21,19 +27,36 @@ var _paused := false
 var _day_length := Config.DAY_LENGTH
 var _rent_skip_used := false
 var _rent_paid := false
-var _spawn_times: Array[float] = []
-var _next_idx := 0
+var _next_spawn := -1.0
 
 
-func start_run() -> void:
+func start_run(lives_max_v := 0) -> void:
 	cash = Config.START_MONEY
 	day = 1
 	slots = Config.START_SLOTS
+	run_score = 0
+	run_earned = 0
+	lives_max = lives_max_v
+	lives = lives_max_v
+	_miss_accum = 0
 	_rent_skip_used = false
 	_paused = false
 	Buffs.clear()
 	cash_changed.emit(cash)
+	lives_changed.emit(lives, lives_max)
 	start_day()
+
+
+func lose_life() -> bool:
+	if lives_max <= 0 or lives <= 0:
+		return false
+	_miss_accum += 1
+	if _miss_accum < Config.LIFE_LOSS_MISSES:
+		return false
+	_miss_accum = 0
+	lives = maxi(0, lives - 1)
+	lives_changed.emit(lives, lives_max)
+	return lives <= 0
 
 
 func buy_slot() -> bool:
@@ -69,13 +92,13 @@ func start_day() -> void:
 	if int(wk.get("week_in_month", 1)) == 1:
 		month_score = 0
 	_elapsed = 0.0
-	_next_idx = 0
+	_next_spawn = Config.SPAWN_FIRST
 	_day_length = Stats.day_length()
 	var itr := Buffs.day_start_bonus(cash)
 	if itr != 0:
 		cash += itr
+		run_earned += maxi(0, itr)
 		cash_changed.emit(cash)
-	_build_schedule()
 	_running = true
 	_paused = false
 	day_started.emit(day, rent)
@@ -123,8 +146,10 @@ func earn(amount: int, as_score := true) -> void:
 	if as_score:
 		day_revenue += amount
 		month_score += amount
+		run_score += amount
 	else:
 		cash += amount
+		run_earned += maxi(0, amount)
 	cash_changed.emit(cash)
 
 
@@ -151,9 +176,11 @@ func tick(delta: float) -> void:
 		return
 	_elapsed += delta
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
-	while _next_idx < _spawn_times.size() and _spawn_times[_next_idx] <= _elapsed:
+	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_idx += 1
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX)
+		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
+			_next_spawn = -1.0
 	if _elapsed >= _day_length:
 		_end_day()
 
@@ -174,6 +201,8 @@ func _end_day() -> void:
 		"passed": passed,
 		"passed_by_score": passed_by_score,
 		"month_score": month_score,
+		"run_score": run_score,
+		"run_earned": run_earned,
 		"won": false,
 		"skipped": _rent_skip_used and cash < rent,
 		"cash": cash,
@@ -182,18 +211,3 @@ func _end_day() -> void:
 		summary["won"] = day >= Levels.count()
 	summary["cash_after"] = cash if passed_by_score else ((cash - rent) if (passed and cash >= rent) else cash)
 	day_ended.emit(summary)
-
-
-func _build_schedule() -> void:
-	_spawn_times.clear()
-	var total := int(round(float(int(Levels.get_day(day).get("per_wave", 3)) * Config.WAVES) * Boss.day_length_mult()))
-	if total <= 0:
-		return
-	var first := Config.SPAWN_FIRST
-	var last := _day_length - Config.SPAWN_LAST_MARGIN
-	var span := maxf(1.0, last - first)
-	var denom := float(maxi(1, total - 1))
-	for i in total:
-		var t := first + span * float(i) / denom
-		_spawn_times.append(clampf(t, 1.0, _day_length - 2.0))
-	_spawn_times.sort()

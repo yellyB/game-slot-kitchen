@@ -1,6 +1,8 @@
 class_name BuffDefs
 extends RefCounted
 
+static var current_shop := "donut"
+
 static var ALL := {
 	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.60}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.35}},
@@ -16,60 +18,57 @@ static var ALL := {
 	"buff_slot":  {"card": 11, "icon": "🧩", "structure": {"buff_slot": 1}},
 	"tool_slot":  {"card": 12, "icon": "🔥", "structure": {"tool": 1, "slot": 1}},
 
-	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg"},
-	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour"},
-	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean"},
+	"opt_egg":    {"card": 13, "icon": "🥚", "opt_ingredient": "egg", "shops": ["donut"]},
+	"opt_flour":  {"card": 14, "icon": "🌾", "opt_ingredient": "flour", "shops": ["donut"]},
+	"opt_bean":   {"card": 15, "icon": "🌰", "opt_ingredient": "bean", "shops": ["donut"]},
 
 	"dmd_t12":    {"card": 16, "icon": "📈", "demand": {"tiers": [1, 2], "mult": 1.6}},
 	"dmd_t34":    {"card": 17, "icon": "📈", "demand": {"tiers": [3, 4], "mult": 1.6}},
 	"dmd_t56":    {"card": 18, "icon": "📈", "demand": {"tiers": [5, 6], "mult": 1.6}},
-	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}},
-	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}},
-	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}},
+	"dmd_bean":   {"card": 19, "icon": "🌰", "demand": {"ingredient": "bean", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_choco":  {"card": 20, "icon": "🍫", "demand": {"ingredient": "chocolate", "mult": 1.5}, "shops": ["donut"]},
+	"dmd_cream":  {"card": 21, "icon": "🍦", "demand": {"ingredient": "cream", "mult": 1.5}, "shops": ["donut"]},
 
-	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 7}},
-	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 3}},
-	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 4}},
+	"mp_t12":     {"card": 22, "icon": "💲", "menu_price": {"tiers": [1, 2], "pct": 16}},
+	"mp_t34":     {"card": 23, "icon": "💲", "menu_price": {"tiers": [3, 4], "pct": 7}},
+	"mp_t56":     {"card": 24, "icon": "💲", "menu_price": {"tiers": [5, 6], "pct": 9}},
 
-	"ramp_t1":    {"card": 25, "icon": "📈", "ramp": {"tier": 1, "value": 0.5}},
-	"ramp_t2":    {"card": 26, "icon": "📈", "ramp": {"tier": 2, "value": 0.8}},
-	"ramp_t3":    {"card": 27, "icon": "📈", "ramp": {"tier": 3, "value": 0.5}},
-	"ramp_t4":    {"card": 28, "icon": "📈", "ramp": {"tier": 4, "value": 0.7}},
-	"ramp_t5":    {"card": 29, "icon": "📈", "ramp": {"tier": 5, "value": 1.5}},
-	"ramp_t6":    {"card": 30, "icon": "📈", "ramp": {"tier": 6, "value": 3}},
+	"ramp_lo":    {"card": 25, "icon": "📈", "ramp": {"tiers": [1, 2], "value": 0.85}},
+	"ramp_mid":   {"card": 26, "icon": "📈", "ramp": {"tiers": [3, 4], "value": 0.47}},
+	"ramp_hi":    {"card": 27, "icon": "📈", "ramp": {"tiers": [5, 6], "value": 1.3}},
 
-	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.4}},
-	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.3}},
-	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "step": 0.1}},
-	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "exp_count", "per": "filled", "rate": 0.08}},
-	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.22}},
-	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.16}},
+	"sc_buff_a":  {"card": 31, "icon": "🧮", "sale": {"type": "mult_count", "per": "buff", "step": 0.30}},
+	"sc_buff_b":  {"card": 32, "icon": "🧮", "sale": {"type": "exp_count", "per": "buff", "rate": 0.22}},
+	"sc_fill_a":  {"card": 33, "icon": "🧱", "sale": {"type": "mult_count", "per": "filled", "step": 0.14}},
+	"sc_fill_b":  {"card": 34, "icon": "🧱", "sale": {"type": "exp_count", "per": "filled", "rate": 0.10}},
+	"sc_empt_a":  {"card": 35, "icon": "⬜", "sale": {"type": "mult_count", "per": "empty", "step": 0.7}},
+	"sc_empt_b":  {"card": 36, "icon": "⬜", "sale": {"type": "exp_count", "per": "empty", "rate": 0.3}},
 	"sale_full":  {"card": 37, "icon": "🈵", "sale": {"type": "mult", "value": 2, "when": "board_full"}},
 	"cook_empty": {"card": 38, "icon": "💨", "cook_clean": {"max": 0.40, "per": 0.05}},
-	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.25}},
-	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.3}},
-	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 0.5}},
+	"sc_order":   {"card": 39, "icon": "📝", "sale": {"type": "count", "per": "orders", "base": 0.0, "step": 0.9}},
+	"sc_dish":    {"card": 40, "icon": "🍽️", "sale": {"type": "mult_count", "per": "dishes", "step": 0.9}},
+	"sc_ingr":    {"card": 41, "icon": "🧺", "sale": {"type": "count", "per": "ingr", "base": 0.0, "step": 1.1}},
 
 	"prob_x2":    {"card": 42, "icon": "🎲", "sale": {"type": "prob_double", "chance": 0.40}},
 	"rt_streak3": {"card": 43, "icon": "📈", "trigger": {"kind": "streak3", "value": 1}},
 	"rt_every7":  {"card": 44, "icon": "📈", "trigger": {"kind": "every7", "value": 1}},
 	"rt_fast3":   {"card": 45, "icon": "📈", "trigger": {"kind": "fast3", "value": 1, "window": 3.0}},
 	"accum_sale": {"card": 46, "icon": "🪙", "sale": {"type": "accum", "pct": 0.06}},
-	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 2}},
+	"sale_flat3": {"card": 47, "icon": "💰", "sale": {"type": "flat", "pct": 4}},
 	"prob_bonus": {"card": 48, "icon": "🍀", "sale": {"type": "prob_pct", "chance": 0.05, "pct": 10.0}},
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 2.0, "chance": 0.03}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
 	"sale_cash":  {"card": 51, "icon": "🏦", "settle": {"kind": "served", "threshold": 0.0, "pct": 0.10}},
-	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 2}, "mult": {"stat": "patience_mult", "value": 0.80}},
+	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 8}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
-	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 7}},
-	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 3}},
-	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 4}},
+	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 16}},
+	"sale_t34":   {"card": 54, "icon": "💰", "sale": {"type": "tier", "tiers": [3, 4], "pct": 7}},
+	"sale_t56":   {"card": 55, "icon": "💰", "sale": {"type": "tier", "tiers": [5, 6], "pct": 9}},
 	"sale_fresh": {"card": 56, "icon": "✨", "sale": {"type": "fresh", "within": 2.5, "pct": 1.9}},
 	"sale_fast":  {"card": 57, "icon": "⚡", "sale": {"type": "fast_order", "within": 6.0, "pct": 3.0}},
 	"sale_addon": {"card": 58, "icon": "🔊", "sale": {"type": "addon", "pct": 1.3}},
 
-	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 2}},
+	"mult_all":   {"card": 75, "icon": "✖️", "sale": {"type": "mult", "value": 4}},
 	"serve_tip":  {"card": 76, "icon": "🔔", "tip": {"chance": 0.08, "money": 1}},
 	"settle_perfect": {"card": 77, "icon": "💯", "settle": {"kind": "served", "threshold": 1.00, "money": 5}},
 	"nest_egg":   {"card": 78, "icon": "🐷", "matures": {"weeks": 4, "money": 15}},
@@ -86,8 +85,8 @@ static var ALL := {
 
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
 	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 12.0, "pct": 4.5}},
-	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 3}},
-	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 4.0}},
+	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 6}},
+	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 8.0}},
 
 	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
 	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"chance": 0.50, "money": 1}},
@@ -100,6 +99,11 @@ static func ids() -> Array:
 
 static func get_def(id: String) -> Dictionary:
 	return ALL.get(id, {})
+
+static func in_shop(id: String, shop := "") -> bool:
+	var s := shop if shop != "" else current_shop
+	var shops: Array = get_def(id).get("shops", [])
+	return shops.is_empty() or s in shops
 
 static func display_name(id: String) -> String:
 	return Loc.t("b." + id + ".name")
@@ -199,6 +203,8 @@ static func random_pack(n := 3) -> Array:
 	var pool := []
 	for id in ALL.keys():
 		if ALL[id].get("blocked", false):
+			continue
+		if not in_shop(id):
 			continue
 		if id in owned:
 			continue
