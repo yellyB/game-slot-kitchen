@@ -21,7 +21,7 @@ const PATIENCE_LOW_FRAC := 0.3
 
 const START_MONEY := 0
 const CASH_BONUS_REF := 25000
-const MONTH_SLOT_PRICES: Array[int] = [4, 7, 12]
+const SLOT_PRICES: Array[int] = [4, 4, 5, 5, 6, 7, 8, 10, 12, 15, 15, 15]
 const BUFF_PACK_PRICE := 2
 const BUFF_REROLL_BASE := 1
 const MAX_BUFFS := 5
@@ -52,6 +52,6 @@ const SIM_HANDLE_SERVE := 0.6
 const SIM_HANDLE_PLACE := 0.35
 
 
-static func slot_price(day: int, _bought: int) -> int:
-	var mi := (maxi(1, day) - 1) / 4
-	return MONTH_SLOT_PRICES[mini(mi, MONTH_SLOT_PRICES.size() - 1)]
+static func slot_price(_day: int, bought: int) -> int:
+	var b := clampi(bought, 0, SLOT_PRICES.size() - 1)
+	return SLOT_PRICES[b]
