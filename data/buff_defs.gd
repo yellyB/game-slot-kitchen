@@ -89,7 +89,7 @@ static var ALL := {
 	"sale_risk":  {"card": 49, "icon": "💥", "sale": {"type": "risk", "pct": 2.0, "chance": 0.03}},
 	"no_buy":     {"card": 50, "icon": "🚫", "blocked": true},
 	"sale_cash":  {"card": 51, "icon": "🏦", "settle": {"kind": "served", "threshold": 0.0, "pct": 0.10}},
-	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 4}, "mult": {"stat": "patience_mult", "value": 0.80}},
+	"sale_pat":   {"card": 52, "icon": "⚖️", "sale": {"type": "flat", "pct": 8}, "mult": {"stat": "patience_mult", "value": 0.80}},
 
 	# ── 판매금: 조건부/앰프(53~58) ──
 	"sale_t12":   {"card": 53, "icon": "💰", "sale": {"type": "tier", "tiers": [1, 2], "pct": 16}},
@@ -119,8 +119,8 @@ static var ALL := {
 	# ── 벼랑끝(67~70) ──
 	"pat_extend": {"card": 67, "icon": "🧘", "patience_flat": 7.0},
 	"sale_late":  {"card": 68, "icon": "⌛", "sale": {"type": "late", "after": 12.0, "pct": 4.5}},
-	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 3}},
-	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 4.0}},
+	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 6}},
+	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 8.0}},
 
 	# ── 방치(71~74) ──
 	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
