@@ -2453,18 +2453,7 @@ func _show_settlement(summary: Dictionary) -> void:
   var cr := _churn_row()   # 오늘 손님 이탈(방문 대비 떠난 손님)
   if cr != null:
     m.add_row(cr)
-  var had_bonus := _settle_bonus > 0
   _add_settle_bonus_row(m)   # 마감 추가금(있으면) 행 + 돈 오르는 연출
-  if had_bonus:
-    var sp := Control.new()
-    sp.custom_minimum_size = Vector2(0, 30)   # 마감 보너스↔목표 ~40px(모달 간격 5×2 포함)
-    m.add_row(sp)
-
-  # 통과 목표 — 별 + 목표점수(점수 게이트라 코인이 아닌 별로 표시)
-  var goal_lbl := UI.label(UI.money(int(summary["rent"])), 26, Palette.COCOA_800, true)
-  var goal_row := _settle_icon_row("star", goal_lbl, 26)
-  goal_row.modulate.a = 1.0   # _settle_icon_row 기본 숨김(0) — 정적 표시라 바로 보이게
-  m.add_row(goal_row)
 
   m.section_gap()
   # '실적확인' 버튼(핵심 액션) — 처음 숨김 → 잠깐 뒤 등장. 클릭 시 점수로 통과 판정.
@@ -2707,17 +2696,6 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   row.add_theme_constant_override("separation", 5)
   row.add_child(UI.ui_icon(icon, 17))
   row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
-  return row
-
-
-## 정산 팝업 행 — 아이콘 + 숫자(글자 없이). 행 전체를 투명으로 두고 순차 페이드인.
-func _settle_icon_row(icon: String, value: Label, px := 22) -> HBoxContainer:
-  var row := HBoxContainer.new()
-  row.alignment = BoxContainer.ALIGNMENT_CENTER
-  row.add_theme_constant_override("separation", 6)
-  row.modulate.a = 0.0
-  row.add_child(UI.ui_icon(icon, px))
-  row.add_child(value)
   return row
 
 

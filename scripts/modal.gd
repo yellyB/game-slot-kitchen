@@ -3,7 +3,7 @@ extends Control
 ## 중앙 패널 모달 (딤 배경 + 입력 차단). 결과·게임오버·승리 공용.
 ## 대강 구현(기능 위주) — 디자인 확정 후 정리.
 
-const SECTION_GAP := 22   # 내용영역 ↔ 버튼영역 표준 간격(정산·마감·실패 팝업 공용)
+const SECTION_GAP := 14   # 내용영역 ↔ 버튼영역 표준 간격(정산·마감·실패 팝업 공용)
 
 var _body: VBoxContainer
 var _panel: PanelContainer
