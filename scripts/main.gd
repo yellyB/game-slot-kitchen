@@ -465,6 +465,8 @@ func _apply_safe_area() -> void:
   _margin.add_theme_constant_override("margin_top", base + int(round(maxf(0.0, safe.position.y) * sy)))
   _margin.add_theme_constant_override("margin_right", base + int(round(maxf(0.0, win.x - (safe.position.x + safe.size.x)) * sx)))
   _margin.add_theme_constant_override("margin_bottom", base + int(round(maxf(0.0, win.y - (safe.position.y + safe.size.y)) * sy)))
+  if _board != null:
+    _board.refit.call_deferred()
 
 
 func _clear_confetti() -> void:
