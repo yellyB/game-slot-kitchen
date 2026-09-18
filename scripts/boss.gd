@@ -85,3 +85,15 @@ static func label() -> String:
 
 static func icon() -> String:
 	return str(active.get("icon", "📜"))
+
+const ICON_IMG := {
+	"small_kitchen": "boss_small_kitchen",
+	"time_short":    "boss_time_short",
+	"pricey_trip":   "boss_pricey_trip",
+	"slow_cook":     "boss_slow_cook",
+	"impatient":     "boss_impatient",
+}
+
+static func img_name(type := "") -> String:
+	var t := type if type != "" else kind()
+	return ICON_IMG.get(t, "boss_seal")

@@ -112,8 +112,9 @@ static func top_bar() -> PanelContainer:
 	var lives_box := HBoxContainer.new()
 	lives_box.add_theme_constant_override("separation", 8)
 	lives_box.visible = false
-	var lives_lbl := label("", 18, Palette.DANGER, true)
-	lives_box.add_child(lives_lbl)
+	var lives_hearts := HBoxContainer.new()
+	lives_hearts.add_theme_constant_override("separation", 2)
+	lives_box.add_child(lives_hearts)
 	var div := ColorRect.new()
 	div.color = Palette.COCOA_200
 	div.custom_minimum_size = Vector2(2, 18)
@@ -161,7 +162,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
-	panel.set_meta("lives_label", lives_lbl)
+	panel.set_meta("lives_hearts", lives_hearts)
 	panel.set_meta("lives_box", lives_box)
 	return panel
 

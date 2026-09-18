@@ -37,7 +37,7 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
-var _lives_label: Label
+var _lives_hearts: Control
 var _lives_box: Control
 var _run_over := false
 var _last_cash := 0
@@ -538,7 +538,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
-  _lives_label = panel.get_meta("lives_label") as Label
+  _lives_hearts = panel.get_meta("lives_hearts") as Control
   _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
@@ -561,7 +561,11 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_box.visible = false
     return
   _lives_box.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+  for c in _lives_hearts.get_children():
+    _lives_hearts.remove_child(c)
+    c.queue_free()
+  for i in range(lives_max):
+    _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
 func _customer_missed() -> void:
@@ -1575,12 +1579,27 @@ func _month_track(week: int) -> Control:
     lbl.tree_exiting.connect(pt.kill)
   else:
     var pen := Boss.preview_for_month(int(wk["month"]))
-    var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
+    var ptype := str(pen["type"])
+    var pen_row := HBoxContainer.new()
+    pen_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    pen_row.add_theme_constant_override("separation", 4)
+    pen_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    var pen_img := "res://assets/art/ui/%s.png" % Boss.img_name(ptype)
+    var pen_icon: Control
+    if ResourceLoader.exists(pen_img):
+      pen_icon = UI.ui_icon(Boss.img_name(ptype), 16)
+    else:
+      pen_icon = UI.label(str(pen["icon"]), 13, Palette.ACCENT, true)
+      pen_icon.add_theme_constant_override("outline_size", 3)
+      pen_icon.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+      pen_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    pen_row.add_child(pen_icon)
+    var pen_lbl := UI.label(Loc.t("boss." + ptype), 13, Palette.ACCENT, true)
     pen_lbl.add_theme_constant_override("outline_size", 3)
     pen_lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
-    pen_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     pen_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    v.add_child(pen_lbl)
+    pen_row.add_child(pen_lbl)
+    v.add_child(pen_row)
   return v
 
 
