@@ -2227,7 +2227,7 @@ func _animate_settle_bonus(amt_l: Label, bonus: int) -> void:
   if not is_instance_valid(amt_l) or not is_inside_tree():
     return
   var cu := create_tween()
-  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
+  cu.tween_method(func(v: float): if is_instance_valid(amt_l): amt_l.text = UI.money(int(round(v))), 0.0, float(bonus), 0.6) \
     .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   var from := amt_l.global_position + amt_l.size * 0.5
   _coin_burst(from, bonus, 350)
@@ -2425,7 +2425,7 @@ func _play_week_reward_anim(amt_l: Label, reward: int) -> void:
   _expect_fly = false
   _money_label.text = UI.money(_last_cash - reward)
   var cu := create_tween()
-  cu.tween_method(func(v: float): amt_l.text = UI.money(int(round(v))), 0.0, float(reward), 0.6) \
+  cu.tween_method(func(v: float): if is_instance_valid(amt_l): amt_l.text = UI.money(int(round(v))), 0.0, float(reward), 0.6) \
     .set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
   var from := amt_l.global_position + amt_l.size * 0.5
   _coin_burst(from, reward, 350)
