@@ -622,11 +622,72 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
 
 
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
-func _customer_missed() -> void:
+## 반환: 이번 이탈로 하트가 실제 깎였는지(호출측이 일반 놓침음 억제·연출 판단).
+func _customer_missed() -> bool:
   if _run_over:
+    return false
+  var before := _session.lives
+  var over := _session.lose_life()
+  var lost := _session.lives < before
+  if over:
+    _lives_depleted()   # 런오버는 fail 스팅으로 강조 — 하트 상실 연출은 생략
+    return lost
+  if lost:
+    _on_life_lost()
+  return lost
+
+
+## 하트 상실 순간 강조 — 일반 놓침과 질적으로 다르게: 잃은 하트가 HUD에서 튀어나가며
+## 붉은 플래시 + 화면 흔들림 + 깊은 이탈음(왈왈 저피치) + 두 번 끊는 강한 진동.
+func _on_life_lost() -> void:
+  Audio.play("customer_leave", 0.7)   # 일반 놓침음(1.0)보다 낮게 — 더 무겁게 (전용 에셋은 추후)
+  Audio.vibrate(55)
+  get_tree().create_timer(0.11).timeout.connect(func(): Audio.vibrate(55))
+  _screen_shake(7.0, 0.3)
+  _flash_danger()
+  _fly_lost_heart()
+
+
+## 방금 비워진 하트를 HUD 위치에서 복제해 떨어뜨리며 축소·회전·페이드(무엇을 잃었는지 시선 유도).
+func _fly_lost_heart() -> void:
+  if _lives_hearts == null:
     return
-  if _session.lose_life():
-    _lives_depleted()
+  var idx := _session.lives   # 방금 empty가 된 첫 하트 슬롯
+  if idx < 0 or idx >= _lives_hearts.get_child_count():
+    return
+  var slot := _lives_hearts.get_child(idx) as Control
+  var ghost := UI.ui_icon("heart_full", 20)
+  ghost.custom_minimum_size = Vector2(20, 20)
+  ghost.size = Vector2(20, 20)
+  ghost.pivot_offset = Vector2(10, 10)
+  ghost.z_index = 120
+  add_child(ghost)
+  ghost.global_position = slot.global_position
+  var y0 := ghost.position.y
+  var tw := create_tween()
+  tw.tween_property(ghost, "scale", Vector2(1.7, 1.7), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.chain()
+  tw.set_parallel(true)
+  tw.tween_property(ghost, "scale", Vector2(0.2, 0.2), 0.5).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "position:y", y0 + 48, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "rotation", 0.7, 0.5)
+  tw.tween_property(ghost, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+  tw.chain().tween_callback(ghost.queue_free)
+
+
+## 화면 전체 붉은 플래시 1회(빠르게 들어왔다 사라짐).
+func _flash_danger() -> void:
+  var f := ColorRect.new()
+  f.color = Palette.DANGER
+  f.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  f.z_index = 90
+  f.modulate.a = 0.0
+  add_child(f)
+  var tw := create_tween()
+  tw.tween_property(f, "modulate:a", 0.22, 0.07)
+  tw.tween_property(f, "modulate:a", 0.0, 0.33)
+  tw.tween_callback(f.queue_free)
 
 
 ## 목숨 소진 → 플레이 중 즉시 런오버(파산과 같은 실패 화면, 사유=서비스).
@@ -1093,10 +1154,11 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _missed_today += 1   # 대기열 이탈 = 놓친 손님(정산 처리율 분모)
-  _customer_missed()   # 목숨 −1(해금 시)
+  var lost := _customer_missed()   # 목숨 −1(해금 시). true면 하트 상실 연출이 자체 큐를 냄
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
-  Audio.play("customer_leave")   # 손님 떠남(왈왈)
-  Audio.vibrate(40)   # 손님 놓침 — 에러 진동
+  if not lost:
+    Audio.play("customer_leave")   # 손님 떠남(왈왈)
+    Audio.vibrate(40)   # 손님 놓침 — 에러 진동
   _detach_and_fade(customer)
 
 
@@ -1111,10 +1173,11 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
   _missed_today += 1   # 주문 이탈 = 놓친 손님(정산 처리율 분모)
-  _customer_missed()   # 목숨 −1(해금 시)
+  var lost := _customer_missed()   # 목숨 −1(해금 시). true면 하트 상실 연출이 자체 큐를 냄
   _spawn_pop("😠", order.global_position + order.size * 0.5)   # 성난 손님 이탈
-  Audio.play("customer_leave")   # 손님 떠남(왈왈)
-  Audio.vibrate(40)   # 손님 놓침 — 에러 진동
+  if not lost:
+    Audio.play("customer_leave")   # 손님 떠남(왈왈)
+    Audio.vibrate(40)   # 손님 놓침 — 에러 진동
   _detach_and_fade(order)   # 슬롯에서 떼어내며 페이드아웃(슬롯 즉시 회복)
   _refresh_warehouse()
 
