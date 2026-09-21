@@ -64,7 +64,12 @@ func _card(id: String) -> Button:
 	b.add_child(cc)
 
 	if not unlocked:
-		cc.add_child(UI.ui_icon("slot_lock", 34))
+		var lock := UI.ui_icon("slot_lock", 34)
+		lock.modulate.a = 0.4
+		cc.add_child(lock)
+		var soon := UI.label("Coming Soon", 32, Palette.DANGER, true)
+		soon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cc.add_child(soon)
 		return b
 
 	b.add_theme_stylebox_override("normal", UI.card(Palette.WHITE, Palette.MAIN, 2))
