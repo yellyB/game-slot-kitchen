@@ -568,11 +568,67 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
-func _customer_missed() -> void:
+func _customer_missed() -> bool:
   if _run_over:
-    return
-  if _session.lose_life():
+    return false
+  var before := _session.lives
+  var over := _session.lose_life()
+  var lost := _session.lives < before
+  if over:
     _lives_depleted()
+    return lost
+  if lost:
+    _on_life_lost()
+  return lost
+
+
+func _on_life_lost() -> void:
+  Audio.play("customer_leave", 0.7)
+  Audio.vibrate(55)
+  get_tree().create_timer(0.11).timeout.connect(func(): Audio.vibrate(55))
+  _screen_shake(7.0, 0.3)
+  _flash_danger()
+  _fly_lost_heart()
+
+
+func _fly_lost_heart() -> void:
+  if _lives_hearts == null:
+    return
+  var idx := _session.lives
+  if idx < 0 or idx >= _lives_hearts.get_child_count():
+    return
+  var slot := _lives_hearts.get_child(idx) as Control
+  var ghost := UI.ui_icon("heart_full", 20)
+  ghost.custom_minimum_size = Vector2(20, 20)
+  ghost.size = Vector2(20, 20)
+  ghost.pivot_offset = Vector2(10, 10)
+  ghost.z_index = 120
+  add_child(ghost)
+  ghost.global_position = slot.global_position
+  var y0 := ghost.position.y
+  var tw := create_tween()
+  tw.tween_property(ghost, "scale", Vector2(1.7, 1.7), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.chain()
+  tw.set_parallel(true)
+  tw.tween_property(ghost, "scale", Vector2(0.2, 0.2), 0.5).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "position:y", y0 + 48, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "rotation", 0.7, 0.5)
+  tw.tween_property(ghost, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+  tw.chain().tween_callback(ghost.queue_free)
+
+
+func _flash_danger() -> void:
+  var f := ColorRect.new()
+  f.color = Palette.DANGER
+  f.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  f.z_index = 90
+  f.modulate.a = 0.0
+  add_child(f)
+  var tw := create_tween()
+  tw.tween_property(f, "modulate:a", 0.22, 0.07)
+  tw.tween_property(f, "modulate:a", 0.0, 0.33)
+  tw.tween_callback(f.queue_free)
 
 
 func _lives_depleted() -> void:
@@ -996,10 +1052,11 @@ func _on_urged(card: Control) -> void:
 
 func _on_customer_expired(customer: Customer) -> void:
   _missed_today += 1
-  _customer_missed()
+  var lost := _customer_missed()
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
-  Audio.play("customer_leave")
-  Audio.vibrate(40)
+  if not lost:
+    Audio.play("customer_leave")
+    Audio.vibrate(40)
   _detach_and_fade(customer)
 
 
@@ -1012,10 +1069,11 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
-  _customer_missed()
+  var lost := _customer_missed()
   _spawn_pop("😠", order.global_position + order.size * 0.5)
-  Audio.play("customer_leave")
-  Audio.vibrate(40)
+  if not lost:
+    Audio.play("customer_leave")
+    Audio.vibrate(40)
   _detach_and_fade(order)
   _refresh_warehouse()
 
