@@ -18,6 +18,7 @@ const SPAWN_GAP_MIN := 1.0    # 다음 손님 최소 간격(초)
 const SPAWN_GAP_MAX := 2.5    # 다음 손님 최대 간격(초)
 const SPAWN_FIRST := 1.0      # 첫 손님 등장 시각(초) — 문 열고 1초 뒤 고정
 const SPAWN_LAST_MARGIN := 8.0  # 마지막 손님은 마감 이 시간(초) 전까지
+const SPAWN_GAP_MONTH_CUT := 0.20  # 3개월차(FINAL_MONTH)까지 선형으로 도착간격 −20% → 후반 손님 밀도↑
 
 # ── 손님 수요 (등급별 등장 가중 = 확률 %, 합 100) ──────────
 # 싼(낮은 등급) 메뉴 손님이 많이, 비싼(높은 등급) 손님은 드물게. 인덱스 = 등급-1.
@@ -27,6 +28,7 @@ const SPAWN_WEIGHTS := [30, 22, 18, 15, 10, 5]  # 1등급 30% … 6등급 5%
 const PATIENCE_ORDER := 25.0  # 주문 대기(큐)
 const PATIENCE_DISH := 35.0   # 음식 대기(슬롯 주문 카드)
 const PATIENCE_LOW_FRAC := 0.3  # 이 비율 이하로 남으면 게이지 빨강
+const PATIENCE_MONTH_CUT := 0.20  # 3개월차(FINAL_MONTH)까지 선형으로 인내심 −20% → 후반 이탈(하트) 압박
 
 # ── 경제 (금액 최소단위 1원, 가장 싼 메뉴 = 1) ────────────
 const START_MONEY := 0     # 시작 소지금
