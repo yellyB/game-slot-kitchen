@@ -40,6 +40,7 @@ var _score_label: Label
 var _lives_hearts: Control
 var _lives_box: Control
 var _run_over := false
+var _lives_failed := false
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
@@ -435,6 +436,7 @@ func _start_game() -> void:
   Boss.reset()
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())
   _run_over = false
+  _lives_failed = false
   _title.hide()
   _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)
 
@@ -568,6 +570,8 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
+const LIVES_DEPLETE_DELAY := 0.7
+
 func _customer_missed() -> bool:
   if _run_over:
     return false
@@ -575,7 +579,12 @@ func _customer_missed() -> bool:
   var over := _session.lose_life()
   var lost := _session.lives < before
   if over:
-    _lives_depleted()
+    _run_over = true
+    _session.set_paused(true)
+    _on_life_lost()
+    var t := create_tween()
+    t.tween_interval(LIVES_DEPLETE_DELAY)
+    t.tween_callback(_lives_depleted)
     return lost
   if lost:
     _on_life_lost()
@@ -632,8 +641,9 @@ func _flash_danger() -> void:
 
 
 func _lives_depleted() -> void:
-  if _run_over:
+  if _lives_failed:
     return
+  _lives_failed = true
   _run_over = true
   _session.set_paused(true)
   _warehouse.force_close()
@@ -1051,6 +1061,9 @@ func _on_urged(card: Control) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
+  if _run_over:
+    _detach_and_fade(customer)
+    return
   _missed_today += 1
   var lost := _customer_missed()
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
@@ -1061,6 +1074,10 @@ func _on_customer_expired(customer: Customer) -> void:
 
 
 func _on_order_expired(order: OrderCard) -> void:
+  if _run_over:
+    _detach_and_fade(order)
+    _refresh_warehouse()
+    return
   var gain := Buffs.on_lost(order.recipe_id)
   if gain != 0:
     _expect_fly = true
