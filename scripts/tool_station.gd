@@ -120,20 +120,27 @@ func start_cooking(id: String, filled := 999) -> void:
   _clear_holder()
   _style.border_color = Palette.ACCENT
 
+  # 아이콘·타이머는 칸에 맞춰 채운다(고정 최소크기 X) — 슬롯 확장으로 칸이 90px 밑으로
+  # 줄면 고정 스택이 칸을 부풀려 그 행이 아래 행을 잘라내던 문제 회피. [[done의 DishCard와 동일]]
   var v := VBoxContainer.new()
   v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  v.alignment = BoxContainer.ALIGNMENT_CENTER
   v.add_theme_constant_override("separation", 4)
+  v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  v.size_flags_vertical = Control.SIZE_EXPAND_FILL
   _holder.add_child(v)
 
   var dish := Recipes.icon_node(id, 34)
+  dish.custom_minimum_size = Vector2.ZERO
+  dish.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  dish.size_flags_vertical = Control.SIZE_EXPAND_FILL
   dish.modulate = Color(1, 1, 1, 0.6)  # 조리 중엔 흐리게
   v.add_child(dish)
 
   _cook_timer = RadialTimer.new()   # 라디얼 파이 타이머(12시→시계방향으로 줄어듦)
   _cook_timer.frac = 1.0
   _cook_timer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  _cook_timer.custom_minimum_size = Vector2(40, 40)
+  _cook_timer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+  _cook_timer.size_flags_vertical = Control.SIZE_EXPAND_FILL
   v.add_child(_cook_timer)
 
   set_process(true)
