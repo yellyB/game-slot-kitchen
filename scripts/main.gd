@@ -44,6 +44,7 @@ var _score_label: Label   # 이달 실적(점수) — "현재/목표"(÷100)
 var _lives_hearts: Control   # ♥ 목숨 하트 아이콘 묶음(HBox)
 var _lives_box: Control   # 하트+구분선 묶음(해금 시에만 노출)
 var _run_over := false     # 목숨 소진 런오버 진행 중 — 이탈 중복 트리거 방지
+var _lives_failed := false  # 실패 팝업 이미 띄웠는지(지연 실행 멱등)
 var _last_cash := 0   # 돈 증감 방향 판별(증가 시 라벨 팝)용
 var _expect_fly := false   # true면 이번 증가는 _fly_gain 도착 때 팝(즉시 팝 생략)
 var _hours_bar: ProgressBar
@@ -477,6 +478,7 @@ func _start_game() -> void:
   Boss.reset()                   # 예약된 보스가 새 판으로 새지 않게
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())   # 판 고유 id
   _run_over = false
+  _lives_failed = false
   _title.hide()
   _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)   # 해금 후에만 목숨 ON
 
@@ -621,6 +623,8 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
+const LIVES_DEPLETE_DELAY := 0.7   # 마지막 하트 깨짐 모션(≈0.62s)이 끝나고 실패 팝업 뜨기까지
+
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
 ## 반환: 이번 이탈로 하트가 실제 깎였는지(호출측이 일반 놓침음 억제·연출 판단).
 func _customer_missed() -> bool:
@@ -630,7 +634,12 @@ func _customer_missed() -> bool:
   var over := _session.lose_life()
   var lost := _session.lives < before
   if over:
-    _lives_depleted()   # 런오버는 fail 스팅으로 강조 — 하트 상실 연출은 생략
+    _run_over = true            # 즉시 재진입·잔여 이탈 피드백 차단(연출 동안 정지)
+    _session.set_paused(true)
+    _on_life_lost()             # 마지막 하트도 동일하게 깨지는 모션
+    var t := create_tween()     # 모션(≈0.62s)이 끝난 뒤 실패 팝업 — 동시 등장 방지
+    t.tween_interval(LIVES_DEPLETE_DELAY)
+    t.tween_callback(_lives_depleted)
     return lost
   if lost:
     _on_life_lost()
@@ -692,8 +701,9 @@ func _flash_danger() -> void:
 
 ## 목숨 소진 → 플레이 중 즉시 런오버(파산과 같은 실패 화면, 사유=서비스).
 func _lives_depleted() -> void:
-  if _run_over:
+  if _lives_failed:
     return
+  _lives_failed = true
   _run_over = true
   _session.set_paused(true)   # 시계·스폰 정지(다음 start_run에서 자동 해제)
   _warehouse.force_close()
@@ -1153,6 +1163,9 @@ func _on_urged(card: Control) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
+  if _run_over:   # 런오버 연출 중 — 잔여 손님 이탈은 무시(스트레이 😠/왈왈 방지)
+    _detach_and_fade(customer)
+    return
   _missed_today += 1   # 대기열 이탈 = 놓친 손님(정산 처리율 분모)
   var lost := _customer_missed()   # 목숨 −1(해금 시). true면 하트 상실 연출이 자체 큐를 냄
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)   # 성난 손님 이탈
@@ -1164,6 +1177,10 @@ func _on_customer_expired(customer: Customer) -> void:
 
 ## 음식 대기 인내심 0 → 주문 카드(=손님) 통째로 사라짐, 슬롯 회복.
 func _on_order_expired(order: OrderCard) -> void:
+  if _run_over:   # 런오버 연출 중 — 잔여 주문 이탈은 무시(스트레이 😠/왈왈 방지)
+    _detach_and_fade(order)
+    _refresh_warehouse()
+    return
   # 카드71·72: 주문 낸 손님이 못 받고 떠나면 보상(72는 다음 획득 2배 예약).
   var gain := Buffs.on_lost(order.recipe_id)
   if gain != 0:
