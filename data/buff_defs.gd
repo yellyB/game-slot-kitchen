@@ -4,7 +4,7 @@ extends RefCounted
 static var current_shop := "donut"
 
 static var ALL := {
-	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.60}},
+	"cook":       {"card": 1, "icon": "⚡", "mult": {"stat": "cook_mult", "value": 0.70}},
 	"patience":   {"card": 2, "icon": "⏳", "mult": {"stat": "patience_mult", "value": 1.35}},
 	"day_len":    {"card": 3, "icon": "🕒", "mult": {"stat": "day_mult", "value": 1.29}},
 	"wh_chance":  {"card": 4, "icon": "🍀", "trip_free": 0.86},

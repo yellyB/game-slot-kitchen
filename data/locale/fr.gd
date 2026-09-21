@@ -79,10 +79,11 @@ const S := {
 	"shop_price": "Prix %s",
 	"sold_out": "ÉPUISÉ",
 	"shop_sell": "Passer",
+	"buff_sell": "Vendre",
 	"shop_full_notice": "Bonus pleins — vendez-en un",
 
 
-	"b.cook.name": "Plein feu", "b.cook.label": "Temps de cuisson -40%",
+	"b.cook.name": "Plein feu", "b.cook.label": "Temps de cuisson -30%",
 	"b.patience.name": "Patiente !", "b.patience.label": "Patience du client +35% (attend plus)",
 	"b.day_len.name": "Heures sup", "b.day_len.label": "Horaires d'ouverture +29%",
 	"b.wh_chance.name": "Téléportation", "b.wh_chance.label": "86% de chance qu'un tour au garde-manger ne coûte aucun temps",

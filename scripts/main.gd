@@ -37,9 +37,10 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
-var _lives_label: Label
+var _lives_hearts: Control
 var _lives_box: Control
 var _run_over := false
+var _lives_failed := false
 var _last_cash := 0
 var _expect_fly := false
 var _hours_bar: ProgressBar
@@ -435,6 +436,7 @@ func _start_game() -> void:
   Boss.reset()
   _run_id = Time.get_datetime_string_from_system() + "#" + str(Time.get_ticks_msec())
   _run_over = false
+  _lives_failed = false
   _title.hide()
   _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)
 
@@ -538,7 +540,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
-  _lives_label = panel.get_meta("lives_label") as Label
+  _lives_hearts = panel.get_meta("lives_hearts") as Control
   _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
 
@@ -561,19 +563,87 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_box.visible = false
     return
   _lives_box.visible = true
-  _lives_label.text = "❤️".repeat(lives) + "🤍".repeat(maxi(0, lives_max - lives))
+  for c in _lives_hearts.get_children():
+    _lives_hearts.remove_child(c)
+    c.queue_free()
+  for i in range(lives_max):
+    _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
-func _customer_missed() -> void:
+const LIVES_DEPLETE_DELAY := 1.1
+
+func _customer_missed() -> bool:
   if _run_over:
+    return false
+  var before := _session.lives
+  var over := _session.lose_life()
+  var lost := _session.lives < before
+  if over:
+    _run_over = true
+    _session.set_paused(true)
+    _on_life_lost()
+    var t := create_tween()
+    t.tween_interval(LIVES_DEPLETE_DELAY)
+    t.tween_callback(_lives_depleted)
+    return lost
+  if lost:
+    _on_life_lost()
+  return lost
+
+
+func _on_life_lost() -> void:
+  Audio.play("heart_lost")
+  Audio.vibrate(55)
+  get_tree().create_timer(0.11).timeout.connect(func(): Audio.vibrate(55))
+  _screen_shake(7.0, 0.3)
+  _flash_danger()
+  _fly_lost_heart()
+
+
+func _fly_lost_heart() -> void:
+  if _lives_hearts == null:
     return
-  if _session.lose_life():
-    _lives_depleted()
+  var idx := _session.lives
+  if idx < 0 or idx >= _lives_hearts.get_child_count():
+    return
+  var slot := _lives_hearts.get_child(idx) as Control
+  var ghost := UI.ui_icon("heart_full", 20)
+  ghost.custom_minimum_size = Vector2(20, 20)
+  ghost.size = Vector2(20, 20)
+  ghost.pivot_offset = Vector2(10, 10)
+  ghost.z_index = 120
+  add_child(ghost)
+  ghost.global_position = slot.global_position
+  var y0 := ghost.position.y
+  var tw := create_tween()
+  tw.tween_property(ghost, "scale", Vector2(1.7, 1.7), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  tw.chain()
+  tw.set_parallel(true)
+  tw.tween_property(ghost, "scale", Vector2(0.2, 0.2), 0.5).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "position:y", y0 + 48, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  tw.tween_property(ghost, "rotation", 0.7, 0.5)
+  tw.tween_property(ghost, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+  tw.chain().tween_callback(ghost.queue_free)
+
+
+func _flash_danger() -> void:
+  var f := ColorRect.new()
+  f.color = Palette.DANGER
+  f.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  f.z_index = 90
+  f.modulate.a = 0.0
+  add_child(f)
+  var tw := create_tween()
+  tw.tween_property(f, "modulate:a", 0.22, 0.07)
+  tw.tween_property(f, "modulate:a", 0.0, 0.33)
+  tw.tween_callback(f.queue_free)
 
 
 func _lives_depleted() -> void:
-  if _run_over:
+  if _lives_failed:
     return
+  _lives_failed = true
   _run_over = true
   _session.set_paused(true)
   _warehouse.force_close()
@@ -991,15 +1061,23 @@ func _on_urged(card: Control) -> void:
 
 
 func _on_customer_expired(customer: Customer) -> void:
+  if _run_over:
+    _detach_and_fade(customer)
+    return
   _missed_today += 1
-  _customer_missed()
+  var lost := _customer_missed()
   _spawn_pop("😠", customer.global_position + customer.size * 0.5)
-  Audio.play("customer_leave")
-  Audio.vibrate(40)
+  if not lost:
+    Audio.play("customer_leave")
+    Audio.vibrate(40)
   _detach_and_fade(customer)
 
 
 func _on_order_expired(order: OrderCard) -> void:
+  if _run_over:
+    _detach_and_fade(order)
+    _refresh_warehouse()
+    return
   var gain := Buffs.on_lost(order.recipe_id)
   if gain != 0:
     _expect_fly = true
@@ -1008,10 +1086,11 @@ func _on_order_expired(order: OrderCard) -> void:
     _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
-  _customer_missed()
+  var lost := _customer_missed()
   _spawn_pop("😠", order.global_position + order.size * 0.5)
-  Audio.play("customer_leave")
-  Audio.vibrate(40)
+  if not lost:
+    Audio.play("customer_leave")
+    Audio.vibrate(40)
   _detach_and_fade(order)
   _refresh_warehouse()
 
@@ -1575,12 +1654,27 @@ func _month_track(week: int) -> Control:
     lbl.tree_exiting.connect(pt.kill)
   else:
     var pen := Boss.preview_for_month(int(wk["month"]))
-    var pen_lbl := UI.label("%s %s" % [pen["icon"], Loc.t("boss." + str(pen["type"]))], 13, Palette.ACCENT, true)
+    var ptype := str(pen["type"])
+    var pen_row := HBoxContainer.new()
+    pen_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    pen_row.add_theme_constant_override("separation", 4)
+    pen_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    var pen_img := "res://assets/art/ui/%s.png" % Boss.img_name(ptype)
+    var pen_icon: Control
+    if ResourceLoader.exists(pen_img):
+      pen_icon = UI.ui_icon(Boss.img_name(ptype), 16)
+    else:
+      pen_icon = UI.label(str(pen["icon"]), 13, Palette.ACCENT, true)
+      pen_icon.add_theme_constant_override("outline_size", 3)
+      pen_icon.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+      pen_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    pen_row.add_child(pen_icon)
+    var pen_lbl := UI.label(Loc.t("boss." + ptype), 13, Palette.ACCENT, true)
     pen_lbl.add_theme_constant_override("outline_size", 3)
     pen_lbl.add_theme_color_override("font_outline_color", Palette.COCOA_900)
-    pen_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     pen_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    v.add_child(pen_lbl)
+    pen_row.add_child(pen_lbl)
+    v.add_child(pen_row)
   return v
 
 
@@ -1736,8 +1830,12 @@ func _make_boss_banner() -> Control:
   box.add_theme_constant_override("separation", 10)
   box.mouse_filter = Control.MOUSE_FILTER_IGNORE
   center.add_child(box)
-  var seal := UI.label("📜", 84)
-  seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  var seal: Control
+  if ResourceLoader.exists("res://assets/art/ui/boss_seal.png"):
+    seal = UI.ui_icon("boss_seal", 84)
+  else:
+    seal = UI.label("📜", 84)
+    seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(seal)
   var title := UI.label(Loc.t("boss.title"), 40, Palette.WHITE, true)
   title.add_theme_constant_override("outline_size", 8)
@@ -1747,8 +1845,9 @@ func _make_boss_banner() -> Control:
   var chip := HBoxContainer.new()
   chip.alignment = BoxContainer.ALIGNMENT_CENTER
   chip.add_theme_constant_override("separation", 6)
-  if Boss.kind() == "time_short":
-    chip.add_child(UI.ui_icon("timer", 34))
+  var chip_img := "res://assets/art/ui/%s.png" % Boss.img_name()
+  if ResourceLoader.exists(chip_img):
+    chip.add_child(UI.ui_icon(Boss.img_name(), 34))
   else:
     chip.add_child(UI.label(Boss.icon(), 34))
   chip.add_child(UI.label(Boss.label(), 26, Palette.WHITE, true))

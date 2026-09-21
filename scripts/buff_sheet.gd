@@ -89,11 +89,6 @@ func _entry(id: String) -> Control:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 52)
 	card.add_theme_stylebox_override("panel", UI.card(Palette.MAIN.lightened(0.82), Palette.MAIN))
-	if sellable:
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		card.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-				on_sell.call(id))
 
 	var pad := MarginContainer.new()
 	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -123,7 +118,16 @@ func _entry(id: String) -> Control:
 	texts.add_child(desc)
 
 	if sellable:
-		var coin := UI.ui_icon("coin", 16)
-		coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(coin)
+		var sell_btn := Button.new()
+		sell_btn.text = Loc.t("buff_sell")
+		sell_btn.add_theme_font_size_override("font_size", 13)
+		sell_btn.add_theme_color_override("font_color", Palette.WHITE)
+		sell_btn.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
+		sell_btn.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
+		sell_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
+		sell_btn.custom_minimum_size = Vector2(64, 34)
+		sell_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		sell_btn.pressed.connect(func(): on_sell.call(id))
+		Audio.attach_click(sell_btn)
+		row.add_child(sell_btn)
 	return card

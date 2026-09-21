@@ -79,10 +79,11 @@ const S := {
 	"shop_price": "Preço %s",
 	"sold_out": "ESGOTADO",
 	"shop_sell": "Passar",
+	"buff_sell": "Vender",
 	"shop_full_notice": "Buffs cheios — venda um para pegar",
 
 
-	"b.cook.name": "A Todo Vapor", "b.cook.label": "Tempo de preparo -40%",
+	"b.cook.name": "A Todo Vapor", "b.cook.label": "Tempo de preparo -30%",
 	"b.patience.name": "Peraí!", "b.patience.label": "Paciência do cliente +35% (espera mais)",
 	"b.day_len.name": "Hora Extra", "b.day_len.label": "Horário de abertura +29%",
 	"b.wh_chance.name": "Teletransporte", "b.wh_chance.label": "86% de chance da ida à despensa não gastar tempo",
