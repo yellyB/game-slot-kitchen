@@ -90,7 +90,7 @@ const S := {
 
 
 	# Buff cards (name/label) — keys: b.<slug>.name / b.<slug>.label
-	"b.cook.name": "全力开火", "b.cook.label": "烹饪时间 -40%",
+	"b.cook.name": "全力开火", "b.cook.label": "烹饪时间 -30%",
 	"b.patience.name": "再等等！", "b.patience.label": "顾客耐心 +35%（等更久）",
 	"b.day_len.name": "加班营业", "b.day_len.label": "营业时间 +29%",
 	"b.wh_chance.name": "瞬间移动", "b.wh_chance.label": "86% 几率储藏室来回不耗时间",

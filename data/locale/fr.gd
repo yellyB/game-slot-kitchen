@@ -90,7 +90,7 @@ const S := {
 
 
 	# Buff cards (name/label) — keys: b.<slug>.name / b.<slug>.label
-	"b.cook.name": "Plein feu", "b.cook.label": "Temps de cuisson -40%",
+	"b.cook.name": "Plein feu", "b.cook.label": "Temps de cuisson -30%",
 	"b.patience.name": "Patiente !", "b.patience.label": "Patience du client +35% (attend plus)",
 	"b.day_len.name": "Heures sup", "b.day_len.label": "Horaires d'ouverture +29%",
 	"b.wh_chance.name": "Téléportation", "b.wh_chance.label": "86% de chance qu'un tour au garde-manger ne coûte aucun temps",
