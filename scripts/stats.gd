@@ -2,10 +2,10 @@ class_name Stats
 extends RefCounted
 
 static func order_patience() -> float:
-	return (Buffs.mod("patience_mult", Config.PATIENCE_ORDER) + Buffs.patience_flat()) * Boss.patience_mult()
+	return (Buffs.mod("patience_mult", Config.PATIENCE_ORDER) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale()
 
 static func dish_patience() -> float:
-	return (Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()) * Boss.patience_mult()
+	return (Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale()
 
 static func cook_time(recipe_id: String, filled := 999) -> float:
 	var t := Buffs.mod("cook_mult", float(Recipes.get_def(recipe_id).get("cook_time", 5.0)))
