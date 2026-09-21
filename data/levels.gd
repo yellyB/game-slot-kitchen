@@ -45,6 +45,9 @@ static func difficulty_t() -> float:
 static func patience_scale() -> float:
 	return 1.0 - Config.PATIENCE_MONTH_CUT * difficulty_t()
 
+static func spawn_gap_scale() -> float:
+	return 1.0 - Config.SPAWN_GAP_MONTH_CUT * difficulty_t()
+
 static func _gate_mult(mi: int) -> float:
 	if mi >= GATE_MULT_RAMP:
 		return GATE_MULT_MAX
