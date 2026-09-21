@@ -91,7 +91,7 @@ const S := {
 	"shop_full_notice": "Buffs full — sell one to take",
 
 
-	"b.cook.name": "Full Blast", "b.cook.label": "Cook time -40%",
+	"b.cook.name": "Full Blast", "b.cook.label": "Cook time -30%",
 	"b.patience.name": "Hold On!", "b.patience.label": "Customer patience +35% (waits longer)",
 	"b.day_len.name": "Overtime", "b.day_len.label": "Open hours +29%",
 	"b.wh_chance.name": "Teleport", "b.wh_chance.label": "86% chance pantry trip costs no time",

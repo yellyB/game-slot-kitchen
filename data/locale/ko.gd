@@ -91,7 +91,7 @@ const S := {
 	"shop_full_notice": "버프칸 가득 — 하나 팔아야 받아요",
 
 
-	"b.cook.name": "높은 화력", "b.cook.label": "조리 시간 -40%",
+	"b.cook.name": "높은 화력", "b.cook.label": "조리 시간 -30%",
 	"b.patience.name": "기다려!", "b.patience.label": "손님 인내심 +35%",
 	"b.day_len.name": "연장영업", "b.day_len.label": "영업시간 +29%",
 	"b.wh_chance.name": "순간이동", "b.wh_chance.label": "창고 나갈때 86%확률로 시간이 소요되지 않음",

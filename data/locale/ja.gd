@@ -83,7 +83,7 @@ const S := {
 	"shop_full_notice": "バフが満杯 — 1枚売れば受取可",
 
 
-	"b.cook.name": "強火全開", "b.cook.label": "調理時間 -40%",
+	"b.cook.name": "強火全開", "b.cook.label": "調理時間 -30%",
 	"b.patience.name": "待って！", "b.patience.label": "お客の我慢 +35%（長く待つ）",
 	"b.day_len.name": "延長営業", "b.day_len.label": "営業時間 +29%",
 	"b.wh_chance.name": "瞬間移動", "b.wh_chance.label": "パントリーから出る時 86%で時間ゼロ",
