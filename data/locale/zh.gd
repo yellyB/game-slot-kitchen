@@ -85,6 +85,7 @@ const S := {
 	"shop_price": "价格 %s",
 	"sold_out": "售罄",
 	"shop_sell": "跳过",
+	"buff_sell": "卖出",
 	"shop_full_notice": "增益已满 — 卖掉一张才能收取",
 
 

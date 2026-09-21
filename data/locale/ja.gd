@@ -85,6 +85,7 @@ const S := {
 	"shop_price": "価格 %s",
 	"sold_out": "売り切れ",
 	"shop_sell": "パス",
+	"buff_sell": "売る",
 	"shop_full_notice": "バフが満杯 — 1枚売れば受取可",
 
 

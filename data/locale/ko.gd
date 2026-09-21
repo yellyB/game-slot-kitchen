@@ -94,6 +94,7 @@ const S := {
 	"shop_price": "가격 %s",
 	"sold_out": "품절",
 	"shop_sell": "패스",
+	"buff_sell": "팔기",
 	"shop_full_notice": "버프칸 가득 — 하나 팔아야 받아요",
 
 

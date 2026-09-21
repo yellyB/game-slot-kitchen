@@ -359,9 +359,8 @@ func _show_pack(pack: Array) -> void:
     _reveal_choice(choice, i)   # 하나씩 팝하며 개봉
     i += 1
 
-  # 가득 찬 채로 개봉 — 리롤 위에 [되팔기 +환급] 하나. 아무것도 안 받고 환급받고 종료.
+  # 가득 찬 채로 개봉 — 리롤 위에 [패스] 하나. 아무것도 안 받고 종료(팩값은 소비, 환급 없음).
   if Buffs.is_full():
-    var refund := _sell_refund()
     var sell := Button.new()
     sell.add_theme_font_size_override("font_size", 16)
     sell.add_theme_color_override("font_color", Palette.WHITE)
@@ -369,7 +368,7 @@ func _show_pack(pack: Array) -> void:
     sell.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_400.lightened(0.08)))
     sell.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_400.darkened(0.1)))
     sell.custom_minimum_size = Vector2(160, 40)
-    sell.text = Loc.t("shop_sell") + "  +" + UI.money(refund)
+    sell.text = Loc.t("shop_sell")
     sell.pressed.connect(func(): _sell_drawn(overlay))
     Audio.attach_click(sell)
     box.add_child(sell)
@@ -498,8 +497,6 @@ func _sell_drawn(overlay: Control) -> void:
   _buff_btn.z_index = 0
   _buff_backdrop.z_index = 0
   _buff_sheet.z_index = 0
-  session.add_cash(_sell_refund())
-  Audio.play("coins")
   if is_instance_valid(overlay):
     var ot := create_tween()
     ot.tween_property(overlay, "modulate:a", 0.0, 0.28)
