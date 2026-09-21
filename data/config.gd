@@ -12,7 +12,6 @@ const SPAWN_GAP_MIN := 1.0
 const SPAWN_GAP_MAX := 2.5
 const SPAWN_FIRST := 1.0
 const SPAWN_LAST_MARGIN := 8.0
-const SPAWN_GAP_MONTH_CUT := 0.20
 
 const SPAWN_WEIGHTS := [30, 22, 18, 15, 10, 5]
 

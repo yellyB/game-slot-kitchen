@@ -179,7 +179,7 @@ func tick(delta: float) -> void:
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX) * Levels.spawn_gap_scale()
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX)
 		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
 			_next_spawn = -1.0
 	if _elapsed >= _day_length:

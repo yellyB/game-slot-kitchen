@@ -10,7 +10,7 @@ const GATE_MULT_RAMP := 3
 const ONBOARD_GATES := [
 	[87, 212, 300, 440],
 	[220, 480, 880, 1600],
-	[900, 1800, 3240, 5400],
+	[1000, 2000, 3600, 6000],
 	[1890, 3710, 7250, 14500],
 	[3380, 6660, 13000, 26000],
 	[5460, 10750, 21000, 42000],
@@ -44,9 +44,6 @@ static func difficulty_t() -> float:
 
 static func patience_scale() -> float:
 	return 1.0 - Config.PATIENCE_MONTH_CUT * difficulty_t()
-
-static func spawn_gap_scale() -> float:
-	return 1.0 - Config.SPAWN_GAP_MONTH_CUT * difficulty_t()
 
 static func _gate_mult(mi: int) -> float:
 	if mi >= GATE_MULT_RAMP:
