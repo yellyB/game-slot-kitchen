@@ -92,7 +92,7 @@ func advance_day() -> void:
 
 func start_day() -> void:
 	var wk := Levels.get_day(day)
-	Levels.cur_month = int(wk.get("month", 1))   # 후반 난이도 램프(인내심·도착밀도) 기준
+	Levels.cur_month = int(wk.get("month", 1))   # 후반 인내심 램프 기준
 	Boss.begin_day(wk)   # 월말(4주차)=보스전 제약 자동 발동(디버그 예약 우선) — day_length 계산 전에
 	# 슬롯 = 기본(상점확장 포함) + 구조 버프(12)
 	rent = int(round(Buffs.mod("rent_mult", float(wk.get("rent", 0)))))
@@ -199,7 +199,7 @@ func tick(delta: float) -> void:
 	# 총량 캡 없이 랜덤 간격 등장 — 큐가 꽉 차면 main/sim이 알아서 드롭(봐줌). 마감 여유 구간엔 안 받음.
 	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX) * Levels.spawn_gap_scale()
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX)
 		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
 			_next_spawn = -1.0   # 마감 임박 — 더 안 받음
 	if _elapsed >= _day_length:

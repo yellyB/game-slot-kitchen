@@ -21,7 +21,7 @@ const GATE_MULT_RAMP := 3     # 이 개월(0-base) 동안 MIN→MAX 선형 상�
 const ONBOARD_GATES := [
 	[87, 212, 300, 440],
 	[220, 480, 880, 1600],
-	[900, 1800, 3240, 5400],
+	[1000, 2000, 3600, 6000],
 	[1890, 3710, 7250, 14500],
 	[3380, 6660, 13000, 26000],
 	[5460, 10750, 21000, 42000],
@@ -53,7 +53,7 @@ static func count() -> int:
 static func months() -> int:
 	return MONTHS.size()
 
-# 후반 난이도 램프(인내심↓·도착밀도↑)의 기준 월 — session.start_day가 매일 갱신.
+# 후반 인내심 램프의 기준 월 — session.start_day가 매일 갱신.
 static var cur_month := 1
 
 ## 월별 난이도 계수 — 1개월차 0 → FINAL_MONTH(3)개월차부터 1로 포화(그 사이 선형).
@@ -63,10 +63,6 @@ static func difficulty_t() -> float:
 ## 손님 인내심 배수 — 후반일수록 짧게(3개월차 = 1 − PATIENCE_MONTH_CUT). Stats에서 곱함.
 static func patience_scale() -> float:
 	return 1.0 - Config.PATIENCE_MONTH_CUT * difficulty_t()
-
-## 손님 도착 간격 배수 — 후반일수록 촘촘(3개월차 = 1 − SPAWN_GAP_MONTH_CUT). session 스폰에서 곱함.
-static func spawn_gap_scale() -> float:
-	return 1.0 - Config.SPAWN_GAP_MONTH_CUT * difficulty_t()
 
 ## 이 달(0-base)의 관문 난이도 배수 — 온보딩 보호를 위해 MIN→MAX로 선형 램프 후 고정.
 static func _gate_mult(mi: int) -> float:
