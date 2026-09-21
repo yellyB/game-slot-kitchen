@@ -79,6 +79,7 @@ const S := {
 	"shop_price": "Preis %s",
 	"sold_out": "AUSVERKAUFT",
 	"shop_sell": "Pass",
+	"buff_sell": "Verkaufen",
 	"shop_full_notice": "Buffs voll — einen verkaufen",
 
 

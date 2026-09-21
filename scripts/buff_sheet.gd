@@ -123,6 +123,9 @@ func _entry(id: String) -> Control:
 	texts.add_child(desc)
 
 	if sellable:
+		var sell_lbl := UI.label(Loc.t("buff_sell"), 12, Palette.MAIN, true)
+		sell_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(sell_lbl)
 		var coin := UI.ui_icon("coin", 16)
 		coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(coin)
