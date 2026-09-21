@@ -623,7 +623,7 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
-const LIVES_DEPLETE_DELAY := 0.7   # 마지막 하트 깨짐 모션(≈0.62s)이 끝나고 실패 팝업 뜨기까지
+const LIVES_DEPLETE_DELAY := 1.1   # 마지막 하트 깨짐 연출(모션 ≈0.62s + 유리음 ≈1.1s)이 끝나고 실패 팝업
 
 ## 손님 이탈 1건 → 목숨 −1(해금 시). 목숨 소진 시 즉시 런오버.
 ## 반환: 이번 이탈로 하트가 실제 깎였는지(호출측이 일반 놓침음 억제·연출 판단).
@@ -647,9 +647,9 @@ func _customer_missed() -> bool:
 
 
 ## 하트 상실 순간 강조 — 일반 놓침과 질적으로 다르게: 잃은 하트가 HUD에서 튀어나가며
-## 붉은 플래시 + 화면 흔들림 + 깊은 이탈음(왈왈 저피치) + 두 번 끊는 강한 진동.
+## 붉은 플래시 + 화면 흔들림 + 전용 유리 깨짐음 + 두 번 끊는 강한 진동.
 func _on_life_lost() -> void:
-  Audio.play("customer_leave", 0.7)   # 일반 놓침음(1.0)보다 낮게 — 더 무겁게 (전용 에셋은 추후)
+  Audio.play("heart_lost")   # 하트 상실 전용(유리 깨짐 '쨍')
   Audio.vibrate(55)
   get_tree().create_timer(0.11).timeout.connect(func(): Audio.vibrate(55))
   _screen_shake(7.0, 0.3)
