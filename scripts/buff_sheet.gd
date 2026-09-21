@@ -132,9 +132,9 @@ func _entry(id: String) -> Control:
 		sell_btn.text = Loc.t("buff_sell")
 		sell_btn.add_theme_font_size_override("font_size", 13)
 		sell_btn.add_theme_color_override("font_color", Palette.WHITE)
-		sell_btn.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_400))
-		sell_btn.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_400.lightened(0.08)))
-		sell_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_400.darkened(0.1)))
+		sell_btn.add_theme_stylebox_override("normal", UI.chip(Palette.SUB))
+		sell_btn.add_theme_stylebox_override("hover", UI.chip(Palette.SUB.lightened(0.08)))
+		sell_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.SUB.darkened(0.1)))
 		sell_btn.custom_minimum_size = Vector2(64, 34)
 		sell_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		sell_btn.pressed.connect(func(): on_sell.call(id))
