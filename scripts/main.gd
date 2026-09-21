@@ -570,7 +570,7 @@ func _on_lives_changed(lives: int, lives_max: int) -> void:
     _lives_hearts.add_child(UI.ui_icon("heart_full" if i < lives else "heart_empty", 20))
 
 
-const LIVES_DEPLETE_DELAY := 0.7
+const LIVES_DEPLETE_DELAY := 1.1
 
 func _customer_missed() -> bool:
   if _run_over:
@@ -592,7 +592,7 @@ func _customer_missed() -> bool:
 
 
 func _on_life_lost() -> void:
-  Audio.play("customer_leave", 0.7)
+  Audio.play("heart_lost")
   Audio.vibrate(55)
   get_tree().create_timer(0.11).timeout.connect(func(): Audio.vibrate(55))
   _screen_shake(7.0, 0.3)
