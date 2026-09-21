@@ -1,12 +1,12 @@
 class_name BuffSheet
 extends Sheet
 ## 보유 버프 리스트 서랍(바텀시트) — 레시피/창고 시트와 동일 패턴.
-## 열 때마다 현재 보유 버프로 목록 재구성. 상점에선 항목 탭 = 판매(on_sell 콜백), 플레이에선 보기 전용.
+## 열 때마다 현재 보유 버프로 목록 재구성. 상점에선 항목마다 [팔기] 버튼(on_sell 콜백), 플레이에선 보기 전용.
 ## 보유 0개면 열지 않음 — 여는 버튼 쪽에서 disabled 처리.
 
 signal close_requested
 
-var on_sell: Callable   # 상점에서만 주입(항목 탭 → 판매 확인). 비어있으면 보기 전용.
+var on_sell: Callable   # 상점에서만 주입([팔기] 버튼 → 판매 확인). 비어있으면 보기 전용.
 
 const ROW_H := 66.0     # 항목 1개 예상 높이(계산용) — 스크롤 없이 잘 보이게 여유
 const ROW_SEP := 8.0
@@ -93,17 +93,12 @@ func rebuild() -> void:
 	_count.text = "%d/%d" % [Buffs.owned().size(), Config.MAX_BUFFS + Buffs.buff_slot_bonus()]
 
 
-## 버프 항목 한 줄: [아이콘] 이름 / 설명 … (상점이면 우측에 판매 코인 힌트, 탭=판매).
+## 버프 항목 한 줄: [아이콘] 이름 / 설명 … (상점이면 우측에 [팔기] 버튼).
 func _entry(id: String) -> Control:
 	var sellable := on_sell.is_valid()
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 52)
 	card.add_theme_stylebox_override("panel", UI.card(Palette.MAIN.lightened(0.82), Palette.MAIN))
-	if sellable:
-		card.mouse_filter = Control.MOUSE_FILTER_STOP   # 항목 탭 = 판매(확인 후)
-		card.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-				on_sell.call(id))
 
 	var pad := MarginContainer.new()
 	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -133,10 +128,16 @@ func _entry(id: String) -> Control:
 	texts.add_child(desc)
 
 	if sellable:
-		var sell_lbl := UI.label(Loc.t("buff_sell"), 12, Palette.MAIN, true)   # 탭=판매 명시
-		sell_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(sell_lbl)
-		var coin := UI.ui_icon("coin", 16)   # 탭하면 팔림(코인 힌트)
-		coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(coin)
+		var sell_btn := Button.new()   # [팔기] → 판매 확인 팝업(on_sell)
+		sell_btn.text = Loc.t("buff_sell")
+		sell_btn.add_theme_font_size_override("font_size", 13)
+		sell_btn.add_theme_color_override("font_color", Palette.WHITE)
+		sell_btn.add_theme_stylebox_override("normal", UI.chip(Palette.COCOA_400))
+		sell_btn.add_theme_stylebox_override("hover", UI.chip(Palette.COCOA_400.lightened(0.08)))
+		sell_btn.add_theme_stylebox_override("pressed", UI.chip(Palette.COCOA_400.darkened(0.1)))
+		sell_btn.custom_minimum_size = Vector2(64, 34)
+		sell_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		sell_btn.pressed.connect(func(): on_sell.call(id))
+		Audio.attach_click(sell_btn)
+		row.add_child(sell_btn)
 	return card
