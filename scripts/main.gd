@@ -2667,7 +2667,7 @@ func _show_month_transition(month: int) -> void:
   title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(title)
-  var sub := UI.label(Loc.t("patience_down"), 22, Palette.WHITE, true)
+  var sub := UI.label(Loc.t("patience_down") + " ▾", 22, Palette.WHITE, true)
   sub.add_theme_constant_override("outline_size", 4)
   sub.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2678,6 +2678,10 @@ func _show_month_transition(month: int) -> void:
   await t.finished
   if not is_inside_tree():
     return
+  var pulse := create_tween().set_loops()
+  pulse.tween_property(sub, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
+  pulse.tween_property(sub, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  sub.tree_exiting.connect(pulse.kill)
   await _tap_to_continue()
   if is_instance_valid(root):
     var out := create_tween()
