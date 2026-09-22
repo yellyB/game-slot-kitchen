@@ -1998,9 +1998,6 @@ func _start_day_intro() -> void:
   if is_instance_valid(_session):
     _session.set_process(true)   # 탭 후 게임플레이(시계·손님 스폰) 시작
   _dismiss_banner(banner)
-  var wk := Levels.get_week(_session.day)   # 새 달(2개월차+) 1주차 = 점수 초기화 → 별 떨어짐 연출
-  if int(wk["week_in_month"]) == 1 and int(wk["month"]) > 1:
-    _play_score_reset_fx()
 
 
 ## 보스 하루 인트로 — 계약 갱신 심사 배너(제약 예고 + 재계약비 목표) → 탭 시 시작.
@@ -2709,6 +2706,7 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
 ## 주 클리어 보상 전용 창 — 통과 확정 후. 큰 통과 도장 + "N주차 클리어!" + 코인 셀레브레이션 → [상점으로].
 func _show_week_reward(summary: Dictionary) -> void:
   var m := Modal.open(self).gap(14)
+  var month_end := bool(Levels.get_week(int(summary["day"]))["is_month_end"])   # 다음 달로 넘어감 → 점수 리셋 연출
 
   # "Week N Clear!" 배너 — 이 창의 통과 표시
   var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
@@ -2748,7 +2746,14 @@ func _show_week_reward(summary: Dictionary) -> void:
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
   go.modulate.a = 0.0
   go.disabled = true
-  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  go.pressed.connect(func():
+    if month_end:
+      go.disabled = true   # 낙하 연출(≈1s) 중 재입력 방지
+      m.queue_free()
+      _reset_score_then_shop()
+    else:
+      m.queue_free()
+      _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
 
@@ -2845,6 +2850,17 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   row.add_child(UI.ui_icon(icon, 17))
   row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
   return row
+
+
+## 월말 클리어 [상점으로]: 점수를 0으로 비우고 별 낙하 연출을 ≈1s 보여준 뒤 상점 진입.
+func _reset_score_then_shop() -> void:
+  if is_instance_valid(_session):
+    _session.month_score = 0
+    _update_score_bar()
+  _play_score_reset_fx()
+  var t := create_tween()
+  t.tween_interval(1.0)
+  t.tween_callback(_open_shop)
 
 
 ## 결과 → 인터세션 상점 (슬롯 확장 등) → [영업 시작] → 다음 세션.
