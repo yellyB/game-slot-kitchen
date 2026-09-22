@@ -1347,43 +1347,43 @@ func _coin_burst(from: Vector2, amount: int, z := 116, target_node: Control = nu
     tw.chain().tween_callback(coin.queue_free)
 
 
-## 월초 점수 리셋 연출 — 상단바 별이 톡 떨어져 사라지고, 새 달 별이 통통 올라온다.
-## (점수 숫자는 이미 0으로 초기화된 상태 — 별 모션으로 '초기화됐음'을 눈으로 각인)
+## 점수 리셋 연출 — 상단바 별에서 별 여러 개가 위로 솟았다 포물선으로 천천히 낙하.
 func _play_score_reset_fx() -> void:
   if _score_star == null or not is_inside_tree():
     return
-  var pre := create_tween()   # 개점 배너(딤)가 걷힌 뒤 상단바가 드러나면 재생
+  var pre := create_tween()   # 보상창(딤)이 걷혀 상단바가 드러난 뒤 재생
   pre.tween_interval(0.35)
   await pre.finished
   if not is_instance_valid(_score_star) or not is_inside_tree():
     return
   var px := _score_star.size
-
-  # 떨어지는 별 — 자유낙하 복제본(HBox 레이아웃 간섭 없이 화면 밖으로 뚝)
-  var faller := UI.ui_icon("star", int(px.x))
-  faller.z_index = 120
-  faller.pivot_offset = px * 0.5
-  faller.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  add_child(faller)
-  faller.global_position = _score_star.global_position
-  _score_star.modulate.a = 0.0   # 원본은 복제본이 떨어지는 동안 빈 자리
-
+  var origin := _score_star.global_position + px * 0.5
   var vp := get_viewport_rect().size
-  var ft := create_tween().set_parallel(true)
-  ft.tween_property(faller, "global_position:y", vp.y + 40.0, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-  ft.tween_property(faller, "rotation", deg_to_rad(160.0), 0.55).set_trans(Tween.TRANS_SINE)
-  ft.tween_property(faller, "modulate:a", 0.0, 0.55).set_delay(0.2).set_ease(Tween.EASE_IN)
-  ft.chain().tween_callback(faller.queue_free)
-
-  var back := create_tween()   # 새 달 별 — 떨어진 뒤 살짝 통통 튀며 복귀
-  back.tween_interval(0.45)
-  back.tween_callback(func():
-    if not is_instance_valid(_score_star): return
-    _score_star.pivot_offset = _score_star.size * 0.5
-    _score_star.scale = Vector2(0.4, 0.4)
-    _score_star.modulate.a = 1.0)
-  back.tween_property(_score_star, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  back.tween_property(_score_star, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+  var count := 5
+  for i in count:
+    var s := UI.ui_icon("star", int(px.x * 1.25))
+    s.z_index = 120
+    s.pivot_offset = s.size * 0.5
+    s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(s)
+    s.global_position = origin - s.size * 0.5
+    var spread := (float(i) / float(count - 1)) - 0.5   # -0.5..0.5 (좌우 부챗살)
+    var dx := spread * vp.x * 0.5
+    var peak := 70.0 + (0.5 - absf(spread)) * 120.0      # 가운데 별이 더 높이
+    var up_t := 0.30 + i * 0.02
+    var down_t := 0.85 + absf(spread) * 0.2
+    var top_y := s.global_position.y - peak
+    var xt := create_tween()   # 수평 드리프트(전 구간 등속)
+    xt.tween_property(s, "global_position:x", s.global_position.x + dx, up_t + down_t)
+    var yt := create_tween()   # 감속 상승 → 가속 낙하 = 포물선
+    yt.tween_property(s, "global_position:y", top_y, up_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    yt.tween_property(s, "global_position:y", vp.y + 60.0, down_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+    var rt := create_tween()
+    rt.tween_property(s, "rotation", deg_to_rad(spread * 300.0), up_t + down_t).set_trans(Tween.TRANS_SINE)
+    var ft := create_tween()   # 낙하 후반 페이드아웃 → 정리
+    ft.tween_interval(up_t + down_t * 0.6)
+    ft.tween_property(s, "modulate:a", 0.0, down_t * 0.4)
+    ft.tween_callback(s.queue_free)
 
 
 ## breakdown 항목 → 실제 아이콘 노드. recipe/buff id 있으면 텍스처, 없으면 이모지 폴백.
@@ -2852,14 +2852,18 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   return row
 
 
-## 월말 클리어 [상점으로]: 점수를 0으로 비우고 별 낙하 연출을 ≈1s 보여준 뒤 상점 진입.
+## 월말 클리어 [상점으로]: 별들이 포물선으로 낙하 → 점수 0으로 리셋 → 상점 진입.
 func _reset_score_then_shop() -> void:
-  if is_instance_valid(_session):
-    _session.month_score = 0
-    _update_score_bar()
   _play_score_reset_fx()
   var t := create_tween()
-  t.tween_interval(1.0)
+  t.tween_interval(1.7)   # 별들이 다 떨어질 때까지
+  t.tween_callback(func():
+    if is_instance_valid(_session):
+      _session.month_score = 0
+      _update_score_bar()
+    if is_instance_valid(_score_label):
+      _pop_label(_score_label))   # 0으로 바뀌며 강조
+  t.tween_interval(0.55)   # 0 확인할 여유
   t.tween_callback(_open_shop)
 
 
