@@ -128,6 +128,7 @@ func _ready() -> void:
   _session.day_closing.connect(_on_day_closing)
   _session.day_ended.connect(_on_day_ended)
   _session.lives_changed.connect(_on_lives_changed)
+  Buffs.owned_changed.connect(_session.refresh_lives_max)
   add_child(_session)
 
   _board.now_provider = _session.now
@@ -1078,12 +1079,6 @@ func _on_order_expired(order: OrderCard) -> void:
     _detach_and_fade(order)
     _refresh_warehouse()
     return
-  var gain := Buffs.on_lost(order.recipe_id)
-  if gain != 0:
-    _expect_fly = true
-    _session.earn(gain, false)
-    _expect_fly = false
-    _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
   var lost := _customer_missed()
@@ -1415,6 +1410,8 @@ func _on_day_closing(s: Session) -> void:
     "day_revenue": s.day_revenue,
     "cash": s.cash,
     "rent": s.rent,
+    "lives": s.lives,
+    "lives_max": s.lives_max,
   }
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])
@@ -1430,6 +1427,8 @@ func _on_day_closing(s: Session) -> void:
       s.earn(money_g, false)
     _expect_fly = false
     _money_label.text = UI.money(_last_cash - money_g)
+  if db.get("heal", 0) > 0:
+    _session.recover_life()
   for id in db.get("destroy", []):
     _remove_buff_card(id)
 
