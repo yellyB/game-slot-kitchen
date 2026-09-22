@@ -161,8 +161,8 @@ const S := {
 	"b.sale_late.name": "Geduldslohn", "b.sale_late.label": "Servieren 12s+ nach Annahme: Punkte ×4,5",
 	"b.sale_burn.name": "Erschöpfungslohn", "b.sale_burn.label": "Punkte bis ×6, skaliert mit genutzter Geduld",
 	"b.sale_crit.name": "Nervenkitzel", "b.sale_crit.label": "Servieren bei kritischer Geduld (rot): Punkte ×8,0",
-	"b.pat_down.name": "Vernachlässigung", "b.pat_down.label": "Geduld der Gäste -30%",
-	"b.onlost_pay.name": "Stornogebühr", "b.onlost_pay.label": "Bei verpasster Bestellung: 50% Chance auf +1 Geld",
-	"b.onlost_x2.name": "Rache", "b.onlost_x2.label": "Wenn du eine Bestellung nicht erfüllst: nächste Punkte ×2",
-	"b.settle_leave.name": "Verlust begrenzen", "b.settle_leave.label": "Wenn du 30%+ der Bestellungen dieser Runde verpasst: +10 Geld bei Schluss",
+	"b.life_up.name": "Ersatzherz", "b.life_up.label": "Max. Leben +1 (Herz sofort gefüllt)",
+	"b.life_heal.name": "Verschnaufpause", "b.life_heal.label": "Tag ohne Absprünge beenden: +1 Leben zurück",
+	"b.life_cash.name": "Sicherheitsdividende", "b.life_cash.label": "Bei Schluss: +1 Geld je verbleibendem Leben",
+	"b.life_score.name": "Makellos-Bonus", "b.life_score.label": "Bei Schluss: +5% des Tagesumsatzes als Punkte je verbleibendem Leben",
 }

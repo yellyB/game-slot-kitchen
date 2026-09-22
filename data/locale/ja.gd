@@ -161,8 +161,8 @@ const S := {
 	"b.sale_late.name": "我慢のご褒美", "b.sale_late.label": "注文受付12秒以降に提供：スコア ×4.5",
 	"b.sale_burn.name": "消耗のご褒美", "b.sale_burn.label": "スコア最大 ×6、使った我慢に比例",
 	"b.sale_crit.name": "崖っぷち", "b.sale_crit.label": "我慢が限界（赤）で提供：スコア ×8.0",
-	"b.pat_down.name": "冷遇", "b.pat_down.label": "お客の我慢 -30%",
-	"b.onlost_pay.name": "キャンセル料", "b.onlost_pay.label": "注文を逃すと50%の確率で +1マネー",
-	"b.onlost_x2.name": "報復", "b.onlost_x2.label": "注文をこなせなかったら次のスコア ×2",
-	"b.settle_leave.name": "損切り", "b.settle_leave.label": "今ターンの注文の30%以上を逃した：閉店時 +10マネー",
+	"b.life_up.name": "予備の心臓", "b.life_up.label": "最大ライフ +1（ハートも即時に満タン）",
+	"b.life_heal.name": "休憩", "b.life_heal.label": "離脱ゼロで一日を終えるとライフ +1回復",
+	"b.life_cash.name": "安全配当", "b.life_cash.label": "閉店時、残りライフ1つにつき +1マネー",
+	"b.life_score.name": "完璧ボーナス", "b.life_score.label": "閉店時、残りライフ1つにつきその日の売上の +5% をスコアに",
 }

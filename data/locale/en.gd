@@ -170,8 +170,8 @@ const S := {
 	"b.sale_late.name": "Patience Reward", "b.sale_late.label": "Serve 12s+ after order taken: score ×4.5",
 	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Score up to ×6, scaling with patience used",
 	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): score ×8.0",
-	"b.pat_down.name": "Neglect", "b.pat_down.label": "Customer patience -30%",
-	"b.onlost_pay.name": "Cancellation Fee", "b.onlost_pay.label": "If you miss an order: 50% chance to gain +1 money",
-	"b.onlost_x2.name": "Revenge", "b.onlost_x2.label": "If you fail to fulfill an order: next score ×2",
-	"b.settle_leave.name": "Cut Loss", "b.settle_leave.label": "If you miss 30%+ of this turn's orders: +10 money at close",
+	"b.life_up.name": "Spare Heart", "b.life_up.label": "Max lives +1 (heart filled immediately)",
+	"b.life_heal.name": "Breather", "b.life_heal.label": "Close a day with no walkouts: recover +1 life",
+	"b.life_cash.name": "Safety Dividend", "b.life_cash.label": "At close: +1 money per remaining life",
+	"b.life_score.name": "Flawless Bonus", "b.life_score.label": "At close: +5% of the day's revenue as score per remaining life",
 }

@@ -140,6 +140,7 @@ func _ready() -> void:
   _session.day_closing.connect(_on_day_closing)   # 마감 정산(63~65,73,50)
   _session.day_ended.connect(_on_day_ended)
   _session.lives_changed.connect(_on_lives_changed)
+  Buffs.owned_changed.connect(_session.refresh_lives_max)   # 목숨업 버프(71) 반영
   add_child(_session)
 
   # 완성품 나이(dish_age) 스탬프용 게임 클록을 세션 경과시간에 연결.
@@ -1181,13 +1182,6 @@ func _on_order_expired(order: OrderCard) -> void:
     _detach_and_fade(order)
     _refresh_warehouse()
     return
-  # 카드71·72: 주문 낸 손님이 못 받고 떠나면 보상(72는 다음 획득 2배 예약).
-  var gain := Buffs.on_lost(order.recipe_id)
-  if gain != 0:
-    _expect_fly = true   # 이번 증가 팝은 _fly_gain 도착 때
-    _session.earn(gain, false)   # 취소수수료 = 돈만(점수 X)
-    _expect_fly = false
-    _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])   # 버프 획득 → 중앙 버프색 +n
   _order_lost_today += 1
   _missed_today += 1   # 주문 이탈 = 놓친 손님(정산 처리율 분모)
   var lost := _customer_missed()   # 목숨 −1(해금 시). true면 하트 상실 연출이 자체 큐를 냄
@@ -1550,6 +1544,8 @@ func _on_day_closing(s: Session) -> void:
     "day_revenue": s.day_revenue,
     "cash": s.cash,
     "rent": s.rent,
+    "lives": s.lives,
+    "lives_max": s.lives_max,
   }
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])   # 정산3형제·콩고물 = 점수
@@ -1565,6 +1561,8 @@ func _on_day_closing(s: Session) -> void:
       s.earn(money_g, false)
     _expect_fly = false
     _money_label.text = UI.money(_last_cash - money_g)
+  if db.get("heal", 0) > 0:   # 72 이탈 0 마감 → 목숨 +1 회복
+    _session.recover_life()
   for id in db.get("destroy", []):   # 만기 도달한 적금(78) 카드 파괴 연출
     _remove_buff_card(id)
 

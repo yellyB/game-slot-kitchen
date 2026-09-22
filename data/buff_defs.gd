@@ -13,8 +13,11 @@ extends RefCounted
 ##  sale{type,...}              : 판매금(추가금) 보너스. Buffs.sale_amount 파이프라인이 처리.
 ##  demand{tiers|ingredient,mult}: 손님 등장 가중 (16~21)
 ##  economy{kind,pct}           : interest(개장) · rent_penalty(마감) (63,51)
-##  settle{kind,threshold,pct}  : 마감 정산 (64~66,74)
-##  onlost{money_pct?,double_next?}: 손님 이탈 시 (72,73)
+##  settle{kind,threshold,pct}  : 마감 정산 (64~66)
+##  max_life                    : 최대 목숨 +N(획득 즉시 그만큼 채워짐). 목숨 해금 런에서만 (71)
+##  per_life{money?,score_pct?} : 마감 시 남은 목숨 1개당 +원 / 그날매출×score_pct 점수 (73,74)
+##  life_recover                : 이탈 0으로 하루 마감하면 목숨 +1 회복 (72)
+##  needs_lives:true            : 목숨 해금(첫 클리어) 전엔 팩에 안 나옴 (71~74)
 ##  structure{buff_slot?,tool?,slot?}: 슬롯/도구/버프칸 (11,12)
 ##  rent_skip                   : 가게세 1회 통과 (9)
 ##  blocked:true                : v1 시뮬 미지원(등록만, 무효과) — 사유는 버프.md '시뮬 미지원' 표
@@ -122,11 +125,11 @@ static var ALL := {
 	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 6}},
 	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 8.0}},
 
-	# ── 방치(71~74) ──
-	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
-	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"chance": 0.50, "money": 1}},
-	"onlost_x2":  {"card": 73, "icon": "😈", "onlost": {"double_next": true}},
-	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "money": 10}},
+	# ── 목숨(71~74) — 목숨 해금 런에서만 등장(needs_lives) ──
+	"life_up":    {"card": 71, "icon": "❤️", "max_life": 1, "needs_lives": true},
+	"life_heal":  {"card": 72, "icon": "💗", "life_recover": true, "needs_lives": true},
+	"life_cash":  {"card": 73, "icon": "🪙", "per_life": {"money": 1}, "needs_lives": true},
+	"life_score": {"card": 74, "icon": "✨", "per_life": {"score_pct": 0.05}, "needs_lives": true},
 }
 
 static func ids() -> Array:
@@ -152,11 +155,12 @@ static func display_label(id: String) -> String:
 ## 버프 → 아이콘 카테고리(9종). assets/art/buffs/buff_<cat>.png 공용.
 const _CAT_OVERRIDE := {
 	"cook": "cook", "cook_empty": "cook",
-	"patience": "time", "day_len": "time", "pat_extend": "time", "pat_down": "time",
+	"patience": "time", "day_len": "time", "pat_extend": "time",
 	"wh_chance": "time", "wh_fast": "time",
 	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
-	"no_buy": "money", "onlost_pay": "money", "settle_leave": "money", "serve_tip": "money",
+	"no_buy": "money", "serve_tip": "money",
 	"settle_perfect": "money", "nest_egg": "money",
+	"life_up": "lives", "life_heal": "lives", "life_cash": "lives", "life_score": "lives",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth", "sale_cash": "growth",
@@ -239,13 +243,21 @@ static func icon_node(id: String, px: int) -> Control:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return lbl
 
+## 목숨 시스템 해금 여부(첫 클리어 시 기록). needs_lives 카드 등장 게이팅용.
+## main._lives_unlocked()과 같은 플래그를 봄 — 해금 전엔 목숨 카드가 팩에 안 나오게.
+static func _lives_unlocked() -> bool:
+	return FileAccess.file_exists("user://cleared.flag")
+
 ## 팩: 서로 다른 버프 n개 랜덤(차단 카드·이미 보유한 버프 제외 — 중복 방지).
 static func random_pack(n := 3) -> Array:
 	var owned := Buffs.owned()
+	var lives_on := _lives_unlocked()
 	var pool := []
 	for id in ALL.keys():
 		if ALL[id].get("blocked", false):
 			continue
+		if ALL[id].get("needs_lives", false) and not lives_on:
+			continue   # 목숨 해금 전엔 목숨 카드 숨김
 		if not in_shop(id):
 			continue   # 현재 가게에서 안 쓰는 버프(shops 태그) 제외
 		if id in owned:

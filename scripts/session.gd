@@ -20,7 +20,8 @@ var run_score := 0     # 런 누적 매출(⭐점수) — 승리 요약용, star
 var run_earned := 0    # 런 누적 획득 코인(🪙, 지출 차감 전 gross) — 승리 요약용
 var slots := Config.START_SLOTS  # 현재 슬롯 수(상점 확장 + 구조 버프)
 var lives := 0         # 남은 목숨(런 스코프). lives_max=0이면 시스템 off(해금 전)
-var lives_max := 0     # 이번 런 최대 목숨(start_run에서 해금 시에만 채움)
+var lives_max := 0     # 이번 런 최대 목숨(base + 목숨업 버프 71)
+var _base_lives_max := 0  # 버프 제외 기본 최대 목숨(해금 시 Config.MAX_LIVES) — refresh_lives_max 기준점
 var _miss_accum := 0   # 목숨 손실 카운터 — LIFE_LOSS_MISSES명 이탈마다 −1
 
 var _elapsed := 0.0
@@ -39,6 +40,7 @@ func start_run(lives_max_v := 0) -> void:
 	slots = Config.START_SLOTS
 	run_score = 0
 	run_earned = 0
+	_base_lives_max = lives_max_v
 	lives_max = lives_max_v
 	lives = lives_max_v
 	_miss_accum = 0
@@ -62,6 +64,31 @@ func lose_life() -> bool:
 	lives = maxi(0, lives - 1)
 	lives_changed.emit(lives, lives_max)
 	return lives <= 0
+
+
+## 목숨업 버프(71) 반영 — 보유 목숨 카드 합만큼 최대치를 올림. 늘어난 만큼은 채워진 채(현재 목숨도 +).
+## Buffs.owned_changed에 연결. 시스템 off(base 0)면 무시.
+func refresh_lives_max() -> void:
+	if _base_lives_max <= 0:
+		return
+	var new_max := _base_lives_max + Buffs.max_life_bonus()
+	var delta := new_max - lives_max
+	if delta == 0:
+		return
+	lives_max = new_max
+	if delta > 0:
+		lives = mini(lives + delta, lives_max)   # 새로 생긴 칸은 채워진 채로
+	else:
+		lives = mini(lives, lives_max)
+	lives_changed.emit(lives, lives_max)
+
+
+## 목숨 +1 회복(72) — 이탈 0 마감 시 main이 호출. 최대치 초과 안 함.
+func recover_life() -> void:
+	if lives_max <= 0 or lives >= lives_max:
+		return
+	lives = mini(lives_max, lives + 1)
+	lives_changed.emit(lives, lives_max)
 
 
 ## 상점: 슬롯 +1 구매. 성공 시 true(다음 세션부터 반영).
