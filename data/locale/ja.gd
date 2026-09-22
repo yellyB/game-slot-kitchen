@@ -36,6 +36,8 @@ const S := {
 	"week_review": "今週の実績審査！",
 	"boss_incoming": "%d週後に本社監査",
 	"month_audit": "本社監査！",
+	"month_nth": "%dか月目",
+	"patience_down": "客の我慢が減少",
 	"no_empty_slot": "空きスロットなし",
 	"orders_full": "注文がいっぱい",
 

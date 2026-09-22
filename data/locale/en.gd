@@ -45,6 +45,8 @@ const S := {
 	"week_review": "Weekly Review!",
 	"boss_incoming": "HQ Audit in %d wk",
 	"month_audit": "HQ Audit!",
+	"month_nth": "Month %d",
+	"patience_down": "Customer patience reduced",
 	"no_empty_slot": "No empty slot",
 	"orders_full": "Orders full",
 

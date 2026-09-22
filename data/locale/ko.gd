@@ -45,6 +45,8 @@ const S := {
 	"week_review": "이번 주 실적 심사!",
 	"boss_incoming": "%d주 뒤 본사 감사",
 	"month_audit": "본사 감사!",
+	"month_nth": "%d달차",
+	"patience_down": "손님 인내심 감소",
 	"no_empty_slot": "빈 칸 없음",
 	"orders_full": "주문 꽉 참",
 

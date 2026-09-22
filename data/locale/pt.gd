@@ -36,6 +36,8 @@ const S := {
 	"week_review": "Balanço Semanal!",
 	"boss_incoming": "Auditoria da Matriz em %d sem",
 	"month_audit": "Auditoria da Matriz!",
+	"month_nth": "Mês %d",
+	"patience_down": "Paciência dos clientes reduzida",
 	"no_empty_slot": "Sem espaço livre",
 	"orders_full": "Pedidos cheios",
 

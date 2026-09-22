@@ -36,6 +36,8 @@ const S := {
 	"week_review": "本周业绩审核！",
 	"boss_incoming": "%d周后总部审计",
 	"month_audit": "总部审计！",
+	"month_nth": "第%d个月",
+	"patience_down": "顾客耐心下降",
 	"no_empty_slot": "没有空槽",
 	"orders_full": "订单已满",
 
