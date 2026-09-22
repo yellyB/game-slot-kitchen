@@ -65,6 +65,14 @@ func _ready() -> void:
   home.pressed.connect(func(): go_home.emit())
   Audio.attach_click(home)
 
+  # ♥ 목숨 HUD — 게임 화면과 동일하게 상점에서도 노출(해금 시). 플레이 중 소진분이 그대로 보임.
+  if session.lives_max > 0:
+    var lives_box := bar.get_meta("lives_box") as Control
+    var lives_hearts := bar.get_meta("lives_hearts") as Control
+    lives_box.visible = true
+    for i in range(session.lives_max):
+      lives_hearts.add_child(UI.ui_icon("heart_full" if i < session.lives else "heart_empty", 20))
+
   # 본문(스크롤) — 상품·보유버프. 콘텐츠 늘어나도 스크롤로 흡수(상점은 날짜마다 성장).
   var scroll := ScrollContainer.new()
   scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
