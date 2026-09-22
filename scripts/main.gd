@@ -37,6 +37,7 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
+var _score_star: TextureRect
 var _lives_hearts: Control
 var _lives_box: Control
 var _run_over := false
@@ -541,6 +542,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
+  _score_star = panel.get_meta("score_star") as TextureRect
   _lives_hearts = panel.get_meta("lives_hearts") as Control
   _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
@@ -1226,6 +1228,42 @@ func _coin_burst(from: Vector2, amount: int, z := 116, target_node: Control = nu
     tw.chain().tween_callback(coin.queue_free)
 
 
+func _play_score_reset_fx() -> void:
+  if _score_star == null or not is_inside_tree():
+    return
+  var pre := create_tween()
+  pre.tween_interval(0.35)
+  await pre.finished
+  if not is_instance_valid(_score_star) or not is_inside_tree():
+    return
+  var px := _score_star.size
+
+  var faller := UI.ui_icon("star", int(px.x))
+  faller.z_index = 120
+  faller.pivot_offset = px * 0.5
+  faller.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  add_child(faller)
+  faller.global_position = _score_star.global_position
+  _score_star.modulate.a = 0.0
+
+  var vp := get_viewport_rect().size
+  var ft := create_tween().set_parallel(true)
+  ft.tween_property(faller, "global_position:y", vp.y + 40.0, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+  ft.tween_property(faller, "rotation", deg_to_rad(160.0), 0.55).set_trans(Tween.TRANS_SINE)
+  ft.tween_property(faller, "modulate:a", 0.0, 0.55).set_delay(0.2).set_ease(Tween.EASE_IN)
+  ft.chain().tween_callback(faller.queue_free)
+
+  var back := create_tween()
+  back.tween_interval(0.45)
+  back.tween_callback(func():
+    if not is_instance_valid(_score_star): return
+    _score_star.pivot_offset = _score_star.size * 0.5
+    _score_star.scale = Vector2(0.4, 0.4)
+    _score_star.modulate.a = 1.0)
+  back.tween_property(_score_star, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  back.tween_property(_score_star, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+
+
 func _gain_icon(entry: Dictionary, px: int) -> Control:
   if entry.has("recipe"):
     return Recipes.icon_node(str(entry["recipe"]), px)
@@ -1794,6 +1832,9 @@ func _start_day_intro() -> void:
   if is_instance_valid(_session):
     _session.set_process(true)
   _dismiss_banner(banner)
+  var wk := Levels.get_week(_session.day)
+  if int(wk["week_in_month"]) == 1 and int(wk["month"]) > 1:
+    _play_score_reset_fx()
 
 
 func _start_boss_intro() -> void:
