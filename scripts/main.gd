@@ -1237,31 +1237,33 @@ func _play_score_reset_fx() -> void:
   if not is_instance_valid(_score_star) or not is_inside_tree():
     return
   var px := _score_star.size
-
-  var faller := UI.ui_icon("star", int(px.x))
-  faller.z_index = 120
-  faller.pivot_offset = px * 0.5
-  faller.mouse_filter = Control.MOUSE_FILTER_IGNORE
-  add_child(faller)
-  faller.global_position = _score_star.global_position
-  _score_star.modulate.a = 0.0
-
+  var origin := _score_star.global_position + px * 0.5
   var vp := get_viewport_rect().size
-  var ft := create_tween().set_parallel(true)
-  ft.tween_property(faller, "global_position:y", vp.y + 40.0, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-  ft.tween_property(faller, "rotation", deg_to_rad(160.0), 0.55).set_trans(Tween.TRANS_SINE)
-  ft.tween_property(faller, "modulate:a", 0.0, 0.55).set_delay(0.2).set_ease(Tween.EASE_IN)
-  ft.chain().tween_callback(faller.queue_free)
-
-  var back := create_tween()
-  back.tween_interval(0.45)
-  back.tween_callback(func():
-    if not is_instance_valid(_score_star): return
-    _score_star.pivot_offset = _score_star.size * 0.5
-    _score_star.scale = Vector2(0.4, 0.4)
-    _score_star.modulate.a = 1.0)
-  back.tween_property(_score_star, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  back.tween_property(_score_star, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+  var count := 5
+  for i in count:
+    var s := UI.ui_icon("star", int(px.x * 1.25))
+    s.z_index = 120
+    s.pivot_offset = s.size * 0.5
+    s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(s)
+    s.global_position = origin - s.size * 0.5
+    var spread := (float(i) / float(count - 1)) - 0.5
+    var dx := spread * vp.x * 0.5
+    var peak := 70.0 + (0.5 - absf(spread)) * 120.0
+    var up_t := 0.30 + i * 0.02
+    var down_t := 0.85 + absf(spread) * 0.2
+    var top_y := s.global_position.y - peak
+    var xt := create_tween()
+    xt.tween_property(s, "global_position:x", s.global_position.x + dx, up_t + down_t)
+    var yt := create_tween()
+    yt.tween_property(s, "global_position:y", top_y, up_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    yt.tween_property(s, "global_position:y", vp.y + 60.0, down_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+    var rt := create_tween()
+    rt.tween_property(s, "rotation", deg_to_rad(spread * 300.0), up_t + down_t).set_trans(Tween.TRANS_SINE)
+    var ft := create_tween()
+    ft.tween_interval(up_t + down_t * 0.6)
+    ft.tween_property(s, "modulate:a", 0.0, down_t * 0.4)
+    ft.tween_callback(s.queue_free)
 
 
 func _gain_icon(entry: Dictionary, px: int) -> Control:
@@ -2617,12 +2619,16 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
 
 
 func _reset_score_then_shop() -> void:
-  if is_instance_valid(_session):
-    _session.month_score = 0
-    _update_score_bar()
   _play_score_reset_fx()
   var t := create_tween()
-  t.tween_interval(1.0)
+  t.tween_interval(1.7)
+  t.tween_callback(func():
+    if is_instance_valid(_session):
+      _session.month_score = 0
+      _update_score_bar()
+    if is_instance_valid(_score_label):
+      _pop_label(_score_label))
+  t.tween_interval(0.55)
   t.tween_callback(_open_shop)
 
 
