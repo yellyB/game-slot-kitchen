@@ -2667,8 +2667,8 @@ func _show_month_transition(month: int) -> void:
   title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(title)
-  var sub := UI.label(Loc.t("patience_down"), 26, Palette.DANGER, true)
-  sub.add_theme_constant_override("outline_size", 6)
+  var sub := UI.label(Loc.t("patience_down"), 22, Palette.WHITE, true)
+  sub.add_theme_constant_override("outline_size", 4)
   sub.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(sub)
