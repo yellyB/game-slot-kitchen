@@ -136,7 +136,8 @@ static func top_bar() -> PanelContainer:
 	lives_box.add_child(div)
 	row1.add_child(lives_box)
 	var star_name := "star" if ResourceLoader.exists("res://assets/art/ui/star.png") else "mood_happy"
-	row1.add_child(ui_icon(star_name, 22))
+	var score_star := ui_icon(star_name, 22)
+	row1.add_child(score_star)
 	var score := label("0", 18, Palette.COCOA_800, true)
 	row1.add_child(score)
 	var div2 := ColorRect.new()   # 점수 │ 돈 구분선(하트 쪽과 동일)
@@ -174,6 +175,7 @@ static func top_bar() -> PanelContainer:
 	panel.set_meta("day_num", badge.get_meta("num"))
 	panel.set_meta("money_label", money)
 	panel.set_meta("score_label", score)
+	panel.set_meta("score_star", score_star)
 	panel.set_meta("hours_bar", hbar)
 	panel.set_meta("home_btn", home)
 	panel.set_meta("coin_box", coin)
