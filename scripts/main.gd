@@ -2485,7 +2485,9 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
 
 func _show_week_reward(summary: Dictionary) -> void:
   var m := Modal.open(self).gap(14)
-  var month_end := bool(Levels.get_week(int(summary["day"]))["is_month_end"])
+  var _wk := Levels.get_week(int(summary["day"]))
+  var month_end := bool(_wk["is_month_end"])
+  var next_month := int(_wk["month"]) + 1
 
   var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
   banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2526,7 +2528,7 @@ func _show_week_reward(summary: Dictionary) -> void:
     if month_end:
       go.disabled = true
       m.queue_free()
-      _reset_score_then_shop()
+      _reset_score_then_shop(next_month)
     else:
       m.queue_free()
       _open_shop())
@@ -2618,18 +2620,70 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   return row
 
 
-func _reset_score_then_shop() -> void:
+func _reset_score_then_shop(next_month: int) -> void:
   _play_score_reset_fx()
+  var fall := create_tween()
+  fall.tween_interval(1.7)
+  await fall.finished
+  if not is_inside_tree():
+    return
+  if is_instance_valid(_session):
+    _session.month_score = 0
+    _update_score_bar()
+  if is_instance_valid(_score_label):
+    _pop_label(_score_label)
+  var beat := create_tween()
+  beat.tween_interval(0.5)
+  await beat.finished
+  if not is_inside_tree():
+    return
+  await _show_month_transition(next_month)
+  _open_shop()
+
+
+func _show_month_transition(month: int) -> void:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  dim.modulate.a = 0.0
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 12)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  box.modulate.a = 0.0
+  center.add_child(box)
+  var title := UI.label(Loc.t("month_nth") % month, 48, Palette.WHITE, true)
+  title.add_theme_constant_override("outline_size", 8)
+  title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(title)
+  var sub := UI.label(Loc.t("patience_down"), 26, Palette.DANGER, true)
+  sub.add_theme_constant_override("outline_size", 6)
+  sub.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(sub)
   var t := create_tween()
-  t.tween_interval(1.7)
-  t.tween_callback(func():
-    if is_instance_valid(_session):
-      _session.month_score = 0
-      _update_score_bar()
-    if is_instance_valid(_score_label):
-      _pop_label(_score_label))
-  t.tween_interval(0.55)
-  t.tween_callback(_open_shop)
+  t.tween_property(dim, "modulate:a", 1.0, 0.35)
+  t.parallel().tween_property(box, "modulate:a", 1.0, 0.35).set_delay(0.12)
+  await t.finished
+  if not is_inside_tree():
+    return
+  await _tap_to_continue()
+  if is_instance_valid(root):
+    var out := create_tween()
+    out.tween_property(root, "modulate:a", 0.0, 0.2)
+    out.tween_callback(root.queue_free)
+    await out.finished
 
 
 func _open_shop() -> void:
