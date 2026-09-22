@@ -2903,7 +2903,7 @@ func _show_month_transition(month: int) -> void:
   title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
   box.add_child(title)
-  var sub := UI.label(Loc.t("patience_down"), 22, Palette.WHITE, true)   # 오픈화면 본사감사 안내와 동일 톤(흰 글씨+진한 외곽선)
+  var sub := UI.label(Loc.t("patience_down") + " ▾", 22, Palette.WHITE, true)   # 오픈화면 본사감사 안내와 동일 톤(흰 글씨+진한 외곽선) + 하락 화살표
   sub.add_theme_constant_override("outline_size", 4)
   sub.add_theme_color_override("font_outline_color", Palette.COCOA_900)
   sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2914,6 +2914,10 @@ func _show_month_transition(month: int) -> void:
   await t.finished
   if not is_inside_tree():
     return
+  var pulse := create_tween().set_loops()   # 오픈화면 click 힌트와 동일 깜박임
+  pulse.tween_property(sub, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
+  pulse.tween_property(sub, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  sub.tree_exiting.connect(pulse.kill)   # 대상 free 시 루핑 트윈 종료(릴리스 무한루프 방지)
   await _tap_to_continue()
   if is_instance_valid(root):
     var out := create_tween()
