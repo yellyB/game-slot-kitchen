@@ -1832,9 +1832,6 @@ func _start_day_intro() -> void:
   if is_instance_valid(_session):
     _session.set_process(true)
   _dismiss_banner(banner)
-  var wk := Levels.get_week(_session.day)
-  if int(wk["week_in_month"]) == 1 and int(wk["month"]) > 1:
-    _play_score_reset_fx()
 
 
 func _start_boss_intro() -> void:
@@ -2486,6 +2483,7 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
 
 func _show_week_reward(summary: Dictionary) -> void:
   var m := Modal.open(self).gap(14)
+  var month_end := bool(Levels.get_week(int(summary["day"]))["is_month_end"])
 
   var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
   banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2522,7 +2520,14 @@ func _show_week_reward(summary: Dictionary) -> void:
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
   go.modulate.a = 0.0
   go.disabled = true
-  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  go.pressed.connect(func():
+    if month_end:
+      go.disabled = true
+      m.queue_free()
+      _reset_score_then_shop()
+    else:
+      m.queue_free()
+      _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
 
@@ -2609,6 +2614,16 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   row.add_child(UI.ui_icon(icon, 17))
   row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
   return row
+
+
+func _reset_score_then_shop() -> void:
+  if is_instance_valid(_session):
+    _session.month_score = 0
+    _update_score_bar()
+  _play_score_reset_fx()
+  var t := create_tween()
+  t.tween_interval(1.0)
+  t.tween_callback(_open_shop)
 
 
 func _open_shop() -> void:
