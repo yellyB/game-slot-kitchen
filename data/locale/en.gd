@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "Patience Reward", "b.sale_late.label": "Serve 12s+ after order taken: score ×4.5",
 	"b.sale_burn.name": "Burn Reward", "b.sale_burn.label": "Score up to ×6, scaling with patience used",
 	"b.sale_crit.name": "Cliffhanger", "b.sale_crit.label": "Serve while patience is critical (red): score ×8.0",
-	"b.life_up.name": "Spare Heart", "b.life_up.label": "Max lives +1 (heart filled immediately)",
+	"b.life_up.name": "Spare Heart", "b.life_up.label": "Max lives +1",
 	"b.life_heal.name": "Breather", "b.life_heal.label": "Close a day with no walkouts: recover +1 life",
 	"b.life_cash.name": "Safety Dividend", "b.life_cash.label": "At close: +1 money per remaining life",
 	"b.life_score.name": "Flawless Bonus", "b.life_score.label": "At close: +5% of the day's revenue as score per remaining life",

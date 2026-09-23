@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "我慢のご褒美", "b.sale_late.label": "注文受付12秒以降に提供：スコア ×4.5",
 	"b.sale_burn.name": "消耗のご褒美", "b.sale_burn.label": "スコア最大 ×6、使った我慢に比例",
 	"b.sale_crit.name": "崖っぷち", "b.sale_crit.label": "我慢が限界（赤）で提供：スコア ×8.0",
-	"b.life_up.name": "予備の心臓", "b.life_up.label": "最大ライフ +1（ハートも即時に満タン）",
+	"b.life_up.name": "予備の心臓", "b.life_up.label": "最大ライフ +1",
 	"b.life_heal.name": "休憩", "b.life_heal.label": "離脱ゼロで一日を終えるとライフ +1回復",
 	"b.life_cash.name": "安全配当", "b.life_cash.label": "閉店時、残りライフ1つにつき +1マネー",
 	"b.life_score.name": "完璧ボーナス", "b.life_score.label": "閉店時、残りライフ1つにつきその日の売上の +5% をスコアに",

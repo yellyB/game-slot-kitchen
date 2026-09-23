@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "인내 보상", "b.sale_late.label": "주문 접수 12초 후 서빙 시 점수 ×4.5",
 	"b.sale_burn.name": "소진 보상", "b.sale_burn.label": "손님이 소모한 인내심 비율만큼 점수 상승, 최대 ×6",
 	"b.sale_crit.name": "벼랑끝", "b.sale_crit.label": "인내심 임박(빨강)에 서빙하면 점수 ×8.0",
-	"b.life_up.name": "여분의 심장", "b.life_up.label": "최대 목숨 +1 (하트도 즉시 +1)",
+	"b.life_up.name": "여분의 심장", "b.life_up.label": "최대 목숨 +1",
 	"b.life_heal.name": "휴식", "b.life_heal.label": "이탈 없이 하루 마감하면 목숨 +1 회복",
 	"b.life_cash.name": "안전 배당", "b.life_cash.label": "마감 시 남은 목숨 1개당 +1원",
 	"b.life_score.name": "무결점 보너스", "b.life_score.label": "마감 시 남은 목숨 1개당 그날 매출 +5% 점수",

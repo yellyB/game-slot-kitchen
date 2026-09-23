@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "耐心奖励", "b.sale_late.label": "接单 12 秒后上菜：分数 ×4.5",
 	"b.sale_burn.name": "耗尽奖励", "b.sale_burn.label": "分数最高 ×6，随消耗的耐心递增",
 	"b.sale_crit.name": "千钧一发", "b.sale_crit.label": "耐心告急（红色）时上菜：分数 ×8.0",
-	"b.life_up.name": "备用之心", "b.life_up.label": "最大生命 +1（爱心立即补满）",
+	"b.life_up.name": "备用之心", "b.life_up.label": "最大生命 +1",
 	"b.life_heal.name": "喘息", "b.life_heal.label": "无顾客流失结束一天：恢复 +1 生命",
 	"b.life_cash.name": "安全分红", "b.life_cash.label": "打烊时，每剩 1 点生命 +1 元",
 	"b.life_score.name": "完美奖励", "b.life_score.label": "打烊时，每剩 1 点生命将当日营收的 +5% 计入分数",

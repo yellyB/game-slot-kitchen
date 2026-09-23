@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "Prêmio da Paciência", "b.sale_late.label": "Sirva 12s+ após anotar o pedido: pontuação ×4,5",
 	"b.sale_burn.name": "Prêmio de Esgotamento", "b.sale_burn.label": "Pontuação até ×6, escalando com a paciência gasta",
 	"b.sale_crit.name": "No Limite", "b.sale_crit.label": "Sirva com a paciência crítica (vermelha): pontuação ×8,0",
-	"b.life_up.name": "Coração Reserva", "b.life_up.label": "Vidas máximas +1 (coração preenchido na hora)",
+	"b.life_up.name": "Coração Reserva", "b.life_up.label": "Vidas máximas +1",
 	"b.life_heal.name": "Respiro", "b.life_heal.label": "Feche o dia sem desistências: recupere +1 vida",
 	"b.life_cash.name": "Dividendo de Segurança", "b.life_cash.label": "No fechamento: +1 de dinheiro por vida restante",
 	"b.life_score.name": "Bônus Impecável", "b.life_score.label": "No fechamento: +5% da receita do dia como pontos por vida restante",

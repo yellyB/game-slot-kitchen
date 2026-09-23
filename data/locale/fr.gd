@@ -172,7 +172,7 @@ const S := {
 	"b.sale_late.name": "Prime de patience", "b.sale_late.label": "Servir 12s+ après la commande : score ×4,5",
 	"b.sale_burn.name": "Prime d'usure", "b.sale_burn.label": "Score jusqu'à ×6, selon la patience consommée",
 	"b.sale_crit.name": "Dernière seconde", "b.sale_crit.label": "Servir quand la patience est critique (rouge) : score ×8,0",
-	"b.life_up.name": "Cœur de réserve", "b.life_up.label": "Vies max +1 (cœur rempli aussitôt)",
+	"b.life_up.name": "Cœur de réserve", "b.life_up.label": "Vies max +1",
 	"b.life_heal.name": "Répit", "b.life_heal.label": "Terminer une journée sans départ : +1 vie récupérée",
 	"b.life_cash.name": "Dividende de sécurité", "b.life_cash.label": "À la clôture : +1 pièce par vie restante",
 	"b.life_score.name": "Bonus sans faute", "b.life_score.label": "À la clôture : +5% des recettes du jour en score par vie restante",
