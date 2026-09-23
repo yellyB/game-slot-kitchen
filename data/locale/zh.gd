@@ -6,6 +6,12 @@ const S := {
 	# Title / Settings
 	"start": "开始",
 	"tutorial": "教程",
+	# Shop select
+	"shop_select_title": "选择店铺",
+	"shop_locked": "准备中",
+	"shop.donut": "甜甜圈咖啡", "shop.donut.desc": "轻松均衡型",
+	"shop.burger": "汉堡店", "shop.burger.desc": "",
+	"shop.ramen": "拉面店", "shop.ramen.desc": "",
 	"codex": "图鉴",
 	"codex_hint": "点击卡片查看详情",
 	"tut_accept": "点击顾客的 {order} 接受订单",
@@ -15,6 +21,9 @@ const S := {
 	"tut_serve": "完成！把 {coffee} 端给顾客的订单",
 	"tut_done": "干得漂亮！",
 	"tut_to_menu": "返回菜单",
+	"tut_skip_confirm": "要跳过教程吗？",
+	"tut_skip_yes": "跳过",
+	"tut_skip_no": "取消",
 	"settings": "设置",
 	"sound": "声音",
 	"bgm": "音乐",

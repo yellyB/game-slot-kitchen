@@ -6,6 +6,12 @@ const S := {
 	# Title / Settings
 	"start": "Start",
 	"tutorial": "Tutorial",
+	# Shop select
+	"shop_select_title": "Laden wählen",
+	"shop_locked": "Bald verfügbar",
+	"shop.donut": "Donut-Café", "shop.donut.desc": "Entspannt & ausgewogen",
+	"shop.burger": "Burger-Laden", "shop.burger.desc": "",
+	"shop.ramen": "Ramen-Laden", "shop.ramen.desc": "",
 	"codex": "Kodex",
 	"codex_hint": "Karte tippen für Details",
 	"tut_accept": "Tippe {order} des Gastes, um zu bestellen",
@@ -15,6 +21,9 @@ const S := {
 	"tut_serve": "Fertig! Serviere {coffee} an die Bestellung",
 	"tut_done": "Gut gemacht!",
 	"tut_to_menu": "Zum Menü",
+	"tut_skip_confirm": "Tutorial überspringen?",
+	"tut_skip_yes": "Überspringen",
+	"tut_skip_no": "Abbrechen",
 	"settings": "Einstell.",
 	"sound": "Ton",
 	"bgm": "Musik",

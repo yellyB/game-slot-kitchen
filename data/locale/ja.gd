@@ -6,6 +6,12 @@ const S := {
 	# Title / Settings
 	"start": "スタート",
 	"tutorial": "チュートリアル",
+	# Shop select
+	"shop_select_title": "店を選ぶ",
+	"shop_locked": "準備中",
+	"shop.donut": "ドーナツカフェ", "shop.donut.desc": "ゆとりのバランス型",
+	"shop.burger": "バーガー店", "shop.burger.desc": "",
+	"shop.ramen": "ラーメン店", "shop.ramen.desc": "",
 	"codex": "図鑑",
 	"codex_hint": "カードをタップで詳細",
 	"tut_accept": "お客さんの {order} をタップして注文を受ける",
@@ -15,6 +21,9 @@ const S := {
 	"tut_serve": "完成！ {coffee} をお客さんの注文へ提供",
 	"tut_done": "よくできました！",
 	"tut_to_menu": "メニューへ",
+	"tut_skip_confirm": "チュートリアルをスキップしますか？",
+	"tut_skip_yes": "スキップ",
+	"tut_skip_no": "キャンセル",
 	"settings": "設定",
 	"sound": "サウンド",
 	"bgm": "音楽",

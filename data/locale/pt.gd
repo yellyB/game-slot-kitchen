@@ -6,6 +6,12 @@ const S := {
 	# Title / Settings
 	"start": "Começar",
 	"tutorial": "Tutorial",
+	# Shop select
+	"shop_select_title": "Escolha uma loja",
+	"shop_locked": "Em breve",
+	"shop.donut": "Café de Donuts", "shop.donut.desc": "Tranquilo e equilibrado",
+	"shop.burger": "Hamburgueria", "shop.burger.desc": "",
+	"shop.ramen": "Loja de Ramen", "shop.ramen.desc": "",
 	"codex": "Códex",
 	"codex_hint": "Toque numa carta para ver detalhes",
 	"tut_accept": "Toque no {order} do cliente para anotar o pedido",
@@ -15,6 +21,9 @@ const S := {
 	"tut_serve": "Pronto! Sirva {coffee} no pedido do cliente",
 	"tut_done": "Muito bem!",
 	"tut_to_menu": "Ao Menu",
+	"tut_skip_confirm": "Pular o tutorial?",
+	"tut_skip_yes": "Pular",
+	"tut_skip_no": "Cancelar",
 	"settings": "Ajustes",
 	"sound": "Som",
 	"bgm": "Música",
