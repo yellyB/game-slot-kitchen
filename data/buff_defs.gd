@@ -160,7 +160,7 @@ const _CAT_OVERRIDE := {
 	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
 	"no_buy": "money", "serve_tip": "money",
 	"settle_perfect": "money", "nest_egg": "money",
-	"life_up": "lives", "life_heal": "lives", "life_cash": "lives", "life_score": "lives",
+	"life_up": "luck", "life_heal": "luck", "life_cash": "money", "life_score": "growth",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth", "sale_cash": "growth",
