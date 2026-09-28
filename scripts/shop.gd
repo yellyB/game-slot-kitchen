@@ -58,6 +58,13 @@ func _ready() -> void:
   home.pressed.connect(func(): go_home.emit())
   Audio.attach_click(home)
 
+  if session.lives_max > 0:
+    var lives_box := bar.get_meta("lives_box") as Control
+    var lives_hearts := bar.get_meta("lives_hearts") as Control
+    lives_box.visible = true
+    for i in range(session.lives_max):
+      lives_hearts.add_child(UI.ui_icon("heart_full" if i < session.lives else "heart_empty", 20))
+
   var scroll := ScrollContainer.new()
   scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
   scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

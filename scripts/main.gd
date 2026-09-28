@@ -37,6 +37,7 @@ var _debug_bar: Control
 var _cash_clicks := 0
 var _last_cash_click := 0
 var _score_label: Label
+var _score_star: TextureRect
 var _lives_hearts: Control
 var _lives_box: Control
 var _run_over := false
@@ -128,6 +129,7 @@ func _ready() -> void:
   _session.day_closing.connect(_on_day_closing)
   _session.day_ended.connect(_on_day_ended)
   _session.lives_changed.connect(_on_lives_changed)
+  Buffs.owned_changed.connect(_session.refresh_lives_max)
   add_child(_session)
 
   _board.now_provider = _session.now
@@ -441,6 +443,60 @@ func _start_game() -> void:
   _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)
 
 
+func _show_lives_unlock() -> void:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  dim.modulate.a = 0.0
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 16)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  var heart := UI.ui_icon("heart_full", 72)
+  heart.modulate.a = 0.0
+  box.add_child(heart)
+  var intro := create_tween()
+  intro.tween_property(dim, "modulate:a", 1.0, 0.35)
+  intro.parallel().tween_property(heart, "modulate:a", 1.0, 0.35).set_delay(0.12)
+  await intro.finished
+  if not is_inside_tree():
+    return
+  for i in 4:
+    var l := UI.label(Loc.t("lives_unlock_%d" % (i + 1)), 22, Palette.WHITE, true)
+    l.add_theme_constant_override("outline_size", 4)
+    l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+    l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    l.custom_minimum_size = Vector2(330, 0)
+    l.modulate.a = 0.0
+    box.add_child(l)
+    var lt := create_tween()
+    lt.tween_property(l, "modulate:a", 1.0, 0.3)
+    await lt.finished
+    if not is_inside_tree():
+      return
+    await _tap_to_continue()
+    if not is_inside_tree():
+      return
+  if is_instance_valid(root):
+    var out := create_tween()
+    out.tween_property(root, "modulate:a", 0.0, 0.2)
+    out.tween_callback(root.queue_free)
+    await out.finished
+  _show_title()
+
+
 func _show_title() -> void:
   _celebrating = false
   _clear_confetti()
@@ -540,6 +596,7 @@ func _build_top_bar() -> Control:
   _day_num = panel.get_meta("day_num") as Label
   _money_label = panel.get_meta("money_label") as Label
   _score_label = panel.get_meta("score_label") as Label
+  _score_star = panel.get_meta("score_star") as TextureRect
   _lives_hearts = panel.get_meta("lives_hearts") as Control
   _lives_box = panel.get_meta("lives_box") as Control
   _hours_bar = panel.get_meta("hours_bar") as ProgressBar
@@ -1078,12 +1135,6 @@ func _on_order_expired(order: OrderCard) -> void:
     _detach_and_fade(order)
     _refresh_warehouse()
     return
-  var gain := Buffs.on_lost(order.recipe_id)
-  if gain != 0:
-    _expect_fly = true
-    _session.earn(gain, false)
-    _expect_fly = false
-    _show_gain_breakdown([{"src": "buff", "amount": gain, "buff": "onlost_pay"}])
   _order_lost_today += 1
   _missed_today += 1
   var lost := _customer_missed()
@@ -1229,6 +1280,44 @@ func _coin_burst(from: Vector2, amount: int, z := 116, target_node: Control = nu
     tw.tween_property(coin, "scale", Vector2(0.4, 0.4), 0.42).set_delay(delay)
     tw.tween_property(coin, "modulate:a", 0.0, 0.42).set_delay(delay).set_ease(Tween.EASE_IN)
     tw.chain().tween_callback(coin.queue_free)
+
+
+func _play_score_reset_fx() -> void:
+  if _score_star == null or not is_inside_tree():
+    return
+  var pre := create_tween()
+  pre.tween_interval(0.35)
+  await pre.finished
+  if not is_instance_valid(_score_star) or not is_inside_tree():
+    return
+  var px := _score_star.size
+  var origin := _score_star.global_position + px * 0.5
+  var vp := get_viewport_rect().size
+  var count := 5
+  for i in count:
+    var s := UI.ui_icon("star", int(px.x * 1.25))
+    s.z_index = 120
+    s.pivot_offset = s.size * 0.5
+    s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(s)
+    s.global_position = origin - s.size * 0.5
+    var spread := (float(i) / float(count - 1)) - 0.5
+    var dx := spread * vp.x * 0.5
+    var peak := 70.0 + (0.5 - absf(spread)) * 120.0
+    var up_t := 0.30 + i * 0.02
+    var down_t := 0.85 + absf(spread) * 0.2
+    var top_y := s.global_position.y - peak
+    var xt := create_tween()
+    xt.tween_property(s, "global_position:x", s.global_position.x + dx, up_t + down_t)
+    var yt := create_tween()
+    yt.tween_property(s, "global_position:y", top_y, up_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    yt.tween_property(s, "global_position:y", vp.y + 60.0, down_t).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+    var rt := create_tween()
+    rt.tween_property(s, "rotation", deg_to_rad(spread * 300.0), up_t + down_t).set_trans(Tween.TRANS_SINE)
+    var ft := create_tween()
+    ft.tween_interval(up_t + down_t * 0.6)
+    ft.tween_property(s, "modulate:a", 0.0, down_t * 0.4)
+    ft.tween_callback(s.queue_free)
 
 
 func _gain_icon(entry: Dictionary, px: int) -> Control:
@@ -1415,6 +1504,8 @@ func _on_day_closing(s: Session) -> void:
     "day_revenue": s.day_revenue,
     "cash": s.cash,
     "rent": s.rent,
+    "lives": s.lives,
+    "lives_max": s.lives_max,
   }
   var db := Buffs.day_end_bonus(ctx)
   var score_g := int(db["score"])
@@ -1430,6 +1521,8 @@ func _on_day_closing(s: Session) -> void:
       s.earn(money_g, false)
     _expect_fly = false
     _money_label.text = UI.money(_last_cash - money_g)
+  if db.get("heal", 0) > 0:
+    _session.recover_life()
   for id in db.get("destroy", []):
     _remove_buff_card(id)
 
@@ -2191,6 +2284,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
+    var first_clear := not _lives_unlocked()
     _mark_cleared()
     _session.pay_rent()
     _clear_play_field()
@@ -2216,7 +2310,12 @@ func _on_day_ended(summary: Dictionary) -> void:
     win_home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
     win_home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
     win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-    win_home.pressed.connect(func(): win_modal.queue_free(); _show_title())
+    win_home.pressed.connect(func():
+      win_modal.queue_free()
+      if first_clear:
+        _show_lives_unlock()
+      else:
+        _show_title())
     Audio.attach_click(win_home)
     win_modal.add_row(win_home)
     _celebrating = true
@@ -2446,6 +2545,9 @@ func _settle_pass(summary: Dictionary, m: Modal, action_node: Control) -> void:
 
 func _show_week_reward(summary: Dictionary) -> void:
   var m := Modal.open(self).gap(14)
+  var _wk := Levels.get_week(int(summary["day"]))
+  var month_end := bool(_wk["is_month_end"])
+  var next_month := int(_wk["month"]) + 1
 
   var banner := UI.label(Loc.t("week_cleared") % int(summary["day"]), 26, Palette.SUCCESS, true)
   banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2482,7 +2584,14 @@ func _show_week_reward(summary: Dictionary) -> void:
   go.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
   go.modulate.a = 0.0
   go.disabled = true
-  go.pressed.connect(func(): m.queue_free(); _open_shop())
+  go.pressed.connect(func():
+    if month_end:
+      go.disabled = true
+      m.queue_free()
+      _reset_score_then_shop(next_month)
+    else:
+      m.queue_free()
+      _open_shop())
   Audio.attach_click(go)
   m.add_row(go)
 
@@ -2569,6 +2678,76 @@ func _win_total_row(icon: String, value: int) -> HBoxContainer:
   row.add_child(UI.ui_icon(icon, 17))
   row.add_child(UI.label(UI.money(value), 15, Palette.COCOA_800, true))
   return row
+
+
+func _reset_score_then_shop(next_month: int) -> void:
+  _play_score_reset_fx()
+  var fall := create_tween()
+  fall.tween_interval(1.7)
+  await fall.finished
+  if not is_inside_tree():
+    return
+  if is_instance_valid(_session):
+    _session.month_score = 0
+    _update_score_bar()
+  if is_instance_valid(_score_label):
+    _pop_label(_score_label)
+  var beat := create_tween()
+  beat.tween_interval(0.5)
+  await beat.finished
+  if not is_inside_tree():
+    return
+  await _show_month_transition(next_month)
+  _open_shop()
+
+
+func _show_month_transition(month: int) -> void:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  dim.modulate.a = 0.0
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 12)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  box.modulate.a = 0.0
+  center.add_child(box)
+  var title := UI.label(Loc.t("month_nth") % month, 48, Palette.WHITE, true)
+  title.add_theme_constant_override("outline_size", 8)
+  title.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(title)
+  var sub := UI.label(Loc.t("patience_down") + " ▾", 22, Palette.WHITE, true)
+  sub.add_theme_constant_override("outline_size", 4)
+  sub.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+  sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  box.add_child(sub)
+  var t := create_tween()
+  t.tween_property(dim, "modulate:a", 1.0, 0.35)
+  t.parallel().tween_property(box, "modulate:a", 1.0, 0.35).set_delay(0.12)
+  await t.finished
+  if not is_inside_tree():
+    return
+  var pulse := create_tween().set_loops()
+  pulse.tween_property(sub, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE)
+  pulse.tween_property(sub, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+  sub.tree_exiting.connect(pulse.kill)
+  await _tap_to_continue()
+  if is_instance_valid(root):
+    var out := create_tween()
+    out.tween_property(root, "modulate:a", 0.0, 0.2)
+    out.tween_callback(root.queue_free)
+    await out.finished
 
 
 func _open_shop() -> void:

@@ -88,10 +88,10 @@ static var ALL := {
 	"sale_burn":  {"card": 69, "icon": "🔥", "sale": {"type": "consumed", "pct": 6}},
 	"sale_crit":  {"card": 70, "icon": "🚨", "sale": {"type": "critical", "pct": 8.0}},
 
-	"pat_down":   {"card": 71, "icon": "💢", "mult": {"stat": "patience_mult", "value": 0.70}},
-	"onlost_pay": {"card": 72, "icon": "💸", "onlost": {"chance": 0.50, "money": 1}},
-	"onlost_x2":  {"card": 73, "icon": "😈", "onlost": {"double_next": true}},
-	"settle_leave":{"card": 74, "icon": "🏳️", "settle": {"kind": "leave", "threshold": 0.30, "money": 10}},
+	"life_up":    {"card": 71, "icon": "❤️", "max_life": 1, "needs_lives": true},
+	"life_heal":  {"card": 72, "icon": "💗", "life_recover": true, "needs_lives": true},
+	"life_cash":  {"card": 73, "icon": "🪙", "per_life": {"money": 1}, "needs_lives": true},
+	"life_score": {"card": 74, "icon": "✨", "per_life": {"score_pct": 0.05}, "needs_lives": true},
 }
 
 static func ids() -> Array:
@@ -114,11 +114,12 @@ static func display_label(id: String) -> String:
 
 const _CAT_OVERRIDE := {
 	"cook": "cook", "cook_empty": "cook",
-	"patience": "time", "day_len": "time", "pat_extend": "time", "pat_down": "time",
+	"patience": "time", "day_len": "time", "pat_extend": "time",
 	"wh_chance": "time", "wh_fast": "time",
 	"rent_down": "money", "rent_skip": "money", "shop_disc": "money", "interest": "money",
-	"no_buy": "money", "onlost_pay": "money", "settle_leave": "money", "serve_tip": "money",
+	"no_buy": "money", "serve_tip": "money",
 	"settle_perfect": "money", "nest_egg": "money",
+	"life_up": "luck", "life_heal": "luck", "life_cash": "money", "life_score": "growth",
 	"buff_slot": "struct", "tool_slot": "struct", "pack_more": "struct", "reveal": "struct",
 	"opt_egg": "struct", "opt_flour": "struct", "opt_bean": "struct",
 	"accum_sale": "growth", "sale_cash": "growth",
@@ -198,11 +199,17 @@ static func icon_node(id: String, px: int) -> Control:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return lbl
 
+static func _lives_unlocked() -> bool:
+	return FileAccess.file_exists("user://cleared.flag")
+
 static func random_pack(n := 3) -> Array:
 	var owned := Buffs.owned()
+	var lives_on := _lives_unlocked()
 	var pool := []
 	for id in ALL.keys():
 		if ALL[id].get("blocked", false):
+			continue
+		if ALL[id].get("needs_lives", false) and not lives_on:
 			continue
 		if not in_shop(id):
 			continue

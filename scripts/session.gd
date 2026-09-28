@@ -19,6 +19,7 @@ var run_earned := 0
 var slots := Config.START_SLOTS
 var lives := 0
 var lives_max := 0
+var _base_lives_max := 0
 var _miss_accum := 0
 
 var _elapsed := 0.0
@@ -36,6 +37,7 @@ func start_run(lives_max_v := 0) -> void:
 	slots = Config.START_SLOTS
 	run_score = 0
 	run_earned = 0
+	_base_lives_max = lives_max_v
 	lives_max = lives_max_v
 	lives = lives_max_v
 	_miss_accum = 0
@@ -57,6 +59,28 @@ func lose_life() -> bool:
 	lives = maxi(0, lives - 1)
 	lives_changed.emit(lives, lives_max)
 	return lives <= 0
+
+
+func refresh_lives_max() -> void:
+	if _base_lives_max <= 0:
+		return
+	var new_max := _base_lives_max + Buffs.max_life_bonus()
+	var delta := new_max - lives_max
+	if delta == 0:
+		return
+	lives_max = new_max
+	if delta > 0:
+		lives = mini(lives + delta, lives_max)
+	else:
+		lives = mini(lives, lives_max)
+	lives_changed.emit(lives, lives_max)
+
+
+func recover_life() -> void:
+	if lives_max <= 0 or lives >= lives_max:
+		return
+	lives = mini(lives_max, lives + 1)
+	lives_changed.emit(lives, lives_max)
 
 
 func buy_slot() -> bool:
@@ -85,6 +109,7 @@ func advance_day() -> void:
 
 func start_day() -> void:
 	var wk := Levels.get_day(day)
+	Levels.cur_month = int(wk.get("month", 1))
 	Boss.begin_day(wk)
 	rent = int(round(Buffs.mod("rent_mult", float(wk.get("rent", 0)))))
 	_rent_paid = false
@@ -178,7 +203,7 @@ func tick(delta: float) -> void:
 	progress.emit(clampf(_elapsed / _day_length, 0.0, 1.0))
 	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX)
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX) * Levels.spawn_gap_scale()
 		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
 			_next_spawn = -1.0
 	if _elapsed >= _day_length:

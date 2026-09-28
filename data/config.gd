@@ -11,13 +11,15 @@ const MAX_ORDERS := 6
 const SPAWN_GAP_MIN := 1.0
 const SPAWN_GAP_MAX := 2.5
 const SPAWN_FIRST := 1.0
-const SPAWN_LAST_MARGIN := 8.0
+const SPAWN_LAST_MARGIN := 0.0
+const SPAWN_GAP_MONTH_CUT := 0.45
 
 const SPAWN_WEIGHTS := [30, 22, 18, 15, 10, 5]
 
 const PATIENCE_ORDER := 25.0
 const PATIENCE_DISH := 35.0
 const PATIENCE_LOW_FRAC := 0.3
+const PATIENCE_MONTH_CUT := 0.20
 
 const START_MONEY := 0
 const CASH_BONUS_REF := 25000

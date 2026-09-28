@@ -1,5 +1,7 @@
 extends Node
 
+signal owned_changed
+
 var _owned: Array[String] = []
 var _slot_pos: Dictionary = {}
 
@@ -10,7 +12,6 @@ var _streak_id := ""
 var _streak_n := 0
 var _serve_times: Array[float] = []
 var _accum := 0
-var _double_next := false
 var _instant_order := false
 var _mature_age := {}
 
@@ -25,7 +26,6 @@ func clear() -> void:
 	_streak_n = 0
 	_serve_times.clear()
 	_accum = 0
-	_double_next = false
 	_instant_order = false
 	_mature_age.clear()
 
@@ -41,6 +41,14 @@ func add(id: String) -> void:
 	if BuffDefs.get_def(id).has("matures"):
 		_mature_age[id] = 0
 	Codex.discover(id)
+	owned_changed.emit()
+
+
+func max_life_bonus() -> int:
+	var n := 0
+	for id in _owned:
+		n += int(BuffDefs.get_def(id).get("max_life", 0))
+	return n
 
 
 func remove(id: String) -> bool:
@@ -55,6 +63,7 @@ func remove(id: String) -> bool:
 		for rid in Recipes.ALL:
 			if int(Recipes.ALL[rid].get("tier", -1)) in tiers:
 				_ramp_bonus.erase(rid)
+	owned_changed.emit()
 	return true
 
 
@@ -261,15 +270,6 @@ func sale_amount(recipe_id: String, ctx: Dictionary) -> Dictionary:
 		if delta != 0:
 			breakdown.append({"src": id, "amount": delta, "buff": id, "icon": _buff_icon(id)})
 
-	if _double_next:
-		var before2 := running
-		running *= 2.0
-		mult *= 2.0
-		_double_next = false
-		var d2 := int(round(running)) - int(round(before2))
-		if d2 != 0:
-			breakdown.append({"src": "double", "amount": d2, "buff": mult_id, "icon": _buff_icon(mult_id)})
-
 	var amount := int(round(running))
 	if accum_pct > 0.0:
 		var payout := _accum
@@ -387,20 +387,6 @@ func consume_instant_order() -> bool:
 	return false
 
 
-func on_lost(_recipe_id: String) -> int:
-	var gain := 0
-	for id in _owned:
-		var ol: Dictionary = BuffDefs.get_def(id).get("onlost", {})
-		if ol.is_empty():
-			continue
-		if ol.has("money"):
-			if randf() < float(ol.get("chance", 1.0)):
-				gain += int(ol["money"])
-		if ol.get("double_next", false):
-			_double_next = true
-	return gain
-
-
 func day_start_bonus(cash: int) -> int:
 	var g := 0
 	var c := float(maxi(0, cash))
@@ -413,16 +399,17 @@ func day_start_bonus(cash: int) -> int:
 func day_end_bonus(ctx: Dictionary) -> Dictionary:
 	var score_g := 0
 	var money_g := 0
+	var heal := 0
 	var served := int(ctx.get("served", 0))
 	var missed := int(ctx.get("missed", 0))
 	var visited := int(ctx.get("visited", 0))
 	var served_ratio := 1.0 if visited == 0 else float(visited - missed) / float(visited)
-	var accepted := maxi(1, int(ctx.get("accepted", 0)))
-	var leave_ratio := float(ctx.get("order_lost", 0)) / float(accepted)
 	var same_ratio := 0.0
 	if served > 0:
 		same_ratio = float(ctx.get("same_max", 0)) / float(served)
 	var day_rev := int(ctx.get("day_revenue", 0))
+	var lives := int(ctx.get("lives", 0))
+	var lives_max := int(ctx.get("lives_max", 0))
 	for id in _owned:
 		var st: Dictionary = BuffDefs.get_def(id).get("settle", {})
 		if not st.is_empty():
@@ -436,12 +423,15 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 				"samemenu":
 					if same_ratio >= float(st["threshold"]):
 						score_g += int(round(float(day_rev) * float(st["pct"])))
-				"leave":
-					if leave_ratio >= float(st["threshold"]):
-						if st.has("money"):
-							money_g += int(st["money"])
-						else:
-							money_g += int(round(float(ctx.get("cash", 0)) * float(st["pct"])))
+		var pl: Dictionary = BuffDefs.get_def(id).get("per_life", {})
+		if not pl.is_empty() and lives > 0:
+			if pl.has("money"):
+				money_g += lives * int(pl["money"])
+			if pl.has("score_pct"):
+				score_g += int(round(float(day_rev) * float(lives) * float(pl["score_pct"])))
+		if BuffDefs.get_def(id).get("life_recover", false):
+			if missed == 0 and lives_max > 0 and lives < lives_max:
+				heal = 1
 		var e: Dictionary = BuffDefs.get_def(id).get("economy", {})
 		if e.get("kind", "") == "rent_penalty":
 			money_g -= int(round(float(ctx.get("rent", 0)) * float(e["pct"])))
@@ -457,7 +447,7 @@ func day_end_bonus(ctx: Dictionary) -> Dictionary:
 	for id in destroy_ids:
 		_owned.erase(id)
 		_mature_age.erase(id)
-	return {"score": score_g, "money": money_g, "destroy": destroy_ids}
+	return {"score": score_g, "money": money_g, "destroy": destroy_ids, "heal": heal}
 
 func discard(id: String) -> void:
 	_owned.erase(id)
