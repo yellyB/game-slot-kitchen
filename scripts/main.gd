@@ -485,6 +485,61 @@ func _start_game() -> void:
   _session.start_run(Config.MAX_LIVES if _lives_unlocked() else 0)   # 해금 후에만 목숨 ON
 
 
+## 첫 클리어 후 마지막 단계 — 딤 위에 ♥ + 안내 문장을 한 줄씩 누적 등장, 탭하면 타이틀로.
+func _show_lives_unlock() -> void:
+  var root := Control.new()
+  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  root.z_index = 200
+  add_child(root)
+  var dim := ColorRect.new()
+  dim.color = Color(0.164, 0.129, 0.106, 0.55)
+  dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  dim.mouse_filter = Control.MOUSE_FILTER_STOP
+  dim.modulate.a = 0.0
+  root.add_child(dim)
+  var center := CenterContainer.new()
+  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  root.add_child(center)
+  var box := VBoxContainer.new()
+  box.alignment = BoxContainer.ALIGNMENT_CENTER
+  box.add_theme_constant_override("separation", 16)
+  box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  center.add_child(box)
+  var heart := UI.ui_icon("heart_full", 72)
+  heart.modulate.a = 0.0
+  box.add_child(heart)
+  var intro := create_tween()
+  intro.tween_property(dim, "modulate:a", 1.0, 0.35)
+  intro.parallel().tween_property(heart, "modulate:a", 1.0, 0.35).set_delay(0.12)
+  await intro.finished
+  if not is_inside_tree():
+    return
+  for i in 4:
+    var l := UI.label(Loc.t("lives_unlock_%d" % (i + 1)), 22, Palette.WHITE, true)
+    l.add_theme_constant_override("outline_size", 4)
+    l.add_theme_color_override("font_outline_color", Palette.COCOA_900)
+    l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    l.custom_minimum_size = Vector2(330, 0)
+    l.modulate.a = 0.0
+    box.add_child(l)
+    var lt := create_tween()
+    lt.tween_property(l, "modulate:a", 1.0, 0.3)
+    await lt.finished
+    if not is_inside_tree():
+      return
+    await _tap_to_continue()   # 탭할 때마다 다음 줄 (마지막 탭 = 타이틀로)
+    if not is_inside_tree():
+      return
+  if is_instance_valid(root):
+    var out := create_tween()
+    out.tween_property(root, "modulate:a", 0.0, 0.2)
+    out.tween_callback(root.queue_free)
+    await out.finished
+  _show_title()
+
+
 func _show_title() -> void:
   _celebrating = false           # 타이틀 이동 → 예약된 2차 축포 취소
   _clear_confetti()
@@ -2429,6 +2484,7 @@ func _on_day_ended(summary: Dictionary) -> void:
   _buff_sheet.force_close()
   _backdrop.visible = false
   if summary["won"]:
+    var first_clear := not _lives_unlocked()   # _mark_cleared 전에 재야 이번이 첫 클리어인지 구분됨
     _mark_cleared()       # 도넛 클리어 기록 — 다음 런부터 목숨 시스템 ON
     _session.pay_rent()   # 승리 확정 전 가게세 정산(세션은 더 이상 자동 차감 안 함)
     _clear_play_field()   # 마감 즉시 필드 비움
@@ -2454,7 +2510,12 @@ func _on_day_ended(summary: Dictionary) -> void:
     win_home.add_theme_stylebox_override("normal", UI.chip(Palette.MAIN))
     win_home.add_theme_stylebox_override("hover", UI.chip(Palette.MAIN.lightened(0.08)))
     win_home.add_theme_stylebox_override("pressed", UI.chip(Palette.MAIN.darkened(0.1)))
-    win_home.pressed.connect(func(): win_modal.queue_free(); _show_title())
+    win_home.pressed.connect(func():
+      win_modal.queue_free()
+      if first_clear:
+        _show_lives_unlock()   # 첫 클리어 → 목숨 해금 안내 후 타이틀
+      else:
+        _show_title())
     Audio.attach_click(win_home)
     win_modal.add_row(win_home)
     _celebrating = true
