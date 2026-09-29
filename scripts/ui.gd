@@ -2,6 +2,8 @@ class_name UI
 extends RefCounted
 
 static var _bold: FontVariation
+static var _regular: FontVariation
+static var _emoji: FontFile
 
 static func label(text: String, size: int, color: Color = Palette.COCOA_800, bold := false) -> Label:
 	var l := Label.new()
@@ -9,15 +11,27 @@ static func label(text: String, size: int, color: Color = Palette.COCOA_800, bol
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
-	if bold:
-		l.add_theme_font_override("font", _bold_font())
+	l.add_theme_font_override("font", _bold_font() if bold else _regular_font())
 	return l
+
+static func _emoji_font() -> FontFile:
+	if _emoji == null:
+		_emoji = load("res://assets/fonts/EmojiSubset.ttf")
+	return _emoji
+
+static func _regular_font() -> FontVariation:
+	if _regular == null:
+		_regular = FontVariation.new()
+		_regular.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")
+		_regular.fallbacks = [_emoji_font()]
+	return _regular
 
 static func _bold_font() -> FontVariation:
 	if _bold == null:
 		_bold = FontVariation.new()
 		_bold.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")
 		_bold.variation_embolden = 0.55
+		_bold.fallbacks = [_emoji_font()]
 	return _bold
 
 static func chip(bg: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
