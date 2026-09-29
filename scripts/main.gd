@@ -202,6 +202,9 @@ func _ready() -> void:
     get_viewport().get_texture().get_image().save_png("/tmp/done.png")
     get_tree().quit()
 
+  if OS.has_environment("SIM_SHOP"):
+    BuffDefs.current_shop = OS.get_environment("SIM_SHOP")
+
   if "--sim" in OS.get_cmdline_user_args():
     if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")
     if not OS.has_environment("SIM_MISS"): OS.set_environment("SIM_MISS", "0.03")
@@ -392,7 +395,7 @@ func _on_shop_selected(id: String) -> void:
   _warehouse.rebuild()
   _cooking.rebuild()
   _shop_select.hide()
-  if _tutorial_seen():
+  if _tutorial_seen() or id != "donut":
     _start_game()
   else:
     _start_tutorial("game")

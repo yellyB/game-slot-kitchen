@@ -1,26 +1,42 @@
 class_name Ingredients
 extends RefCounted
 
-const ALL := {
-	"flour":     {"name": "밀가루", "icon": "🌾", "unlocked": true},
-	"egg":       {"name": "계란",   "icon": "🥚", "unlocked": true},
-	"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
-	"chocolate": {"name": "초콜릿", "icon": "🍫", "unlocked": true},
-	"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
-	"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
-	"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
-	"water":     {"name": "물",     "icon": "💧", "unlocked": true},
+const BANK := {
+	"donut": {
+		"flour":     {"name": "밀가루", "icon": "🌾", "unlocked": true},
+		"egg":       {"name": "계란",   "icon": "🥚", "unlocked": true},
+		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
+		"chocolate": {"name": "초콜릿", "icon": "🍫", "unlocked": true},
+		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
+		"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
+		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
+		"water":     {"name": "물",     "icon": "💧", "unlocked": true},
+	},
+	"burger": {
+		"bun":       {"name": "번",     "icon": "🍞", "unlocked": true},
+		"patty":     {"name": "패티",   "icon": "🥩", "unlocked": true},
+		"cheese":    {"name": "치즈",   "icon": "🧀", "unlocked": true},
+		"potato":    {"name": "감자",   "icon": "🥔", "unlocked": true},
+		"cola":      {"name": "콜라",   "icon": "🥤", "unlocked": true},
+		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
+		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
+		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
+	},
 }
+
+static func all() -> Dictionary:
+	return BANK.get(BuffDefs.current_shop, BANK["donut"])
 
 static func unlocked_ids() -> Array:
 	var out := []
-	for id in ALL:
-		if ALL[id]["unlocked"]:
+	var tbl := all()
+	for id in tbl:
+		if tbl[id]["unlocked"]:
 			out.append(id)
 	return out
 
 static func get_def(id: String) -> Dictionary:
-	return ALL.get(id, {})
+	return all().get(id, {})
 
 
 static var _tex_cache := {}
