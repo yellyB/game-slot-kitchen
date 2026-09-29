@@ -3,7 +3,7 @@ extends RefCounted
 
 const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},
-	"burger": {"icon": "🍔", "unlocked": false},
+	"burger": {"icon": "🍔", "unlocked": true},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
