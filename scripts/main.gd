@@ -221,6 +221,9 @@ func _ready() -> void:
     get_tree().quit()
 
   # 헤드리스 시뮬레이션: godot4 ... -- --sim
+  if OS.has_environment("SIM_SHOP"):   # 시뮬 대상 가게 스왑(재료·메뉴·수요). 미설정=도넛(기본)
+    BuffDefs.current_shop = OS.get_environment("SIM_SHOP")
+
   if "--sim" in OS.get_cmdline_user_args():
     # 기본을 현실 플레이어 모델로 — 초인(handle=0)이 아니라 사람 손속도/놓침이 걸려야 실측 중앙값에 붙는다.
     if not OS.has_environment("SIM_HANDLE"): OS.set_environment("SIM_HANDLE", "0.65")   # 실로그 보정: day-1 평균 110·즉사 44%가 실측(108/45%)에 일치
@@ -429,7 +432,7 @@ func _on_start_pressed() -> void:
 func _on_shop_selected(id: String) -> void:
   BuffDefs.current_shop = id
   _shop_select.hide()
-  if _tutorial_seen():
+  if _tutorial_seen() or id != "donut":   # 튜토리얼은 coffee(도넛) 레시피 기반 — 다른 가게선 건너뜀
     _start_game()
   else:
     _start_tutorial("game")

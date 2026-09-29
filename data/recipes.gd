@@ -3,26 +3,41 @@ extends RefCounted
 ## 레시피 정의 — 요리명 · 아이콘 · 필요재료[] · 조리시간(초).
 ## 재료 id는 Ingredients와 일치. 아이콘은 이모지 placeholder.
 
-## 메뉴 6개 — 등급 1~6, 가격 100~2000원(비쌀수록 수요↓, Stats.random_recipe에서 등급 가중).
-## 종류/테마는 placeholder(미정) — 나중에 이름·아이콘·재료 교체. 경제·수요 곡선용.
-## (카테고리 tag는 아직 안 넣음 — 카테고리 버프 설계 시 추가)
-const ALL := {
-	"coffee":  {"name": "커피",     "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1,  "tier": 1},
-	"latte":   {"name": "라떼",     "icon": "🥛", "ingredients": ["bean", "milk"], "cook_time": 4.0, "price": 2,  "tier": 2},
-	"glazed":  {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 6,  "tier": 3},
-	"choco":   {"name": "초코도넛",  "icon": "🍪", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 8,  "tier": 4},
-	"tiramisu": {"name": "티라미수",  "icon": "🍮", "ingredients": ["bean", "cream", "sugar"], "cook_time": 6.0, "price": 12, "tier": 5},
-	"special": {"name": "초코케이크",  "icon": "🍰", "ingredients": ["flour", "cream", "sugar", "chocolate"], "cook_time": 7.0, "price": 20, "tier": 6},
+## 가게별 메뉴 테이블 — 등급 1~6(비쌀수록 수요↓, Stats.random_recipe에서 등급 가중).
+## 현재 가게(BuffDefs.current_shop)로 all()이 골라줌 — 호출부는 그대로 all_ids/get_def 사용.
+const BANK := {
+	# 도넛 카페(균형형).
+	"donut": {
+		"coffee":  {"name": "커피",     "icon": "☕", "ingredients": ["bean", "water"], "cook_time": 3.0, "price": 1,  "tier": 1},
+		"latte":   {"name": "라떼",     "icon": "🥛", "ingredients": ["bean", "milk"], "cook_time": 4.0, "price": 2,  "tier": 2},
+		"glazed":  {"name": "글레이즈드", "icon": "🍩", "ingredients": ["flour", "egg", "sugar"], "cook_time": 5.0, "price": 6,  "tier": 3},
+		"choco":   {"name": "초코도넛",  "icon": "🍪", "ingredients": ["flour", "egg", "chocolate"], "cook_time": 5.0, "price": 8,  "tier": 4},
+		"tiramisu": {"name": "티라미수",  "icon": "🍮", "ingredients": ["bean", "cream", "sugar"], "cook_time": 6.0, "price": 12, "tier": 5},
+		"special": {"name": "초코케이크",  "icon": "🍰", "ingredients": ["flour", "cream", "sugar", "chocolate"], "cook_time": 7.0, "price": 20, "tier": 6},
+	},
+	# 버거 가게(러시·세트/프리메이크). 조리 카페보다 −1s(2~6s). 세트=다재료 단일 레시피(콤보 로직 아님).
+	"burger": {
+		"icecream":     {"name": "아이스크림",   "icon": "🍦", "ingredients": ["cream", "sugar"], "cook_time": 2.0, "price": 1,  "tier": 1},
+		"shake":        {"name": "셰이크",       "icon": "🥤", "ingredients": ["milk", "cream"], "cook_time": 2.0, "price": 2,  "tier": 2},
+		"burger":       {"name": "버거",         "icon": "🍔", "ingredients": ["bun", "patty"], "cook_time": 3.0, "price": 6,  "tier": 3},
+		"cheeseburger": {"name": "치즈버거",     "icon": "🍔", "ingredients": ["bun", "patty", "cheese"], "cook_time": 4.0, "price": 8,  "tier": 4},
+		"burgerset":    {"name": "버거세트",     "icon": "🍟", "ingredients": ["bun", "patty", "potato", "cola"], "cook_time": 5.0, "price": 12, "tier": 5},
+		"cheeseset":    {"name": "치즈버거세트", "icon": "🍟", "ingredients": ["bun", "patty", "cheese", "potato", "cola"], "cook_time": 6.0, "price": 20, "tier": 6},
+	},
 }
 
+## 현재 가게의 메뉴 테이블. current_shop이 BANK에 없으면 도넛으로 폴백.
+static func all() -> Dictionary:
+	return BANK.get(BuffDefs.current_shop, BANK["donut"])
+
 static func all_ids() -> Array:
-	return ALL.keys()
+	return all().keys()
 
 static func get_def(id: String) -> Dictionary:
-	return ALL.get(id, {})
+	return all().get(id, {})
 
 static func random_id() -> String:
-	var ids := ALL.keys()
+	var ids := all().keys()
 	return ids[randi() % ids.size()]
 
 

@@ -3,29 +3,48 @@ extends RefCounted
 ## 재료 정의 — id · 이름 · 아이콘(이모지 placeholder) · 해금 여부.
 ## 아이콘은 나중에 손그림(assets/)으로 교체. 순서 = 창고 타일 표시 순서.
 
-## 순서 = 창고 타일 표시 순서(4열). 윗줄=베이킹(밀·계란·설탕·초콜릿),
-## 아랫줄=디저트토핑+음료(크림·원두·우유·물) — 한 메뉴 재료가 뭉쳐 손 이동 최소화.
-const ALL := {
-	"flour":     {"name": "밀가루", "icon": "🌾", "unlocked": true},
-	"egg":       {"name": "계란",   "icon": "🥚", "unlocked": true},
-	"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
-	"chocolate": {"name": "초콜릿", "icon": "🍫", "unlocked": true},
-	"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
-	"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
-	"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
-	"water":     {"name": "물",     "icon": "💧", "unlocked": true},
+## 가게별 재료 테이블. 순서 = 창고 타일 표시 순서(4열) — 한 메뉴 재료가 뭉쳐 손 이동 최소화.
+## 현재 가게(BuffDefs.current_shop)로 all()이 골라줌 — 호출부는 그대로 all_ids/get_def 사용.
+const BANK := {
+	# 도넛 카페: 윗줄=베이킹(밀·계란·설탕·초콜릿), 아랫줄=디저트토핑+음료(크림·원두·우유·물).
+	"donut": {
+		"flour":     {"name": "밀가루", "icon": "🌾", "unlocked": true},
+		"egg":       {"name": "계란",   "icon": "🥚", "unlocked": true},
+		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
+		"chocolate": {"name": "초콜릿", "icon": "🍫", "unlocked": true},
+		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
+		"bean":      {"name": "원두",   "icon": "🌰", "unlocked": true},
+		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
+		"water":     {"name": "물",     "icon": "💧", "unlocked": true},
+	},
+	# 버거 가게: 윗줄=버거 조립(번·패티·치즈·감자), 아랫줄=음료/디저트(콜라·우유·크림·설탕).
+	"burger": {
+		"bun":       {"name": "번",     "icon": "🍞", "unlocked": true},
+		"patty":     {"name": "패티",   "icon": "🥩", "unlocked": true},
+		"cheese":    {"name": "치즈",   "icon": "🧀", "unlocked": true},
+		"potato":    {"name": "감자",   "icon": "🥔", "unlocked": true},
+		"cola":      {"name": "콜라",   "icon": "🥤", "unlocked": true},
+		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
+		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
+		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
+	},
 }
+
+## 현재 가게의 재료 테이블. current_shop이 BANK에 없으면 도넛으로 폴백.
+static func all() -> Dictionary:
+	return BANK.get(BuffDefs.current_shop, BANK["donut"])
 
 ## 해금된 재료 id 목록 (표시 순서 유지).
 static func unlocked_ids() -> Array:
 	var out := []
-	for id in ALL:
-		if ALL[id]["unlocked"]:
+	var tbl := all()
+	for id in tbl:
+		if tbl[id]["unlocked"]:
 			out.append(id)
 	return out
 
 static func get_def(id: String) -> Dictionary:
-	return ALL.get(id, {})
+	return all().get(id, {})
 
 
 static var _tex_cache := {}

@@ -6,7 +6,7 @@ extends RefCounted
 
 const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},   # art=완성품 손그림(assets/art/recipes)
-	"burger": {"icon": "🍔", "unlocked": false},
+	"burger": {"icon": "🍔", "unlocked": true},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 

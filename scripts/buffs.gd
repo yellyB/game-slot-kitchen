@@ -68,8 +68,8 @@ func remove(id: String) -> bool:
 	var r: Dictionary = BuffDefs.get_def(id).get("ramp", {})
 	if not r.is_empty():
 		var tiers: Array = r.get("tiers", [])
-		for rid in Recipes.ALL:
-			if int(Recipes.ALL[rid].get("tier", -1)) in tiers:
+		for rid in Recipes.all_ids():
+			if int(Recipes.get_def(rid).get("tier", -1)) in tiers:
 				_ramp_bonus.erase(rid)
 	owned_changed.emit()
 	return true
