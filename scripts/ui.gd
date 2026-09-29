@@ -4,23 +4,39 @@ extends RefCounted
 ## (임시 공통 컴포넌트: 디자인 확정 후 Theme 리소스로 정리 예정)
 
 static var _bold: FontVariation
+static var _regular: FontVariation
+static var _emoji: FontFile
 
 ## 라벨 — 아이콘/텍스트 공용. bold면 폰트 굵게(FontVariation).
+## 모든 라벨은 CJK 기본폰트 + 이모지 폴백 — placeholder 이모지(아트 없는 재료·메뉴)가 빈칸 대신 뜨게.
 static func label(text: String, size: int, color: Color = Palette.COCOA_800, bold := false) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
-	if bold:
-		l.add_theme_font_override("font", _bold_font())
+	l.add_theme_font_override("font", _bold_font() if bold else _regular_font())
 	return l
+
+## 이모지 폴백 폰트(컬러, CBDT 서브셋). CJK 기본폰트에 없는 이모지 글리프를 채움.
+static func _emoji_font() -> FontFile:
+	if _emoji == null:
+		_emoji = load("res://assets/fonts/EmojiSubset.ttf")
+	return _emoji
+
+static func _regular_font() -> FontVariation:
+	if _regular == null:
+		_regular = FontVariation.new()
+		_regular.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")
+		_regular.fallbacks = [_emoji_font()]
+	return _regular
 
 static func _bold_font() -> FontVariation:
 	if _bold == null:
 		_bold = FontVariation.new()
 		_bold.base_font = load("res://assets/fonts/NotoSansCJKkr-Subset.otf")   # CJK 포함(전역 폰트와 동일 base) — bold도 한·중·일 안 깨지게
 		_bold.variation_embolden = 0.55
+		_bold.fallbacks = [_emoji_font()]
 	return _bold
 
 ## 알약형(둥근) 틀 — 버튼·게이지·칩.
