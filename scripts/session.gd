@@ -226,7 +226,7 @@ func tick(delta: float) -> void:
 	# 총량 캡 없이 랜덤 간격 등장 — 큐가 꽉 차면 main/sim이 알아서 드롭(봐줌). 마감 여유 구간엔 안 받음.
 	while _next_spawn >= 0.0 and _next_spawn <= _elapsed:
 		spawn_requested.emit()
-		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX) * Levels.spawn_gap_scale()
+		_next_spawn += randf_range(Config.SPAWN_GAP_MIN, Config.SPAWN_GAP_MAX) * Levels.spawn_gap_scale() * Shops.econ("spawn_gap_mult")
 		if _next_spawn > _day_length - Config.SPAWN_LAST_MARGIN:
 			_next_spawn = -1.0   # 마감 임박 — 더 안 받음
 	if _elapsed >= _day_length:

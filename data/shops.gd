@@ -4,9 +4,11 @@ extends RefCounted
 ## burger·ramen은 준비중(unlocked=false) — 화면엔 잠금 카드로만 표시.
 ## 이름/설명은 로케일 키 shop.<id> / shop.<id>.desc.
 
+## econ = 가게 성격 계수(인내심·도착간격 배수 등). 없으면 1.0(도넛=기본).
+## unlock_after_clear = 도넛 첫 클리어(cleared.flag) 후 해금.
 const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},   # art=완성품 손그림(assets/art/recipes)
-	"burger": {"icon": "🍔", "unlocked": true},
+	"burger": {"icon": "🍔", "unlock_after_clear": true, "econ": {"patience_mult": 0.8, "spawn_gap_mult": 0.85}},   # 러시: 인내심 −20%·도착 −15%
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
@@ -17,7 +19,14 @@ static func get_def(id: String) -> Dictionary:
 	return ALL.get(id, {})
 
 static func is_unlocked(id: String) -> bool:
-	return bool(get_def(id).get("unlocked", false))
+	var d := get_def(id)
+	if d.get("unlock_after_clear", false):
+		return FileAccess.file_exists("user://cleared.flag")   # 도넛 첫 클리어 후 해금
+	return bool(d.get("unlocked", false))
+
+## 현재 가게의 경제 성격 계수. 없으면 default(도넛=기본값).
+static func econ(key: String, default := 1.0) -> float:
+	return float(get_def(BuffDefs.current_shop).get("econ", {}).get(key, default))
 
 static func icon_of(id: String) -> String:
 	return str(get_def(id).get("icon", "🍽"))
