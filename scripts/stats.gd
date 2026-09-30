@@ -4,10 +4,10 @@ extends RefCounted
 ## 버프 존재 확인·적용은 오직 여기(또는 Buffs 훅). 손님·주문·조리·서빙 등은 이 수치만 바라본다.
 
 static func order_patience() -> float:
-	return (Buffs.mod("patience_mult", Config.PATIENCE_ORDER) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale() * Shops.econ("patience_mult")
+	return (Buffs.mod("patience_mult", Shops.patience_order()) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale()
 
 static func dish_patience() -> float:
-	return (Buffs.mod("patience_mult", Config.PATIENCE_DISH) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale() * Shops.econ("patience_mult")
+	return (Buffs.mod("patience_mult", Shops.patience_dish()) + Buffs.patience_flat()) * Boss.patience_mult() * Levels.patience_scale()
 
 ## 조리시간 — 카드1(cook_mult) + 카드38(깨끗한 주방). filled=보드에 놓인 카드 수.
 ## 카드38은 filled가 적을수록 빠름(최대 -40%, 카드 1개당 완화). 확장-중립(빈칸 안 셈).
