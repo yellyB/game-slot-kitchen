@@ -5,7 +5,8 @@ const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true,
 		"econ": {"patience_order": 25, "patience_dish": 35, "spawn_gap_min": 1.0, "spawn_gap_max": 2.5}},
 	"burger": {"icon": "🍔", "unlock_after_clear": true,
-		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1}},
+		"econ": {"patience_order": 20, "patience_dish": 12, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1,
+			"spawn_weights": [13, 13, 28, 20, 13, 13]}},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
@@ -35,6 +36,9 @@ static func spawn_gap_min() -> float:
 
 static func spawn_gap_max() -> float:
 	return econ("spawn_gap_max", Config.SPAWN_GAP_MAX)
+
+static func spawn_weights() -> Array:
+	return get_def(BuffDefs.current_shop).get("econ", {}).get("spawn_weights", Config.SPAWN_WEIGHTS)
 
 static func icon_of(id: String) -> String:
 	return str(get_def(id).get("icon", "🍽"))

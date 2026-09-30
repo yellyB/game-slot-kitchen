@@ -27,11 +27,12 @@ static func warehouse_cost() -> float:
 
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()
+	var sw := Shops.spawn_weights()
 	var weights := []
 	var total := 0.0
 	for id in ids:
 		var tier := int(Recipes.get_def(id).get("tier", 1))
-		var w := float(Config.SPAWN_WEIGHTS[clampi(tier - 1, 0, Config.SPAWN_WEIGHTS.size() - 1)])
+		var w := float(sw[clampi(tier - 1, 0, sw.size() - 1)])
 		w *= Buffs.demand_weight(id)
 		weights.append(w)
 		total += w
