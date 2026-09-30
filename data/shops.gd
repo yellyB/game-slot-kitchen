@@ -4,14 +4,15 @@ extends RefCounted
 ## burger·ramen은 준비중(unlocked=false) — 화면엔 잠금 카드로만 표시.
 ## 이름/설명은 로케일 키 shop.<id> / shop.<id>.desc.
 
-## econ = 가게 성격 값. 인내심(초)은 가게별로 직접 박음(가게끼리 독립 튜닝).
-##   patience_order/dish = 손님 대기 초(없으면 Config 기본). spawn_gap_mult = 도착간격 배수.
+## econ = 가게 성격 값. 인내심·도착간격 모두 가게별로 직접 박음(가게끼리 독립 튜닝).
+##   patience_order/dish = 손님 대기 초. spawn_gap_min/max = 손님 도착(방문) 간격 초.
+##   (미지정 시 Config 기본값.)
 ## unlock_after_clear = 도넛 첫 클리어(cleared.flag) 후 해금.
 const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true,   # art=완성품 손그림(assets/art/recipes)
-		"econ": {"patience_order": 25, "patience_dish": 35}},
+		"econ": {"patience_order": 25, "patience_dish": 35, "spawn_gap_min": 1.0, "spawn_gap_max": 2.5}},
 	"burger": {"icon": "🍔", "unlock_after_clear": true,   # 러시: 인내심 짧고 도착 잦음
-		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_mult": 0.85}},
+		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1}},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
@@ -37,6 +38,13 @@ static func patience_order() -> float:
 
 static func patience_dish() -> float:
 	return econ("patience_dish", Config.PATIENCE_DISH)
+
+## 현재 가게의 손님 도착(방문) 간격 초. 미지정 시 Config 기본.
+static func spawn_gap_min() -> float:
+	return econ("spawn_gap_min", Config.SPAWN_GAP_MIN)
+
+static func spawn_gap_max() -> float:
+	return econ("spawn_gap_max", Config.SPAWN_GAP_MAX)
 
 static func icon_of(id: String) -> String:
 	return str(get_def(id).get("icon", "🍽"))
