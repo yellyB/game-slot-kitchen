@@ -30,14 +30,15 @@ static func warehouse_cost() -> float:
 		base = float(OS.get_environment("SIM_TRIP"))
 	return Buffs.mod("warehouse_mult", base) * Boss.warehouse_mult()   # 보스: 비싼 발품 ×2
 
-## 손님이 주문할 레시피 뽑기 — 등급 가중(Config.SPAWN_WEIGHTS) × 수요 버프(15~20).
+## 손님이 주문할 레시피 뽑기 — 등급 가중(가게별 Shops.spawn_weights) × 수요 버프(15~20).
 static func random_recipe() -> String:
 	var ids := Recipes.all_ids()
+	var sw := Shops.spawn_weights()
 	var weights := []
 	var total := 0.0
 	for id in ids:
 		var tier := int(Recipes.get_def(id).get("tier", 1))
-		var w := float(Config.SPAWN_WEIGHTS[clampi(tier - 1, 0, Config.SPAWN_WEIGHTS.size() - 1)])
+		var w := float(sw[clampi(tier - 1, 0, sw.size() - 1)])
 		w *= Buffs.demand_weight(id)
 		weights.append(w)
 		total += w
