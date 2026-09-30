@@ -5,7 +5,7 @@ const ALL := {
 	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true,
 		"econ": {"patience_order": 25, "patience_dish": 35, "spawn_gap_min": 1.0, "spawn_gap_max": 2.5}},
 	"burger": {"icon": "🍔", "unlock_after_clear": true,
-		"econ": {"patience_order": 20, "patience_dish": 12, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1,
+		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1,
 			"spawn_weights": [13, 13, 28, 20, 13, 13]}},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
