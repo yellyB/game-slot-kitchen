@@ -19,8 +19,8 @@ const BANK := {
 	"burger": {
 		"icecream":     {"name": "아이스크림",   "icon": "🍦", "ingredients": ["cream", "sugar"], "cook_time": 2.0, "price": 1,  "tier": 1},
 		"shake":        {"name": "셰이크",       "icon": "🥤", "ingredients": ["milk", "cream"], "cook_time": 2.0, "price": 2,  "tier": 2},
-		"burger":       {"name": "버거",         "icon": "🍔", "ingredients": ["bun", "patty"], "cook_time": 3.0, "price": 6,  "tier": 3},
-		"cheeseburger": {"name": "치즈버거",     "icon": "🍔", "ingredients": ["bun", "patty", "cheese"], "cook_time": 4.0, "price": 8,  "tier": 4},
+		"burger":       {"name": "버거",         "icon": "🍔", "ingredients": ["bun", "patty"], "cook_time": 3.0, "price": 4,  "tier": 3},
+		"cheeseburger": {"name": "치즈버거",     "icon": "🍔", "ingredients": ["bun", "patty", "cheese"], "cook_time": 4.0, "price": 6,  "tier": 4},
 		"burgerset":    {"name": "버거세트",     "icon": "🍟", "ingredients": ["bun", "patty", "potato", "cola"], "cook_time": 5.0, "price": 12, "tier": 5},
 		"cheeseset":    {"name": "치즈버거세트", "icon": "🍟", "ingredients": ["bun", "patty", "cheese", "potato", "cola"], "cook_time": 6.0, "price": 20, "tier": 6},
 	},
