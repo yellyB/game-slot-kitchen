@@ -2,8 +2,10 @@ class_name Shops
 extends RefCounted
 
 const ALL := {
-	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true},
-	"burger": {"icon": "🍔", "unlock_after_clear": true, "econ": {"patience_mult": 0.8, "spawn_gap_mult": 0.85}},
+	"donut":  {"icon": "🍩", "art": "glazed", "unlocked": true,
+		"econ": {"patience_order": 25, "patience_dish": 35}},
+	"burger": {"icon": "🍔", "unlock_after_clear": true,
+		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_mult": 0.85}},
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
@@ -21,6 +23,12 @@ static func is_unlocked(id: String) -> bool:
 
 static func econ(key: String, default := 1.0) -> float:
 	return float(get_def(BuffDefs.current_shop).get("econ", {}).get(key, default))
+
+static func patience_order() -> float:
+	return econ("patience_order", Config.PATIENCE_ORDER)
+
+static func patience_dish() -> float:
+	return econ("patience_dish", Config.PATIENCE_DISH)
 
 static func icon_of(id: String) -> String:
 	return str(get_def(id).get("icon", "🍽"))
