@@ -6,6 +6,7 @@ extends Sheet
 signal close_requested
 
 var _tiles: Array[IngredientTile] = []
+var _grid: GridContainer
 
 func _ready() -> void:
 	visible = false
@@ -43,12 +44,20 @@ func _ready() -> void:
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
 	v.add_child(grid)
+	_grid = grid
+	rebuild()
 
+
+## 현재 가게(current_shop)의 해금 재료로 타일 재생성. 가게 선택 시 호출(가게마다 재료가 다름).
+func rebuild() -> void:
+	for t in _tiles:
+		t.queue_free()
+	_tiles.clear()
 	for id in Ingredients.unlocked_ids():
 		var tile := IngredientTile.new()
 		tile.setup(id)
 		_tiles.append(tile)
-		grid.add_child(tile)
+		_grid.add_child(tile)
 
 
 ## 보드 꽉 차거나(회색) 생략 버프로 안 쓰는 재료면(뿌옇게) 타일 비활성.

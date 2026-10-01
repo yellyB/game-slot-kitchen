@@ -431,6 +431,8 @@ func _on_start_pressed() -> void:
 ## 최초 플레이면 입장 직후 튜토리얼(끝나면 _start_game), 아니면 바로 시작.
 func _on_shop_selected(id: String) -> void:
   BuffDefs.current_shop = id
+  _warehouse.rebuild()   # 가게마다 재료·레시피가 달라 서랍/조리대를 선택한 가게로 다시 지음
+  _cooking.rebuild()
   _shop_select.hide()
   if _tutorial_seen() or id != "donut":   # 튜토리얼은 coffee(도넛) 레시피 기반 — 다른 가게선 건너뜀
     _start_game()

@@ -15,6 +15,7 @@ const SHEET_CHROME := 84   # 헤더 + 상하 패딩 여유(시트 높이 계산�
 var board: Board  # main이 주입
 var _entries: Array[Button] = []
 var _active_tool: ToolStation
+var _list: VBoxContainer
 
 func _ready() -> void:
 	visible = false
@@ -24,9 +25,6 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	# 시트 높이 = 레시피 전부 스크롤 없이 수용(위로 늘어남). 개수 늘어도 자동 대응.
-	var n := Recipes.all_ids().size()
-	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -57,11 +55,22 @@ func _ready() -> void:
 	list.add_theme_constant_override("separation", ROW_SEP)
 	v.add_child(list)
 
+	_list = list
+	rebuild()
+
+
+## 현재 가게(current_shop)의 레시피로 조리 목록 재생성 + 시트 높이 갱신. 가게 선택 시 호출(가게마다 메뉴가 다름).
+func rebuild() -> void:
+	for e in _entries:
+		e.queue_free()
+	_entries.clear()
+	# 시트 높이 = 레시피 전부 스크롤 없이 수용(위로 늘어남). 개수 늘어도 자동 대응.
+	var n := Recipes.all_ids().size()
+	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	for id in Recipes.all_ids():
 		var entry := _entry(id)
 		_entries.append(entry)
-		list.add_child(entry)
-
+		_list.add_child(entry)
 	_align_price_column()   # 모든 행의 가격/시간 블록 폭을 최대치로 통일(시작점 일치)
 
 
