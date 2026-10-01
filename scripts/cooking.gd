@@ -13,6 +13,7 @@ const SHEET_CHROME := 84
 var board: Board
 var _entries: Array[Button] = []
 var _active_tool: ToolStation
+var _list: VBoxContainer
 
 func _ready() -> void:
 	visible = false
@@ -22,8 +23,6 @@ func _ready() -> void:
 	anchor_bottom = 1.0
 	offset_left = 8
 	offset_right = -8
-	var n := Recipes.all_ids().size()
-	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	offset_bottom = -8
 	add_theme_stylebox_override("panel", UI.sheet())
 
@@ -52,11 +51,20 @@ func _ready() -> void:
 	list.add_theme_constant_override("separation", ROW_SEP)
 	v.add_child(list)
 
+	_list = list
+	rebuild()
+
+
+func rebuild() -> void:
+	for e in _entries:
+		e.queue_free()
+	_entries.clear()
+	var n := Recipes.all_ids().size()
+	offset_top = -(SHEET_CHROME + n * ENTRY_H + maxi(0, n - 1) * ROW_SEP)
 	for id in Recipes.all_ids():
 		var entry := _entry(id)
 		_entries.append(entry)
-		list.add_child(entry)
-
+		_list.add_child(entry)
 	_align_price_column()
 
 
