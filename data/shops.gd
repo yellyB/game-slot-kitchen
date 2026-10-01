@@ -19,7 +19,7 @@ static func get_def(id: String) -> Dictionary:
 static func is_unlocked(id: String) -> bool:
 	var d := get_def(id)
 	if d.get("unlock_after_clear", false):
-		return FileAccess.file_exists("user://cleared.flag")
+		return OS.is_debug_build() or FileAccess.file_exists("user://cleared.flag")
 	return bool(d.get("unlocked", false))
 
 static func econ(key: String, default := 1.0) -> float:
