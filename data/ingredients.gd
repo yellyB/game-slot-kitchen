@@ -16,8 +16,6 @@ const BANK := {
 		"bun":       {"name": "번",     "icon": "🍞", "unlocked": true},
 		"patty":     {"name": "패티",   "icon": "🥩", "unlocked": true},
 		"cheese":    {"name": "치즈",   "icon": "🧀", "unlocked": true},
-		"potato":    {"name": "감자",   "icon": "🥔", "unlocked": true},
-		"cola":      {"name": "콜라",   "icon": "🥤", "unlocked": true},
 		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
 		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
 		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},
