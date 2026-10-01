@@ -15,14 +15,12 @@ const BANK := {
 		"tiramisu": {"name": "티라미수",  "icon": "🍮", "ingredients": ["bean", "cream", "sugar"], "cook_time": 6.0, "price": 12, "tier": 5},
 		"special": {"name": "초코케이크",  "icon": "🍰", "ingredients": ["flour", "cream", "sugar", "chocolate"], "cook_time": 7.0, "price": 20, "tier": 6},
 	},
-	# 버거 가게(러시·세트/프리메이크). 조리 카페보다 −1s(2~6s). 세트=다재료 단일 레시피(콤보 로직 아님).
+	# 버거 가게(러시). 적고 빠른 가게 — 4메뉴 2밴드. 조리 카페보다 −1s.
 	"burger": {
-		"icecream":     {"name": "아이스크림",   "icon": "🍦", "ingredients": ["cream", "sugar"], "cook_time": 2.0, "price": 1,  "tier": 1},
-		"shake":        {"name": "셰이크",       "icon": "🥤", "ingredients": ["milk", "cream"], "cook_time": 2.0, "price": 2,  "tier": 2},
-		"burger":       {"name": "버거",         "icon": "🍔", "ingredients": ["bun", "patty"], "cook_time": 3.0, "price": 4,  "tier": 3},
-		"cheeseburger": {"name": "치즈버거",     "icon": "🍔", "ingredients": ["bun", "patty", "cheese"], "cook_time": 4.0, "price": 6,  "tier": 4},
-		"burgerset":    {"name": "버거세트",     "icon": "🍟", "ingredients": ["bun", "patty", "potato", "cola"], "cook_time": 5.0, "price": 12, "tier": 5},
-		"cheeseset":    {"name": "치즈버거세트", "icon": "🍟", "ingredients": ["bun", "patty", "cheese", "potato", "cola"], "cook_time": 6.0, "price": 20, "tier": 6},
+		"icecream":     {"name": "아이스크림",   "icon": "🍦", "ingredients": ["cream", "sugar"], "cook_time": 2.0, "price": 1, "tier": 1},
+		"shake":        {"name": "셰이크",       "icon": "🥤", "ingredients": ["milk", "cream"], "cook_time": 2.0, "price": 2, "tier": 2},
+		"burger":       {"name": "버거",         "icon": "🍔", "ingredients": ["bun", "patty"], "cook_time": 3.0, "price": 5, "tier": 3},
+		"cheeseburger": {"name": "치즈버거",     "icon": "🍔", "ingredients": ["bun", "patty", "cheese"], "cook_time": 4.0, "price": 7, "tier": 4},
 	},
 }
 

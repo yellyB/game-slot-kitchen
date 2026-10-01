@@ -17,13 +17,11 @@ const BANK := {
 		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
 		"water":     {"name": "물",     "icon": "💧", "unlocked": true},
 	},
-	# 버거 가게: 윗줄=버거 조립(번·패티·치즈·감자), 아랫줄=음료/디저트(콜라·우유·크림·설탕).
+	# 버거 가게: 버거 조립(번·패티·치즈) + 음료/디저트(우유·크림·설탕). 6종.
 	"burger": {
 		"bun":       {"name": "번",     "icon": "🍞", "unlocked": true},
 		"patty":     {"name": "패티",   "icon": "🥩", "unlocked": true},
 		"cheese":    {"name": "치즈",   "icon": "🧀", "unlocked": true},
-		"potato":    {"name": "감자",   "icon": "🥔", "unlocked": true},
-		"cola":      {"name": "콜라",   "icon": "🥤", "unlocked": true},
 		"milk":      {"name": "우유",   "icon": "🥛", "unlocked": true},
 		"cream":     {"name": "크림",   "icon": "🍦", "unlocked": true},
 		"sugar":     {"name": "설탕",   "icon": "🧂", "unlocked": true},

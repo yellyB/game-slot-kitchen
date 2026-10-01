@@ -13,7 +13,7 @@ const ALL := {
 		"econ": {"patience_order": 25, "patience_dish": 35, "spawn_gap_min": 1.0, "spawn_gap_max": 2.5}},
 	"burger": {"icon": "🍔", "unlock_after_clear": true,   # 러시: 인내심 짧고 도착 잦음
 		"econ": {"patience_order": 20, "patience_dish": 28, "spawn_gap_min": 0.85, "spawn_gap_max": 2.1,
-			"spawn_weights": [13, 13, 28, 20, 13, 13]}},   # 버거(t3) 최다·치즈버거(t4) 2등·나머지 비슷
+			"spawn_weights": [20, 20, 35, 25]}},   # 4메뉴: 버거(t3) 최다·치즈버거(t4) 2등·나머지 비슷
 	"ramen":  {"icon": "🍜", "unlocked": false},
 }
 
