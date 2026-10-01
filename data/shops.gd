@@ -26,7 +26,8 @@ static func get_def(id: String) -> Dictionary:
 static func is_unlocked(id: String) -> bool:
 	var d := get_def(id)
 	if d.get("unlock_after_clear", false):
-		return FileAccess.file_exists("user://cleared.flag")   # 도넛 첫 클리어 후 해금
+		# 디버그/테스트 빌드는 무조건 개방(검증 편의). 릴리즈는 도넛 첫 클리어(cleared.flag) 후.
+		return OS.is_debug_build() or FileAccess.file_exists("user://cleared.flag")
 	return bool(d.get("unlocked", false))
 
 ## 현재 가게의 경제 성격 값. 없으면 default.
