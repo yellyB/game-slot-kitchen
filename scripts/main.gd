@@ -389,6 +389,8 @@ func _on_start_pressed() -> void:
 
 func _on_shop_selected(id: String) -> void:
   BuffDefs.current_shop = id
+  _warehouse.rebuild()
+  _cooking.rebuild()
   _shop_select.hide()
   if _tutorial_seen():
     _start_game()

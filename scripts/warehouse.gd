@@ -4,6 +4,7 @@ extends Sheet
 signal close_requested
 
 var _tiles: Array[IngredientTile] = []
+var _grid: GridContainer
 
 func _ready() -> void:
 	visible = false
@@ -40,12 +41,19 @@ func _ready() -> void:
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
 	v.add_child(grid)
+	_grid = grid
+	rebuild()
 
+
+func rebuild() -> void:
+	for t in _tiles:
+		t.queue_free()
+	_tiles.clear()
 	for id in Ingredients.unlocked_ids():
 		var tile := IngredientTile.new()
 		tile.setup(id)
 		_tiles.append(tile)
-		grid.add_child(tile)
+		_grid.add_child(tile)
 
 
 func refresh(full: bool) -> void:
