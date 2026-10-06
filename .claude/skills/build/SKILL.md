@@ -54,8 +54,15 @@ code = int(re.search(r'version/code=(\d+)', s).group(1)) + 1
 s = re.sub(r'version/code=\d+', f'version/code={code}', s)
 s = re.sub(r'version/name="[^"]*"', f'version/name="{ver}"', s)
 open(p, "w", encoding="utf-8").write(s)
+# project.godot config/version 동기화(타이틀 v<버전> 표기 소스) — export 버전과 어긋나지 않게.
+pg = "project.godot"; t = open(pg, encoding="utf-8").read()
+t = re.sub(r'config/version="[^"]*"', f'config/version="{ver}"', t)
+open(pg, "w", encoding="utf-8").write(t)
 print(f"versionCode={code}  versionName={ver}")
 PY
+
+# --- 타이틀 test:<해시> 표기용 커밋해시 굽기(릴리스도 포함필터로 패킹됨, gitignore라 커밋 안 됨) ---
+git rev-parse --short HEAD > build_commit.txt
 
 # --- gradle+AAB 플래그 임시 ON → 빌드 → 원복 ---
 sed -i '' 's/use_gradle_build=false/use_gradle_build=true/; s/export_format=0/export_format=1/' export_presets.cfg
@@ -70,10 +77,10 @@ ls -la "$OUT"
 ```
 
 ### 3. 버전 커밋 (develop)
-versionCode를 다음 빌드까지 유지해야 하므로, `export_presets.cfg`의 **`version/code`·`version/name` 두 줄만** `develop`에 커밋한다(gradle/format 플래그는 이미 원복됨 — 스테이지 금지). 다른 에이전트 hunk가 섞이지 않게 `git add export_presets.cfg` 전 `git diff`로 그 두 줄만인지 확인.
+versionCode를 다음 빌드까지 유지해야 하므로, `export_presets.cfg`의 **`version/code`·`version/name` 두 줄**과 `project.godot`의 **`config/version` 한 줄**(타이틀 표기 동기화)을 `develop`에 커밋한다(gradle/format 플래그는 이미 원복됨 — 스테이지 금지; `build_commit.txt`는 gitignore라 자동 제외). 다른 에이전트 hunk가 섞이지 않게 `git add` 전 `git diff`로 그 줄들만인지 확인.
 
 ```
-git add export_presets.cfg
+git add export_presets.cfg project.godot
 git commit -m "release: v<VERSION> (versionCode <N>)"
 ```
 

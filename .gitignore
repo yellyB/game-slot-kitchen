@@ -6,3 +6,6 @@
 _*shot*.png
 _*shot*.png.import
 .claude/
+
+# 빌드 때 구워 넣는 커밋해시(타이틀 test:<해시> 표기용) — 매 빌드 갱신, 추적 안 함
+build_commit.txt
