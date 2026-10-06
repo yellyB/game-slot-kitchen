@@ -6,6 +6,7 @@ signal tutorial_pressed
 signal dbg_lives_pressed
 
 const TITLE_TEXT := "Slot Kitchen"
+const BuildInfo := preload("res://scripts/build_info.gd")
 
 var _start_btn: Button
 var _codex_btn: Button
@@ -94,6 +95,19 @@ func _ready() -> void:
 	gear.pressed.connect(_open_settings)
 	Audio.attach_click(gear)
 	add_child(gear)
+
+	var ver := UI.label(BuildInfo.label(), 13, Palette.COCOA_600)
+	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ver.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ver.anchor_left = 1.0
+	ver.anchor_right = 1.0
+	ver.anchor_top = 1.0
+	ver.anchor_bottom = 1.0
+	ver.offset_left = -220
+	ver.offset_right = -14
+	ver.offset_top = -44
+	ver.offset_bottom = -20
+	add_child(ver)
 
 
 const _TITLE_COLORS := [Palette.MAIN, Palette.ACCENT, Palette.MAIN, Palette.ACCENT]
