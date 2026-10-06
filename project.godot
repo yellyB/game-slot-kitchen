@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Slot Kitchen"
+config/version="1.2.0"
 config/description="슬롯 키친 — 도넛 카페 슬롯 요리 게임 MVP"
 run/main_scene="res://scenes/Main.tscn"
 config/quit_on_go_back=false
