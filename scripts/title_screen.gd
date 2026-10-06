@@ -8,6 +8,7 @@ signal tutorial_pressed
 signal dbg_lives_pressed   # 디버그(로컬/테스트빌드) 전용 — 목숨 시스템 해금 토글
 
 const TITLE_TEXT := "Slot Kitchen"   # 타이틀은 언어 무관 영어 로고로 고정
+const BuildInfo := preload("res://scripts/build_info.gd")
 
 var _start_btn: Button
 var _codex_btn: Button
@@ -101,6 +102,20 @@ func _ready() -> void:
 	gear.pressed.connect(_open_settings)
 	Audio.attach_click(gear)   # 설정 버튼 클릭음
 	add_child(gear)
+
+	# 우하단 빌드 표기 — 릴리스=v<버전>, 디버그/테스트빌드=test: <커밋해시>.
+	var ver := UI.label(BuildInfo.label(), 13, Palette.COCOA_600)
+	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ver.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ver.anchor_left = 1.0
+	ver.anchor_right = 1.0
+	ver.anchor_top = 1.0
+	ver.anchor_bottom = 1.0
+	ver.offset_left = -220
+	ver.offset_right = -14
+	ver.offset_top = -44
+	ver.offset_bottom = -20
+	add_child(ver)
 
 
 # 글자별 색 — 딸기핑크·크림옐로 교차(따뜻한 도넛 카페 톤). 공백은 건너뜀.

@@ -8,8 +8,9 @@
 
 사용자가 **"테스트 빌드"**(예: "테스트 빌드 ㄱㄱ")라고 하면 **디버그 APK를 자동으로 빌드**한다(따로 묻지 않음). 절차:
 1. `export_presets.cfg`의 `gradle_build/use_gradle_build`를 `false`→`true`로 임시 변경 (target SDK 36은 gradle 빌드 필요).
-2. `godot4 --headless --export-debug "Android" "/Users/oto/Workspace/apk/Slot Kitchen.apk"` 실행.
-3. **빌드 후 반드시 `use_gradle_build=false`로 되돌린다** (이 토글은 커밋하지 않는다).
+2. `git rev-parse --short HEAD > build_commit.txt` — 타이틀 우하단 `test:<해시>` 표기용(기기엔 git이 없어 빌드 때 구워 넣는다). `build_commit.txt`는 gitignore라 커밋 안 됨.
+3. `godot4 --headless --export-debug "Android" "/Users/oto/Workspace/apk/Slot Kitchen.apk"` 실행.
+4. **빌드 후 반드시 `use_gradle_build=false`로 되돌린다** (이 토글은 커밋하지 않는다).
 
 결과물: `/Users/oto/Workspace/apk/Slot Kitchen.apk`. 빌드 전 `--sim` 한 판 등으로 파싱/로드가 깨지지 않는지 먼저 확인한다.
 
