@@ -5,7 +5,11 @@
 # 검증용 임시 스크린샷 (개발 중 --shot 캡처)
 _*shot*.png
 _*shot*.png.import
-.claude/
+.claude/*
+!.claude/skills/
 
 # 빌드 때 구워 넣는 커밋해시(타이틀 test:<해시> 표기용) — 매 빌드 갱신, 추적 안 함
 build_commit.txt
+
+# 빌드 결과물
+/build/
